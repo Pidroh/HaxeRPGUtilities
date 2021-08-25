@@ -13,27 +13,27 @@ class Main {
 
 		var c = 1;
 		var turn = false;
-		while(c != 'c'.code){
+		while(false){
 			trace("");
 			if(hero.attributesBase["Life"] <= 0){
 					trace("You died");
 					trace("¥n¥n¥n");
 					hero.attributesBase["Life"]  = 20;
 					enemy.attributesBase["Life"]  = 6;
-					c = Sys.getChar(true);
+					//c = Sys.getChar(true);
 				}
 			var herolife = hero.attributesBase["Life"];
 			if(enemy.attributesBase["Life"] <= 0){
 				trace("New enemy");
 				trace("¥n¥n¥n");
 				enemy.attributesBase["Life"]  = 6;
-				c = Sys.getChar(true);
+				//c = Sys.getChar(true);
 			}
 			var enemylife = enemy.attributesBase["Life"];
 			trace('Player life: $herolife');
 			trace('Enemy life: $enemylife');
 			trace('Press button to advance');
-			c = Sys.getChar(true);
+			//c = Sys.getChar(true);
 			var attacker = hero;
 			var defender = enemy;
 			if(turn)
