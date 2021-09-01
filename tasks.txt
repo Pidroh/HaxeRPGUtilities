@@ -1,0 +1,3 @@
+try out commit on hrpg
+windows build and run scripts on homebase
+	create tasks for next prototype
