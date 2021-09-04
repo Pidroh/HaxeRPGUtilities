@@ -7,9 +7,13 @@ class Main {
 	static var enemy:Actor;
 
     static function main() {
+
+		
+
         hero = {level:1, attributesBase:["Attack"=> 5, "Life" => 20], equipmentSlots: null, equipment: null};
 		enemy = {level:1, attributesBase:["Attack"=> 2, "Life" => 6], equipmentSlots: null, equipment: null};
 
+		trace("Javascript!");
 
 		var c = 1;
 		var turn = false;
