@@ -1,8 +1,0 @@
-try out commit on hrpg
-new commit try
-aux commit
-trying out new commit system
-	stop managing stuff in tasks.txt, figure something else out
-	add cds to runner thing
-	windows build and run scripts on homebase
-	create tasks for next prototype
