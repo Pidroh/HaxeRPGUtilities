@@ -13,15 +13,20 @@ class Main {
 
     static function main() {
 
+		var bm : BattleManager = new BattleManager();
 		Toolkit.init();
         
         var button:Button = new Button();
         button.text = "Click Me!";
-        button.onClick = function(e) {
-            trace("Success!");
-        };
+
 		var label:Label = new Label();
 		label.text = "Some label";
+		button.onClick = function(e) {
+            trace("Success!");
+			var adv = bm.advance();
+			label.text = adv;
+			trace(adv);
+        };
         
         Screen.instance.addComponent(button);
 
@@ -29,18 +34,26 @@ class Main {
 
 		var button1 = new Button();
 		button1.text = "Button 1";
+		button1.onClick = function(e) {
+            trace("Success!");
+			var adv = bm.advance();
+			label.text = adv;
+			trace(adv);
+        };
 		main.addComponent(button1);
 
 		var button2 = new Button();
 		button2.text = "Button 2";
 		main.addComponent(button2);
 
+		main.addComponent(label);
+
 		Screen.instance.addComponent(main);
 
         hero = {level:1, attributesBase:["Attack"=> 5, "Life" => 20], equipmentSlots: null, equipment: null};
 		enemy = {level:1, attributesBase:["Attack"=> 2, "Life" => 6], equipmentSlots: null, equipment: null};
 
-		trace("Javascript!");
+		trace(" \nJavascript!");
 
 		var c = 1;
 		var turn = false;
