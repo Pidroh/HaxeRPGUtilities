@@ -1,5 +1,10 @@
+import haxe.ui.components.Label;
+import haxe.ui.Toolkit;
 import haxe.Log;
 import haxe.iterators.DynamicAccessIterator;
+import haxe.ui.components.Button;
+import haxe.ui.containers.VBox;
+import haxe.ui.core.Screen;
 
 class Main {
 
@@ -8,7 +13,29 @@ class Main {
 
     static function main() {
 
-		
+		Toolkit.init();
+        
+        var button:Button = new Button();
+        button.text = "Click Me!";
+        button.onClick = function(e) {
+            trace("Success!");
+        };
+		var label:Label = new Label();
+		label.text = "Some label";
+        
+        Screen.instance.addComponent(button);
+
+		var main = new VBox();
+
+		var button1 = new Button();
+		button1.text = "Button 1";
+		main.addComponent(button1);
+
+		var button2 = new Button();
+		button2.text = "Button 2";
+		main.addComponent(button2);
+
+		Screen.instance.addComponent(main);
 
         hero = {level:1, attributesBase:["Attack"=> 5, "Life" => 20], equipmentSlots: null, equipment: null};
 		enemy = {level:1, attributesBase:["Attack"=> 2, "Life" => 6], equipmentSlots: null, equipment: null};
