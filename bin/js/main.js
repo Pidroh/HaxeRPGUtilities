@@ -7,6 +7,7 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
+	this.timePeriod = 1;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 5;
 	_g.h["Life"] = 20;
@@ -15,6 +16,7 @@ var BattleManager = function() {
 	_g.h["Attack"] = 2;
 	_g.h["Life"] = 6;
 	this.enemy = { level : 1, attributesBase : _g, equipmentSlots : null, equipment : null};
+	this.timeCount = 0;
 };
 $hxClasses["BattleManager"] = BattleManager;
 BattleManager.__name__ = "BattleManager";
@@ -22,10 +24,12 @@ BattleManager.prototype = {
 	hero: null
 	,enemy: null
 	,turn: null
+	,timeCount: null
+	,timePeriod: null
 	,advance: function() {
 		var output = "";
 		if(this.hero.attributesBase.h["Life"] <= 0) {
-			output += "You died";
+			output += "You died\n\n\n";
 			this.hero.attributesBase.h["Life"] = 20;
 			this.enemy.attributesBase.h["Life"] = 6;
 		}
@@ -51,6 +55,14 @@ BattleManager.prototype = {
 		_g.h["Life"] = v;
 		this.turn = !this.turn;
 		return output;
+	}
+	,update: function(delta) {
+		this.timeCount += delta;
+		if(this.timeCount >= this.timePeriod) {
+			this.timeCount = 0;
+			return this.advance();
+		}
+		return null;
 	}
 	,__class__: BattleManager
 };
@@ -323,20 +335,20 @@ Main.main = function() {
 	var label = new haxe_ui_components_Label();
 	label.set_text("Some label");
 	button.set_onClick(function(e) {
-		haxe_Log.trace("Success!",{ fileName : "Main.hx", lineNumber : 25, className : "Main", methodName : "main"});
+		haxe_Log.trace("Success!",{ fileName : "Main.hx", lineNumber : 24, className : "Main", methodName : "main"});
 		var adv = bm.advance();
 		label.set_text(adv);
-		haxe_Log.trace(adv,{ fileName : "Main.hx", lineNumber : 28, className : "Main", methodName : "main"});
+		haxe_Log.trace(adv,{ fileName : "Main.hx", lineNumber : 27, className : "Main", methodName : "main"});
 	});
 	haxe_ui_core_Screen.get_instance().addComponent(button);
 	var main = new haxe_ui_containers_VBox();
 	var button1 = new haxe_ui_components_Button();
 	button1.set_text("Button 1");
 	button1.set_onClick(function(e) {
-		haxe_Log.trace("Success!",{ fileName : "Main.hx", lineNumber : 38, className : "Main", methodName : "main"});
+		haxe_Log.trace("Success!",{ fileName : "Main.hx", lineNumber : 37, className : "Main", methodName : "main"});
 		var adv = bm.advance();
 		label.set_text(adv);
-		haxe_Log.trace(adv,{ fileName : "Main.hx", lineNumber : 41, className : "Main", methodName : "main"});
+		haxe_Log.trace(adv,{ fileName : "Main.hx", lineNumber : 40, className : "Main", methodName : "main"});
 	});
 	main.addComponent(button1);
 	var button2 = new haxe_ui_components_Button();
@@ -344,17 +356,27 @@ Main.main = function() {
 	main.addComponent(button2);
 	main.addComponent(label);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
-	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 5;
-	_g.h["Life"] = 20;
-	Main.hero = { level : 1, attributesBase : _g, equipmentSlots : null, equipment : null};
-	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 2;
-	_g.h["Life"] = 6;
-	Main.enemy = { level : 1, attributesBase : _g, equipmentSlots : null, equipment : null};
-	haxe_Log.trace(" \nJavascript!",{ fileName : "Main.hx", lineNumber : 56, className : "Main", methodName : "main"});
+	var time = 0;
+	haxe_Log.trace("\nJavascript!",{ fileName : "Main.hx", lineNumber : 54, className : "Main", methodName : "main"});
 	var c = 1;
 	var turn = false;
+	var update = null;
+	update = function(timeStamp) {
+		var delta = timeStamp - time;
+		time = timeStamp;
+		var text = bm.update(delta * 0.001);
+		if(text != null) {
+			label.set_text(text);
+		}
+		window.requestAnimationFrame(update);
+		return true;
+	};
+	update(0);
+};
+Main.prototype = {
+	Loop: function() {
+	}
+	,__class__: Main
 };
 Math.__name__ = "Math";
 var Reflect = function() { };
