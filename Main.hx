@@ -107,13 +107,30 @@ class Main {
 
 typedef Actor = {
 	var level:Int;
+	var xp:ScalingResource;
 	var attributesBase:Map<String, Int>;
 	var equipment:Array<Equipment>;
 	var equipmentSlots:Array<Int>;
 }
 
 typedef LevelGrowth = {
-	var attributesBase:Map<String, Int>;
+	var attributesBase:Map<String, Float>;
+}
+
+typedef ScalingResource = {
+	var value:Int;
+	var scaling:Scaling;
+}
+
+typedef Scaling = {
+	var data1:Int;
+	var minimumIncrement:Int;
+	var type: ScalingType;
+
+}
+
+enum ScalingType {
+	exponential;
 }
 
 typedef Equipment = {
