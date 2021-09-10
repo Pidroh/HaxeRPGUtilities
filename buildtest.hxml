@@ -1,0 +1,8 @@
+-cp test
+-p src/logic
+-main MainTest
+
+-lib hscript
+
+--cs bin_test
+
