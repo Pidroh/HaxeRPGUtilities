@@ -107,7 +107,7 @@ class ResourceLogic {
 	public static function recalculateScalingResource(base:Int, res:ScalingResource) {
 		if (res.lastUsedBaseAttribute != base) {
 			var data1 = res.scaling.data1;
-			var calculated = Std.int(Math.pow(data1, base));
+			var calculated = Std.int(Math.pow(data1, base) + res.scaling.initial);
 
 			// uses only the minimum increment
 			calculated = calculated - calculated % res.scaling.minimumIncrement;
@@ -118,8 +118,8 @@ class ResourceLogic {
 	}
 
 	public static function getExponentialResource(expBase:Float, minimumIncrement:Int, initial:Int):ScalingResource {
-		var res = {
-			scaling: {data1: expBase, minimumIncrement: minimumIncrement, type: exponential},
+		var res : ScalingResource = {
+			scaling: {data1: expBase, initial: initial, minimumIncrement: minimumIncrement, type: exponential},
 			value: 0,
 			lastUsedBaseAttribute: 0,
 			calculatedMax: 0
@@ -159,12 +159,14 @@ typedef LevelGrowth = {
 typedef ScalingResource = {
 	var value:Int;
 	var scaling:Scaling;
+	
 	// this is buffered data to avoid recalculation
 	var calculatedMax:Int;
 	var lastUsedBaseAttribute:Int;
 }
 
 typedef Scaling = {
+	var initial:Int;
 	var data1:Float;
 	var minimumIncrement:Int;
 	var type:ScalingType;

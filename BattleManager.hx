@@ -19,14 +19,14 @@ class BattleManager {
     }
 
 	public function advance() {
-        var output : String = "";
+        var event : String = "";
 		if (hero.attributesCalculated["Life"] <= 0) {
-            output += "You died\n\n\n";
+            event += "You died\n\n\n";
 			hero.attributesCalculated["Life"] = hero.attributesCalculated["LifeMax"];
 			enemy.attributesCalculated["Life"] = 6;
 			// c = Sys.getChar(true);
 		}
-		var herolife = hero.attributesCalculated["Life"];
+		
 		if (enemy.attributesCalculated["Life"] <= 0) {
 			hero.xp.value += 2;
 			if(hero.xp.value > hero.xp.calculatedMax){
@@ -35,18 +35,27 @@ class BattleManager {
 				AttributeLogic.Add(hero.attributesBase, ["Attack"=> 1, "LifeMax" => 1, "Life"=>1], hero.level, hero.attributesCalculated);
 				ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
 			}
-            output += "New enemy";
-            output += "\n\n\n";
+            event += "New enemy";
+            event += "\n\n\n";
 			enemy.attributesCalculated["Life"] = 6;
 			// c = Sys.getChar(true);
 		}
+		var level = hero.level;
+		var herolife = hero.attributesCalculated["Life"];
+		var herolifeM = hero.attributesCalculated["LifeMax"];
 		var enemylife = enemy.attributesCalculated["Life"];
 		var xp = hero.xp.value;
 		var xpmax = hero.xp.calculatedMax;
-        output += 'Player life: $herolife xp: $xp xpmax:$xpmax';
+        var output = 
+'Player 
+	life: $herolife / $herolifeM
+	level: $level
+	xp: $xp / $xpmax';
+
         output += "\n";
         output += 'Enemy life: $enemylife';
-        output += "\n";
+        output += "\n\n";
+		output += event;
 		// c = Sys.getChar(true);
 		var attacker = hero;
 		var defender = enemy;

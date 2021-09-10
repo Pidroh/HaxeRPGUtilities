@@ -30,14 +30,13 @@ BattleManager.prototype = {
 	,timeCount: null
 	,timePeriod: null
 	,advance: function() {
-		var output = "";
+		var event = "";
 		if(this.hero.attributesCalculated.h["Life"] <= 0) {
-			output += "You died\n\n\n";
+			event += "You died\n\n\n";
 			var v = this.hero.attributesCalculated.h["LifeMax"];
 			this.hero.attributesCalculated.h["Life"] = v;
 			this.enemy.attributesCalculated.h["Life"] = 6;
 		}
-		var herolife = this.hero.attributesCalculated.h["Life"];
 		if(this.enemy.attributesCalculated.h["Life"] <= 0) {
 			this.hero.xp.value += 2;
 			if(this.hero.xp.value > this.hero.xp.calculatedMax) {
@@ -51,17 +50,21 @@ BattleManager.prototype = {
 				AttributeLogic.Add(tmp,_g,this.hero.level,this.hero.attributesCalculated);
 				ResourceLogic.recalculateScalingResource(this.hero.level,this.hero.xp);
 			}
-			output += "New enemy";
-			output += "\n\n\n";
+			event += "New enemy";
+			event += "\n\n\n";
 			this.enemy.attributesCalculated.h["Life"] = 6;
 		}
+		var level = this.hero.level;
+		var herolife = this.hero.attributesCalculated.h["Life"];
+		var herolifeM = this.hero.attributesCalculated.h["LifeMax"];
 		var enemylife = this.enemy.attributesCalculated.h["Life"];
 		var xp = this.hero.xp.value;
 		var xpmax = this.hero.xp.calculatedMax;
-		output += "Player life: " + herolife + " xp: " + xp + " xpmax:" + xpmax;
+		var output = "Player \r\n\tlife: " + herolife + " / " + herolifeM + "\r\n\tlevel: " + level + "\r\n\txp: " + xp + " / " + xpmax;
 		output += "\n";
 		output += "Enemy life: " + enemylife;
-		output += "\n";
+		output += "\n\n";
+		output += event;
 		var attacker = this.hero;
 		var defender = this.enemy;
 		if(this.turn) {
@@ -397,7 +400,7 @@ ResourceLogic.__name__ = "ResourceLogic";
 ResourceLogic.recalculateScalingResource = function(base,res) {
 	if(res.lastUsedBaseAttribute != base) {
 		var data1 = res.scaling.data1;
-		var calculated = Math.pow(data1,base) | 0;
+		var calculated = Math.pow(data1,base) + res.scaling.initial | 0;
 		calculated -= calculated % res.scaling.minimumIncrement;
 		res.calculatedMax = calculated;
 		res.lastUsedBaseAttribute = base;
@@ -405,7 +408,7 @@ ResourceLogic.recalculateScalingResource = function(base,res) {
 	}
 };
 ResourceLogic.getExponentialResource = function(expBase,minimumIncrement,initial) {
-	var res = { scaling : { data1 : expBase, minimumIncrement : minimumIncrement, type : ScalingType.exponential}, value : 0, lastUsedBaseAttribute : 0, calculatedMax : 0};
+	var res = { scaling : { data1 : expBase, initial : initial, minimumIncrement : minimumIncrement, type : ScalingType.exponential}, value : 0, lastUsedBaseAttribute : 0, calculatedMax : 0};
 	ResourceLogic.recalculateScalingResource(1,res);
 	haxe_Log.trace(res,{ fileName : "Main.hx", lineNumber : 128, className : "ResourceLogic", methodName : "getExponentialResource"});
 	return res;
