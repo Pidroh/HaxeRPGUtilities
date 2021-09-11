@@ -29,6 +29,10 @@ BattleManager.prototype = {
 	,turn: null
 	,timeCount: null
 	,timePeriod: null
+	,battleArea: null
+	,ChangeBattleArea: function(area) {
+		this.battleArea = area;
+	}
 	,advance: function() {
 		var event = "";
 		if(this.hero.attributesCalculated.h["Life"] <= 0) {
@@ -85,6 +89,11 @@ BattleManager.prototype = {
 		}
 		return null;
 	}
+	,DefaultConfiguration: function() {
+	}
+	,getPlayerTimesKilled: function() {
+		throw new haxe_exceptions_NotImplementedException(null,null,{ fileName : "src/logic/BattleManager.hx", lineNumber : 88, className : "BattleManager", methodName : "getPlayerTimesKilled"});
+	}
 	,__class__: BattleManager
 };
 var ResourceLogic = function() { };
@@ -97,13 +106,13 @@ ResourceLogic.recalculateScalingResource = function(base,res) {
 		calculated -= calculated % res.scaling.minimumIncrement;
 		res.calculatedMax = calculated;
 		res.lastUsedBaseAttribute = base;
-		haxe_Log.trace(res,{ fileName : "src/logic/BattleManager.hx", lineNumber : 91, className : "ResourceLogic", methodName : "recalculateScalingResource"});
+		haxe_Log.trace(res,{ fileName : "src/logic/BattleManager.hx", lineNumber : 102, className : "ResourceLogic", methodName : "recalculateScalingResource"});
 	}
 };
 ResourceLogic.getExponentialResource = function(expBase,minimumIncrement,initial) {
 	var res = { scaling : { data1 : expBase, initial : initial, minimumIncrement : minimumIncrement, type : ScalingType.exponential}, value : 0, lastUsedBaseAttribute : 0, calculatedMax : 0};
 	ResourceLogic.recalculateScalingResource(1,res);
-	haxe_Log.trace(res,{ fileName : "src/logic/BattleManager.hx", lineNumber : 103, className : "ResourceLogic", methodName : "getExponentialResource"});
+	haxe_Log.trace(res,{ fileName : "src/logic/BattleManager.hx", lineNumber : 114, className : "ResourceLogic", methodName : "getExponentialResource"});
 	return res;
 };
 var AttributeLogic = function() { };
