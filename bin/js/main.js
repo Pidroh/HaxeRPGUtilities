@@ -32,6 +32,11 @@ BattleManager.prototype = {
 	,battleArea: null
 	,ChangeBattleArea: function(area) {
 		this.battleArea = area;
+		var _g = new haxe_ds_StringMap();
+		_g.h["Attack"] = 2 + area;
+		_g.h["Life"] = 6 + area;
+		var stats2 = _g;
+		this.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2};
 	}
 	,advance: function() {
 		var event = "";
@@ -42,7 +47,7 @@ BattleManager.prototype = {
 			this.enemy.attributesCalculated.h["Life"] = 6;
 		}
 		if(this.enemy.attributesCalculated.h["Life"] <= 0) {
-			this.hero.xp.value += 2;
+			this.hero.xp.value += this.enemy.level;
 			if(this.hero.xp.value > this.hero.xp.calculatedMax) {
 				this.hero.xp.value = 0;
 				this.hero.level++;
@@ -92,7 +97,7 @@ BattleManager.prototype = {
 	,DefaultConfiguration: function() {
 	}
 	,getPlayerTimesKilled: function() {
-		throw new haxe_exceptions_NotImplementedException(null,null,{ fileName : "src/logic/BattleManager.hx", lineNumber : 88, className : "BattleManager", methodName : "getPlayerTimesKilled"});
+		throw new haxe_exceptions_NotImplementedException(null,null,{ fileName : "src/logic/BattleManager.hx", lineNumber : 90, className : "BattleManager", methodName : "getPlayerTimesKilled"});
 	}
 	,__class__: BattleManager
 };
@@ -106,13 +111,13 @@ ResourceLogic.recalculateScalingResource = function(base,res) {
 		calculated -= calculated % res.scaling.minimumIncrement;
 		res.calculatedMax = calculated;
 		res.lastUsedBaseAttribute = base;
-		haxe_Log.trace(res,{ fileName : "src/logic/BattleManager.hx", lineNumber : 102, className : "ResourceLogic", methodName : "recalculateScalingResource"});
+		haxe_Log.trace(res,{ fileName : "src/logic/BattleManager.hx", lineNumber : 104, className : "ResourceLogic", methodName : "recalculateScalingResource"});
 	}
 };
 ResourceLogic.getExponentialResource = function(expBase,minimumIncrement,initial) {
 	var res = { scaling : { data1 : expBase, initial : initial, minimumIncrement : minimumIncrement, type : ScalingType.exponential}, value : 0, lastUsedBaseAttribute : 0, calculatedMax : 0};
 	ResourceLogic.recalculateScalingResource(1,res);
-	haxe_Log.trace(res,{ fileName : "src/logic/BattleManager.hx", lineNumber : 114, className : "ResourceLogic", methodName : "getExponentialResource"});
+	haxe_Log.trace(res,{ fileName : "src/logic/BattleManager.hx", lineNumber : 116, className : "ResourceLogic", methodName : "getExponentialResource"});
 	return res;
 };
 var AttributeLogic = function() { };

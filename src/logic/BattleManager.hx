@@ -8,6 +8,8 @@ class BattleManager {
 
 	public function ChangeBattleArea(area:Int){
 		battleArea = area;
+		var stats2 = ["Attack"=> 2+area, "Life" => 6+area];
+		enemy = {level:1+area, attributesBase:stats2, equipmentSlots: null, equipment: null, xp:null, attributesCalculated: stats2};
 	}
 
     public function new (){
@@ -30,7 +32,7 @@ class BattleManager {
 		}
 		
 		if (enemy.attributesCalculated["Life"] <= 0) {
-			hero.xp.value += 2;
+			hero.xp.value += enemy.level;
 			if(hero.xp.value > hero.xp.calculatedMax){
 				hero.xp.value = 0;
 				hero.level++;
