@@ -1,3 +1,4 @@
+import BattleManager;
 import haxe.io.Float64Array.Float64ArrayData;
 import haxe.ui.components.Label;
 import haxe.ui.Toolkit;

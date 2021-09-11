@@ -4,6 +4,11 @@ class BattleManager {
     var turn:Bool;
     var timeCount:Float;
     var timePeriod:Float = 1;
+	var battleArea: Int;
+
+	public function ChangeBattleArea(area:Int){
+		battleArea = area;
+	}
 
     public function new (){
 		
@@ -75,6 +80,12 @@ class BattleManager {
             return advance();
         }
         return null;
+	}
+
+	public function DefaultConfiguration() {}
+
+	public function getPlayerTimesKilled() {
+		throw new haxe.exceptions.NotImplementedException();
 	}
 }
 
