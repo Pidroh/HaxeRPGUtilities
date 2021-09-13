@@ -1,3 +1,5 @@
+import haxe.ui.backend.html5.native.behaviours.ElementAttribute;
+
 class BattleManager {
 	var hero:Actor;
 	var enemy:Actor;
@@ -5,6 +7,8 @@ class BattleManager {
     var timeCount:Float;
     var timePeriod:Float = 1;
 	var battleArea: Int;
+	var playerTimesKilled : Int;
+
 
 	public function ChangeBattleArea(area:Int){
 		battleArea = area;
@@ -88,6 +92,15 @@ class BattleManager {
 
 	public function getPlayerTimesKilled() {
 		throw new haxe.exceptions.NotImplementedException();
+	}
+
+	public function RetreatArea() {
+		if(battleArea > 1)
+			ChangeBattleArea(battleArea-1);
+	}
+
+	public function AdvanceArea() {
+		ChangeBattleArea(battleArea+1);
 	}
 }
 
