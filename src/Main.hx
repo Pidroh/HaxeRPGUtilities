@@ -19,8 +19,7 @@ class Main {
 		var button:Button = new Button();
 		button.text = "Click Me!";
 
-		var label:Label = new Label();
-		label.text = "Some label";
+		
 		button.onClick = function(e) {
 			trace("Success!");
 			var adv = bm.advance();
@@ -33,20 +32,22 @@ class Main {
 		var main = new VBox();
 
 		var button1 = new Button();
-		button1.text = "Button 1";
-		button1.onClick = function(e) {
-			trace("Success!");
-			var adv = bm.advance();
-			label.text = adv;
-			trace(adv);
-		};
+		button1.text = "Advance area";
 		main.addComponent(button1);
-
 		var button2 = new Button();
 		button2.text = "Button 2";
 		main.addComponent(button2);
-
+		var label:Label = new Label();
+		label.text = "Some label";		
 		main.addComponent(label);
+
+		button1.onClick = function(e) {
+			bm.RetreatArea();
+		};
+
+		button1.onClick = function(e) {
+			bm.AdvanceArea();
+		};
 
 		Screen.instance.addComponent(main);
 
