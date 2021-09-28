@@ -7,6 +7,8 @@ class BattleManager {
 	var battleArea: Int;
 	var playerTimesKilled : Int;
 	var dirty:Bool;
+	var killedInArea : Array<Int>;
+
 
 	public function ChangeBattleArea(area:Int){
 		battleArea = area;
@@ -38,6 +40,7 @@ class BattleManager {
 		
 		if (enemy.attributesCalculated["Life"] <= 0) {
 			
+			killedInArea[battleArea]++;
 			hero.xp.value += enemy.level;
 			if(hero.xp.value > hero.xp.calculatedMax){
 				//Hero level up

@@ -54,6 +54,8 @@ public class BattleManager : global::haxe.lang.HxObject {
 	
 	public bool dirty;
 	
+	public global::Array<int> killedInArea;
+	
 	public virtual void ChangeBattleArea(int area) {
 		unchecked {
 			this.battleArea = area;
@@ -90,6 +92,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 			}
 			
 			if (( (((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(this.enemy, "attributesCalculated", 241755125, true)) )) ))) ).@get("Life")).@value <= 0 )) {
+				this.killedInArea[this.battleArea]++;
 				{
 					object __temp_dynop1 = global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true);
 					int __temp_expr1 = ((int) (global::haxe.lang.Runtime.setField_f(__temp_dynop1, "value", 834174833, ((double) (( ((int) (global::haxe.lang.Runtime.getField_f(__temp_dynop1, "value", 834174833, true)) ) + ((int) (global::haxe.lang.Runtime.getField_f(this.enemy, "level", 1919096196, true)) ) )) ))) );
@@ -270,6 +273,13 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 		unchecked {
 			switch (hash) {
+				case 1949824367:
+				{
+					this.killedInArea = ((global::Array<int>) (global::Array<object>.__hx_cast<int>(((global::Array) (@value) ))) );
+					return @value;
+				}
+				
+				
 				case 1506824210:
 				{
 					this.dirty = global::haxe.lang.Runtime.toBool(@value);
@@ -391,6 +401,12 @@ public class BattleManager : global::haxe.lang.HxObject {
 				case 1955468949:
 				{
 					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "ChangeBattleArea", 1955468949)) );
+				}
+				
+				
+				case 1949824367:
+				{
+					return this.killedInArea;
 				}
 				
 				
@@ -577,6 +593,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 	
 	
 	public override void __hx_getFields(global::Array<string> baseArr) {
+		baseArr.push("killedInArea");
 		baseArr.push("dirty");
 		baseArr.push("playerTimesKilled");
 		baseArr.push("battleArea");

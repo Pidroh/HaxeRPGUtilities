@@ -33,6 +33,7 @@ BattleManager.prototype = {
 	,battleArea: null
 	,playerTimesKilled: null
 	,dirty: null
+	,killedInArea: null
 	,ChangeBattleArea: function(area) {
 		this.battleArea = area;
 		var enemyLife = 6 + area;
@@ -55,6 +56,7 @@ BattleManager.prototype = {
 			this.enemy.attributesCalculated.h["Life"] = v;
 		}
 		if(this.enemy.attributesCalculated.h["Life"] <= 0) {
+			this.killedInArea[this.battleArea]++;
 			this.hero.xp.value += this.enemy.level;
 			if(this.hero.xp.value > this.hero.xp.calculatedMax) {
 				this.hero.xp.value = 0;
