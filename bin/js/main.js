@@ -32,6 +32,7 @@ BattleManager.prototype = {
 	,timePeriod: null
 	,battleArea: null
 	,playerTimesKilled: null
+	,dirty: null
 	,ChangeBattleArea: function(area) {
 		this.battleArea = area;
 		var enemyLife = 6 + area;
@@ -41,6 +42,7 @@ BattleManager.prototype = {
 		_g.h["LifeMax"] = enemyLife;
 		var stats2 = _g;
 		this.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2};
+		this.dirty = true;
 	}
 	,advance: function() {
 		var event = "";
@@ -70,14 +72,7 @@ BattleManager.prototype = {
 			var v = this.enemy.attributesCalculated.h["LifeMax"];
 			this.enemy.attributesCalculated.h["Life"] = v;
 		}
-		var level = this.hero.level;
-		var xp = this.hero.xp.value;
-		var xpmax = this.hero.xp.calculatedMax;
-		var baseInfo = this.CharacterBaseInfoFormattedString(this.hero);
-		var output = "\n\nPlayer \r\n\tlevel: " + level + "\r\n\txp: " + xp + " / " + xpmax + "\r\n" + baseInfo;
-		baseInfo = this.CharacterBaseInfoFormattedString(this.enemy);
-		output += "\n\n";
-		output += "Enemy\r\n" + baseInfo;
+		var output = this.BaseInformationFormattedString();
 		output += "\n\n";
 		output += event;
 		var attacker = this.hero;
@@ -92,6 +87,17 @@ BattleManager.prototype = {
 		this.turn = !this.turn;
 		return output;
 	}
+	,BaseInformationFormattedString: function() {
+		var level = this.hero.level;
+		var xp = this.hero.xp.value;
+		var xpmax = this.hero.xp.calculatedMax;
+		var baseInfo = this.CharacterBaseInfoFormattedString(this.hero);
+		var output = "\n\nPlayer \r\n\tlevel: " + level + "\r\n\txp: " + xp + " / " + xpmax + "\r\n" + baseInfo;
+		baseInfo = this.CharacterBaseInfoFormattedString(this.enemy);
+		output += "\n\n";
+		output += "Enemy\r\n" + baseInfo;
+		return output;
+	}
 	,CharacterBaseInfoFormattedString: function(actor) {
 		var life = actor.attributesCalculated.h["Life"];
 		var lifeM = actor.attributesCalculated.h["LifeMax"];
@@ -103,6 +109,10 @@ BattleManager.prototype = {
 		if(this.timeCount >= this.timePeriod) {
 			this.timeCount = 0;
 			return this.advance();
+		}
+		if(this.dirty) {
+			this.dirty = false;
+			return this.BaseInformationFormattedString();
 		}
 		return null;
 	}

@@ -52,6 +52,8 @@ public class BattleManager : global::haxe.lang.HxObject {
 	
 	public int playerTimesKilled;
 	
+	public bool dirty;
+	
 	public virtual void ChangeBattleArea(int area) {
 		unchecked {
 			this.battleArea = area;
@@ -62,6 +64,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 			_g.@set("LifeMax", enemyLife);
 			global::haxe.ds.StringMap<int> stats2 = _g;
 			this.enemy = new global::haxe.lang.DynamicObject(new int[]{26872, 241755125, 981808206, 1408123271, 1819702408}, new object[]{null, stats2, null, null, stats2}, new int[]{1919096196}, new double[]{((double) (( 1 + area )) )});
+			this.dirty = true;
 		}
 	}
 	
@@ -120,14 +123,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 				
 			}
 			
-			int level = ((int) (global::haxe.lang.Runtime.getField_f(this.hero, "level", 1919096196, true)) );
-			int xp = ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true), "value", 834174833, true)) );
-			int xpmax = ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true), "calculatedMax", 873224454, true)) );
-			string baseInfo = this.CharacterBaseInfoFormattedString(this.hero);
-			string output = global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat("\n\nPlayer \r\n\tlevel: ", global::haxe.lang.Runtime.toString(level)), "\r\n\txp: "), global::haxe.lang.Runtime.toString(xp)), " / "), global::haxe.lang.Runtime.toString(xpmax)), "\r\n"), baseInfo);
-			baseInfo = this.CharacterBaseInfoFormattedString(this.enemy);
-			output = global::haxe.lang.Runtime.concat(output, "\n\n");
-			output = global::haxe.lang.Runtime.concat(output, global::haxe.lang.Runtime.concat("Enemy\r\n", baseInfo));
+			string output = this.BaseInformationFormattedString();
 			output = global::haxe.lang.Runtime.concat(output, "\n\n");
 			output = global::haxe.lang.Runtime.concat(output, @event);
 			object attacker = this.hero;
@@ -152,6 +148,19 @@ public class BattleManager : global::haxe.lang.HxObject {
 	}
 	
 	
+	public virtual string BaseInformationFormattedString() {
+		int level = ((int) (global::haxe.lang.Runtime.getField_f(this.hero, "level", 1919096196, true)) );
+		int xp = ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true), "value", 834174833, true)) );
+		int xpmax = ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true), "calculatedMax", 873224454, true)) );
+		string baseInfo = this.CharacterBaseInfoFormattedString(this.hero);
+		string output = global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat("\n\nPlayer \r\n\tlevel: ", global::haxe.lang.Runtime.toString(level)), "\r\n\txp: "), global::haxe.lang.Runtime.toString(xp)), " / "), global::haxe.lang.Runtime.toString(xpmax)), "\r\n"), baseInfo);
+		baseInfo = this.CharacterBaseInfoFormattedString(this.enemy);
+		output = global::haxe.lang.Runtime.concat(output, "\n\n");
+		output = global::haxe.lang.Runtime.concat(output, global::haxe.lang.Runtime.concat("Enemy\r\n", baseInfo));
+		return output;
+	}
+	
+	
 	public virtual string CharacterBaseInfoFormattedString(object actor) {
 		global::haxe.lang.Null<int> life = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(actor, "attributesCalculated", 241755125, true)) )) ))) ).@get("Life");
 		global::haxe.lang.Null<int> lifeM = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(actor, "attributesCalculated", 241755125, true)) )) ))) ).@get("LifeMax");
@@ -165,6 +174,11 @@ public class BattleManager : global::haxe.lang.HxObject {
 		if (( this.timeCount >= this.timePeriod )) {
 			this.timeCount = ((double) (0) );
 			return this.advance();
+		}
+		
+		if (this.dirty) {
+			this.dirty = false;
+			return this.BaseInformationFormattedString();
 		}
 		
 		return null;
@@ -256,6 +270,13 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 		unchecked {
 			switch (hash) {
+				case 1506824210:
+				{
+					this.dirty = global::haxe.lang.Runtime.toBool(@value);
+					return @value;
+				}
+				
+				
 				case 123289090:
 				{
 					this.playerTimesKilled = ((int) (global::haxe.lang.Runtime.toInt(@value)) );
@@ -355,6 +376,12 @@ public class BattleManager : global::haxe.lang.HxObject {
 				}
 				
 				
+				case 1312884082:
+				{
+					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "BaseInformationFormattedString", 1312884082)) );
+				}
+				
+				
 				case 1863059586:
 				{
 					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "advance", 1863059586)) );
@@ -364,6 +391,12 @@ public class BattleManager : global::haxe.lang.HxObject {
 				case 1955468949:
 				{
 					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "ChangeBattleArea", 1955468949)) );
+				}
+				
+				
+				case 1506824210:
+				{
+					return this.dirty;
 				}
 				
 				
@@ -512,6 +545,12 @@ public class BattleManager : global::haxe.lang.HxObject {
 				}
 				
 				
+				case 1312884082:
+				{
+					return this.BaseInformationFormattedString();
+				}
+				
+				
 				case 1863059586:
 				{
 					return this.advance();
@@ -538,6 +577,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 	
 	
 	public override void __hx_getFields(global::Array<string> baseArr) {
+		baseArr.push("dirty");
 		baseArr.push("playerTimesKilled");
 		baseArr.push("battleArea");
 		baseArr.push("timePeriod");

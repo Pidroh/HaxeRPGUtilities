@@ -6,13 +6,14 @@ class BattleManager {
     var timePeriod:Float = 1;
 	var battleArea: Int;
 	var playerTimesKilled : Int;
-
+	var dirty:Bool;
 
 	public function ChangeBattleArea(area:Int){
 		battleArea = area;
 		var enemyLife = 6 + area;
 		var stats2 = ["Attack"=> 2+area, "Life" => enemyLife, "LifeMax" => enemyLife];
 		enemy = {level:1+area, attributesBase:stats2, equipmentSlots: null, equipment: null, xp:null, attributesCalculated: stats2};
+		dirty = true;
 	}
 
     public function new (){
@@ -50,6 +51,22 @@ class BattleManager {
 			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
 			// c = Sys.getChar(true);
 		}
+		var output = BaseInformationFormattedString();
+        output += "\n\n";
+		output += event;
+		// c = Sys.getChar(true);
+		var attacker = hero;
+		var defender = enemy;
+		if (turn) {
+			attacker = enemy;
+			defender = hero;
+		}
+		defender.attributesCalculated["Life"] -= attacker.attributesCalculated["Attack"];
+		turn = !turn;
+        return output;
+	}
+
+	function BaseInformationFormattedString():String{
 		var level = hero.level;
 		var xp = hero.xp.value;
 		var xpmax = hero.xp.calculatedMax;
@@ -63,18 +80,7 @@ $baseInfo';
         output += "\n\n";
         output += 'Enemy
 $baseInfo';
-        output += "\n\n";
-		output += event;
-		// c = Sys.getChar(true);
-		var attacker = hero;
-		var defender = enemy;
-		if (turn) {
-			attacker = enemy;
-			defender = hero;
-		}
-		defender.attributesCalculated["Life"] -= attacker.attributesCalculated["Attack"];
-		turn = !turn;
-        return output;
+		return output;
 	}
 
 	function CharacterBaseInfoFormattedString(actor:Actor):String {
@@ -93,6 +99,10 @@ $baseInfo';
             timeCount = 0;
             return advance();
         }
+		if(dirty){
+			dirty = false;
+			return BaseInformationFormattedString();
+		}
         return null;
 	}
 
