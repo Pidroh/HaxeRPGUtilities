@@ -19,7 +19,7 @@ class BattleManager {
 		
 		var stats = ["Attack"=> 5, "Life" => 20, "LifeMax" => 20];
         hero = {level:1, attributesBase:stats, equipmentSlots: null, equipment: null, 
-			xp:ResourceLogic.getExponentialResource(1.15, 5, 5), attributesCalculated: stats};
+			xp:ResourceLogic.getExponentialResource(1.5, 1, 5), attributesCalculated: stats};
 		var stats2 = ["Attack"=> 2, "Life" => 6, "LifeMax"=> 6];
 		enemy = {level:1, attributesBase:stats2, equipmentSlots: null, equipment: null, xp:null, attributesCalculated: stats2};
         timeCount = 0;
@@ -31,7 +31,7 @@ class BattleManager {
 			playerTimesKilled++;
             event += "You died\n\n\n";
 			hero.attributesCalculated["Life"] = hero.attributesCalculated["LifeMax"];
-			enemy.attributesCalculated["Life"] = 6;
+			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
 			// c = Sys.getChar(true);
 		}
 		
