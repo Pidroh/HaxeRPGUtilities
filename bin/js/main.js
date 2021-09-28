@@ -17,6 +17,7 @@ var BattleManager = function() {
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
 	_g.h["Life"] = 6;
+	_g.h["LifeMax"] = 6;
 	var stats2 = _g;
 	this.enemy = { level : 1, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2};
 	this.timeCount = 0;
@@ -33,9 +34,11 @@ BattleManager.prototype = {
 	,playerTimesKilled: null
 	,ChangeBattleArea: function(area) {
 		this.battleArea = area;
+		var enemyLife = 6 + area;
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 2 + area;
-		_g.h["Life"] = 6 + area;
+		_g.h["Life"] = enemyLife;
+		_g.h["LifeMax"] = enemyLife;
 		var stats2 = _g;
 		this.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2};
 	}
@@ -63,7 +66,8 @@ BattleManager.prototype = {
 			}
 			event += "New enemy";
 			event += "\n\n\n";
-			this.enemy.attributesCalculated.h["Life"] = 6;
+			var v = this.enemy.attributesCalculated.h["LifeMax"];
+			this.enemy.attributesCalculated.h["Life"] = v;
 		}
 		var level = this.hero.level;
 		var herolife = this.hero.attributesCalculated.h["Life"];

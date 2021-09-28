@@ -10,7 +10,8 @@ class BattleManager {
 
 	public function ChangeBattleArea(area:Int){
 		battleArea = area;
-		var stats2 = ["Attack"=> 2+area, "Life" => 6+area];
+		var enemyLife = 6 + area;
+		var stats2 = ["Attack"=> 2+area, "Life" => enemyLife, "LifeMax" => enemyLife];
 		enemy = {level:1+area, attributesBase:stats2, equipmentSlots: null, equipment: null, xp:null, attributesCalculated: stats2};
 	}
 
@@ -19,7 +20,7 @@ class BattleManager {
 		var stats = ["Attack"=> 5, "Life" => 20, "LifeMax" => 20];
         hero = {level:1, attributesBase:stats, equipmentSlots: null, equipment: null, 
 			xp:ResourceLogic.getExponentialResource(1.15, 5, 5), attributesCalculated: stats};
-		var stats2 = ["Attack"=> 2, "Life" => 6];
+		var stats2 = ["Attack"=> 2, "Life" => 6, "LifeMax"=> 6];
 		enemy = {level:1, attributesBase:stats2, equipmentSlots: null, equipment: null, xp:null, attributesCalculated: stats2};
         timeCount = 0;
     }
@@ -35,8 +36,10 @@ class BattleManager {
 		}
 		
 		if (enemy.attributesCalculated["Life"] <= 0) {
+			
 			hero.xp.value += enemy.level;
 			if(hero.xp.value > hero.xp.calculatedMax){
+				//Hero level up
 				hero.xp.value = 0;
 				hero.level++;
 				AttributeLogic.Add(hero.attributesBase, ["Attack"=> 1, "LifeMax" => 1, "Life"=>1], hero.level, hero.attributesCalculated);
@@ -44,7 +47,7 @@ class BattleManager {
 			}
             event += "New enemy";
             event += "\n\n\n";
-			enemy.attributesCalculated["Life"] = 6;
+			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
 			// c = Sys.getChar(true);
 		}
 		var level = hero.level;

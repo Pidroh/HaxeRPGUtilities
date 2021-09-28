@@ -28,6 +28,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 				global::haxe.ds.StringMap<int> _g1 = new global::haxe.ds.StringMap<int>();
 				_g1.@set("Attack", 2);
 				_g1.@set("Life", 6);
+				_g1.@set("LifeMax", 6);
 				global::haxe.ds.StringMap<int> stats2 = _g1;
 				__hx_this.enemy = new global::haxe.lang.DynamicObject(new int[]{26872, 241755125, 981808206, 1408123271, 1819702408}, new object[]{null, stats2, null, null, stats2}, new int[]{1919096196}, new double[]{((double) (1) )});
 				__hx_this.timeCount = ((double) (0) );
@@ -54,9 +55,11 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public virtual void ChangeBattleArea(int area) {
 		unchecked {
 			this.battleArea = area;
+			int enemyLife = ( 6 + area );
 			global::haxe.ds.StringMap<int> _g = new global::haxe.ds.StringMap<int>();
 			_g.@set("Attack", ( 2 + area ));
-			_g.@set("Life", ( 6 + area ));
+			_g.@set("Life", enemyLife);
+			_g.@set("LifeMax", enemyLife);
 			global::haxe.ds.StringMap<int> stats2 = _g;
 			this.enemy = new global::haxe.lang.DynamicObject(new int[]{26872, 241755125, 981808206, 1408123271, 1819702408}, new object[]{null, stats2, null, null, stats2}, new int[]{1919096196}, new double[]{((double) (( 1 + area )) )});
 		}
@@ -104,7 +107,12 @@ public class BattleManager : global::haxe.lang.HxObject {
 				
 				@event = global::haxe.lang.Runtime.concat(@event, "New enemy");
 				@event = global::haxe.lang.Runtime.concat(@event, "\n\n\n");
-				((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(this.enemy, "attributesCalculated", 241755125, true)) )) ))) ).@set("Life", 6);
+				{
+					global::haxe.IMap<string, int> this2 = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (global::haxe.lang.Runtime.getField(this.enemy, "attributesCalculated", 241755125, true)) ))) );
+					int v1 = (((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(this.enemy, "attributesCalculated", 241755125, true)) )) ))) ).@get("LifeMax")).@value;
+					((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (this2) ))) ).@set("Life", v1);
+				}
+				
 			}
 			
 			int level = ((int) (global::haxe.lang.Runtime.getField_f(this.hero, "level", 1919096196, true)) );
@@ -128,8 +136,8 @@ public class BattleManager : global::haxe.lang.HxObject {
 			{
 				global::haxe.ds.StringMap<int> _g1 = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (global::haxe.lang.Runtime.getField(defender, "attributesCalculated", 241755125, true)) ))) );
 				{
-					int v1 = ( (_g1.@get("Life")).@value - (((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(attacker, "attributesCalculated", 241755125, true)) )) ))) ).@get("Attack")).@value );
-					_g1.@set("Life", v1);
+					int v2 = ( (_g1.@get("Life")).@value - (((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(attacker, "attributesCalculated", 241755125, true)) )) ))) ).@get("Attack")).@value );
+					_g1.@set("Life", v2);
 				}
 				
 			}
