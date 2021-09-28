@@ -453,33 +453,25 @@ Main.__name__ = "Main";
 Main.main = function() {
 	var bm = new BattleManager();
 	haxe_ui_Toolkit.init();
-	var button = new haxe_ui_components_Button();
-	button.set_text("Click Me!");
-	haxe_ui_core_Screen.get_instance().addComponent(button);
 	var main = new haxe_ui_containers_VBox();
 	var button1 = new haxe_ui_components_Button();
 	button1.set_text("Advance area");
 	main.addComponent(button1);
 	var button2 = new haxe_ui_components_Button();
-	button2.set_text("Button 2");
+	button2.set_text("Retreat Area");
 	main.addComponent(button2);
 	var label = new haxe_ui_components_Label();
-	label.set_text("Some label");
+	label.set_text("");
 	main.addComponent(label);
-	button1.set_onClick(function(e) {
+	button2.set_onClick(function(e) {
 		bm.RetreatArea();
-	});
-	button.set_onClick(function(e) {
-		haxe_Log.trace("Success!",{ fileName : "src/Main.hx", lineNumber : 44, className : "Main", methodName : "main"});
-		var adv = bm.advance();
-		haxe_Log.trace(adv,{ fileName : "src/Main.hx", lineNumber : 47, className : "Main", methodName : "main"});
 	});
 	button1.set_onClick(function(e) {
 		bm.AdvanceArea();
 	});
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
-	haxe_Log.trace("\nJavascript!",{ fileName : "src/Main.hx", lineNumber : 58, className : "Main", methodName : "main"});
+	haxe_Log.trace("\nJavascript!",{ fileName : "src/Main.hx", lineNumber : 44, className : "Main", methodName : "main"});
 	var c = 1;
 	var turn = false;
 	var update = null;

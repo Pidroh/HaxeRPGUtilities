@@ -15,14 +15,7 @@ class Main {
 	static function main() {
 		var bm:BattleManager = new BattleManager();
 		Toolkit.init();
-
-		var button:Button = new Button();
-		button.text = "Click Me!";
-
 		
-
-
-		Screen.instance.addComponent(button);
 
 		var main = new VBox();
 
@@ -30,21 +23,14 @@ class Main {
 		button1.text = "Advance area";
 		main.addComponent(button1);
 		var button2 = new Button();
-		button2.text = "Button 2";
+		button2.text = "Retreat Area";
 		main.addComponent(button2);
 		var label:Label = new Label();
-		label.text = "Some label";		
+		label.text = "";		
 		main.addComponent(label);
 
-		button1.onClick = function(e) {
+		button2.onClick = function(e) {
 			bm.RetreatArea();
-		};
-
-		button.onClick = function(e) {
-			trace("Success!");
-			var adv = bm.advance();
-			//label.text = adv;
-			trace(adv);
 		};
 
 		button1.onClick = function(e) {
