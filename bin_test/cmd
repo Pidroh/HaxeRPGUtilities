@@ -3,7 +3,7 @@
 /debug-
 /unsafe-
 /warn:0
-/out:c:\Users\user\gamedev\_haxe\HaxeRPGUtilities/bin_test/bin/MainTest.exe
+/out:C:\Users\user\gamedev\_haxe\HaxeRPGUtilities/bin_test/bin/MainTest.exe
 /target:exe
 /main:MainTest
 src\cs\Boot.cs

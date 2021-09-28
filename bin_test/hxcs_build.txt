@@ -1,4 +1,4 @@
-c:\Users\user\gamedev\_haxe\HaxeRPGUtilities
+C:\Users\user\gamedev\_haxe\HaxeRPGUtilities
 begin defines
 NET_20
 cs
