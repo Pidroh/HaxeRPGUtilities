@@ -1,4 +1,4 @@
-C:\Users\user\gamedev\_haxe\HaxeRPGUtilities
+c:\Users\user\gamedev\_haxe\HaxeRPGUtilities
 begin defines
 NET_20
 cs
@@ -74,9 +74,6 @@ M System.Security.NamedPermissionSet
 M System.ComponentModel.IContainer
 M System.Reflection.InterfaceMapping
 M haxe.Rest
-M haxe.Log
-C haxe.Log
-C haxe.Log_Anon_62__Fun
 M cs.system.io.StreamReader
 M System.Runtime.InteropServices._Exception
 M System.Enum

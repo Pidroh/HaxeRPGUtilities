@@ -47,10 +47,27 @@ public class BattleManager : global::haxe.lang.HxObject {
 	
 	public double timePeriod;
 	
+	public int battleArea;
+	
+	public int playerTimesKilled;
+	
+	public virtual void ChangeBattleArea(int area) {
+		unchecked {
+			this.battleArea = area;
+			global::haxe.ds.StringMap<int> _g = new global::haxe.ds.StringMap<int>();
+			_g.@set("Attack", ( 2 + area ));
+			_g.@set("Life", ( 6 + area ));
+			global::haxe.ds.StringMap<int> stats2 = _g;
+			this.enemy = new global::haxe.lang.DynamicObject(new int[]{26872, 241755125, 981808206, 1408123271, 1819702408}, new object[]{null, stats2, null, null, stats2}, new int[]{1919096196}, new double[]{((double) (( 1 + area )) )});
+		}
+	}
+	
+	
 	public virtual string advance() {
 		unchecked {
 			string @event = "";
 			if (( (((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(this.hero, "attributesCalculated", 241755125, true)) )) ))) ).@get("Life")).@value <= 0 )) {
+				this.playerTimesKilled++;
 				@event = global::haxe.lang.Runtime.concat(@event, "You died\n\n\n");
 				{
 					global::haxe.IMap<string, int> this1 = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (global::haxe.lang.Runtime.getField(this.hero, "attributesCalculated", 241755125, true)) ))) );
@@ -64,7 +81,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 			if (( (((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(this.enemy, "attributesCalculated", 241755125, true)) )) ))) ).@get("Life")).@value <= 0 )) {
 				{
 					object __temp_dynop1 = global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true);
-					int __temp_expr1 = ((int) (global::haxe.lang.Runtime.setField_f(__temp_dynop1, "value", 834174833, ((double) (( ((int) (global::haxe.lang.Runtime.getField_f(__temp_dynop1, "value", 834174833, true)) ) + 2 )) ))) );
+					int __temp_expr1 = ((int) (global::haxe.lang.Runtime.setField_f(__temp_dynop1, "value", 834174833, ((double) (( ((int) (global::haxe.lang.Runtime.getField_f(__temp_dynop1, "value", 834174833, true)) ) + ((int) (global::haxe.lang.Runtime.getField_f(this.enemy, "level", 1919096196, true)) ) )) ))) );
 				}
 				
 				if (( ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true), "value", 834174833, true)) ) > ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true), "calculatedMax", 873224454, true)) ) )) {
@@ -134,9 +151,49 @@ public class BattleManager : global::haxe.lang.HxObject {
 	}
 	
 	
+	public virtual void DefaultConfiguration() {
+	}
+	
+	
+	public virtual int getPlayerTimesKilled() {
+		return this.playerTimesKilled;
+	}
+	
+	
+	public virtual void RetreatArea() {
+		unchecked {
+			if (( this.battleArea > 1 )) {
+				this.ChangeBattleArea(( this.battleArea - 1 ));
+			}
+			
+		}
+	}
+	
+	
+	public virtual void AdvanceArea() {
+		unchecked {
+			this.ChangeBattleArea(( this.battleArea + 1 ));
+		}
+	}
+	
+	
 	public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
 		unchecked {
 			switch (hash) {
+				case 123289090:
+				{
+					this.playerTimesKilled = ((int) (@value) );
+					return @value;
+				}
+				
+				
+				case 1306622181:
+				{
+					this.battleArea = ((int) (@value) );
+					return @value;
+				}
+				
+				
 				case 1491380462:
 				{
 					this.timePeriod = ((double) (@value) );
@@ -179,6 +236,20 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 		unchecked {
 			switch (hash) {
+				case 123289090:
+				{
+					this.playerTimesKilled = ((int) (global::haxe.lang.Runtime.toInt(@value)) );
+					return @value;
+				}
+				
+				
+				case 1306622181:
+				{
+					this.battleArea = ((int) (global::haxe.lang.Runtime.toInt(@value)) );
+					return @value;
+				}
+				
+				
 				case 1491380462:
 				{
 					this.timePeriod = ((double) (global::haxe.lang.Runtime.toDouble(@value)) );
@@ -228,6 +299,30 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
 		unchecked {
 			switch (hash) {
+				case 55034127:
+				{
+					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "AdvanceArea", 55034127)) );
+				}
+				
+				
+				case 1490610260:
+				{
+					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "RetreatArea", 1490610260)) );
+				}
+				
+				
+				case 785282188:
+				{
+					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "getPlayerTimesKilled", 785282188)) );
+				}
+				
+				
+				case 1117069141:
+				{
+					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "DefaultConfiguration", 1117069141)) );
+				}
+				
+				
 				case 117802505:
 				{
 					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "update", 117802505)) );
@@ -237,6 +332,24 @@ public class BattleManager : global::haxe.lang.HxObject {
 				case 1863059586:
 				{
 					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "advance", 1863059586)) );
+				}
+				
+				
+				case 1955468949:
+				{
+					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "ChangeBattleArea", 1955468949)) );
+				}
+				
+				
+				case 123289090:
+				{
+					return this.playerTimesKilled;
+				}
+				
+				
+				case 1306622181:
+				{
+					return this.battleArea;
 				}
 				
 				
@@ -284,6 +397,18 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
 		unchecked {
 			switch (hash) {
+				case 123289090:
+				{
+					return ((double) (this.playerTimesKilled) );
+				}
+				
+				
+				case 1306622181:
+				{
+					return ((double) (this.battleArea) );
+				}
+				
+				
 				case 1491380462:
 				{
 					return this.timePeriod;
@@ -322,6 +447,33 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public override object __hx_invokeField(string field, int hash, object[] dynargs) {
 		unchecked {
 			switch (hash) {
+				case 55034127:
+				{
+					this.AdvanceArea();
+					break;
+				}
+				
+				
+				case 1490610260:
+				{
+					this.RetreatArea();
+					break;
+				}
+				
+				
+				case 785282188:
+				{
+					return this.getPlayerTimesKilled();
+				}
+				
+				
+				case 1117069141:
+				{
+					this.DefaultConfiguration();
+					break;
+				}
+				
+				
 				case 117802505:
 				{
 					return this.update(((double) (global::haxe.lang.Runtime.toDouble(dynargs[0])) ));
@@ -334,6 +486,13 @@ public class BattleManager : global::haxe.lang.HxObject {
 				}
 				
 				
+				case 1955468949:
+				{
+					this.ChangeBattleArea(((int) (global::haxe.lang.Runtime.toInt(dynargs[0])) ));
+					break;
+				}
+				
+				
 				default:
 				{
 					return base.__hx_invokeField(field, hash, dynargs);
@@ -341,11 +500,14 @@ public class BattleManager : global::haxe.lang.HxObject {
 				
 			}
 			
+			return null;
 		}
 	}
 	
 	
 	public override void __hx_getFields(global::Array<string> baseArr) {
+		baseArr.push("playerTimesKilled");
+		baseArr.push("battleArea");
 		baseArr.push("timePeriod");
 		baseArr.push("timeCount");
 		baseArr.push("turn");
@@ -376,17 +538,14 @@ public class ResourceLogic : global::haxe.lang.HxObject {
 	
 	
 	public static void recalculateScalingResource(int @base, object res) {
-		unchecked {
-			if (( ((int) (global::haxe.lang.Runtime.getField_f(res, "lastUsedBaseAttribute", 1717792280, true)) ) != @base )) {
-				double data1 = global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(res, "scaling", 1695182407, true), "data1", 1418202823, true);
-				int calculated = ((int) (( global::System.Math.Pow(((double) (data1) ), ((double) (@base) )) + ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(res, "scaling", 1695182407, true), "initial", 1268715652, true)) ) )) );
-				calculated -= ( ((int) (calculated) ) % ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(res, "scaling", 1695182407, true), "minimumIncrement", 1154676353, true)) ) );
-				int __temp_expr1 = ((int) (global::haxe.lang.Runtime.setField_f(res, "calculatedMax", 873224454, ((double) (calculated) ))) );
-				int __temp_expr2 = ((int) (global::haxe.lang.Runtime.setField_f(res, "lastUsedBaseAttribute", 1717792280, ((double) (@base) ))) );
-				global::haxe.Log.trace.__hx_invoke2_o(default(double), res, default(double), new global::haxe.lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"recalculateScalingResource", "ResourceLogic", "src/logic/BattleManager.hx"}, new int[]{1981972957}, new double[]{((double) (91) )}));
-			}
-			
+		if (( ((int) (global::haxe.lang.Runtime.getField_f(res, "lastUsedBaseAttribute", 1717792280, true)) ) != @base )) {
+			double data1 = global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(res, "scaling", 1695182407, true), "data1", 1418202823, true);
+			int calculated = ((int) (( global::System.Math.Pow(((double) (data1) ), ((double) (@base) )) + ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(res, "scaling", 1695182407, true), "initial", 1268715652, true)) ) )) );
+			calculated -= ( ((int) (calculated) ) % ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(res, "scaling", 1695182407, true), "minimumIncrement", 1154676353, true)) ) );
+			int __temp_expr1 = ((int) (global::haxe.lang.Runtime.setField_f(res, "calculatedMax", 873224454, ((double) (calculated) ))) );
+			int __temp_expr2 = ((int) (global::haxe.lang.Runtime.setField_f(res, "lastUsedBaseAttribute", 1717792280, ((double) (@base) ))) );
 		}
+		
 	}
 	
 	
@@ -399,7 +558,6 @@ public class ResourceLogic : global::haxe.lang.HxObject {
 			}
 			
 			global::ResourceLogic.recalculateScalingResource(1, res);
-			global::haxe.Log.trace.__hx_invoke2_o(default(double), res, default(double), new global::haxe.lang.DynamicObject(new int[]{302979532, 1547539107, 1648581351}, new object[]{"getExponentialResource", "ResourceLogic", "src/logic/BattleManager.hx"}, new int[]{1981972957}, new double[]{((double) (103) )}));
 			return res;
 		}
 	}

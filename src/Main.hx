@@ -20,12 +20,7 @@ class Main {
 		button.text = "Click Me!";
 
 		
-		button.onClick = function(e) {
-			trace("Success!");
-			var adv = bm.advance();
-			label.text = adv;
-			trace(adv);
-		};
+
 
 		Screen.instance.addComponent(button);
 
@@ -43,6 +38,13 @@ class Main {
 
 		button1.onClick = function(e) {
 			bm.RetreatArea();
+		};
+
+		button.onClick = function(e) {
+			trace("Success!");
+			var adv = bm.advance();
+			//label.text = adv;
+			trace(adv);
 		};
 
 		button1.onClick = function(e) {

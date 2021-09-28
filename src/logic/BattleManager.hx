@@ -1,5 +1,3 @@
-import haxe.ui.backend.html5.native.behaviours.ElementAttribute;
-
 class BattleManager {
 	var hero:Actor;
 	var enemy:Actor;
@@ -29,6 +27,7 @@ class BattleManager {
 	public function advance() {
         var event : String = "";
 		if (hero.attributesCalculated["Life"] <= 0) {
+			playerTimesKilled++;
             event += "You died\n\n\n";
 			hero.attributesCalculated["Life"] = hero.attributesCalculated["LifeMax"];
 			enemy.attributesCalculated["Life"] = 6;
@@ -90,8 +89,8 @@ class BattleManager {
 
 	public function DefaultConfiguration() {}
 
-	public function getPlayerTimesKilled() {
-		throw new haxe.exceptions.NotImplementedException();
+	public function getPlayerTimesKilled():Int {
+		return playerTimesKilled;
 	}
 
 	public function RetreatArea() {
@@ -114,7 +113,7 @@ class ResourceLogic {
 			calculated = calculated - calculated % res.scaling.minimumIncrement;
 			res.calculatedMax = calculated;
 			res.lastUsedBaseAttribute = base;
-			trace(res);
+			//trace(res);
 		}
 	}
 
@@ -126,7 +125,7 @@ class ResourceLogic {
 			calculatedMax: 0
 		};
 		recalculateScalingResource(1, res);
-		trace(res);
+		//trace(res);
 		return res;
 	}
 }

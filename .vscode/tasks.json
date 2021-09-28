@@ -15,6 +15,20 @@
 				"isDefault": true
 			},
 			"label": "haxe: build.hxml"
+		},
+		{
+			"type": "hxml",
+			"file": "buildtest.hxml",
+			"problemMatcher": [
+				"$haxe-absolute",
+				"$haxe",
+				"$haxe-error",
+				"$haxe-trace"
+			],
+			"group": {
+				"kind": "build",
+			},
+			"label": "haxe: buildtest.hxml"
 		}
 	]
 }

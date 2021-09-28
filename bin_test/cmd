@@ -3,13 +3,12 @@
 /debug-
 /unsafe-
 /warn:0
-/out:C:\Users\user\gamedev\_haxe\HaxeRPGUtilities/bin_test/bin/MainTest.exe
+/out:c:\Users\user\gamedev\_haxe\HaxeRPGUtilities/bin_test/bin/MainTest.exe
 /target:exe
 /main:MainTest
 src\cs\Boot.cs
 src\Std.cs
 src\haxe\lang\Null.cs
-src\haxe\Log.cs
 src\BattleManager.cs
 src\Array.cs
 src\cs\internal\Function.cs
