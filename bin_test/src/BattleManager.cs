@@ -121,14 +121,13 @@ public class BattleManager : global::haxe.lang.HxObject {
 			}
 			
 			int level = ((int) (global::haxe.lang.Runtime.getField_f(this.hero, "level", 1919096196, true)) );
-			global::haxe.lang.Null<int> herolife = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(this.hero, "attributesCalculated", 241755125, true)) )) ))) ).@get("Life");
-			global::haxe.lang.Null<int> herolifeM = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(this.hero, "attributesCalculated", 241755125, true)) )) ))) ).@get("LifeMax");
-			global::haxe.lang.Null<int> enemylife = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(this.enemy, "attributesCalculated", 241755125, true)) )) ))) ).@get("Life");
 			int xp = ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true), "value", 834174833, true)) );
 			int xpmax = ((int) (global::haxe.lang.Runtime.getField_f(global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true), "calculatedMax", 873224454, true)) );
-			string output = global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat("Player \r\n\tlife: ", global::haxe.lang.Runtime.toString((herolife).toDynamic())), " / "), global::haxe.lang.Runtime.toString((herolifeM).toDynamic())), "\r\n\tlevel: "), global::haxe.lang.Runtime.toString(level)), "\r\n\txp: "), global::haxe.lang.Runtime.toString(xp)), " / "), global::haxe.lang.Runtime.toString(xpmax));
-			output = global::haxe.lang.Runtime.concat(output, "\n");
-			output = global::haxe.lang.Runtime.concat(output, global::haxe.lang.Runtime.concat("Enemy life: ", global::haxe.lang.Runtime.toString((enemylife).toDynamic())));
+			string baseInfo = this.CharacterBaseInfoFormattedString(this.hero);
+			string output = global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat("\n\nPlayer \r\n\tlevel: ", global::haxe.lang.Runtime.toString(level)), "\r\n\txp: "), global::haxe.lang.Runtime.toString(xp)), " / "), global::haxe.lang.Runtime.toString(xpmax)), "\r\n"), baseInfo);
+			baseInfo = this.CharacterBaseInfoFormattedString(this.enemy);
+			output = global::haxe.lang.Runtime.concat(output, "\n\n");
+			output = global::haxe.lang.Runtime.concat(output, global::haxe.lang.Runtime.concat("Enemy\r\n", baseInfo));
 			output = global::haxe.lang.Runtime.concat(output, "\n\n");
 			output = global::haxe.lang.Runtime.concat(output, @event);
 			object attacker = this.hero;
@@ -150,6 +149,14 @@ public class BattleManager : global::haxe.lang.HxObject {
 			this.turn =  ! (this.turn) ;
 			return output;
 		}
+	}
+	
+	
+	public virtual string CharacterBaseInfoFormattedString(object actor) {
+		global::haxe.lang.Null<int> life = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(actor, "attributesCalculated", 241755125, true)) )) ))) ).@get("Life");
+		global::haxe.lang.Null<int> lifeM = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(actor, "attributesCalculated", 241755125, true)) )) ))) ).@get("LifeMax");
+		global::haxe.lang.Null<int> attack = ((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(actor, "attributesCalculated", 241755125, true)) )) ))) ).@get("Attack");
+		return global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat(global::haxe.lang.Runtime.concat("\t Life: ", global::haxe.lang.Runtime.toString((life).toDynamic())), " / "), global::haxe.lang.Runtime.toString((lifeM).toDynamic())), "\r\n\tAttack: "), global::haxe.lang.Runtime.toString((attack).toDynamic()));
 	}
 	
 	
@@ -342,6 +349,12 @@ public class BattleManager : global::haxe.lang.HxObject {
 				}
 				
 				
+				case 284451845:
+				{
+					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "CharacterBaseInfoFormattedString", 284451845)) );
+				}
+				
+				
 				case 1863059586:
 				{
 					return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "advance", 1863059586)) );
@@ -490,6 +503,12 @@ public class BattleManager : global::haxe.lang.HxObject {
 				case 117802505:
 				{
 					return this.update(((double) (global::haxe.lang.Runtime.toDouble(dynargs[0])) ));
+				}
+				
+				
+				case 284451845:
+				{
+					return this.CharacterBaseInfoFormattedString(dynargs[0]);
 				}
 				
 				

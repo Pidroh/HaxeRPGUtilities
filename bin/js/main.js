@@ -71,14 +71,13 @@ BattleManager.prototype = {
 			this.enemy.attributesCalculated.h["Life"] = v;
 		}
 		var level = this.hero.level;
-		var herolife = this.hero.attributesCalculated.h["Life"];
-		var herolifeM = this.hero.attributesCalculated.h["LifeMax"];
-		var enemylife = this.enemy.attributesCalculated.h["Life"];
 		var xp = this.hero.xp.value;
 		var xpmax = this.hero.xp.calculatedMax;
-		var output = "Player \r\n\tlife: " + herolife + " / " + herolifeM + "\r\n\tlevel: " + level + "\r\n\txp: " + xp + " / " + xpmax;
-		output += "\n";
-		output += "Enemy life: " + enemylife;
+		var baseInfo = this.CharacterBaseInfoFormattedString(this.hero);
+		var output = "\n\nPlayer \r\n\tlevel: " + level + "\r\n\txp: " + xp + " / " + xpmax + "\r\n" + baseInfo;
+		baseInfo = this.CharacterBaseInfoFormattedString(this.enemy);
+		output += "\n\n";
+		output += "Enemy\r\n" + baseInfo;
 		output += "\n\n";
 		output += event;
 		var attacker = this.hero;
@@ -92,6 +91,12 @@ BattleManager.prototype = {
 		_g.h["Life"] = v;
 		this.turn = !this.turn;
 		return output;
+	}
+	,CharacterBaseInfoFormattedString: function(actor) {
+		var life = actor.attributesCalculated.h["Life"];
+		var lifeM = actor.attributesCalculated.h["LifeMax"];
+		var attack = actor.attributesCalculated.h["Attack"];
+		return "\t Life: " + life + " / " + lifeM + "\r\n\tAttack: " + attack;
 	}
 	,update: function(delta) {
 		this.timeCount += delta;

@@ -51,19 +51,18 @@ class BattleManager {
 			// c = Sys.getChar(true);
 		}
 		var level = hero.level;
-		var herolife = hero.attributesCalculated["Life"];
-		var herolifeM = hero.attributesCalculated["LifeMax"];
-		var enemylife = enemy.attributesCalculated["Life"];
 		var xp = hero.xp.value;
 		var xpmax = hero.xp.calculatedMax;
+		var baseInfo = CharacterBaseInfoFormattedString(hero);
         var output = 
-'Player 
-	life: $herolife / $herolifeM
+'\n\nPlayer 
 	level: $level
-	xp: $xp / $xpmax';
-
-        output += "\n";
-        output += 'Enemy life: $enemylife';
+	xp: $xp / $xpmax
+$baseInfo';
+		baseInfo = CharacterBaseInfoFormattedString(enemy);
+        output += "\n\n";
+        output += 'Enemy
+$baseInfo';
         output += "\n\n";
 		output += event;
 		// c = Sys.getChar(true);
@@ -78,7 +77,14 @@ class BattleManager {
         return output;
 	}
 
-
+	function CharacterBaseInfoFormattedString(actor:Actor):String {
+		var life = actor.attributesCalculated["Life"];
+		var lifeM = actor.attributesCalculated["LifeMax"];
+		var attack = actor.attributesCalculated["Attack"];
+		return  
+'	 Life: $life / $lifeM
+	Attack: $attack';
+	}
 
 	public function update(delta:Float):String {
 		this.timeCount += delta;
