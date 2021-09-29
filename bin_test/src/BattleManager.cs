@@ -15,6 +15,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 		unchecked {
 			__hx_this.timePeriod = 1;
 			{
+				__hx_this.killedInArea = new global::Array<int>(new int[]{});
 				global::haxe.ds.StringMap<int> _g = new global::haxe.ds.StringMap<int>();
 				_g.@set("Attack", 5);
 				_g.@set("Life", 20);

@@ -8,6 +8,7 @@ function $extend(from, fields) {
 }
 var BattleManager = function() {
 	this.timePeriod = 1;
+	this.killedInArea = [];
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 5;
 	_g.h["Life"] = 20;
@@ -58,6 +59,9 @@ BattleManager.prototype = {
 			this.enemy.attributesCalculated.h["Life"] = v;
 		}
 		if(this.enemy.attributesCalculated.h["Life"] <= 0) {
+			if(this.killedInArea[this.battleArea] == null) {
+				this.killedInArea[this.battleArea] = 0;
+			}
 			this.killedInArea[this.battleArea]++;
 			this.hero.xp.value += this.enemy.level;
 			if(this.hero.xp.value > this.hero.xp.calculatedMax) {

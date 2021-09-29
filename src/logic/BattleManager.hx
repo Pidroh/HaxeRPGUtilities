@@ -1,4 +1,5 @@
 //package logic;
+import haxe.ds.Vector;
 import RPGData;
 
 class BattleManager {
@@ -23,7 +24,7 @@ class BattleManager {
 	}
 
     public function new (){
-		
+		killedInArea = [];
 		var stats = ["Attack"=> 5, "Life" => 20, "LifeMax" => 20];
         hero = {level:1, attributesBase:stats, equipmentSlots: null, equipment: null, 
 			xp:ResourceLogic.getExponentialResource(1.5, 1, 5), attributesCalculated: stats};
@@ -44,6 +45,12 @@ class BattleManager {
 		
 		if (enemy.attributesCalculated["Life"] <= 0) {
 			
+			#if !target.static
+			if(killedInArea[battleArea] == null)
+			{
+				killedInArea[battleArea] = 0;
+			}
+			#end
 			killedInArea[battleArea]++;
 			hero.xp.value += enemy.level;
 			if(hero.xp.value > hero.xp.calculatedMax){
