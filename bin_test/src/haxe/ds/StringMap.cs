@@ -409,6 +409,21 @@ namespace haxe.ds {
 		}
 		
 		
+		public virtual global::haxe.ds.StringMap<T> copy() {
+			global::haxe.ds.StringMap<T> copied = new global::haxe.ds.StringMap<T>();
+			{
+				object key = ((object) (new global::haxe.ds._StringMap.StringMapKeyIterator<T>(((global::haxe.ds.StringMap<T>) (this) ))) );
+				while (global::haxe.lang.Runtime.toBool(global::haxe.lang.Runtime.callField(key, "hasNext", 407283053, null))) {
+					string key1 = global::haxe.lang.Runtime.toString(global::haxe.lang.Runtime.callField(key, "next", 1224901875, null));
+					copied.@set(key1, (this.@get(key1)).@value);
+				}
+				
+			}
+			
+			return copied;
+		}
+		
+		
 		public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
 			unchecked {
 				switch (hash) {
@@ -538,6 +553,12 @@ namespace haxe.ds {
 		public override object __hx_getField(string field, int hash, bool throwErrors, bool isCheck, bool handleProperties) {
 			unchecked {
 				switch (hash) {
+					case 1103412149:
+					{
+						return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "copy", 1103412149)) );
+					}
+					
+					
 					case 1191633396:
 					{
 						return ((global::haxe.lang.Function) (new global::haxe.lang.Closure(this, "keys", 1191633396)) );
@@ -680,6 +701,12 @@ namespace haxe.ds {
 		public override object __hx_invokeField(string field, int hash, object[] dynargs) {
 			unchecked {
 				switch (hash) {
+					case 1103412149:
+					{
+						return this.copy();
+					}
+					
+					
 					case 1191633396:
 					{
 						return this.keys();

@@ -99,6 +99,8 @@
 	
     <Compile Include="src\cs\internal\FieldLookup.cs"/>
 	
+    <Compile Include="src\RPGData.cs"/>
+	
   </ItemGroup>
   
   <ItemGroup />

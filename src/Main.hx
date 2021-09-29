@@ -7,6 +7,7 @@ import haxe.iterators.DynamicAccessIterator;
 import haxe.ui.components.Button;
 import haxe.ui.containers.VBox;
 import haxe.ui.core.Screen;
+import RPGData;
 
 class Main {
 	static var hero:Actor;

@@ -29,3 +29,4 @@ src\cs\Lib.cs
 src\cs\internal\HxObject.cs
 src\IntIterator.cs
 src\cs\internal\FieldLookup.cs
+src\RPGData.cs

@@ -97,11 +97,6 @@ M System.ResolveEventArgs
 M System.Security.Policy.IMembershipCondition
 M BattleManager
 C BattleManager
-C ResourceLogic
-C AttributeLogic
-E ScalingType
-C ScalingType
-C ScalingType_exponential
 M System.Runtime.InteropServices._ModuleBuilder
 M Array
 C Array
@@ -513,6 +508,12 @@ M cs.system.DateTimeKind
 M cs.system.CrossAppDomainDelegate
 M System.Collections.IEqualityComparer
 M System.Globalization.CultureInfo
+M RPGData
+C ResourceLogic
+C AttributeLogic
+E ScalingType
+C ScalingType
+C ScalingType_exponential
 M System.Threading.AsyncFlowControl
 M cs.system.io.SearchOption
 M Microsoft.Win32.SafeHandles.SafeWaitHandle

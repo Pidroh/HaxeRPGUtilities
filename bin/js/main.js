@@ -34,11 +34,13 @@ BattleManager.prototype = {
 	,playerTimesKilled: null
 	,dirty: null
 	,killedInArea: null
+	,necessaryInArea: null
 	,ChangeBattleArea: function(area) {
 		this.battleArea = area;
-		var enemyLife = 6 + area;
+		this.necessaryInArea = 5 + area;
+		var enemyLife = 6 + area * 3;
 		var _g = new haxe_ds_StringMap();
-		_g.h["Attack"] = 2 + area;
+		_g.h["Attack"] = 2 + area * 3;
 		_g.h["Life"] = enemyLife;
 		_g.h["LifeMax"] = enemyLife;
 		var stats2 = _g;
@@ -133,64 +135,6 @@ BattleManager.prototype = {
 	}
 	,__class__: BattleManager
 };
-var ResourceLogic = function() { };
-$hxClasses["ResourceLogic"] = ResourceLogic;
-ResourceLogic.__name__ = "ResourceLogic";
-ResourceLogic.recalculateScalingResource = function(base,res) {
-	if(res.lastUsedBaseAttribute != base) {
-		var data1 = res.scaling.data1;
-		var calculated = Math.pow(data1,base) + res.scaling.initial | 0;
-		calculated -= calculated % res.scaling.minimumIncrement;
-		res.calculatedMax = calculated;
-		res.lastUsedBaseAttribute = base;
-	}
-};
-ResourceLogic.getExponentialResource = function(expBase,minimumIncrement,initial) {
-	var res = { scaling : { data1 : expBase, initial : initial, minimumIncrement : minimumIncrement, type : ScalingType.exponential}, value : 0, lastUsedBaseAttribute : 0, calculatedMax : 0};
-	ResourceLogic.recalculateScalingResource(1,res);
-	return res;
-};
-var AttributeLogic = function() { };
-$hxClasses["AttributeLogic"] = AttributeLogic;
-AttributeLogic.__name__ = "AttributeLogic";
-AttributeLogic.AddOld = function(attributes,attributeAddition,quantityOfAddition) {
-	var h = attributes.h;
-	var _g_h = h;
-	var _g_keys = Object.keys(h);
-	var _g_length = _g_keys.length;
-	var _g_current = 0;
-	while(_g_current < _g_length) {
-		var key = _g_keys[_g_current++];
-		var _g1_key = key;
-		var _g1_value = _g_h[key];
-		var key1 = _g1_key;
-		var value = _g1_value;
-		var _g = key1;
-		var _g1 = attributes;
-		var v = _g1.h[_g] + (attributeAddition.h[key1] * quantityOfAddition | 0);
-		_g1.h[_g] = v;
-	}
-};
-AttributeLogic.Add = function(attributes,attributeAddition,quantityOfAddition,result) {
-	var h = attributeAddition.h;
-	var _g_h = h;
-	var _g_keys = Object.keys(h);
-	var _g_length = _g_keys.length;
-	var _g_current = 0;
-	while(_g_current < _g_length) {
-		var key = _g_keys[_g_current++];
-		var _g1_key = key;
-		var _g1_value = _g_h[key];
-		var key1 = _g1_key;
-		var value = _g1_value;
-		var v = attributes.h[key1] + (attributeAddition.h[key1] * quantityOfAddition | 0);
-		result.h[key1] = v;
-	}
-};
-var ScalingType = $hxEnums["ScalingType"] = { __ename__:true,__constructs__:null
-	,exponential: {_hx_name:"exponential",_hx_index:0,__enum__:"ScalingType",toString:$estr}
-};
-ScalingType.__constructs__ = [ScalingType.exponential];
 var DateTools = function() { };
 $hxClasses["DateTools"] = DateTools;
 DateTools.__name__ = "DateTools";
@@ -473,7 +417,7 @@ Main.main = function() {
 	});
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
-	haxe_Log.trace("\nJavascript!",{ fileName : "src/Main.hx", lineNumber : 44, className : "Main", methodName : "main"});
+	haxe_Log.trace("\nJavascript!",{ fileName : "src/Main.hx", lineNumber : 45, className : "Main", methodName : "main"});
 	var c = 1;
 	var turn = false;
 	var update = null;
@@ -490,6 +434,64 @@ Main.main = function() {
 	update(0);
 };
 Math.__name__ = "Math";
+var ResourceLogic = function() { };
+$hxClasses["ResourceLogic"] = ResourceLogic;
+ResourceLogic.__name__ = "ResourceLogic";
+ResourceLogic.recalculateScalingResource = function(base,res) {
+	if(res.lastUsedBaseAttribute != base) {
+		var data1 = res.scaling.data1;
+		var calculated = Math.pow(data1,base) + res.scaling.initial | 0;
+		calculated -= calculated % res.scaling.minimumIncrement;
+		res.calculatedMax = calculated;
+		res.lastUsedBaseAttribute = base;
+	}
+};
+ResourceLogic.getExponentialResource = function(expBase,minimumIncrement,initial) {
+	var res = { scaling : { data1 : expBase, initial : initial, minimumIncrement : minimumIncrement, type : ScalingType.exponential}, value : 0, lastUsedBaseAttribute : 0, calculatedMax : 0};
+	ResourceLogic.recalculateScalingResource(1,res);
+	return res;
+};
+var AttributeLogic = function() { };
+$hxClasses["AttributeLogic"] = AttributeLogic;
+AttributeLogic.__name__ = "AttributeLogic";
+AttributeLogic.AddOld = function(attributes,attributeAddition,quantityOfAddition) {
+	var h = attributes.h;
+	var _g_h = h;
+	var _g_keys = Object.keys(h);
+	var _g_length = _g_keys.length;
+	var _g_current = 0;
+	while(_g_current < _g_length) {
+		var key = _g_keys[_g_current++];
+		var _g1_key = key;
+		var _g1_value = _g_h[key];
+		var key1 = _g1_key;
+		var value = _g1_value;
+		var _g = key1;
+		var _g1 = attributes;
+		var v = _g1.h[_g] + (attributeAddition.h[key1] * quantityOfAddition | 0);
+		_g1.h[_g] = v;
+	}
+};
+AttributeLogic.Add = function(attributes,attributeAddition,quantityOfAddition,result) {
+	var h = attributeAddition.h;
+	var _g_h = h;
+	var _g_keys = Object.keys(h);
+	var _g_length = _g_keys.length;
+	var _g_current = 0;
+	while(_g_current < _g_length) {
+		var key = _g_keys[_g_current++];
+		var _g1_key = key;
+		var _g1_value = _g_h[key];
+		var key1 = _g1_key;
+		var value = _g1_value;
+		var v = attributes.h[key1] + (value * quantityOfAddition | 0);
+		result.h[key1] = v;
+	}
+};
+var ScalingType = $hxEnums["ScalingType"] = { __ename__:true,__constructs__:null
+	,exponential: {_hx_name:"exponential",_hx_index:0,__enum__:"ScalingType",toString:$estr}
+};
+ScalingType.__constructs__ = [ScalingType.exponential];
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
 Reflect.__name__ = "Reflect";
