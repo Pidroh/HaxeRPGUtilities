@@ -16,6 +16,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 			__hx_this.timePeriod = 1;
 			{
 				__hx_this.killedInArea = new global::Array<int>(new int[]{});
+				__hx_this.maxArea = 1;
 				global::haxe.ds.StringMap<int> _g = new global::haxe.ds.StringMap<int>();
 				_g.@set("Attack", 5);
 				_g.@set("Life", 20);
@@ -57,12 +58,14 @@ public class BattleManager : global::haxe.lang.HxObject {
 	
 	public global::Array<int> killedInArea;
 	
-	public int necessaryInArea;
+	public int necessaryToKillInArea;
+	
+	public int maxArea;
 	
 	public virtual void ChangeBattleArea(int area) {
 		unchecked {
 			this.battleArea = area;
-			this.necessaryInArea = ( 5 + area );
+			this.necessaryToKillInArea = ( 5 + area );
 			int enemyLife = ( 6 + ( area * 3 ) );
 			global::haxe.ds.StringMap<int> _g = new global::haxe.ds.StringMap<int>();
 			_g.@set("Attack", ( 2 + ( area * 3 ) ));
@@ -97,6 +100,13 @@ public class BattleManager : global::haxe.lang.HxObject {
 			
 			if (( (((global::haxe.ds.StringMap<int>) (global::haxe.ds.StringMap<object>.__hx_cast<int>(((global::haxe.ds.StringMap) (((global::haxe.IMap<string, int>) (global::haxe.lang.Runtime.getField(this.enemy, "attributesCalculated", 241755125, true)) )) ))) ).@get("Life")).@value <= 0 )) {
 				this.killedInArea[this.battleArea]++;
+				if (( this.killedInArea[this.battleArea] >= this.necessaryToKillInArea )) {
+					if (( this.maxArea == this.battleArea )) {
+						this.maxArea++;
+					}
+					
+				}
+				
 				{
 					object __temp_dynop1 = global::haxe.lang.Runtime.getField(this.hero, "xp", 26872, true);
 					int __temp_expr1 = ((int) (global::haxe.lang.Runtime.setField_f(__temp_dynop1, "value", 834174833, ((double) (( ((int) (global::haxe.lang.Runtime.getField_f(__temp_dynop1, "value", 834174833, true)) ) + ((int) (global::haxe.lang.Runtime.getField_f(this.enemy, "level", 1919096196, true)) ) )) ))) );
@@ -203,7 +213,7 @@ public class BattleManager : global::haxe.lang.HxObject {
 	
 	public virtual void RetreatArea() {
 		unchecked {
-			if (( this.battleArea > 1 )) {
+			if (( this.battleArea > 0 )) {
 				this.ChangeBattleArea(( this.battleArea - 1 ));
 			}
 			
@@ -221,9 +231,16 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public override double __hx_setField_f(string field, int hash, double @value, bool handleProperties) {
 		unchecked {
 			switch (hash) {
-				case 1087960065:
+				case 1084548177:
 				{
-					this.necessaryInArea = ((int) (@value) );
+					this.maxArea = ((int) (@value) );
+					return @value;
+				}
+				
+				
+				case 157130970:
+				{
+					this.necessaryToKillInArea = ((int) (@value) );
 					return @value;
 				}
 				
@@ -284,9 +301,16 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public override object __hx_setField(string field, int hash, object @value, bool handleProperties) {
 		unchecked {
 			switch (hash) {
-				case 1087960065:
+				case 1084548177:
 				{
-					this.necessaryInArea = ((int) (global::haxe.lang.Runtime.toInt(@value)) );
+					this.maxArea = ((int) (global::haxe.lang.Runtime.toInt(@value)) );
+					return @value;
+				}
+				
+				
+				case 157130970:
+				{
+					this.necessaryToKillInArea = ((int) (global::haxe.lang.Runtime.toInt(@value)) );
 					return @value;
 				}
 				
@@ -422,9 +446,15 @@ public class BattleManager : global::haxe.lang.HxObject {
 				}
 				
 				
-				case 1087960065:
+				case 1084548177:
 				{
-					return this.necessaryInArea;
+					return this.maxArea;
+				}
+				
+				
+				case 157130970:
+				{
+					return this.necessaryToKillInArea;
 				}
 				
 				
@@ -496,9 +526,15 @@ public class BattleManager : global::haxe.lang.HxObject {
 	public override double __hx_getField_f(string field, int hash, bool throwErrors, bool handleProperties) {
 		unchecked {
 			switch (hash) {
-				case 1087960065:
+				case 1084548177:
 				{
-					return ((double) (this.necessaryInArea) );
+					return ((double) (this.maxArea) );
+				}
+				
+				
+				case 157130970:
+				{
+					return ((double) (this.necessaryToKillInArea) );
 				}
 				
 				
@@ -623,7 +659,8 @@ public class BattleManager : global::haxe.lang.HxObject {
 	
 	
 	public override void __hx_getFields(global::Array<string> baseArr) {
-		baseArr.push("necessaryInArea");
+		baseArr.push("maxArea");
+		baseArr.push("necessaryToKillInArea");
 		baseArr.push("killedInArea");
 		baseArr.push("dirty");
 		baseArr.push("playerTimesKilled");

@@ -9,6 +9,7 @@ function $extend(from, fields) {
 var BattleManager = function() {
 	this.timePeriod = 1;
 	this.killedInArea = [];
+	this.maxArea = 1;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 5;
 	_g.h["Life"] = 20;
@@ -35,10 +36,11 @@ BattleManager.prototype = {
 	,playerTimesKilled: null
 	,dirty: null
 	,killedInArea: null
-	,necessaryInArea: null
+	,necessaryToKillInArea: null
+	,maxArea: null
 	,ChangeBattleArea: function(area) {
 		this.battleArea = area;
-		this.necessaryInArea = 5 + area;
+		this.necessaryToKillInArea = 5 + area;
 		var enemyLife = 6 + area * 3;
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 2 + area * 3;
@@ -63,6 +65,11 @@ BattleManager.prototype = {
 				this.killedInArea[this.battleArea] = 0;
 			}
 			this.killedInArea[this.battleArea]++;
+			if(this.killedInArea[this.battleArea] >= this.necessaryToKillInArea) {
+				if(this.maxArea == this.battleArea) {
+					this.maxArea++;
+				}
+			}
 			this.hero.xp.value += this.enemy.level;
 			if(this.hero.xp.value > this.hero.xp.calculatedMax) {
 				this.hero.xp.value = 0;
@@ -130,7 +137,7 @@ BattleManager.prototype = {
 		return this.playerTimesKilled;
 	}
 	,RetreatArea: function() {
-		if(this.battleArea > 1) {
+		if(this.battleArea > 0) {
 			this.ChangeBattleArea(this.battleArea - 1);
 		}
 	}

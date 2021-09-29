@@ -12,11 +12,12 @@ class BattleManager {
 	var playerTimesKilled : Int;
 	var dirty:Bool;
 	var killedInArea : Array<Int>;
-	var necessaryInArea : Int;
+	var necessaryToKillInArea : Int;
+	var maxArea : Int;
 
 	public function ChangeBattleArea(area:Int){
 		battleArea = area;
-		necessaryInArea = 5+area;
+		necessaryToKillInArea = 5+area;
 		var enemyLife = 6 + area*3;
 		var stats2 = ["Attack"=> 2+area*3, "Life" => enemyLife, "LifeMax" => enemyLife];
 		enemy = {level:1+area, attributesBase:stats2, equipmentSlots: null, equipment: null, xp:null, attributesCalculated: stats2};
@@ -25,6 +26,7 @@ class BattleManager {
 
     public function new (){
 		killedInArea = [];
+		maxArea = 1;
 		var stats = ["Attack"=> 5, "Life" => 20, "LifeMax" => 20];
         hero = {level:1, attributesBase:stats, equipmentSlots: null, equipment: null, 
 			xp:ResourceLogic.getExponentialResource(1.5, 1, 5), attributesCalculated: stats};
@@ -52,6 +54,12 @@ class BattleManager {
 			}
 			#end
 			killedInArea[battleArea]++;
+			if(killedInArea[battleArea] >= necessaryToKillInArea){
+				if(maxArea == battleArea)
+				{
+					maxArea++;
+				}
+			}
 			hero.xp.value += enemy.level;
 			if(hero.xp.value > hero.xp.calculatedMax){
 				//Hero level up
@@ -127,7 +135,7 @@ $baseInfo';
 	}
 
 	public function RetreatArea() {
-		if(battleArea > 1)
+		if(battleArea > 0)
 			ChangeBattleArea(battleArea-1);
 	}
 
