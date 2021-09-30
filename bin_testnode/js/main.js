@@ -96,7 +96,13 @@ BattleManager.prototype = {
 		var xp = this.hero.xp.value;
 		var xpmax = this.hero.xp.calculatedMax;
 		var baseInfo = this.CharacterBaseInfoFormattedString(this.hero);
-		var output = "\n\nPlayer \r\n\tlevel: " + level + "\r\n\txp: " + xp + " / " + xpmax + "\r\n" + baseInfo;
+		var areaText = "";
+		var battleAreaShow = this.battleArea + 1;
+		var maxAreaShow = this.maxArea + 1;
+		if(this.maxArea > 0) {
+			areaText = "Area: " + battleAreaShow + " / " + maxAreaShow;
+		}
+		var output = "" + areaText + "\r\n\r\n\n\nPlayer \r\n\tlevel: " + level + "\r\n\txp: " + xp + " / " + xpmax + "\r\n" + baseInfo;
 		baseInfo = this.CharacterBaseInfoFormattedString(this.enemy);
 		output += "\n\n";
 		output += "Enemy\r\n" + baseInfo;

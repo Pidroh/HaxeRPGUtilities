@@ -92,12 +92,22 @@ class BattleManager {
 	}
 
 	function BaseInformationFormattedString():String{
+
 		var level = hero.level;
 		var xp = hero.xp.value;
 		var xpmax = hero.xp.calculatedMax;
 		var baseInfo = CharacterBaseInfoFormattedString(hero);
+		var areaText = "";
+		var battleAreaShow = battleArea+1;
+		var maxAreaShow = maxArea+1;
+
+		if(maxArea > 0){
+			areaText = 'Area: $battleAreaShow / $maxAreaShow';
+		}
         var output = 
-'\n\nPlayer 
+'$areaText
+
+\n\nPlayer 
 	level: $level
 	xp: $xp / $xpmax
 $baseInfo';
