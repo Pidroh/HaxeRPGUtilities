@@ -8,12 +8,14 @@ class BattleManager {
     var turn:Bool;
     var timeCount:Float;
     var timePeriod:Float = 1;
-	var battleArea: Int;
+	var battleArea: Int = 0;
 	var playerTimesKilled : Int;
 	var dirty:Bool;
-	var killedInArea : Array<Int>;
-	var necessaryToKillInArea : Int;
-	var maxArea : Int;
+	public var killedInArea : Array<Int>;
+	public var necessaryToKillInArea : Int;
+	public var maxArea : Int;
+	public var canAdvance : Bool;
+	public var canRetreat : Bool;
 
 	public function ChangeBattleArea(area:Int){
 		battleArea = area;
@@ -26,16 +28,17 @@ class BattleManager {
 
     public function new (){
 		killedInArea = [];
-		maxArea = 1;
+		maxArea = 0;
 		var stats = ["Attack"=> 5, "Life" => 20, "LifeMax" => 20];
         hero = {level:1, attributesBase:stats, equipmentSlots: null, equipment: null, 
-			xp:ResourceLogic.getExponentialResource(1.5, 1, 5), attributesCalculated: stats};
+			xp:ResourceLogic.getExponentialResource(1.5, 1, 5), attributesCalculated: stats.copy()};
 		var stats2 = ["Attack"=> 2, "Life" => 6, "LifeMax"=> 6];
 		enemy = {level:1, attributesBase:stats2, equipmentSlots: null, equipment: null, xp:null, attributesCalculated: stats2};
         timeCount = 0;
     }
 
 	public function advance() {
+		
         var event : String = "";
 		if (hero.attributesCalculated["Life"] <= 0) {
 			playerTimesKilled++;
@@ -116,6 +119,9 @@ $baseInfo';
 
 	public function update(delta:Float):String {
 		this.timeCount += delta;
+		
+		canAdvance = battleArea < maxArea;
+		canRetreat = battleArea > 0;
 
         if(timeCount >= timePeriod){
             timeCount = 0;

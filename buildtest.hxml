@@ -1,8 +1,9 @@
+-lib hxnodejs
 -cp test
 -p src/logic
 -main MainTest
 
+-lib haxeui-core
 -lib hscript
 
---cs bin_test
-
+--js bin_testnode/js/main.js

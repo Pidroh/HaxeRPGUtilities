@@ -44,6 +44,10 @@ class MainTest {
 				Sys.println("ERROR: Base Attack Value Modified");
 				//Sys.getChar(false);
 			}
+			AttributeLogic.Add(hero.attributesBase, ["Attack"=> 1, "LifeMax" => 1, "Life"=>1], 1, hero.attributesCalculated);
+			AttributeLogic.Add(hero.attributesBase, ["Attack"=> 1, "LifeMax" => 1, "Life"=>1], 2, hero.attributesCalculated);
+			AttributeLogic.Add(hero.attributesBase, ["Attack"=> 1, "LifeMax" => 1, "Life"=>1], 3, hero.attributesCalculated);
+			AttributeLogic.Add(hero.attributesBase, ["Attack"=> 1, "LifeMax" => 1, "Life"=>1], 4, hero.attributesCalculated);
 			AttributeLogic.Add(hero.attributesBase, ["Attack"=> 1, "LifeMax" => 1, "Life"=>1], 5, hero.attributesCalculated);
 			if (hero.attributesCalculated["Attack"] != (5+5)) {
 				Sys.println("ERROR: Calculated Attack Value Wrong");

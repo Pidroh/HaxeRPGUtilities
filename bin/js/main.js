@@ -7,15 +7,16 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
+	this.battleArea = 0;
 	this.timePeriod = 1;
 	this.killedInArea = [];
-	this.maxArea = 1;
+	this.maxArea = 0;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 5;
 	_g.h["Life"] = 20;
 	_g.h["LifeMax"] = 20;
 	var stats = _g;
-	this.hero = { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : stats};
+	this.hero = { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h)};
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
 	_g.h["Life"] = 6;
@@ -38,6 +39,8 @@ BattleManager.prototype = {
 	,killedInArea: null
 	,necessaryToKillInArea: null
 	,maxArea: null
+	,canAdvance: null
+	,canRetreat: null
 	,ChangeBattleArea: function(area) {
 		this.battleArea = area;
 		this.necessaryToKillInArea = 5 + area;
@@ -121,6 +124,8 @@ BattleManager.prototype = {
 	}
 	,update: function(delta) {
 		this.timeCount += delta;
+		this.canAdvance = this.battleArea < this.maxArea;
+		this.canRetreat = this.battleArea > 0;
 		if(this.timeCount >= this.timePeriod) {
 			this.timeCount = 0;
 			return this.advance();
@@ -411,30 +416,34 @@ Main.main = function() {
 	var bm = new BattleManager();
 	haxe_ui_Toolkit.init();
 	var main = new haxe_ui_containers_VBox();
-	var button1 = new haxe_ui_components_Button();
-	button1.set_text("Advance area");
-	main.addComponent(button1);
-	var button2 = new haxe_ui_components_Button();
-	button2.set_text("Retreat Area");
-	main.addComponent(button2);
+	var buttonAdvance = new haxe_ui_components_Button();
+	buttonAdvance.set_text("Advance area");
+	main.addComponent(buttonAdvance);
+	var buttonRetreat = new haxe_ui_components_Button();
+	buttonRetreat.set_text("Retreat Area");
+	main.addComponent(buttonRetreat);
 	var label = new haxe_ui_components_Label();
 	label.set_text("");
 	main.addComponent(label);
-	button2.set_onClick(function(e) {
+	buttonRetreat.set_onClick(function(e) {
 		bm.RetreatArea();
 	});
-	button1.set_onClick(function(e) {
+	buttonAdvance.set_onClick(function(e) {
+		haxe_Log.trace("CLICK ON ADVANCE",{ fileName : "src/logic/Main.hx", lineNumber : 40, className : "Main", methodName : "main"});
 		bm.AdvanceArea();
 	});
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
-	haxe_Log.trace("\nJavascript!",{ fileName : "src/Main.hx", lineNumber : 45, className : "Main", methodName : "main"});
+	haxe_Log.trace("\nJavascript!",{ fileName : "src/logic/Main.hx", lineNumber : 48, className : "Main", methodName : "main"});
 	var c = 1;
 	var turn = false;
 	var update = null;
 	update = function(timeStamp) {
 		var delta = timeStamp - time;
 		time = timeStamp;
+		buttonAdvance.set_disabled(!bm.canAdvance);
+		buttonRetreat.set_disabled(!bm.canRetreat);
+		haxe_Log.trace(Std.string(buttonAdvance.get_allowInteraction()) + " button interaction",{ fileName : "src/logic/Main.hx", lineNumber : 59, className : "Main", methodName : "main"});
 		var text = bm.update(delta * 0.001);
 		if(text != null) {
 			label.set_text(text);
@@ -1757,6 +1766,11 @@ var haxe_ds_StringMap = function() {
 $hxClasses["haxe.ds.StringMap"] = haxe_ds_StringMap;
 haxe_ds_StringMap.__name__ = "haxe.ds.StringMap";
 haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
+haxe_ds_StringMap.createCopy = function(h) {
+	var copy = new haxe_ds_StringMap();
+	for (var key in h) copy.h[key] = h[key];
+	return copy;
+};
 haxe_ds_StringMap.prototype = {
 	h: null
 	,get: function(key) {

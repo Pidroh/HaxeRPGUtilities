@@ -17,27 +17,30 @@ class Main {
 		var bm:BattleManager = new BattleManager();
 		Toolkit.init();
 		
-
+		
 		var main = new VBox();
 
-		var button1 = new Button();
-		button1.text = "Advance area";
-		main.addComponent(button1);
-		var button2 = new Button();
-		button2.text = "Retreat Area";
-		main.addComponent(button2);
+		var buttonAdvance : Button = new Button();
+		
+		
+		buttonAdvance.text = "Advance area";
+		main.addComponent(buttonAdvance);
+		var buttonRetreat : Button = new Button();
+		buttonRetreat.text = "Retreat Area";
+		main.addComponent(buttonRetreat);
 		var label:Label = new Label();
 		label.text = "";		
 		main.addComponent(label);
 
-		button2.onClick = function(e) {
+		buttonRetreat.onClick = function(e) {
 			bm.RetreatArea();
 		};
 
-		button1.onClick = function(e) {
+		buttonAdvance.onClick = function(e) {
+			trace("CLICK ON ADVANCE");
 			bm.AdvanceArea();
 		};
-
+		
 		Screen.instance.addComponent(main);
 
 		var time:Float = 0;
@@ -51,6 +54,10 @@ class Main {
 		update = function(timeStamp:Float):Bool {
 			var delta = timeStamp - time;
 			time = timeStamp;
+			buttonAdvance.disabled = !bm.canAdvance;
+			buttonRetreat.disabled = !bm.canRetreat;
+			trace(buttonAdvance.allowInteraction +" button interaction");
+
 			var text:String = bm.update(delta * 0.001);
 			if (text != null) {
 				label.text = text;
