@@ -12,6 +12,7 @@ import RPGData;
 class Main {
 	static var hero:Actor;
 	static var enemy:Actor;
+	static var maxDelta:Float = 0.5;
 
 	static function main() {
 		var bm:BattleManager = new BattleManager();
@@ -45,20 +46,29 @@ class Main {
 
 		var time:Float = 0;
 
-		trace("\nJavascript!");
+		//trace("\nJavascript!");
 
 		var c = 1;
 		var turn = false;
 
 		var update = null;
 		update = function(timeStamp:Float):Bool {
+			
 			var delta = timeStamp - time;
+			//trace(delta);
+
 			time = timeStamp;
 			buttonAdvance.disabled = !bm.canAdvance;
 			buttonRetreat.disabled = !bm.canRetreat;
-			trace(buttonAdvance.allowInteraction +" button interaction");
 
-			var text:String = bm.update(delta * 0.001);
+			delta = delta * 0.001;
+			//updates battle manager to account for very high deltas
+			//high deltas happen when the tab or browser isn't active
+			while(delta > maxDelta){
+				delta -= maxDelta;
+				bm.update(maxDelta);
+			}
+			var text:String = bm.update(delta);
 			if (text != null) {
 				label.text = text;
 			}

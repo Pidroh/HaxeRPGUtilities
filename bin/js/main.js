@@ -435,12 +435,11 @@ Main.main = function() {
 		bm.RetreatArea();
 	});
 	buttonAdvance.set_onClick(function(e) {
-		haxe_Log.trace("CLICK ON ADVANCE",{ fileName : "src/logic/Main.hx", lineNumber : 40, className : "Main", methodName : "main"});
+		haxe_Log.trace("CLICK ON ADVANCE",{ fileName : "src/logic/Main.hx", lineNumber : 41, className : "Main", methodName : "main"});
 		bm.AdvanceArea();
 	});
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
-	haxe_Log.trace("\nJavascript!",{ fileName : "src/logic/Main.hx", lineNumber : 48, className : "Main", methodName : "main"});
 	var c = 1;
 	var turn = false;
 	var update = null;
@@ -449,8 +448,12 @@ Main.main = function() {
 		time = timeStamp;
 		buttonAdvance.set_disabled(!bm.canAdvance);
 		buttonRetreat.set_disabled(!bm.canRetreat);
-		haxe_Log.trace(Std.string(buttonAdvance.get_allowInteraction()) + " button interaction",{ fileName : "src/logic/Main.hx", lineNumber : 59, className : "Main", methodName : "main"});
-		var text = bm.update(delta * 0.001);
+		delta *= 0.001;
+		while(delta > Main.maxDelta) {
+			delta -= Main.maxDelta;
+			bm.update(Main.maxDelta);
+		}
+		var text = bm.update(delta);
 		if(text != null) {
 			label.set_text(text);
 		}
@@ -41279,6 +41282,7 @@ DateTools.DAY_SHORT_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 DateTools.DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+Main.maxDelta = 0.5;
 Xml.Element = 0;
 Xml.PCData = 1;
 Xml.CData = 2;
