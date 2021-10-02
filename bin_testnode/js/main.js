@@ -141,6 +141,9 @@ BattleManager.prototype = {
 	,AdvanceArea: function() {
 		this.ChangeBattleArea(this.battleArea + 1);
 	}
+	,GetJsonPersistentData: function() {
+		return "";
+	}
 };
 var IntIterator = function(min,max) {
 	this.min = min;

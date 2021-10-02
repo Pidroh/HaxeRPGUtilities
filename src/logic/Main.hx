@@ -1,3 +1,5 @@
+import js.Browser;
+import js.html.Storage;
 import BattleManager;
 import haxe.io.Float64Array.Float64ArrayData;
 import haxe.ui.components.Label;
@@ -60,6 +62,7 @@ class Main {
 			time = timeStamp;
 			buttonAdvance.disabled = !bm.canAdvance;
 			buttonRetreat.disabled = !bm.canRetreat;
+			
 
 			delta = delta * 0.001;
 			//updates battle manager to account for very high deltas
@@ -72,6 +75,8 @@ class Main {
 			if (text != null) {
 				label.text = text;
 			}
+
+			
 
 			js.Browser.window.requestAnimationFrame(update);
 			return true;

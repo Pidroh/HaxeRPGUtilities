@@ -158,5 +158,11 @@ $baseInfo';
 	public function AdvanceArea() {
 		ChangeBattleArea(battleArea+1);
 	}
+
+	public function GetJsonPersistentData():String{
+
+		return "";
+
+	}
 }
 

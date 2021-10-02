@@ -155,6 +155,9 @@ BattleManager.prototype = {
 	,AdvanceArea: function() {
 		this.ChangeBattleArea(this.battleArea + 1);
 	}
+	,GetJsonPersistentData: function() {
+		return "";
+	}
 	,__class__: BattleManager
 };
 var DateTools = function() { };
@@ -435,7 +438,7 @@ Main.main = function() {
 		bm.RetreatArea();
 	});
 	buttonAdvance.set_onClick(function(e) {
-		haxe_Log.trace("CLICK ON ADVANCE",{ fileName : "src/logic/Main.hx", lineNumber : 41, className : "Main", methodName : "main"});
+		haxe_Log.trace("CLICK ON ADVANCE",{ fileName : "src/logic/Main.hx", lineNumber : 43, className : "Main", methodName : "main"});
 		bm.AdvanceArea();
 	});
 	haxe_ui_core_Screen.get_instance().addComponent(main);
