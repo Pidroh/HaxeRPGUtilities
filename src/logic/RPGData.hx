@@ -78,3 +78,18 @@ typedef Equipment = {
 	var requiredAttributes:Map<String, Int>;
 	var attributes:Map<String, Int>;
 }
+
+typedef WorldData = {
+	var hero:Actor;
+	var enemy:Actor;
+	var turn:Bool;
+	var timeCount:Float;
+	var timePeriod:Float;
+	var battleArea:Int;
+	var playerTimesKilled:Int;
+	var killedInArea:Array<Int>;
+	var necessaryToKillInArea:Int;
+	var maxArea:Int;
+	
+}
+

@@ -49,12 +49,12 @@ class Main {
 
 		var time:Float = 0;
 
-		var key = "save data";
+		var key = "save data2";
 
 		var ls = Browser.getLocalStorage();
 		var jsonData = ls.getItem(key);
 		if(jsonData != null){
-			var loadedData = Json.parse(jsonData);
+			bm.SendJsonPersistentData(jsonData);
 			
 		}
 
@@ -78,6 +78,7 @@ class Main {
 			var text:String = bm.update(delta);
 			var localStorage = js.Browser.getLocalStorage();
 			var json = bm.GetJsonPersistentData();
+			//var json = Json.stringify(bm);
 			localStorage.setItem(key, json);
 			if (text != null) {
 				label.text = text;

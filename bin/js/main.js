@@ -7,117 +7,114 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
-	this.battleArea = 0;
-	this.timePeriod = 1;
-	this.killedInArea = [];
-	this.maxArea = 0;
+	this.canAdvance = false;
+	this.canRetreat = false;
+	this.dirty = false;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 5;
 	_g.h["Life"] = 20;
 	_g.h["LifeMax"] = 20;
 	var stats = _g;
-	this.hero = { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h)};
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
 	_g.h["Life"] = 6;
 	_g.h["LifeMax"] = 6;
 	var stats2 = _g;
-	this.enemy = { level : 1, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2};
-	this.timeCount = 0;
+	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h)}, enemy : { level : 1, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2}, maxArea : 0, necessaryToKillInArea : 0, killedInArea : [], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false};
+	this.wdata = w;
 };
 $hxClasses["BattleManager"] = BattleManager;
 BattleManager.__name__ = "BattleManager";
 BattleManager.prototype = {
-	hero: null
-	,enemy: null
-	,turn: null
-	,timeCount: null
-	,timePeriod: null
-	,battleArea: null
-	,playerTimesKilled: null
+	wdata: null
 	,dirty: null
-	,killedInArea: null
-	,necessaryToKillInArea: null
-	,maxArea: null
-	,canAdvance: null
 	,canRetreat: null
+	,canAdvance: null
 	,ChangeBattleArea: function(area) {
-		this.battleArea = area;
-		this.necessaryToKillInArea = 5 + area;
+		this.wdata.battleArea = area;
+		this.wdata.necessaryToKillInArea = 5 + area;
 		var enemyLife = 6 + area * 3;
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 2 + area * 3;
 		_g.h["Life"] = enemyLife;
 		_g.h["LifeMax"] = enemyLife;
 		var stats2 = _g;
-		this.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2};
+		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2};
 		this.dirty = true;
 	}
 	,advance: function() {
+		var hero = this.wdata.hero;
+		var enemy = this.wdata.enemy;
 		var event = "";
-		if(this.hero.attributesCalculated.h["Life"] <= 0) {
-			this.playerTimesKilled++;
+		var killedInArea = this.wdata.killedInArea;
+		var battleArea = this.wdata.battleArea;
+		if(hero.attributesCalculated.h["Life"] <= 0) {
+			this.wdata.playerTimesKilled++;
 			event += "You died\n\n\n";
-			var v = this.hero.attributesCalculated.h["LifeMax"];
-			this.hero.attributesCalculated.h["Life"] = v;
-			var v = this.enemy.attributesCalculated.h["LifeMax"];
-			this.enemy.attributesCalculated.h["Life"] = v;
+			var v = hero.attributesCalculated.h["LifeMax"];
+			hero.attributesCalculated.h["Life"] = v;
+			var v = enemy.attributesCalculated.h["LifeMax"];
+			enemy.attributesCalculated.h["Life"] = v;
 		}
-		if(this.enemy.attributesCalculated.h["Life"] <= 0) {
-			if(this.killedInArea[this.battleArea] == null) {
-				this.killedInArea[this.battleArea] = 0;
+		if(enemy.attributesCalculated.h["Life"] <= 0) {
+			if(killedInArea[battleArea] == null) {
+				killedInArea[battleArea] = 0;
 			}
-			this.killedInArea[this.battleArea]++;
-			if(this.killedInArea[this.battleArea] >= this.necessaryToKillInArea) {
-				if(this.maxArea == this.battleArea) {
-					this.maxArea++;
+			killedInArea[battleArea]++;
+			if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
+				if(this.wdata.maxArea == this.wdata.battleArea) {
+					this.wdata.maxArea++;
 				}
 			}
-			this.hero.xp.value += this.enemy.level;
-			if(this.hero.xp.value > this.hero.xp.calculatedMax) {
-				this.hero.xp.value = 0;
-				this.hero.level++;
-				var tmp = this.hero.attributesBase;
+			hero.xp.value += enemy.level;
+			if(hero.xp.value > hero.xp.calculatedMax) {
+				hero.xp.value = 0;
+				hero.level++;
+				var hero1 = hero.attributesBase;
 				var _g = new haxe_ds_StringMap();
 				_g.h["Attack"] = 1;
 				_g.h["LifeMax"] = 1;
 				_g.h["Life"] = 1;
-				AttributeLogic.Add(tmp,_g,this.hero.level,this.hero.attributesCalculated);
-				ResourceLogic.recalculateScalingResource(this.hero.level,this.hero.xp);
+				AttributeLogic.Add(hero1,_g,hero.level,hero.attributesCalculated);
+				ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
 			}
 			event += "New enemy";
 			event += "\n\n\n";
-			var v = this.enemy.attributesCalculated.h["LifeMax"];
-			this.enemy.attributesCalculated.h["Life"] = v;
+			var v = enemy.attributesCalculated.h["LifeMax"];
+			enemy.attributesCalculated.h["Life"] = v;
 		}
 		var output = this.BaseInformationFormattedString();
 		output += "\n\n";
 		output += event;
-		var attacker = this.hero;
-		var defender = this.enemy;
-		if(this.turn) {
-			attacker = this.enemy;
-			defender = this.hero;
+		var attacker = hero;
+		var defender = enemy;
+		if(this.wdata.turn) {
+			attacker = enemy;
+			defender = hero;
 		}
 		var _g = defender.attributesCalculated;
 		var v = _g.h["Life"] - attacker.attributesCalculated.h["Attack"];
 		_g.h["Life"] = v;
-		this.turn = !this.turn;
+		this.wdata.turn = !this.wdata.turn;
 		return output;
 	}
 	,BaseInformationFormattedString: function() {
-		var level = this.hero.level;
-		var xp = this.hero.xp.value;
-		var xpmax = this.hero.xp.calculatedMax;
-		var baseInfo = this.CharacterBaseInfoFormattedString(this.hero);
+		var hero = this.wdata.hero;
+		var maxArea = this.wdata.maxArea;
+		var battleArea = this.wdata.battleArea;
+		var enemy = this.wdata.enemy;
+		var level = hero.level;
+		var xp = hero.xp.value;
+		var xpmax = hero.xp.calculatedMax;
+		var baseInfo = this.CharacterBaseInfoFormattedString(hero);
 		var areaText = "";
-		var battleAreaShow = this.battleArea + 1;
-		var maxAreaShow = this.maxArea + 1;
-		if(this.maxArea > 0) {
+		var battleAreaShow = battleArea + 1;
+		var maxAreaShow = maxArea + 1;
+		if(maxArea > 0) {
 			areaText = "Area: " + battleAreaShow + " / " + maxAreaShow;
 		}
 		var output = "" + areaText + "\r\n\r\n\n\nPlayer \r\n\tlevel: " + level + "\r\n\txp: " + xp + " / " + xpmax + "\r\n" + baseInfo;
-		baseInfo = this.CharacterBaseInfoFormattedString(this.enemy);
+		baseInfo = this.CharacterBaseInfoFormattedString(enemy);
 		output += "\n\n";
 		output += "Enemy\r\n" + baseInfo;
 		return output;
@@ -129,11 +126,11 @@ BattleManager.prototype = {
 		return "\t Life: " + life + " / " + lifeM + "\r\n\tAttack: " + attack;
 	}
 	,update: function(delta) {
-		this.timeCount += delta;
-		this.canAdvance = this.battleArea < this.maxArea;
-		this.canRetreat = this.battleArea > 0;
-		if(this.timeCount >= this.timePeriod) {
-			this.timeCount = 0;
+		this.wdata.timeCount += delta;
+		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
+		this.canRetreat = this.wdata.battleArea > 0;
+		if(this.wdata.timeCount >= this.wdata.timePeriod) {
+			this.wdata.timeCount = 0;
 			return this.advance();
 		}
 		if(this.dirty) {
@@ -145,19 +142,21 @@ BattleManager.prototype = {
 	,DefaultConfiguration: function() {
 	}
 	,getPlayerTimesKilled: function() {
-		return this.playerTimesKilled;
+		return this.wdata.playerTimesKilled;
 	}
 	,RetreatArea: function() {
-		if(this.battleArea > 0) {
-			this.ChangeBattleArea(this.battleArea - 1);
+		if(this.wdata.battleArea > 0) {
+			this.ChangeBattleArea(this.wdata.battleArea - 1);
 		}
 	}
 	,AdvanceArea: function() {
-		this.ChangeBattleArea(this.battleArea + 1);
+		this.ChangeBattleArea(this.wdata.battleArea + 1);
 	}
 	,GetJsonPersistentData: function() {
-		var data = { maxArea : this.maxArea, currentArea : this.battleArea, enemiesKilledInAreas : this.killedInArea};
-		return JSON.stringify(data);
+		return JSON.stringify(this.wdata);
+	}
+	,SendJsonPersistentData: function(jsonString) {
+		this.wdata = JSON.parse(jsonString);
 	}
 	,__class__: BattleManager
 };
@@ -444,11 +443,11 @@ Main.main = function() {
 	});
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
-	var key = "save data";
+	var key = "save data2";
 	var ls = js_Browser.getLocalStorage();
 	var jsonData = ls.getItem(key);
 	if(jsonData != null) {
-		var loadedData = JSON.parse(jsonData);
+		bm.SendJsonPersistentData(jsonData);
 	}
 	var update = null;
 	update = function(timeStamp) {

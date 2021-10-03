@@ -29,7 +29,6 @@ class MainTest {
 				Sys.println("ERROR: Died");
 				//Sys.getChar(false);
 			}
-			Sys.println(bm.GetJsonPersistentData());
 		}
 
 		{
@@ -57,6 +56,32 @@ class MainTest {
 			}
 			if (hero.attributesBase["Attack"] != 5) {
 				Sys.println("ERROR: Base Attack Value Modified");
+				//Sys.getChar(false);
+			}
+		}
+
+		{
+			Sys.println("Json parsing save data tests");
+			var bm:BattleManager = new BattleManager();
+			bm.DefaultConfiguration();
+			var json0 = bm.GetJsonPersistentData();
+			bm.ChangeBattleArea(1);
+			for (i in 1...20) {
+				bm.update(5);
+			}
+			bm.ChangeBattleArea(20);
+			for (i in 1...20) {
+				bm.update(5);
+			}
+			var json = bm.GetJsonPersistentData();
+			bm.SendJsonPersistentData(json);
+			var json2 = bm.GetJsonPersistentData();
+
+			if(json0 == json2){
+				Sys.println("ERROR: Data not changed on game progress");
+			}
+			if (json != json2) {
+				Sys.println("ERROR: Data corrupted when loading");
 				//Sys.getChar(false);
 			}
 		}
