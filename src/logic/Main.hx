@@ -25,23 +25,26 @@ class Main {
 		var main = new VBox();
 
 		var buttonAdvance : Button = new Button();
-		
-		
 		buttonAdvance.text = "Advance area";
 		main.addComponent(buttonAdvance);
 		var buttonRetreat : Button = new Button();
 		buttonRetreat.text = "Retreat Area";
 		main.addComponent(buttonRetreat);
+		var buttonLevelUp : Button = new Button();
+		buttonLevelUp.text = "Level up";
+		main.addComponent(buttonLevelUp);
 		var label:Label = new Label();
 		label.text = "";		
 		main.addComponent(label);
 
+		buttonLevelUp.onClick = function(e){
+			bm.LevelUp();
+		}
 		buttonRetreat.onClick = function(e) {
 			bm.RetreatArea();
 		};
 
 		buttonAdvance.onClick = function(e) {
-			trace("CLICK ON ADVANCE");
 			bm.AdvanceArea();
 		};
 		
@@ -66,7 +69,7 @@ class Main {
 			time = timeStamp;
 			buttonAdvance.disabled = !bm.canAdvance;
 			buttonRetreat.disabled = !bm.canRetreat;
-			
+			buttonLevelUp.hidden = !bm.canLevelUp;
 
 			delta = delta * 0.001;
 			//updates battle manager to account for very high deltas

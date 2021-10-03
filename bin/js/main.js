@@ -7,6 +7,7 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
+	this.canLevelUp = false;
 	this.canAdvance = false;
 	this.canRetreat = false;
 	this.dirty = false;
@@ -30,6 +31,7 @@ BattleManager.prototype = {
 	,dirty: null
 	,canRetreat: null
 	,canAdvance: null
+	,canLevelUp: null
 	,ChangeBattleArea: function(area) {
 		this.wdata.battleArea = area;
 		this.wdata.necessaryToKillInArea = 5 + area;
@@ -67,17 +69,6 @@ BattleManager.prototype = {
 				}
 			}
 			hero.xp.value += enemy.level;
-			if(hero.xp.value > hero.xp.calculatedMax) {
-				hero.xp.value = 0;
-				hero.level++;
-				var hero1 = hero.attributesBase;
-				var _g = new haxe_ds_StringMap();
-				_g.h["Attack"] = 1;
-				_g.h["LifeMax"] = 1;
-				_g.h["Life"] = 1;
-				AttributeLogic.Add(hero1,_g,hero.level,hero.attributesCalculated);
-				ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
-			}
 			event += "New enemy";
 			event += "\n\n\n";
 			var v = enemy.attributesCalculated.h["LifeMax"];
@@ -129,6 +120,7 @@ BattleManager.prototype = {
 		this.wdata.timeCount += delta;
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
+		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
 		if(this.wdata.timeCount >= this.wdata.timePeriod) {
 			this.wdata.timeCount = 0;
 			return this.advance();
@@ -147,6 +139,20 @@ BattleManager.prototype = {
 	,RetreatArea: function() {
 		if(this.wdata.battleArea > 0) {
 			this.ChangeBattleArea(this.wdata.battleArea - 1);
+		}
+	}
+	,LevelUp: function() {
+		var hero = this.wdata.hero;
+		if(this.canLevelUp) {
+			hero.xp.value -= hero.xp.calculatedMax;
+			hero.level++;
+			var hero1 = hero.attributesBase;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Attack"] = 1;
+			_g.h["LifeMax"] = 1;
+			_g.h["Life"] = 1;
+			AttributeLogic.Add(hero1,_g,hero.level,hero.attributesCalculated);
+			ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
 		}
 	}
 	,AdvanceArea: function() {
@@ -431,14 +437,19 @@ Main.main = function() {
 	var buttonRetreat = new haxe_ui_components_Button();
 	buttonRetreat.set_text("Retreat Area");
 	main.addComponent(buttonRetreat);
+	var buttonLevelUp = new haxe_ui_components_Button();
+	buttonLevelUp.set_text("Level up");
+	main.addComponent(buttonLevelUp);
 	var label = new haxe_ui_components_Label();
 	label.set_text("");
 	main.addComponent(label);
+	buttonLevelUp.set_onClick(function(e) {
+		bm.LevelUp();
+	});
 	buttonRetreat.set_onClick(function(e) {
 		bm.RetreatArea();
 	});
 	buttonAdvance.set_onClick(function(e) {
-		haxe_Log.trace("CLICK ON ADVANCE",{ fileName : "src/logic/Main.hx", lineNumber : 44, className : "Main", methodName : "main"});
 		bm.AdvanceArea();
 	});
 	haxe_ui_core_Screen.get_instance().addComponent(main);
@@ -455,6 +466,7 @@ Main.main = function() {
 		time = timeStamp;
 		buttonAdvance.set_disabled(!bm.canAdvance);
 		buttonRetreat.set_disabled(!bm.canRetreat);
+		buttonLevelUp.set_hidden(!bm.canLevelUp);
 		delta *= 0.001;
 		while(delta > Main.maxDelta) {
 			delta -= Main.maxDelta;

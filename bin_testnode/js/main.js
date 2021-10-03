@@ -7,6 +7,7 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
+	this.canLevelUp = false;
 	this.canAdvance = false;
 	this.canRetreat = false;
 	this.dirty = false;
@@ -62,17 +63,6 @@ BattleManager.prototype = {
 				}
 			}
 			hero.xp.value += enemy.level;
-			if(hero.xp.value > hero.xp.calculatedMax) {
-				hero.xp.value = 0;
-				hero.level++;
-				var hero1 = hero.attributesBase;
-				var _g = new haxe_ds_StringMap();
-				_g.h["Attack"] = 1;
-				_g.h["LifeMax"] = 1;
-				_g.h["Life"] = 1;
-				AttributeLogic.Add(hero1,_g,hero.level,hero.attributesCalculated);
-				ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
-			}
 			event += "New enemy";
 			event += "\n\n\n";
 			var v = enemy.attributesCalculated.h["LifeMax"];
@@ -124,6 +114,7 @@ BattleManager.prototype = {
 		this.wdata.timeCount += delta;
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
+		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
 		if(this.wdata.timeCount >= this.wdata.timePeriod) {
 			this.wdata.timeCount = 0;
 			return this.advance();
@@ -142,6 +133,20 @@ BattleManager.prototype = {
 	,RetreatArea: function() {
 		if(this.wdata.battleArea > 0) {
 			this.ChangeBattleArea(this.wdata.battleArea - 1);
+		}
+	}
+	,LevelUp: function() {
+		var hero = this.wdata.hero;
+		if(this.canLevelUp) {
+			hero.xp.value -= hero.xp.calculatedMax;
+			hero.level++;
+			var hero1 = hero.attributesBase;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Attack"] = 1;
+			_g.h["LifeMax"] = 1;
+			_g.h["Life"] = 1;
+			AttributeLogic.Add(hero1,_g,hero.level,hero.attributesCalculated);
+			ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
 		}
 	}
 	,AdvanceArea: function() {

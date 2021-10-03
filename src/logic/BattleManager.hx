@@ -9,6 +9,7 @@ class BattleManager {
 	public var dirty = false;
 	public var canRetreat = false;
 	public var canAdvance = false;
+	public var canLevelUp = false;
 
 	public function ChangeBattleArea(area:Int) {
 		wdata.battleArea = area;
@@ -90,13 +91,7 @@ class BattleManager {
 				}
 			}
 			hero.xp.value += enemy.level;
-			if (hero.xp.value > hero.xp.calculatedMax) {
-				// Hero level up
-				hero.xp.value = 0;
-				hero.level++;
-				AttributeLogic.Add(hero.attributesBase, ["Attack" => 1, "LifeMax" => 1, "Life" => 1], hero.level, hero.attributesCalculated);
-				ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
-			}
+			
 			event += "New enemy";
 			event += "\n\n\n";
 			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
@@ -161,7 +156,9 @@ $baseInfo';
 
 		canAdvance = wdata.battleArea < wdata.maxArea;
 		canRetreat = wdata.battleArea > 0;
+		canLevelUp = wdata.hero.xp.value >= wdata.hero.xp.calculatedMax;
 
+		
 		if (wdata.timeCount >= wdata.timePeriod) {
 			wdata.timeCount = 0;
 			return advance();
@@ -182,6 +179,16 @@ $baseInfo';
 	public function RetreatArea() {
 		if (wdata.battleArea > 0)
 			ChangeBattleArea(wdata.battleArea - 1);
+	}
+	public function LevelUp(){
+		var hero = wdata.hero;
+		if (canLevelUp) {
+			// Hero level up
+			hero.xp.value -= hero.xp.calculatedMax;
+			hero.level++;
+			AttributeLogic.Add(hero.attributesBase, ["Attack" => 1, "LifeMax" => 1, "Life" => 1], hero.level, hero.attributesCalculated);
+			ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
+		}
 	}
 
 	public function AdvanceArea() {
