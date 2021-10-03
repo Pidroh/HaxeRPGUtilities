@@ -14,6 +14,7 @@ class MainTest {
 				Sys.println("ERROR: Did not die!");
 				//Sys.getChar(false);
 			}
+			
 		}
 		{
 			Sys.println("Easy area no death");
@@ -28,6 +29,7 @@ class MainTest {
 				Sys.println("ERROR: Died");
 				//Sys.getChar(false);
 			}
+			Sys.println(bm.GetJsonPersistentData());
 		}
 
 		{

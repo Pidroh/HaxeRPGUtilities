@@ -1,4 +1,5 @@
 //package logic;
+import haxe.Json;
 import haxe.ds.Vector;
 import RPGData;
 
@@ -160,8 +161,9 @@ $baseInfo';
 	}
 
 	public function GetJsonPersistentData():String{
-
-		return "";
+		var data = {maxArea:maxArea, currentArea:battleArea, enemiesKilledInAreas:killedInArea};
+		
+		return Json.stringify(data);
 
 	}
 }

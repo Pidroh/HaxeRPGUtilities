@@ -156,7 +156,8 @@ BattleManager.prototype = {
 		this.ChangeBattleArea(this.battleArea + 1);
 	}
 	,GetJsonPersistentData: function() {
-		return "";
+		var data = { maxArea : this.maxArea, currentArea : this.battleArea, enemiesKilledInAreas : this.killedInArea};
+		return JSON.stringify(data);
 	}
 	,__class__: BattleManager
 };

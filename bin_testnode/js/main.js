@@ -142,7 +142,8 @@ BattleManager.prototype = {
 		this.ChangeBattleArea(this.battleArea + 1);
 	}
 	,GetJsonPersistentData: function() {
-		return "";
+		var data = { maxArea : this.maxArea, currentArea : this.battleArea, enemiesKilledInAreas : this.killedInArea};
+		return JSON.stringify(data);
 	}
 };
 var IntIterator = function(min,max) {
@@ -187,6 +188,9 @@ MainTest.main = function() {
 		process.stdout.write("ERROR: Died");
 		process.stdout.write("\n");
 	}
+	var v = bm.GetJsonPersistentData();
+	process.stdout.write(Std.string(v));
+	process.stdout.write("\n");
 	process.stdout.write("Level up Stat Test");
 	process.stdout.write("\n");
 	var _g = new haxe_ds_StringMap();
@@ -304,6 +308,11 @@ var ScalingType = $hxEnums["ScalingType"] = { __ename__:true,__constructs__:null
 	,exponential: {_hx_name:"exponential",_hx_index:0,__enum__:"ScalingType",toString:$estr}
 };
 ScalingType.__constructs__ = [ScalingType.exponential];
+var Std = function() { };
+Std.__name__ = true;
+Std.string = function(s) {
+	return js_Boot.__string_rec(s,"");
+};
 var haxe_io_Output = function() { };
 haxe_io_Output.__name__ = true;
 var _$Sys_FileOutput = function(fd) {
