@@ -1,3 +1,4 @@
+import haxe.Json;
 import js.Browser;
 import js.html.Storage;
 import BattleManager;
@@ -48,10 +49,14 @@ class Main {
 
 		var time:Float = 0;
 
-		//trace("\nJavascript!");
+		var key = "save data";
 
-		var c = 1;
-		var turn = false;
+		var ls = Browser.getLocalStorage();
+		var jsonData = ls.getItem(key);
+		if(jsonData != null){
+			var loadedData = Json.parse(jsonData);
+			
+		}
 
 		var update = null;
 		update = function(timeStamp:Float):Bool {
@@ -73,7 +78,7 @@ class Main {
 			var text:String = bm.update(delta);
 			var localStorage = js.Browser.getLocalStorage();
 			var json = bm.GetJsonPersistentData();
-			localStorage.setItem("save data", json);
+			localStorage.setItem(key, json);
 			if (text != null) {
 				label.text = text;
 			}
@@ -83,36 +88,6 @@ class Main {
 		}
 		update(0);
 
-		while (false) {
-			trace("");
-			if (hero.attributesBase["Life"] <= 0) {
-				trace("You died");
-				trace("¥n¥n¥n");
-				hero.attributesBase["Life"] = 20;
-				enemy.attributesBase["Life"] = 6;
-				// c = Sys.getChar(true);
-			}
-			var herolife = hero.attributesBase["Life"];
-			if (enemy.attributesBase["Life"] <= 0) {
-				trace("New enemy");
-				trace("¥n¥n¥n");
-				enemy.attributesBase["Life"] = 6;
-				// c = Sys.getChar(true);
-			}
-			var enemylife = enemy.attributesBase["Life"];
-			trace('Player life: $herolife');
-			trace('Enemy life: $enemylife');
-			trace('Press button to advance');
-			// c = Sys.getChar(true);
-			var attacker = hero;
-			var defender = enemy;
-			if (turn) {
-				attacker = enemy;
-				defender = hero;
-			}
-			defender.attributesBase["Life"] -= attacker.attributesBase["Attack"];
-			turn = !turn;
-		}
 	}
 }
 

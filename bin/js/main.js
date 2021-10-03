@@ -439,13 +439,17 @@ Main.main = function() {
 		bm.RetreatArea();
 	});
 	buttonAdvance.set_onClick(function(e) {
-		haxe_Log.trace("CLICK ON ADVANCE",{ fileName : "src/logic/Main.hx", lineNumber : 43, className : "Main", methodName : "main"});
+		haxe_Log.trace("CLICK ON ADVANCE",{ fileName : "src/logic/Main.hx", lineNumber : 44, className : "Main", methodName : "main"});
 		bm.AdvanceArea();
 	});
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
-	var c = 1;
-	var turn = false;
+	var key = "save data";
+	var ls = js_Browser.getLocalStorage();
+	var jsonData = ls.getItem(key);
+	if(jsonData != null) {
+		var loadedData = JSON.parse(jsonData);
+	}
 	var update = null;
 	update = function(timeStamp) {
 		var delta = timeStamp - time;
@@ -460,7 +464,7 @@ Main.main = function() {
 		var text = bm.update(delta);
 		var localStorage = js_Browser.getLocalStorage();
 		var json = bm.GetJsonPersistentData();
-		localStorage.setItem("save data",json);
+		localStorage.setItem(key,json);
 		if(text != null) {
 			label.set_text(text);
 		}
