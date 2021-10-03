@@ -57,7 +57,6 @@ class Main {
 		update = function(timeStamp:Float):Bool {
 			
 			var delta = timeStamp - time;
-			//trace(delta);
 
 			time = timeStamp;
 			buttonAdvance.disabled = !bm.canAdvance;
@@ -72,11 +71,12 @@ class Main {
 				bm.update(maxDelta);
 			}
 			var text:String = bm.update(delta);
+			var localStorage = js.Browser.getLocalStorage();
+			var json = bm.GetJsonPersistentData();
+			localStorage.setItem("save data", json);
 			if (text != null) {
 				label.text = text;
 			}
-
-			
 
 			js.Browser.window.requestAnimationFrame(update);
 			return true;

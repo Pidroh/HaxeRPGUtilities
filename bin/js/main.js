@@ -458,6 +458,9 @@ Main.main = function() {
 			bm.update(Main.maxDelta);
 		}
 		var text = bm.update(delta);
+		var localStorage = js_Browser.getLocalStorage();
+		var json = bm.GetJsonPersistentData();
+		localStorage.setItem("save data",json);
 		if(text != null) {
 			label.set_text(text);
 		}
@@ -41257,6 +41260,23 @@ js_Boot.__isNativeObj = function(o) {
 };
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
+};
+var js_Browser = function() { };
+$hxClasses["js.Browser"] = js_Browser;
+js_Browser.__name__ = "js.Browser";
+js_Browser.getLocalStorage = function() {
+	try {
+		var s = window.localStorage;
+		s.getItem("");
+		if(s.length == 0) {
+			var key = "_hx_" + Math.random();
+			s.setItem(key,key);
+			s.removeItem(key);
+		}
+		return s;
+	} catch( _g ) {
+		return null;
+	}
 };
 function $getIterator(o) { if( o instanceof Array ) return new haxe_iterators_ArrayIterator(o); else return o.iterator(); }
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $global.$haxeUID++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = m.bind(o); o.hx__closures__[m.__id__] = f; } return f; }
