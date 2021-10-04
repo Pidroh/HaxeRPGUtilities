@@ -4,12 +4,18 @@ import haxe.ds.Vector;
 import RPGData;
 
 class BattleManager {
-	var wdata:WorldData;
+	public var wdata:WorldData;
 
 	public var dirty = false;
 	public var canRetreat = false;
 	public var canAdvance = false;
 	public var canLevelUp = false;
+
+	public function GetAttribute(actor:Actor, label:String){
+		var i = actor.attributesCalculated[label];
+		if(i < 0) i = 0;
+		return i;
+	}
 
 	public function ChangeBattleArea(area:Int) {
 		wdata.battleArea = area;
@@ -108,6 +114,10 @@ class BattleManager {
 			defender = hero;
 		}
 		defender.attributesCalculated["Life"] -= attacker.attributesCalculated["Attack"];
+		if(defender.attributesCalculated["Life"] < 0){
+			defender.attributesCalculated["Life"] = 0;
+
+		}
 		wdata.turn = !wdata.turn;
 		return output;
 	}

@@ -7,10 +7,10 @@ import haxe.ui.components.Label;
 import haxe.ui.components.HorizontalProgress;
 
 class View {
-	var heroView:ActorView;
-	var enemyView:ActorView;
-    var level : ResourceView;
-    var xpBar : ResourceView;
+	public var heroView:ActorView;
+	public var enemyView:ActorView;
+    public var level : ResourceView;
+    public var xpBar : ResourceView;
 	public var mainComponent:Component;
 
 	public function new() {
@@ -24,8 +24,17 @@ class View {
 		mainComponent = box;
 		box.horizontalAlign = "center";
 		box.paddingTop = 20;
+	}
 
-        
+	public function UpdateValues(res : ResourceView, current:Int, max: Int){
+		if(max > 0){ 
+			res.bar.pos = current*100 / max;
+			res.centeredText.text = current + " / " + max;
+		} else{
+			res.centeredText.text = current + "";
+		}
+		
+
 	}
 
 	function GetActorView(name:String, parent:Component):ActorView {

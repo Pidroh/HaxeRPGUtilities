@@ -107,8 +107,17 @@ class Main {
 		}
 
 		var update = null;
+		var ActorToView = function(actor: Actor, actorView:ActorView){
+			view.UpdateValues(
+				actorView.life,
+				bm.GetAttribute(actor, "Life"), 
+				bm.GetAttribute(actor, "LifeMax"));
+		};
 		update = function(timeStamp:Float):Bool {
 			
+			ActorToView(bm.wdata.hero, view.heroView);
+			ActorToView(bm.wdata.enemy, view.enemyView);
+
 			var delta = timeStamp - time;
 
 			time = timeStamp;

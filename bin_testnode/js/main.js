@@ -26,7 +26,14 @@ var BattleManager = function() {
 };
 BattleManager.__name__ = true;
 BattleManager.prototype = {
-	ChangeBattleArea: function(area) {
+	GetAttribute: function(actor,label) {
+		var i = actor.attributesCalculated.h[label];
+		if(i < 0) {
+			i = 0;
+		}
+		return i;
+	}
+	,ChangeBattleArea: function(area) {
 		this.wdata.battleArea = area;
 		this.wdata.necessaryToKillInArea = 5 + area;
 		var enemyLife = 6 + area * 3;
@@ -80,6 +87,9 @@ BattleManager.prototype = {
 		var _g = defender.attributesCalculated;
 		var v = _g.h["Life"] - attacker.attributesCalculated.h["Attack"];
 		_g.h["Life"] = v;
+		if(defender.attributesCalculated.h["Life"] < 0) {
+			defender.attributesCalculated.h["Life"] = 0;
+		}
 		this.wdata.turn = !this.wdata.turn;
 		return output;
 	}

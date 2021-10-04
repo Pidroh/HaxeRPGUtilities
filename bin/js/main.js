@@ -32,6 +32,13 @@ BattleManager.prototype = {
 	,canRetreat: null
 	,canAdvance: null
 	,canLevelUp: null
+	,GetAttribute: function(actor,label) {
+		var i = actor.attributesCalculated.h[label];
+		if(i < 0) {
+			i = 0;
+		}
+		return i;
+	}
 	,ChangeBattleArea: function(area) {
 		this.wdata.battleArea = area;
 		this.wdata.necessaryToKillInArea = 5 + area;
@@ -86,6 +93,9 @@ BattleManager.prototype = {
 		var _g = defender.attributesCalculated;
 		var v = _g.h["Life"] - attacker.attributesCalculated.h["Attack"];
 		_g.h["Life"] = v;
+		if(defender.attributesCalculated.h["Life"] < 0) {
+			defender.attributesCalculated.h["Life"] = 0;
+		}
 		this.wdata.turn = !this.wdata.turn;
 		return output;
 	}
@@ -491,7 +501,12 @@ Main.main = function() {
 		bm.SendJsonPersistentData(jsonData);
 	}
 	var update = null;
+	var ActorToView = function(actor,actorView) {
+		view.UpdateValues(actorView.life,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
+	};
 	update = function(timeStamp) {
+		ActorToView(bm.wdata.hero,view.heroView);
+		ActorToView(bm.wdata.enemy,view.enemyView);
 		var delta = timeStamp - time;
 		time = timeStamp;
 		buttonAdvance.set_disabled(!bm.canAdvance);
@@ -956,6 +971,14 @@ View.prototype = {
 	,level: null
 	,xpBar: null
 	,mainComponent: null
+	,UpdateValues: function(res,current,max) {
+		if(max > 0) {
+			res.bar.set_pos(current * 100 / max);
+			res.centeredText.set_text(current + " / " + max);
+		} else {
+			res.centeredText.set_text(current + "");
+		}
+	}
 	,GetActorView: function(name,parent) {
 		var box = new haxe_ui_containers_VBox();
 		parent.addComponent(box);
