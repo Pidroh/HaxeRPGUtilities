@@ -1,3 +1,4 @@
+import haxe.ui.components.Progress;
 import haxe.Json;
 import js.Browser;
 import js.html.Storage;
@@ -23,6 +24,7 @@ class Main {
 		
 		
 		var main = new VBox();
+		
 
 		var buttonAdvance : Button = new Button();
 		buttonAdvance.text = "Advance area";
@@ -36,6 +38,43 @@ class Main {
 		var label:Label = new Label();
 		label.text = "";		
 		main.addComponent(label);
+		{
+			
+			var progress = new Progress();
+			progress.pos = 80;
+			progress.width = 120;
+			progress.height = 25;
+			//progress.styleString = "";
+			main.addComponent(progress);
+			var l = new Label();
+			l.text = "sss";
+			//progress.addComponent(l);
+		}
+		{
+			var progress = new Progress();
+			progress.pos = 30;
+			progress.value = 30;
+			progress.max = 100;
+			progress.min = 0;
+			progress.precision =20;
+			progress.width = 120;
+			progress.height = 20;
+			progress.getComponentAt(0).backgroundColor = "#999999";
+			progress.getComponentAt(0).value = 30;
+			progress.getComponentAt(0).width = 40;
+			progress.getComponentAt(0).height = progress.height - 4;
+			trace(progress.childComponents.length);
+			
+			main.addComponent(progress);
+			var l = new Label();
+			l.text = "32/32";
+			l.textAlign = "center";
+			l.styleString = "font-size:14px; text-align: center;
+			vertical-align: middle; width:100%;";
+			l.verticalAlign = "middle";
+			progress.addComponent(l);
+		}
+		
 
 		buttonLevelUp.onClick = function(e){
 			bm.LevelUp();
@@ -70,6 +109,7 @@ class Main {
 			buttonAdvance.disabled = !bm.canAdvance;
 			buttonRetreat.disabled = !bm.canRetreat;
 			buttonLevelUp.hidden = !bm.canLevelUp;
+			
 
 			delta = delta * 0.001;
 			//updates battle manager to account for very high deltas
