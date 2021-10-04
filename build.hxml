@@ -1,5 +1,6 @@
 -cp src
 -cp src/logic
+-cp src/view
 -main Main
 
 -lib haxeui-core

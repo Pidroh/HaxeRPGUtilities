@@ -429,8 +429,10 @@ $hxClasses["Main"] = Main;
 Main.__name__ = "Main";
 Main.main = function() {
 	var bm = new BattleManager();
+	var view = new View();
 	haxe_ui_Toolkit.init();
 	var main = new haxe_ui_containers_VBox();
+	main.addComponent(view.mainComponent);
 	var buttonAdvance = new haxe_ui_components_Button();
 	buttonAdvance.set_text("Advance area");
 	main.addComponent(buttonAdvance);
@@ -462,7 +464,7 @@ Main.main = function() {
 	progress.getComponentAt(0).set_value(30);
 	progress.getComponentAt(0).set_width(40);
 	progress.getComponentAt(0).set_height(progress.get_height() - 4);
-	haxe_Log.trace((progress._children == null ? [] : progress._children).length,{ fileName : "src/Main.hx", lineNumber : 66, className : "Main", methodName : "main"});
+	haxe_Log.trace((progress._children == null ? [] : progress._children).length,{ fileName : "src/Main.hx", lineNumber : 70, className : "Main", methodName : "main"});
 	main.addComponent(progress);
 	var l = new haxe_ui_components_Label();
 	l.set_text("32/32");
@@ -479,6 +481,7 @@ Main.main = function() {
 	buttonAdvance.set_onClick(function(e) {
 		bm.AdvanceArea();
 	});
+	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
 	var key = "save data2";
@@ -934,6 +937,68 @@ Type.enumParameters = function(e) {
 	} else {
 		return [];
 	}
+};
+var View = function() {
+	var box = new haxe_ui_containers_VBox();
+	this.level = this.CreateResourceView(box,false,"Level: ");
+	this.xpBar = this.CreateResourceView(box,true,"XP: ");
+	this.heroView = this.GetActorView("You",box);
+	this.enemyView = this.GetActorView("Enemy",box);
+	this.mainComponent = box;
+	box.set_horizontalAlign("center");
+	box.set_paddingTop(20);
+};
+$hxClasses["View"] = View;
+View.__name__ = "View";
+View.prototype = {
+	heroView: null
+	,enemyView: null
+	,level: null
+	,xpBar: null
+	,mainComponent: null
+	,GetActorView: function(name,parent) {
+		var box = new haxe_ui_containers_VBox();
+		parent.addComponent(box);
+		var label = new haxe_ui_components_Label();
+		var lifeView = null;
+		box.addComponent(label);
+		label.set_text(name);
+		lifeView = this.CreateResourceView(box,true,"Life: ");
+		return { name : label, life : lifeView};
+	}
+	,CreateResourceView: function(parent,withBar,label) {
+		var boxh = new haxe_ui_containers_Box();
+		boxh.set_width(180);
+		parent.addComponent(boxh);
+		var addLabel = label != null && label != "";
+		if(addLabel) {
+			var l = new haxe_ui_components_Label();
+			l.set_text(label);
+			l.set_verticalAlign("center");
+			boxh.addComponent(l);
+		}
+		var progress = new haxe_ui_components_HorizontalProgress();
+		boxh.addComponent(progress);
+		progress.set_width(120);
+		progress.set_height(20);
+		if(addLabel) {
+			progress.set_horizontalAlign("right");
+		}
+		if(withBar) {
+			progress.getComponentAt(0).set_backgroundColor(haxe_ui_util_Color.fromString("#999999"));
+			progress.set_pos(100);
+		} else {
+			progress.set_borderSize(0);
+		}
+		var l = new haxe_ui_components_Label();
+		l.set_text("32/32");
+		l.set_textAlign("center");
+		l.set_styleString("font-size:14px; text-align: center;\r\n\t\t\tvertical-align: middle; width:100%;");
+		l.set_verticalAlign("middle");
+		progress.addComponent(l);
+		return { centeredText : l, bar : progress};
+	}
+	,__class__: View
 };
 var XmlType = {};
 XmlType.toString = function(this1) {

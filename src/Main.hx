@@ -12,6 +12,8 @@ import haxe.ui.components.Button;
 import haxe.ui.containers.VBox;
 import haxe.ui.core.Screen;
 import RPGData;
+import View;
+
 
 class Main {
 	static var hero:Actor;
@@ -20,10 +22,12 @@ class Main {
 
 	static function main() {
 		var bm:BattleManager = new BattleManager();
+		var view:View = new View();
 		Toolkit.init();
 		
 		
 		var main = new VBox();
+		main.addComponent(view.mainComponent);
 		
 
 		var buttonAdvance : Button = new Button();
@@ -86,6 +90,8 @@ class Main {
 		buttonAdvance.onClick = function(e) {
 			bm.AdvanceArea();
 		};
+		main.percentWidth = 100;
+		//main.horizontalAlign = "center";
 		
 		Screen.instance.addComponent(main);
 

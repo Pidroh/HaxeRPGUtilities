@@ -1,6 +1,8 @@
 -lib hxnodejs
 -cp test
 -p src/logic
+-p src/view
+-p src
 -main MainTest
 
 -lib haxeui-core
