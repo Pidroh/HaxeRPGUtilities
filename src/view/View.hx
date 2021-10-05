@@ -63,11 +63,11 @@ class View {
 		var lifeView:ValueView = null;
 		box.addComponent(label);
 		label.text = name;
-		if (true) {
-			lifeView = CreateValueView(box, true, "Life: ");
-		}
+		
+		lifeView = CreateValueView(box, true, "Life: ");
+		
 
-		return {name: label, life: lifeView};
+		return {name: label, life: lifeView, attack: CreateValueView(box, false, "Attack: ")};
 	}
 
 	function CreateValueView(parent:Component, withBar:Bool, label : String) : ValueView {
@@ -126,4 +126,5 @@ typedef ValueView = {
 typedef ActorView = {
 	var name:Label;
 	var life:ValueView;
+	var attack:ValueView;
 };

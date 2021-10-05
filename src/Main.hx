@@ -117,6 +117,10 @@ class Main {
 				actorView.life,
 				bm.GetAttribute(actor, "Life"), 
 				bm.GetAttribute(actor, "LifeMax"));
+			view.UpdateValues(
+					actorView.attack,
+					bm.GetAttribute(actor, "Attack"), 
+					-1);
 		};
 		update = function(timeStamp:Float):Bool {
 			

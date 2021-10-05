@@ -507,6 +507,7 @@ Main.main = function() {
 	var update = null;
 	var ActorToView = function(actor,actorView) {
 		view.UpdateValues(actorView.life,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
+		view.UpdateValues(actorView.attack,bm.GetAttribute(actor,"Attack"),-1);
 	};
 	update = function(timeStamp) {
 		ActorToView(bm.wdata.hero,view.heroView);
@@ -1005,7 +1006,7 @@ View.prototype = {
 		box.addComponent(label);
 		label.set_text(name);
 		lifeView = this.CreateValueView(box,true,"Life: ");
-		return { name : label, life : lifeView};
+		return { name : label, life : lifeView, attack : this.CreateValueView(box,false,"Attack: ")};
 	}
 	,CreateValueView: function(parent,withBar,label) {
 		var boxh = new haxe_ui_containers_Box();
