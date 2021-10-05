@@ -1,3 +1,4 @@
+import haxe.ui.components.Button;
 import haxe.ui.containers.Box;
 import haxe.ui.core.Screen;
 import haxe.ui.containers.HBox;
@@ -24,6 +25,13 @@ class View {
 		mainComponent = box;
 		box.horizontalAlign = "center";
 		box.paddingTop = 20;
+	}
+
+	public function AddButton(label:String, onClick){
+		var button = new Button();
+		button.text = label;
+		button.onClick = onClick;
+		mainComponent.addComponent(button);
 	}
 
 	public function UpdateValues(res : ResourceView, current:Int, max: Int){

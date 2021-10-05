@@ -108,6 +108,7 @@ class Main {
 
 		var update = null;
 		var ActorToView = function(actor: Actor, actorView:ActorView){
+			
 			view.UpdateValues(
 				actorView.life,
 				bm.GetAttribute(actor, "Life"), 
@@ -117,6 +118,11 @@ class Main {
 			
 			ActorToView(bm.wdata.hero, view.heroView);
 			ActorToView(bm.wdata.enemy, view.enemyView);
+			view.UpdateValues(view.level, bm.wdata.hero.level, -1);
+			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
+			view.AddButton("Reset", function(e) {
+				bm = new BattleManager();
+			});
 
 			var delta = timeStamp - time;
 

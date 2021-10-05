@@ -507,6 +507,11 @@ Main.main = function() {
 	update = function(timeStamp) {
 		ActorToView(bm.wdata.hero,view.heroView);
 		ActorToView(bm.wdata.enemy,view.enemyView);
+		view.UpdateValues(view.level,bm.wdata.hero.level,-1);
+		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
+		view.AddButton("Reset",function(e) {
+			bm = new BattleManager();
+		});
 		var delta = timeStamp - time;
 		time = timeStamp;
 		buttonAdvance.set_disabled(!bm.canAdvance);
@@ -971,6 +976,12 @@ View.prototype = {
 	,level: null
 	,xpBar: null
 	,mainComponent: null
+	,AddButton: function(label,onClick) {
+		var button = new haxe_ui_components_Button();
+		button.set_text(label);
+		button.set_onClick(onClick);
+		this.mainComponent.addComponent(button);
+	}
 	,UpdateValues: function(res,current,max) {
 		if(max > 0) {
 			res.bar.set_pos(current * 100 / max);
