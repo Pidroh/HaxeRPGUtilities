@@ -21,7 +21,7 @@ var BattleManager = function() {
 	_g.h["Life"] = 6;
 	_g.h["LifeMax"] = 6;
 	var stats2 = _g;
-	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h)}, enemy : { level : 1, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2}, maxArea : 0, necessaryToKillInArea : 0, killedInArea : [], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false};
+	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h)}, enemy : { level : 1, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2}, maxArea : 0, necessaryToKillInArea : 5, killedInArea : [0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false};
 	this.wdata = w;
 };
 $hxClasses["BattleManager"] = BattleManager;
@@ -73,6 +73,7 @@ BattleManager.prototype = {
 			if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
 				if(this.wdata.maxArea == this.wdata.battleArea) {
 					this.wdata.maxArea++;
+					killedInArea[this.wdata.maxArea] = 0;
 				}
 			}
 			hero.xp.value += enemy.level;
@@ -512,6 +513,8 @@ Main.main = function() {
 		ActorToView(bm.wdata.enemy,view.enemyView);
 		view.UpdateValues(view.level,bm.wdata.hero.level,-1);
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
+		view.UpdateValues(view.areaLabel,bm.wdata.battleArea + 1,-1);
+		view.UpdateValues(view.enemyToAdvance,bm.wdata.killedInArea[bm.wdata.battleArea],bm.wdata.necessaryToKillInArea);
 		var delta = timeStamp - time;
 		time = timeStamp;
 		buttonAdvance.set_disabled(!bm.canAdvance);

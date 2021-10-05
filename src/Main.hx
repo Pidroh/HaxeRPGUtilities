@@ -124,7 +124,8 @@ class Main {
 			ActorToView(bm.wdata.enemy, view.enemyView);
 			view.UpdateValues(view.level, bm.wdata.hero.level, -1);
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
-			
+			view.UpdateValues(view.areaLabel, bm.wdata.battleArea+1, -1);
+			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea );
 
 			var delta = timeStamp - time;
 

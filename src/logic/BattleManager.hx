@@ -56,8 +56,8 @@ class BattleManager {
 			},
 
 			maxArea: 0,
-			necessaryToKillInArea: 0,
-			killedInArea: [],
+			necessaryToKillInArea: 5,
+			killedInArea: [0],
 
 			timePeriod: 1,
 			timeCount: 0,
@@ -94,6 +94,7 @@ class BattleManager {
 			if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
 				if (wdata.maxArea == wdata.battleArea) {
 					wdata.maxArea++;
+					killedInArea[wdata.maxArea] = 0;
 				}
 			}
 			hero.xp.value += enemy.level;
