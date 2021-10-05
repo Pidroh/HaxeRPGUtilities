@@ -80,6 +80,10 @@ class Main {
 		}
 		
 
+		view.AddButton("Reset", function(e) {
+			bm = new BattleManager();
+		});
+
 		buttonLevelUp.onClick = function(e){
 			bm.LevelUp();
 		}
@@ -120,9 +124,7 @@ class Main {
 			ActorToView(bm.wdata.enemy, view.enemyView);
 			view.UpdateValues(view.level, bm.wdata.hero.level, -1);
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
-			view.AddButton("Reset", function(e) {
-				bm = new BattleManager();
-			});
+			
 
 			var delta = timeStamp - time;
 

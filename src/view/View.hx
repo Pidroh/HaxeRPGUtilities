@@ -10,15 +10,25 @@ import haxe.ui.components.HorizontalProgress;
 class View {
 	public var heroView:ActorView;
 	public var enemyView:ActorView;
-    public var level : ResourceView;
-    public var xpBar : ResourceView;
+	
+    public var level : ValueView;
+    public var xpBar : ValueView;
+	public var enemyToAdvance : ValueView;
+	public var areaLabel : ValueView;
+
 	public var mainComponent:Component;
 
 	public function new() {
 		var box:VBox = new VBox();
         
-        level = CreateResourceView(box, false, "Level: ");
-        xpBar = CreateResourceView(box, true, "XP: ");
+		areaLabel = CreateValueView(box, false, "Area: ");
+		enemyToAdvance = CreateValueView(box, true, "Progress: ");
+		
+
+        level = CreateValueView(box, false, "Level: ");
+        xpBar = CreateValueView(box, true, "XP: ");
+
+		
 
 		heroView = GetActorView("You", box);
 		enemyView = GetActorView("Enemy", box);
@@ -34,7 +44,7 @@ class View {
 		mainComponent.addComponent(button);
 	}
 
-	public function UpdateValues(res : ResourceView, current:Int, max: Int){
+	public function UpdateValues(res : ValueView, current:Int, max: Int){
 		if(max > 0){ 
 			res.bar.pos = current*100 / max;
 			res.centeredText.text = current + " / " + max;
@@ -50,17 +60,17 @@ class View {
 		parent.addComponent(box);
 
 		var label:Label = new Label();
-		var lifeView:ResourceView = null;
+		var lifeView:ValueView = null;
 		box.addComponent(label);
 		label.text = name;
 		if (true) {
-			lifeView = CreateResourceView(box, true, "Life: ");
+			lifeView = CreateValueView(box, true, "Life: ");
 		}
 
 		return {name: label, life: lifeView};
 	}
 
-	function CreateResourceView(parent:Component, withBar:Bool, label : String) : ResourceView {
+	function CreateValueView(parent:Component, withBar:Bool, label : String) : ValueView {
 		var boxh = new Box();
         boxh.width = 180;
 		parent.addComponent(boxh);
@@ -108,12 +118,12 @@ class View {
 typedef Controls = {};
 typedef AreaView = {};
 
-typedef ResourceView = {
+typedef ValueView = {
 	var centeredText:Label;
 	var bar:HorizontalProgress;
 };
 
 typedef ActorView = {
 	var name:Label;
-	var life:ResourceView;
+	var life:ValueView;
 };

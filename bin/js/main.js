@@ -482,6 +482,9 @@ Main.main = function() {
 	l.set_styleString("font-size:14px; text-align: center;\r\n\t\t\tvertical-align: middle; width:100%;");
 	l.set_verticalAlign("middle");
 	progress.addComponent(l);
+	view.AddButton("Reset",function(e) {
+		bm = new BattleManager();
+	});
 	buttonLevelUp.set_onClick(function(e) {
 		bm.LevelUp();
 	});
@@ -509,9 +512,6 @@ Main.main = function() {
 		ActorToView(bm.wdata.enemy,view.enemyView);
 		view.UpdateValues(view.level,bm.wdata.hero.level,-1);
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
-		view.AddButton("Reset",function(e) {
-			bm = new BattleManager();
-		});
 		var delta = timeStamp - time;
 		time = timeStamp;
 		buttonAdvance.set_disabled(!bm.canAdvance);
@@ -960,8 +960,10 @@ Type.enumParameters = function(e) {
 };
 var View = function() {
 	var box = new haxe_ui_containers_VBox();
-	this.level = this.CreateResourceView(box,false,"Level: ");
-	this.xpBar = this.CreateResourceView(box,true,"XP: ");
+	this.areaLabel = this.CreateValueView(box,false,"Area: ");
+	this.enemyToAdvance = this.CreateValueView(box,true,"Progress: ");
+	this.level = this.CreateValueView(box,false,"Level: ");
+	this.xpBar = this.CreateValueView(box,true,"XP: ");
 	this.heroView = this.GetActorView("You",box);
 	this.enemyView = this.GetActorView("Enemy",box);
 	this.mainComponent = box;
@@ -975,6 +977,8 @@ View.prototype = {
 	,enemyView: null
 	,level: null
 	,xpBar: null
+	,enemyToAdvance: null
+	,areaLabel: null
 	,mainComponent: null
 	,AddButton: function(label,onClick) {
 		var button = new haxe_ui_components_Button();
@@ -997,10 +1001,10 @@ View.prototype = {
 		var lifeView = null;
 		box.addComponent(label);
 		label.set_text(name);
-		lifeView = this.CreateResourceView(box,true,"Life: ");
+		lifeView = this.CreateValueView(box,true,"Life: ");
 		return { name : label, life : lifeView};
 	}
-	,CreateResourceView: function(parent,withBar,label) {
+	,CreateValueView: function(parent,withBar,label) {
 		var boxh = new haxe_ui_containers_Box();
 		boxh.set_width(180);
 		parent.addComponent(boxh);
