@@ -11,9 +11,10 @@ class BattleManager {
 	public var canAdvance = false;
 	public var canLevelUp = false;
 
-	public function GetAttribute(actor:Actor, label:String){
+	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
-		if(i < 0) i = 0;
+		if (i < 0)
+			i = 0;
 		return i;
 	}
 
@@ -75,30 +76,20 @@ class BattleManager {
 		var event:String = "";
 		var killedInArea = wdata.killedInArea;
 		var battleArea = wdata.battleArea;
+		var attackHappen = true;
 
 		if (hero.attributesCalculated["Life"] <= 0) {
 			wdata.playerTimesKilled++;
 			event += "You died\n\n\n";
 			hero.attributesCalculated["Life"] = hero.attributesCalculated["LifeMax"];
 			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
+			attackHappen = false;
 			// c = Sys.getChar(true);
 		}
 
 		if (enemy.attributesCalculated["Life"] <= 0) {
-			#if !target.static
-			if (killedInArea[battleArea] == null) {
-				killedInArea[battleArea] = 0;
-			}
-			#end
-			killedInArea[battleArea]++;
-			if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
-				if (wdata.maxArea == wdata.battleArea) {
-					wdata.maxArea++;
-					killedInArea[wdata.maxArea] = 0;
-				}
-			}
-			hero.xp.value += enemy.level;
-			
+			attackHappen = false;
+
 			event += "New enemy";
 			event += "\n\n\n";
 			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
@@ -108,17 +99,35 @@ class BattleManager {
 		output += "\n\n";
 		output += event;
 		// c = Sys.getChar(true);
-		var attacker = hero;
-		var defender = enemy;
-		if (wdata.turn) {
-			attacker = enemy;
-			defender = hero;
-		}
-		defender.attributesCalculated["Life"] -= attacker.attributesCalculated["Attack"];
-		if(defender.attributesCalculated["Life"] < 0){
-			defender.attributesCalculated["Life"] = 0;
+		if (attackHappen) {
+			var attacker = hero;
+			var defender = enemy;
+			if (wdata.turn) {
+				attacker = enemy;
+				defender = hero;
+			}
+			defender.attributesCalculated["Life"] -= attacker.attributesCalculated["Attack"];
+			if (defender.attributesCalculated["Life"] < 0) {
+				defender.attributesCalculated["Life"] = 0;
+			}
 
+			if (enemy.attributesCalculated["Life"] <= 0) {
+				#if !target.static
+				if (killedInArea[battleArea] == null) {
+					killedInArea[battleArea] = 0;
+				}
+				#end
+				killedInArea[battleArea]++;
+				if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
+					if (wdata.maxArea == wdata.battleArea) {
+						wdata.maxArea++;
+						killedInArea[wdata.maxArea] = 0;
+					}
+				}
+				hero.xp.value += enemy.level;
+			}
 		}
+
 		wdata.turn = !wdata.turn;
 		return output;
 	}
@@ -169,7 +178,6 @@ $baseInfo';
 		canRetreat = wdata.battleArea > 0;
 		canLevelUp = wdata.hero.xp.value >= wdata.hero.xp.calculatedMax;
 
-		
 		if (wdata.timeCount >= wdata.timePeriod) {
 			wdata.timeCount = 0;
 			return advance();
@@ -191,7 +199,8 @@ $baseInfo';
 		if (wdata.battleArea > 0)
 			ChangeBattleArea(wdata.battleArea - 1);
 	}
-	public function LevelUp(){
+
+	public function LevelUp() {
 		var hero = wdata.hero;
 		if (canLevelUp) {
 			// Hero level up

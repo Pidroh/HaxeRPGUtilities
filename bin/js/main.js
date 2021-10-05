@@ -57,6 +57,7 @@ BattleManager.prototype = {
 		var event = "";
 		var killedInArea = this.wdata.killedInArea;
 		var battleArea = this.wdata.battleArea;
+		var attackHappen = true;
 		if(hero.attributesCalculated.h["Life"] <= 0) {
 			this.wdata.playerTimesKilled++;
 			event += "You died\n\n\n";
@@ -64,19 +65,10 @@ BattleManager.prototype = {
 			hero.attributesCalculated.h["Life"] = v;
 			var v = enemy.attributesCalculated.h["LifeMax"];
 			enemy.attributesCalculated.h["Life"] = v;
+			attackHappen = false;
 		}
 		if(enemy.attributesCalculated.h["Life"] <= 0) {
-			if(killedInArea[battleArea] == null) {
-				killedInArea[battleArea] = 0;
-			}
-			killedInArea[battleArea]++;
-			if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
-				if(this.wdata.maxArea == this.wdata.battleArea) {
-					this.wdata.maxArea++;
-					killedInArea[this.wdata.maxArea] = 0;
-				}
-			}
-			hero.xp.value += enemy.level;
+			attackHappen = false;
 			event += "New enemy";
 			event += "\n\n\n";
 			var v = enemy.attributesCalculated.h["LifeMax"];
@@ -85,17 +77,32 @@ BattleManager.prototype = {
 		var output = this.BaseInformationFormattedString();
 		output += "\n\n";
 		output += event;
-		var attacker = hero;
-		var defender = enemy;
-		if(this.wdata.turn) {
-			attacker = enemy;
-			defender = hero;
-		}
-		var _g = defender.attributesCalculated;
-		var v = _g.h["Life"] - attacker.attributesCalculated.h["Attack"];
-		_g.h["Life"] = v;
-		if(defender.attributesCalculated.h["Life"] < 0) {
-			defender.attributesCalculated.h["Life"] = 0;
+		if(attackHappen) {
+			var attacker = hero;
+			var defender = enemy;
+			if(this.wdata.turn) {
+				attacker = enemy;
+				defender = hero;
+			}
+			var _g = defender.attributesCalculated;
+			var v = _g.h["Life"] - attacker.attributesCalculated.h["Attack"];
+			_g.h["Life"] = v;
+			if(defender.attributesCalculated.h["Life"] < 0) {
+				defender.attributesCalculated.h["Life"] = 0;
+			}
+			if(enemy.attributesCalculated.h["Life"] <= 0) {
+				if(killedInArea[battleArea] == null) {
+					killedInArea[battleArea] = 0;
+				}
+				killedInArea[battleArea]++;
+				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
+					if(this.wdata.maxArea == this.wdata.battleArea) {
+						this.wdata.maxArea++;
+						killedInArea[this.wdata.maxArea] = 0;
+					}
+				}
+				hero.xp.value += enemy.level;
+			}
 		}
 		this.wdata.turn = !this.wdata.turn;
 		return output;
