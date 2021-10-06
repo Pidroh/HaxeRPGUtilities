@@ -20,32 +20,58 @@ class View {
 	public var mainComponent:Component;
 	public var logText:Label;
 
-	var buttonBox = new VBox();
+	var buttonBox : Component;
 	var buttonMap = new Map<String, Button>();
 
 	public function new() {
 		var boxParent = new HBox();
 		mainComponent = boxParent;
-		boxParent.horizontalAlign = "center";
-		boxParent.paddingTop = 20;
+		//boxParent.horizontalAlign = "center";
+		boxParent.padding = 40;
 
 		var box:VBox = new VBox();
 		boxParent.addComponent(box);
 
-		boxParent.addComponent(buttonBox);
+		buttonBox = CreateContainer(boxParent, true);
+		//boxParent.addComponent(buttonBox);
 
+		
+
+		var logContainer = CreateContainer(boxParent, true);
 		var log = new Label();
-		boxParent.addComponent(log);
 		logText = log;
+		logContainer.addComponent(log);
 
-		areaLabel = CreateValueView(box, false, "Area: ");
-		enemyToAdvance = CreateValueView(box, true, "Progress: ");
 
-		level = CreateValueView(box, false, "Level: ");
-		xpBar = CreateValueView(box, true, "XP: ");
+		var areaContainer = CreateContainer(box, true);
+		areaLabel = CreateValueView(areaContainer, false, "Area: ");
+		enemyToAdvance = CreateValueView(areaContainer, true, "Progress: ");
 
-		heroView = GetActorView("You", box);
-		enemyView = GetActorView("Enemy", box);
+		var levelContainer = CreateContainer(box, true);
+		level = CreateValueView(levelContainer, false, "Level: ");
+		xpBar = CreateValueView(levelContainer, true, "XP: ");
+
+		var battleView = CreateContainer(box, false);
+		heroView = GetActorView("You", battleView);
+		enemyView = GetActorView("Enemy", battleView);
+	}
+
+	public function CreateContainer(parent:Component, vertical) {
+		var container:Component;
+
+		
+		
+		if (vertical == false)
+			container = new HBox();
+		else
+			container = new VBox();
+		//container.percentWidth = 100;
+		// container.borderRadius = 1;
+		container.borderColor = "#333333";
+		container.borderSize = 1;
+		container.padding = 15;
+		parent.addComponent(container);
+		return container;
 	}
 
 	public function AddEventText(text:String) {
@@ -95,6 +121,7 @@ class View {
 	public function UpdateVisibility(actorView:ActorView, visibility) {
 		actorView.parent.hidden = !visibility;
 	}
+
 	public function UpdateVisibilityOfValueView(valueView:ValueView, visibility) {
 		valueView.parent.hidden = !visibility;
 	}

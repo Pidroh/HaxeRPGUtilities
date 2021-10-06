@@ -1048,23 +1048,25 @@ Type.enumParameters = function(e) {
 };
 var View = function() {
 	this.buttonMap = new haxe_ds_StringMap();
-	this.buttonBox = new haxe_ui_containers_VBox();
 	var boxParent = new haxe_ui_containers_HBox();
 	this.mainComponent = boxParent;
-	boxParent.set_horizontalAlign("center");
-	boxParent.set_paddingTop(20);
+	boxParent.set_padding(40);
 	var box = new haxe_ui_containers_VBox();
 	boxParent.addComponent(box);
-	boxParent.addComponent(this.buttonBox);
+	this.buttonBox = this.CreateContainer(boxParent,true);
+	var logContainer = this.CreateContainer(boxParent,true);
 	var log = new haxe_ui_components_Label();
-	boxParent.addComponent(log);
 	this.logText = log;
-	this.areaLabel = this.CreateValueView(box,false,"Area: ");
-	this.enemyToAdvance = this.CreateValueView(box,true,"Progress: ");
-	this.level = this.CreateValueView(box,false,"Level: ");
-	this.xpBar = this.CreateValueView(box,true,"XP: ");
-	this.heroView = this.GetActorView("You",box);
-	this.enemyView = this.GetActorView("Enemy",box);
+	logContainer.addComponent(log);
+	var areaContainer = this.CreateContainer(box,true);
+	this.areaLabel = this.CreateValueView(areaContainer,false,"Area: ");
+	this.enemyToAdvance = this.CreateValueView(areaContainer,true,"Progress: ");
+	var levelContainer = this.CreateContainer(box,true);
+	this.level = this.CreateValueView(levelContainer,false,"Level: ");
+	this.xpBar = this.CreateValueView(levelContainer,true,"XP: ");
+	var battleView = this.CreateContainer(box,false);
+	this.heroView = this.GetActorView("You",battleView);
+	this.enemyView = this.GetActorView("Enemy",battleView);
 };
 $hxClasses["View"] = View;
 View.__name__ = "View";
@@ -1079,6 +1081,19 @@ View.prototype = {
 	,logText: null
 	,buttonBox: null
 	,buttonMap: null
+	,CreateContainer: function(parent,vertical) {
+		var container;
+		if(vertical == false) {
+			container = new haxe_ui_containers_HBox();
+		} else {
+			container = new haxe_ui_containers_VBox();
+		}
+		container.set_borderColor(haxe_ui_util_Color.fromString("#333333"));
+		container.set_borderSize(1);
+		container.set_padding(15);
+		parent.addComponent(container);
+		return container;
+	}
 	,AddEventText: function(text) {
 		if(this.logText.get_text() == null) {
 			this.logText.set_text(text);
@@ -1093,13 +1108,13 @@ View.prototype = {
 			button.set_onClick(onClick);
 		} else {
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 68, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 94, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 70, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 96, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 74, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 100, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);
