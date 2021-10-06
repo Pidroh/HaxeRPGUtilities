@@ -105,7 +105,7 @@ enum EventTypes{
 	ActorDead; 
 	ActorAppear;
 	ActorAttack;
-	LevelUp;
+	ActorLevelUp;
 	AreaUnlock;
 	AreaEnterFirstTime;
 }

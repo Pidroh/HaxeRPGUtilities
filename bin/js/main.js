@@ -202,6 +202,7 @@ BattleManager.prototype = {
 		if(this.canLevelUp) {
 			hero.xp.value -= hero.xp.calculatedMax;
 			hero.level++;
+			this.AddEvent(EventTypes.ActorLevelUp);
 			var hero1 = hero.attributesBase;
 			var _g = new haxe_ds_StringMap();
 			_g.h["Attack"] = 1;
@@ -566,6 +567,9 @@ Main.main = function() {
 			if(e.type == EventTypes.ActorDead) {
 				ev = "" + originText + " died!";
 			}
+			if(e.type == EventTypes.ActorLevelUp) {
+				ev = "<b>You leveled up!</b>";
+			}
 			view.AddEventText(ev);
 			eventShown += 1;
 		}
@@ -653,11 +657,11 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,ActorDead: {_hx_name:"ActorDead",_hx_index:1,__enum__:"EventTypes",toString:$estr}
 	,ActorAppear: {_hx_name:"ActorAppear",_hx_index:2,__enum__:"EventTypes",toString:$estr}
 	,ActorAttack: {_hx_name:"ActorAttack",_hx_index:3,__enum__:"EventTypes",toString:$estr}
-	,LevelUp: {_hx_name:"LevelUp",_hx_index:4,__enum__:"EventTypes",toString:$estr}
+	,ActorLevelUp: {_hx_name:"ActorLevelUp",_hx_index:4,__enum__:"EventTypes",toString:$estr}
 	,AreaUnlock: {_hx_name:"AreaUnlock",_hx_index:5,__enum__:"EventTypes",toString:$estr}
 	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:6,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.LevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;
@@ -1097,9 +1101,10 @@ View.prototype = {
 	,AddEventText: function(text) {
 		if(this.logText.get_text() == null) {
 			this.logText.set_text(text);
+			this.logText.set_htmlText(text);
 			return;
 		}
-		this.logText.set_text(text + "\n\n" + this.logText.get_text());
+		this.logText.set_htmlText(text + "\n\n" + this.logText.get_htmlText());
 	}
 	,AddButton: function(id,label,onClick,warningMessage) {
 		var button = new haxe_ui_components_Button();
@@ -1108,13 +1113,13 @@ View.prototype = {
 			button.set_onClick(onClick);
 		} else {
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 94, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 95, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 96, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 97, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 100, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 101, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

@@ -77,10 +77,11 @@ class View {
 	public function AddEventText(text:String) {
 		if (logText.text == null) {
 			logText.text = text;
+			logText.htmlText = text;
 			return;
 		}
 
-		logText.text = text + "\n\n" + logText.text;
+		logText.htmlText = text + "\n\n" + logText.htmlText;
 	}
 
 	public function AddButton(id:String, label:String, onClick, warningMessage = null) {

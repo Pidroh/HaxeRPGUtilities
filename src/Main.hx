@@ -132,6 +132,9 @@ class Main {
 				if(e.type == ActorDead){
 					ev = '$originText died!';
 				}
+				if(e.type == ActorLevelUp){
+					ev = '<b>You leveled up!</b>';
+				}
 
 
 				view.AddEventText(ev);

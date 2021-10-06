@@ -195,6 +195,7 @@ BattleManager.prototype = {
 		if(this.canLevelUp) {
 			hero.xp.value -= hero.xp.calculatedMax;
 			hero.level++;
+			this.AddEvent(EventTypes.ActorLevelUp);
 			var hero1 = hero.attributesBase;
 			var _g = new haxe_ds_StringMap();
 			_g.h["Attack"] = 1;
@@ -459,11 +460,11 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,ActorDead: {_hx_name:"ActorDead",_hx_index:1,__enum__:"EventTypes",toString:$estr}
 	,ActorAppear: {_hx_name:"ActorAppear",_hx_index:2,__enum__:"EventTypes",toString:$estr}
 	,ActorAttack: {_hx_name:"ActorAttack",_hx_index:3,__enum__:"EventTypes",toString:$estr}
-	,LevelUp: {_hx_name:"LevelUp",_hx_index:4,__enum__:"EventTypes",toString:$estr}
+	,ActorLevelUp: {_hx_name:"ActorLevelUp",_hx_index:4,__enum__:"EventTypes",toString:$estr}
 	,AreaUnlock: {_hx_name:"AreaUnlock",_hx_index:5,__enum__:"EventTypes",toString:$estr}
 	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:6,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.LevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;

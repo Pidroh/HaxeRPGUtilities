@@ -259,6 +259,7 @@ $baseInfo';
 			// Hero level up
 			hero.xp.value -= hero.xp.calculatedMax;
 			hero.level++;
+			AddEvent(ActorLevelUp);
 			AttributeLogic.Add(hero.attributesBase, ["Attack" => 1, "LifeMax" => 1, "Life" => 1], hero.level, hero.attributesCalculated);
 			ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
 		}
