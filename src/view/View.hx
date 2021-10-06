@@ -171,15 +171,14 @@ class View {
 
 	function CreateValueView(parent:Component, withBar:Bool, label:String):ValueView {
 		var boxh = new Box();
-		boxh.width = 180;
-		boxh.height = 100;
+		boxh.percentWidth = 100;
 		parent.addComponent(boxh);
 
 		var addLabel = label != null && label != "";
 		if (addLabel) {
 			var l:Label = new Label();
 			l.text = label;
-			l.width = 50;
+			//l.width = 50;
 			// l.percentHeight = 100;
 
 			l.verticalAlign = "center";

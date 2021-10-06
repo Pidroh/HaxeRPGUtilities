@@ -228,6 +228,101 @@ BattleManager.prototype = {
 	}
 	,__class__: BattleManager
 };
+var DateTools = function() { };
+$hxClasses["DateTools"] = DateTools;
+DateTools.__name__ = "DateTools";
+DateTools.__format_get = function(d,e) {
+	switch(e) {
+	case "%":
+		return "%";
+	case "A":
+		return DateTools.DAY_NAMES[d.getDay()];
+	case "B":
+		return DateTools.MONTH_NAMES[d.getMonth()];
+	case "C":
+		return StringTools.lpad(Std.string(d.getFullYear() / 100 | 0),"0",2);
+	case "D":
+		return DateTools.__format(d,"%m/%d/%y");
+	case "F":
+		return DateTools.__format(d,"%Y-%m-%d");
+	case "I":case "l":
+		var hour = d.getHours() % 12;
+		return StringTools.lpad(Std.string(hour == 0 ? 12 : hour),e == "I" ? "0" : " ",2);
+	case "M":
+		return StringTools.lpad(Std.string(d.getMinutes()),"0",2);
+	case "R":
+		return DateTools.__format(d,"%H:%M");
+	case "S":
+		return StringTools.lpad(Std.string(d.getSeconds()),"0",2);
+	case "T":
+		return DateTools.__format(d,"%H:%M:%S");
+	case "Y":
+		return Std.string(d.getFullYear());
+	case "a":
+		return DateTools.DAY_SHORT_NAMES[d.getDay()];
+	case "b":case "h":
+		return DateTools.MONTH_SHORT_NAMES[d.getMonth()];
+	case "d":
+		return StringTools.lpad(Std.string(d.getDate()),"0",2);
+	case "e":
+		return Std.string(d.getDate());
+	case "H":case "k":
+		return StringTools.lpad(Std.string(d.getHours()),e == "H" ? "0" : " ",2);
+	case "m":
+		return StringTools.lpad(Std.string(d.getMonth() + 1),"0",2);
+	case "n":
+		return "\n";
+	case "p":
+		if(d.getHours() > 11) {
+			return "PM";
+		} else {
+			return "AM";
+		}
+		break;
+	case "r":
+		return DateTools.__format(d,"%I:%M:%S %p");
+	case "s":
+		return Std.string(d.getTime() / 1000 | 0);
+	case "t":
+		return "\t";
+	case "u":
+		var t = d.getDay();
+		if(t == 0) {
+			return "7";
+		} else if(t == null) {
+			return "null";
+		} else {
+			return "" + t;
+		}
+		break;
+	case "w":
+		return Std.string(d.getDay());
+	case "y":
+		return StringTools.lpad(Std.string(d.getFullYear() % 100),"0",2);
+	default:
+		throw new haxe_exceptions_NotImplementedException("Date.format %" + e + "- not implemented yet.",null,{ fileName : "DateTools.hx", lineNumber : 101, className : "DateTools", methodName : "__format_get"});
+	}
+};
+DateTools.__format = function(d,f) {
+	var r_b = "";
+	var p = 0;
+	while(true) {
+		var np = f.indexOf("%",p);
+		if(np < 0) {
+			break;
+		}
+		var len = np - p;
+		r_b += len == null ? HxOverrides.substr(f,p,null) : HxOverrides.substr(f,p,len);
+		r_b += Std.string(DateTools.__format_get(d,HxOverrides.substr(f,np + 1,1)));
+		p = np + 2;
+	}
+	var len = f.length - p;
+	r_b += len == null ? HxOverrides.substr(f,p,null) : HxOverrides.substr(f,p,len);
+	return r_b;
+};
+DateTools.format = function(d,f) {
+	return DateTools.__format(d,f);
+};
 var EReg = function(r,opt) {
 	this.r = new RegExp(r,opt.split("u").join(""));
 };
@@ -314,6 +409,36 @@ EReg.prototype = {
 var HxOverrides = function() { };
 $hxClasses["HxOverrides"] = HxOverrides;
 HxOverrides.__name__ = "HxOverrides";
+HxOverrides.dateStr = function(date) {
+	var m = date.getMonth() + 1;
+	var d = date.getDate();
+	var h = date.getHours();
+	var mi = date.getMinutes();
+	var s = date.getSeconds();
+	return date.getFullYear() + "-" + (m < 10 ? "0" + m : "" + m) + "-" + (d < 10 ? "0" + d : "" + d) + " " + (h < 10 ? "0" + h : "" + h) + ":" + (mi < 10 ? "0" + mi : "" + mi) + ":" + (s < 10 ? "0" + s : "" + s);
+};
+HxOverrides.strDate = function(s) {
+	switch(s.length) {
+	case 8:
+		var k = s.split(":");
+		var d = new Date();
+		d["setTime"](0);
+		d["setUTCHours"](k[0]);
+		d["setUTCMinutes"](k[1]);
+		d["setUTCSeconds"](k[2]);
+		return d;
+	case 10:
+		var k = s.split("-");
+		return new Date(k[0],k[1] - 1,k[2],0,0,0);
+	case 19:
+		var k = s.split(" ");
+		var y = k[0].split("-");
+		var t = k[1].split(":");
+		return new Date(y[0],y[1] - 1,y[2],t[0],t[1],t[2]);
+	default:
+		throw haxe_Exception.thrown("Invalid date format : " + s);
+	}
+};
 HxOverrides.cca = function(s,index) {
 	var x = s.charCodeAt(index);
 	if(x != x) {
@@ -795,6 +920,16 @@ StringTools.rtrim = function(s) {
 StringTools.trim = function(s) {
 	return StringTools.ltrim(StringTools.rtrim(s));
 };
+StringTools.lpad = function(s,c,l) {
+	if(c.length <= 0) {
+		return s;
+	}
+	var buf_b = "";
+	l -= s.length;
+	while(buf_b.length < l) buf_b += c == null ? "null" : "" + c;
+	buf_b += s == null ? "null" : "" + s;
+	return buf_b;
+};
 StringTools.replace = function(s,sub,by) {
 	return s.split(sub).join(by);
 };
@@ -1044,14 +1179,12 @@ View.prototype = {
 	}
 	,CreateValueView: function(parent,withBar,label) {
 		var boxh = new haxe_ui_containers_Box();
-		boxh.set_width(180);
-		boxh.set_height(100);
+		boxh.set_percentWidth(100);
 		parent.addComponent(boxh);
 		var addLabel = label != null && label != "";
 		if(addLabel) {
 			var l = new haxe_ui_components_Label();
 			l.set_text(label);
-			l.set_width(50);
 			l.set_verticalAlign("center");
 			boxh.addComponent(l);
 		}
@@ -1290,11 +1423,17 @@ haxe_Exception.prototype = $extend(Error.prototype,{
 	,unwrap: function() {
 		return this.__nativeException;
 	}
+	,toString: function() {
+		return this.get_message();
+	}
+	,get_message: function() {
+		return this.message;
+	}
 	,get_native: function() {
 		return this.__nativeException;
 	}
 	,__class__: haxe_Exception
-	,__properties__: {get_native:"get_native"}
+	,__properties__: {get_native:"get_native",get_message:"get_message"}
 });
 var haxe_Log = function() { };
 $hxClasses["haxe.Log"] = haxe_Log;
@@ -1945,6 +2084,14 @@ haxe_ds_ObjectMap.prototype = {
 		}
 		return new haxe_iterators_ArrayIterator(a);
 	}
+	,iterator: function() {
+		return { ref : this.h, it : this.keys(), hasNext : function() {
+			return this.it.hasNext();
+		}, next : function() {
+			var i = this.it.next();
+			return this.ref[i.__id__];
+		}};
+	}
 	,__class__: haxe_ds_ObjectMap
 };
 var haxe_ds_StringMap = function() {
@@ -1989,6 +2136,36 @@ haxe_ds__$StringMap_StringMapKeyIterator.prototype = {
 	}
 	,__class__: haxe_ds__$StringMap_StringMapKeyIterator
 };
+var haxe_exceptions_PosException = function(message,previous,pos) {
+	haxe_Exception.call(this,message,previous);
+	if(pos == null) {
+		this.posInfos = { fileName : "(unknown)", lineNumber : 0, className : "(unknown)", methodName : "(unknown)"};
+	} else {
+		this.posInfos = pos;
+	}
+};
+$hxClasses["haxe.exceptions.PosException"] = haxe_exceptions_PosException;
+haxe_exceptions_PosException.__name__ = "haxe.exceptions.PosException";
+haxe_exceptions_PosException.__super__ = haxe_Exception;
+haxe_exceptions_PosException.prototype = $extend(haxe_Exception.prototype,{
+	posInfos: null
+	,toString: function() {
+		return "" + haxe_Exception.prototype.toString.call(this) + " in " + this.posInfos.className + "." + this.posInfos.methodName + " at " + this.posInfos.fileName + ":" + this.posInfos.lineNumber;
+	}
+	,__class__: haxe_exceptions_PosException
+});
+var haxe_exceptions_NotImplementedException = function(message,previous,pos) {
+	if(message == null) {
+		message = "Not implemented";
+	}
+	haxe_exceptions_PosException.call(this,message,previous,pos);
+};
+$hxClasses["haxe.exceptions.NotImplementedException"] = haxe_exceptions_NotImplementedException;
+haxe_exceptions_NotImplementedException.__name__ = "haxe.exceptions.NotImplementedException";
+haxe_exceptions_NotImplementedException.__super__ = haxe_exceptions_PosException;
+haxe_exceptions_NotImplementedException.prototype = $extend(haxe_exceptions_PosException.prototype,{
+	__class__: haxe_exceptions_NotImplementedException
+});
 var haxe_io_Error = $hxEnums["haxe.io.Error"] = { __ename__:true,__constructs__:null
 	,Blocked: {_hx_name:"Blocked",_hx_index:0,__enum__:"haxe.io.Error",toString:$estr}
 	,Overflow: {_hx_name:"Overflow",_hx_index:1,__enum__:"haxe.io.Error",toString:$estr}
@@ -6750,6 +6927,703 @@ haxe_ui_Toolkit.build = function() {
 	if(haxe_ui_Toolkit._built == true) {
 		return;
 	}
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Component","haxe.ui.core.Component");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Button","haxe.ui.components.Button");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("CalendarEvent","haxe.ui.components.CalendarEvent");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Calendar","haxe.ui.components.Calendar");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("CheckBox","haxe.ui.components.CheckBox");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Column","haxe.ui.components.Column");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("DropDown","haxe.ui.components.DropDown");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("IDropDownHandler","haxe.ui.components.IDropDownHandler");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("DropDownHandler","haxe.ui.components.DropDownHandler");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("ListDropDownHandler","haxe.ui.components.ListDropDownHandler");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("CalendarDropDownHandler","haxe.ui.components.CalendarDropDownHandler");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("HGrid","haxe.ui.components.HGrid");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("HorizontalProgress","haxe.ui.components.HorizontalProgress");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("HorizontalRange","haxe.ui.components.HorizontalRange");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("HorizontalRule","haxe.ui.components.HorizontalRule");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("HorizontalScroll","haxe.ui.components.HorizontalScroll");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("HorizontalSlider","haxe.ui.components.HorizontalSlider");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Image","haxe.ui.components.Image");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Label","haxe.ui.components.Label");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("NumberStepper","haxe.ui.components.NumberStepper");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("OptionBox","haxe.ui.components.OptionBox");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Progress","haxe.ui.components.Progress");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Range","haxe.ui.components.Range");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Rule","haxe.ui.components.Rule");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Scroll","haxe.ui.components.Scroll");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Slider","haxe.ui.components.Slider");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Spacer","haxe.ui.components.Spacer");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Stepper","haxe.ui.components.Stepper");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Switch","haxe.ui.components.Switch");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("TabBar","haxe.ui.components.TabBar");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("TextArea","haxe.ui.components.TextArea");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("TextField","haxe.ui.components.TextField");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Toggle","haxe.ui.components.Toggle");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("VerticalProgress","haxe.ui.components.VerticalProgress");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("VerticalRange","haxe.ui.components.VerticalRange");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("VerticalRule","haxe.ui.components.VerticalRule");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("VerticalScroll","haxe.ui.components.VerticalScroll");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("VerticalSlider","haxe.ui.components.VerticalSlider");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("VGrid","haxe.ui.components.VGrid");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Absolute","haxe.ui.containers.Absolute");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Accordion","haxe.ui.containers.Accordion");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Box","haxe.ui.containers.Box");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("ButtonBar","haxe.ui.containers.ButtonBar");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("CalendarView","haxe.ui.containers.CalendarView");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("ContinuousHBox","haxe.ui.containers.ContinuousHBox");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Frame","haxe.ui.containers.Frame");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Grid","haxe.ui.containers.Grid");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Group","haxe.ui.containers.Group");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("HBox","haxe.ui.containers.HBox");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Header","haxe.ui.containers.Header");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("HorizontalButtonBar","haxe.ui.containers.HorizontalButtonBar");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("HorizontalSplitter","haxe.ui.containers.HorizontalSplitter");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("IVirtualContainer","haxe.ui.containers.IVirtualContainer");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("ListView","haxe.ui.containers.ListView");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("ScrollView","haxe.ui.containers.ScrollView");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Splitter","haxe.ui.containers.Splitter");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Stack","haxe.ui.containers.Stack");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("TableView","haxe.ui.containers.TableView");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("TabView","haxe.ui.containers.TabView");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("VBox","haxe.ui.containers.VBox");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("VerticalButtonBar","haxe.ui.containers.VerticalButtonBar");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("VerticalSplitter","haxe.ui.containers.VerticalSplitter");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("MenuEvent","haxe.ui.containers.menus.MenuEvent");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Menu","haxe.ui.containers.menus.Menu");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("MenuBar","haxe.ui.containers.menus.MenuBar");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("MenuCheckBox","haxe.ui.containers.menus.MenuCheckBox");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("MenuItem","haxe.ui.containers.menus.MenuItem");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("MenuOptionBox","haxe.ui.containers.menus.MenuOptionBox");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("MenuSeparator","haxe.ui.containers.menus.MenuSeparator");
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Std","Std");
+	haxe_ui_scripting_ScriptInterp.addStaticClass("Std",Std);
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Math","Math");
+	haxe_ui_scripting_ScriptInterp.addStaticClass("Math",Math);
+	haxe_ui_scripting_ScriptInterp.addClassAlias("StringTools","StringTools");
+	haxe_ui_scripting_ScriptInterp.addStaticClass("StringTools",StringTools);
+	haxe_ui_scripting_ScriptInterp.addClassAlias("Screen","haxe.ui.core.Screen");
+	haxe_ui_scripting_ScriptInterp.addStaticClass("Screen",haxe_ui_core_Screen);
+	haxe_ui_scripting_ScriptInterp.addClassAlias("MessageBox","haxe.ui.containers.dialogs.MessageBox");
+	haxe_ui_scripting_ScriptInterp.addStaticClass("MessageBox",haxe_ui_containers_dialogs_MessageBox);
+	haxe_ui_themes_ThemeManager.get_instance().getTheme("native").parent = "default";
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("native","haxeui-core/styles/native/main.css",-3.);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("global","haxeui-core/styles/global.css",-4.);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/main.css",-3.);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/buttons.css",-2.99);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/dialogs.css",-2.9800000000000004);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/textinputs.css",-2.9700000000000006);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/scrollbars.css",-2.9600000000000009);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/scrollview.css",-2.9500000000000011);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/checkboxes.css",-2.9400000000000013);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/optionboxes.css",-2.9300000000000015);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/ranges.css",-2.9200000000000017);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/progressbars.css",-2.9100000000000019);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/sliders.css",-2.9000000000000021);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/steppers.css",-2.8900000000000023);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/tabs.css",-2.8800000000000026);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/listview.css",-2.8700000000000028);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/dropdowns.css",-2.860000000000003);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/tableview.css",-2.8500000000000032);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/switches.css",-2.8400000000000034);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/calendars.css",-2.8300000000000036);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/menus.css",-2.8200000000000038);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/accordion.css",-2.8100000000000041);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/propertygrids.css",-2.8000000000000043);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/frames.css",-2.7900000000000045);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/splitters.css",-2.7800000000000047);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/tooltips.css",-2.7700000000000049);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","haxeui-core/styles/default/rules.css",-2.7600000000000051);
+	haxe_ui_themes_ThemeManager.get_instance().getTheme("dark").parent = "default";
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/main.css",-2.);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/buttons.css",-1.99);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/dialogs.css",-1.98);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/textinputs.css",-1.97);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/scrollbars.css",-1.96);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/scrollview.css",-1.95);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/checkboxes.css",-1.94);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/optionboxes.css",-1.93);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/ranges.css",-1.92);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/progressbars.css",-1.91);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/sliders.css",-1.9);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/steppers.css",-1.89);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/tabs.css",-1.88);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/listview.css",-1.8699999999999999);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/dropdowns.css",-1.8599999999999999);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/tableview.css",-1.8499999999999999);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/switches.css",-1.8399999999999999);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/calendars.css",-1.8299999999999998);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/menus.css",-1.8199999999999998);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/accordion.css",-1.8099999999999998);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/propertygrids.css",-1.7999999999999998);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/frames.css",-1.7899999999999998);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/splitters.css",-1.7799999999999998);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/tooltips.css",-1.7699999999999998);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("dark","haxeui-core/styles/dark/rules.css",-1.7599999999999998);
+	haxe_ui_locale_LocaleManager.get_instance().parseResource("en","haxeui-core/locale/en/dialog.properties");
+	haxe_ui_locale_LocaleManager.get_instance().parseResource("es","haxeui-core/locale/es/dialog.properties");
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("native","styles/native/main.css",-1);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("global","styles/main.css",-2);
+	haxe_ui_themes_ThemeManager.get_instance().addStyleResource("default","styles/default/main.css",-1);
+	haxe_ui_core_ComponentClassMap.register("vsplitter","haxe.ui.containers.VerticalSplitter");
+	haxe_ui_core_ComponentClassMap.register("vslider","haxe.ui.components.VerticalSlider");
+	haxe_ui_core_ComponentClassMap.register("vscroll","haxe.ui.components.VerticalScroll");
+	haxe_ui_core_ComponentClassMap.register("vrule","haxe.ui.components.VerticalRule");
+	haxe_ui_core_ComponentClassMap.register("vrange","haxe.ui.components.VerticalRange");
+	haxe_ui_core_ComponentClassMap.register("vprogress","haxe.ui.components.VerticalProgress");
+	haxe_ui_core_ComponentClassMap.register("vgrid","haxe.ui.components.VGrid");
+	haxe_ui_core_ComponentClassMap.register("verticalsplitter","haxe.ui.containers.VerticalSplitter");
+	haxe_ui_core_ComponentClassMap.register("verticalslider","haxe.ui.components.VerticalSlider");
+	haxe_ui_core_ComponentClassMap.register("verticalscroll","haxe.ui.components.VerticalScroll");
+	haxe_ui_core_ComponentClassMap.register("verticalrule","haxe.ui.components.VerticalRule");
+	haxe_ui_core_ComponentClassMap.register("verticalrange","haxe.ui.components.VerticalRange");
+	haxe_ui_core_ComponentClassMap.register("verticalprogress","haxe.ui.components.VerticalProgress");
+	haxe_ui_core_ComponentClassMap.register("verticalbuttonbar","haxe.ui.containers.VerticalButtonBar");
+	haxe_ui_core_ComponentClassMap.register("vbuttonbar","haxe.ui.containers.VerticalButtonBar");
+	haxe_ui_core_ComponentClassMap.register("vbox","haxe.ui.containers.VBox");
+	haxe_ui_core_ComponentClassMap.register("toggle","haxe.ui.components.Toggle");
+	haxe_ui_core_ComponentClassMap.register("textfield","haxe.ui.components.TextField");
+	haxe_ui_core_ComponentClassMap.register("textarea","haxe.ui.components.TextArea");
+	haxe_ui_core_ComponentClassMap.register("text","haxe.ui.components.Label");
+	haxe_ui_core_ComponentClassMap.register("tabview","haxe.ui.containers.TabView");
+	haxe_ui_core_ComponentClassMap.register("tableview","haxe.ui.containers.TableView");
+	haxe_ui_core_ComponentClassMap.register("tabbar","haxe.ui.components.TabBar");
+	haxe_ui_core_ComponentClassMap.register("switch","haxe.ui.components.Switch");
+	haxe_ui_core_ComponentClassMap.register("stepper","haxe.ui.components.Stepper");
+	haxe_ui_core_ComponentClassMap.register("stack","haxe.ui.containers.Stack");
+	haxe_ui_core_ComponentClassMap.register("splitter","haxe.ui.containers.Splitter");
+	haxe_ui_core_ComponentClassMap.register("spacer","haxe.ui.components.Spacer");
+	haxe_ui_core_ComponentClassMap.register("slider","haxe.ui.components.Slider");
+	haxe_ui_core_ComponentClassMap.register("scrollview","haxe.ui.containers.ScrollView");
+	haxe_ui_core_ComponentClassMap.register("scroll","haxe.ui.components.Scroll");
+	haxe_ui_core_ComponentClassMap.register("rule","haxe.ui.components.Rule");
+	haxe_ui_core_ComponentClassMap.register("range","haxe.ui.components.Range");
+	haxe_ui_core_ComponentClassMap.register("propertygroup","haxe.ui.containers.properties.PropertyGroup");
+	haxe_ui_core_ComponentClassMap.register("propertygrid","haxe.ui.containers.properties.PropertyGrid");
+	haxe_ui_core_ComponentClassMap.register("property","haxe.ui.containers.properties.Property");
+	haxe_ui_core_ComponentClassMap.register("progress","haxe.ui.components.Progress");
+	haxe_ui_core_ComponentClassMap.register("optionbox","haxe.ui.components.OptionBox");
+	haxe_ui_core_ComponentClassMap.register("numberstepper","haxe.ui.components.NumberStepper");
+	haxe_ui_core_ComponentClassMap.register("menuseparator","haxe.ui.containers.menus.MenuSeparator");
+	haxe_ui_core_ComponentClassMap.register("menuoptionbox","haxe.ui.containers.menus.MenuOptionBox");
+	haxe_ui_core_ComponentClassMap.register("menuitem","haxe.ui.containers.menus.MenuItem");
+	haxe_ui_core_ComponentClassMap.register("menucheckbox","haxe.ui.containers.menus.MenuCheckBox");
+	haxe_ui_core_ComponentClassMap.register("menubar","haxe.ui.containers.menus.MenuBar");
+	haxe_ui_core_ComponentClassMap.register("menu","haxe.ui.containers.menus.Menu");
+	haxe_ui_core_ComponentClassMap.register("listview","haxe.ui.containers.ListView");
+	haxe_ui_core_ComponentClassMap.register("label","haxe.ui.components.Label");
+	haxe_ui_core_ComponentClassMap.register("itemrenderer","haxe.ui.core.ItemRenderer");
+	haxe_ui_core_ComponentClassMap.register("image","haxe.ui.components.Image");
+	haxe_ui_core_ComponentClassMap.register("hsplitter","haxe.ui.containers.HorizontalSplitter");
+	haxe_ui_core_ComponentClassMap.register("hslider","haxe.ui.components.HorizontalSlider");
+	haxe_ui_core_ComponentClassMap.register("hscroll","haxe.ui.components.HorizontalScroll");
+	haxe_ui_core_ComponentClassMap.register("hrule","haxe.ui.components.HorizontalRule");
+	haxe_ui_core_ComponentClassMap.register("hrange","haxe.ui.components.HorizontalRange");
+	haxe_ui_core_ComponentClassMap.register("hprogress","haxe.ui.components.HorizontalProgress");
+	haxe_ui_core_ComponentClassMap.register("horizontalsplitter","haxe.ui.containers.HorizontalSplitter");
+	haxe_ui_core_ComponentClassMap.register("horizontalslider","haxe.ui.components.HorizontalSlider");
+	haxe_ui_core_ComponentClassMap.register("horizontalscroll","haxe.ui.components.HorizontalScroll");
+	haxe_ui_core_ComponentClassMap.register("horizontalrule","haxe.ui.components.HorizontalRule");
+	haxe_ui_core_ComponentClassMap.register("horizontalrange","haxe.ui.components.HorizontalRange");
+	haxe_ui_core_ComponentClassMap.register("horizontalprogress","haxe.ui.components.HorizontalProgress");
+	haxe_ui_core_ComponentClassMap.register("horizontalbuttonbar","haxe.ui.containers.HorizontalButtonBar");
+	haxe_ui_core_ComponentClassMap.register("hgrid","haxe.ui.components.HGrid");
+	haxe_ui_core_ComponentClassMap.register("header","haxe.ui.containers.Header");
+	haxe_ui_core_ComponentClassMap.register("hbuttonbar","haxe.ui.containers.HorizontalButtonBar");
+	haxe_ui_core_ComponentClassMap.register("hbox","haxe.ui.containers.HBox");
+	haxe_ui_core_ComponentClassMap.register("group","haxe.ui.containers.Group");
+	haxe_ui_core_ComponentClassMap.register("grid","haxe.ui.containers.Grid");
+	haxe_ui_core_ComponentClassMap.register("frame","haxe.ui.containers.Frame");
+	haxe_ui_core_ComponentClassMap.register("dropdown","haxe.ui.components.DropDown");
+	haxe_ui_core_ComponentClassMap.register("dialog","haxe.ui.containers.dialogs.Dialog");
+	haxe_ui_core_ComponentClassMap.register("continuoushbox","haxe.ui.containers.ContinuousHBox");
+	haxe_ui_core_ComponentClassMap.register("component","haxe.ui.core.Component");
+	haxe_ui_core_ComponentClassMap.register("column","haxe.ui.components.Column");
+	haxe_ui_core_ComponentClassMap.register("checkbox","haxe.ui.components.CheckBox");
+	haxe_ui_core_ComponentClassMap.register("calendarview","haxe.ui.containers.CalendarView");
+	haxe_ui_core_ComponentClassMap.register("calendar","haxe.ui.components.Calendar");
+	haxe_ui_core_ComponentClassMap.register("buttonbar","haxe.ui.containers.ButtonBar");
+	haxe_ui_core_ComponentClassMap.register("button","haxe.ui.components.Button");
+	haxe_ui_core_ComponentClassMap.register("box","haxe.ui.containers.Box");
+	haxe_ui_core_ComponentClassMap.register("basicitemrenderer","haxe.ui.core.BasicItemRenderer");
+	haxe_ui_core_ComponentClassMap.register("accordion","haxe.ui.containers.Accordion");
+	haxe_ui_core_ComponentClassMap.register("absolute","haxe.ui.containers.Absolute");
+	haxe_ui_core_LayoutClassMap.register("virtuallayout","haxe.ui.layouts.VirtualLayout");
+	haxe_ui_core_LayoutClassMap.register("virtual","haxe.ui.layouts.VirtualLayout");
+	haxe_ui_core_LayoutClassMap.register("verticalvirtuallayout","haxe.ui.layouts.VerticalVirtualLayout");
+	haxe_ui_core_LayoutClassMap.register("verticalvirtual","haxe.ui.layouts.VerticalVirtualLayout");
+	haxe_ui_core_LayoutClassMap.register("verticallayout","haxe.ui.layouts.VerticalLayout");
+	haxe_ui_core_LayoutClassMap.register("verticalgridlayout","haxe.ui.layouts.VerticalGridLayout");
+	haxe_ui_core_LayoutClassMap.register("verticalgrid","haxe.ui.layouts.VerticalGridLayout");
+	haxe_ui_core_LayoutClassMap.register("vertical","haxe.ui.layouts.VerticalLayout");
+	haxe_ui_core_LayoutClassMap.register("scrollviewlayout","haxe.ui.layouts.ScrollViewLayout");
+	haxe_ui_core_LayoutClassMap.register("scrollview","haxe.ui.layouts.ScrollViewLayout");
+	haxe_ui_core_LayoutClassMap.register("layout","haxe.ui.layouts.Layout");
+	haxe_ui_core_LayoutClassMap.register("horizontallayout","haxe.ui.layouts.HorizontalLayout");
+	haxe_ui_core_LayoutClassMap.register("horizontalgridlayout","haxe.ui.layouts.HorizontalGridLayout");
+	haxe_ui_core_LayoutClassMap.register("horizontalgrid","haxe.ui.layouts.HorizontalGridLayout");
+	haxe_ui_core_LayoutClassMap.register("horizontalcontinuouslayout","haxe.ui.layouts.HorizontalContinuousLayout");
+	haxe_ui_core_LayoutClassMap.register("horizontalcontinuous","haxe.ui.layouts.HorizontalContinuousLayout");
+	haxe_ui_core_LayoutClassMap.register("horizontal","haxe.ui.layouts.HorizontalLayout");
+	haxe_ui_core_LayoutClassMap.register("delegatelayout","haxe.ui.layouts.DelegateLayout");
+	haxe_ui_core_LayoutClassMap.register("delegate","haxe.ui.layouts.DelegateLayout");
+	haxe_ui_core_LayoutClassMap.register("defaultlayout","haxe.ui.layouts.DefaultLayout");
+	haxe_ui_core_LayoutClassMap.register("default","haxe.ui.layouts.DefaultLayout");
+	haxe_ui_core_LayoutClassMap.register("absolutelayout","haxe.ui.layouts.AbsoluteLayout");
+	haxe_ui_core_LayoutClassMap.register("absolute","haxe.ui.layouts.AbsoluteLayout");
+	haxe_ui_core_LayoutClassMap.register("","haxe.ui.layouts.Layout");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.InteractiveComponent","allowInteraction","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.ComponentContainer","value","Dynamic");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.ComponentContainer","tooltipRenderer","Component");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.ComponentContainer","tooltip","Dynamic");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.ComponentContainer","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.ComponentContainer","disabled","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.ComponentBounds","width","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.ComponentBounds","percentWidth","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.ComponentBounds","percentHeight","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.core.ComponentBounds","height","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.PropertyGroup","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.PropertyGrid","popupStyleNames","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.Property","value","Dynamic");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.Property","type","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.Property","step","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.Property","precision","Null<Int>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.Property","min","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.Property","max","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.Property","label","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.properties.Property","dataSource","DataSource<Dynamic>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuOptionBox","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuOptionBox","shortcutText","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuOptionBox","selected","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuOptionBox","componentGroup","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuItem","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuItem","shortcutText","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuItem","icon","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuItem","expandable","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuCheckBox","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuCheckBox","shortcutText","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuCheckBox","selected","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.MenuBar","menuStyleNames","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.menus.Menu","menuStyleNames","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","variableItemSize","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","selectionMode","SelectionMode");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","selectedItems","Array<Dynamic>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","selectedItem","Dynamic");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","selectedIndices","Array<Int>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","selectedIndex","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","longPressSelectionTime","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","itemWidth","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","itemHeight","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","itemCount","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","header","Component");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TableView","dataSource","DataSource<Dynamic>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TabView","tabPosition","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TabView","selectedPage","Component");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TabView","pageIndex","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TabView","pageCount","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.TabView","closable","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","vscrollPos","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","vscrollPageSize","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","vscrollMax","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","virtual","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","scrollMode","ScrollMode");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","percentContentWidth","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","percentContentHeight","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","hscrollPos","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","hscrollPageSize","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","hscrollMax","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","contents","Component");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","contentWidth","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","contentLayoutName","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ScrollView","contentHeight","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","variableItemSize","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","selectionMode","SelectionMode");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","selectedItems","Array<Dynamic>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","selectedItem","Dynamic");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","selectedIndices","Array<Int>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","selectedIndex","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","longPressSelectionTime","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","itemWidth","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","itemHeight","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","itemCount","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ListView","dataSource","DataSource<Dynamic>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.Group","componentGroup","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.Frame","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.Frame","icon","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.CalendarView","selectedDate","Date");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ButtonBar","toggle","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.ButtonBar","selectedIndex","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.Box","icon","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.Accordion","selectedPage","Component");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.containers.Accordion","pageIndex","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextField","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextField","restrictChars","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextField","placeholder","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextField","password","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextField","maxChars","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextField","icon","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextArea","wrap","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextArea","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextArea","placeholder","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextArea","dataSource","DataSource<String>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TextArea","autoScrollToBottom","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TabBar","tabPosition","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TabBar","tabCount","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TabBar","selectedTab","Component");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TabBar","selectedIndex","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.TabBar","closable","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Switch","value","Variant");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Switch","textOn","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Switch","textOff","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Switch","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Switch","selected","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Stepper","step","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Stepper","repeater","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Stepper","repeatInterval","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Stepper","precision","Null<Int>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Stepper","pos","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Stepper","min","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Stepper","max","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Slider","start","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Slider","precision","Null<Int>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Slider","pos","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Slider","min","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Slider","max","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Slider","end","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Scroll","pos","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Scroll","pageSize","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Scroll","min","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Scroll","max","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Scroll","increment","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Range","step","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Range","start","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Range","precision","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Range","min","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Range","max","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Range","end","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Range","allowInteraction","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Progress","pos","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Progress","min","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Progress","indeterminate","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.OptionBox","selectedOption","Component");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.OptionBox","selected","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.OptionBox","componentGroup","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.NumberStepper","step","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.NumberStepper","precision","Null<Int>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.NumberStepper","pos","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.NumberStepper","min","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.NumberStepper","max","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Label","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Label","htmlText","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Image","scaleMode","ScaleMode");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Image","resource","Variant");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Image","originalWidth","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Image","originalHeight","Float");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Image","imageVerticalAlign","VerticalAlign");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Image","imageHorizontalAlign","HorizontalAlign");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.DropDown","virtual","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.DropDown","type","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.DropDown","selectedItem","Dynamic");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.DropDown","selectedIndex","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.DropDown","handlerStyleNames","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.DropDown","dropdownWidth","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.DropDown","dropdownSize","Null<Int>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.DropDown","dropdownHeight","Null<Float>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.DropDown","dataSource","DataSource<Dynamic>");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.CheckBox","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.CheckBox","selected","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Calendar","selectedDate","Date");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Calendar","date","Date");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Button","toggle","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Button","text","String");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Button","selected","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Button","repeater","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Button","repeatInterval","Int");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Button","remainPressed","Bool");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Button","icon","Variant");
+	haxe_ui_core_TypeMap.addTypeInfo("haxe.ui.components.Button","easeInRepeater","Bool");
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["style"] = "padding:0px; padding-bottom: 1px";
+	section1.values.h["nodeType"] = "button";
+	section1.values.h["id"] = "haxe.ui.components.Button";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	var section2 = section1.addSection("layout");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.layouts.ButtonLayout";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "text";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.SpanText";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "icon";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementImage";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["type"] = "checkbox";
+	section1.values.h["id"] = "haxe.ui.components.CheckBox";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.LabeledInputElement";
+	var section2 = section1.addSection("size");
+	section2.values.h["incrementWidthBy"] = "16";
+	section2.values.h["incrementHeightBy"] = "2";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.TextSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["index"] = "last";
+	section2.values.h["id"] = "text";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.SpanText";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["removeIfNegative"] = "true";
+	section2.values.h["name"] = "checked";
+	section2.values.h["id"] = "selected";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	section2.values.h["child"] = "input";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["type"] = "radio";
+	section1.values.h["id"] = "haxe.ui.components.OptionBox";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.LabeledInputElement";
+	var section2 = section1.addSection("size");
+	section2.values.h["incrementWidthBy"] = "16";
+	section2.values.h["incrementHeightBy"] = "2";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.TextSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["index"] = "last";
+	section2.values.h["id"] = "text";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.SpanText";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["removeIfNegative"] = "true";
+	section2.values.h["name"] = "checked";
+	section2.values.h["id"] = "selected";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	section2.values.h["child"] = "input";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["removeIfNegative"] = "true";
+	section2.values.h["name"] = "name";
+	section2.values.h["id"] = "componentGroup";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.RadioGroup";
+	section2.values.h["child"] = "input";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["style"] = "padding-left:2px;cursor:pointer;padding-top:3px;padding-bottom:3px;";
+	section1.values.h["nodeType"] = "input";
+	section1.values.h["id"] = "haxe.ui.components.TextField";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	var section2 = section1.addSection("size");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.ElementSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "text";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementValue";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "placeholder";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementPlaceholder";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["type"] = "number";
+	section1.values.h["style"] = "padding-left:2px;cursor:pointer;padding-top:10px;padding-bottom:11px;";
+	section1.values.h["nodeType"] = "input";
+	section1.values.h["id"] = "haxe.ui.components.NumberStepper";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	var section2 = section1.addSection("size");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.ElementSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "text";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementValue";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "step";
+	section2.values.h["id"] = "step";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "pos";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementValue";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "min";
+	section2.values.h["id"] = "min";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "max";
+	section2.values.h["id"] = "max";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["style"] = "resize:none;line-height:1.4;";
+	section1.values.h["nodeType"] = "textarea";
+	section1.values.h["id"] = "haxe.ui.components.TextArea";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	var section2 = section1.addSection("size");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.ElementSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "text";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementValue";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["id"] = "haxe.ui.containers.ScrollView";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	var section2 = section1.addSection("builder");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.builders.ScrollViewBuilder";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "hscrollPos";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementScrollLeft";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "vscrollPos";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementScrollTop";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "contentLayoutName";
+	section2.values.h["class"] = "haxe.ui.behaviours.DefaultBehaviour";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["id"] = "haxe.ui.containers.ListView";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["id"] = "haxe.ui.containers.TableView";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["style"] = "padding:3px;";
+	section1.values.h["nodeType"] = "select";
+	section1.values.h["id"] = "haxe.ui.components.DropDown";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	section1.values.h["allowChildren"] = "false";
+	var section2 = section1.addSection("size");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.ElementSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "dataSource";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.SelectDataSource";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "selectedItem";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.SelectedItem";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "selectedIndex";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.SelectedIndex";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["nodeType"] = "progress";
+	section1.values.h["id"] = "haxe.ui.components.HorizontalProgress";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	var section2 = section1.addSection("size");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.ElementSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "max";
+	section2.values.h["id"] = "max";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "end";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["remove"] = "true";
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "indeterminate";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementAttribute";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["style"] = "-webkit-transform: rotate(-90deg);-webkit-transform-origin: 100% 0%;-moz-orient: vertical;writing-mode: bt-lr;";
+	section1.values.h["orient"] = "vertical";
+	section1.values.h["nodeType"] = "progress";
+	section1.values.h["id"] = "haxe.ui.components.VerticalProgress";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	var section2 = section1.addSection("size");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.ElementSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "max";
+	section2.values.h["id"] = "max";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "end";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["remove"] = "true";
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "indeterminate";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementAttribute";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["type"] = "range";
+	section1.values.h["style"] = "margin: 0;padding:0;";
+	section1.values.h["nodeType"] = "input";
+	section1.values.h["id"] = "haxe.ui.components.HorizontalSlider";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	section1.values.h["allowChildren"] = "false";
+	var section2 = section1.addSection("size");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.ElementSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "min";
+	section2.values.h["id"] = "min";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "max";
+	section2.values.h["id"] = "max";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "pos";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "start";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "end";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
+	var section1 = haxe_ui_Toolkit.nativeConfig.addSection("component");
+	section1.values.h["type"] = "range";
+	section1.values.h["style"] = "padding:0;margin: 0;-webkit-appearance: slider-vertical;-moz-orient: vertical;writing-mode: bt-lr;";
+	section1.values.h["orient"] = "vertical";
+	section1.values.h["nodeType"] = "input";
+	section1.values.h["id"] = "haxe.ui.components.VerticalSlider";
+	section1.values.h["class"] = "haxe.ui.backend.html5.native.NativeElement";
+	section1.values.h["allowChildren"] = "false";
+	var section2 = section1.addSection("size");
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.size.ElementSize";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "min";
+	section2.values.h["id"] = "min";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "max";
+	section2.values.h["id"] = "max";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "pos";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "start";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["name"] = "value";
+	section2.values.h["id"] = "end";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementProperty";
+	var section2 = section1.addSection("behaviour");
+	section2.values.h["id"] = "disabled";
+	section2.values.h["class"] = "haxe.ui.backend.html5.native.behaviours.ElementDisabled";
 	haxe_ui_Toolkit.buildBackend();
 	haxe_ui_Toolkit._built = true;
 };
@@ -12457,6 +13331,1053 @@ haxe_ui_components_ButtonBuilder.prototype = $extend(haxe_ui_core_CompositeBuild
 	}
 	,__class__: haxe_ui_components_ButtonBuilder
 });
+var haxe_ui_events_UIEvent = function(type,bubble,data) {
+	if(bubble == null) {
+		bubble = false;
+	}
+	this.type = type;
+	this.bubble = bubble;
+	this.data = data;
+	this.canceled = false;
+};
+$hxClasses["haxe.ui.events.UIEvent"] = haxe_ui_events_UIEvent;
+haxe_ui_events_UIEvent.__name__ = "haxe.ui.events.UIEvent";
+haxe_ui_events_UIEvent.__super__ = haxe_ui_backend_EventImpl;
+haxe_ui_events_UIEvent.prototype = $extend(haxe_ui_backend_EventImpl.prototype,{
+	bubble: null
+	,type: null
+	,target: null
+	,data: null
+	,canceled: null
+	,cancel: function() {
+		haxe_ui_backend_EventImpl.prototype.cancel.call(this);
+		this.canceled = true;
+	}
+	,clone: function() {
+		var c = new haxe_ui_events_UIEvent(this.type);
+		c.type = this.type;
+		c.bubble = this.bubble;
+		c.target = this.target;
+		c.data = this.data;
+		c.canceled = this.canceled;
+		this.postClone(c);
+		return c;
+	}
+	,__class__: haxe_ui_events_UIEvent
+});
+var haxe_ui_components_CalendarEvent = function(type,bubble,data) {
+	haxe_ui_events_UIEvent.call(this,type,bubble,data);
+};
+$hxClasses["haxe.ui.components.CalendarEvent"] = haxe_ui_components_CalendarEvent;
+haxe_ui_components_CalendarEvent.__name__ = "haxe.ui.components.CalendarEvent";
+haxe_ui_components_CalendarEvent.__super__ = haxe_ui_events_UIEvent;
+haxe_ui_components_CalendarEvent.prototype = $extend(haxe_ui_events_UIEvent.prototype,{
+	clone: function() {
+		var c = new haxe_ui_components_CalendarEvent(this.type);
+		c.type = this.type;
+		c.bubble = this.bubble;
+		c.target = this.target;
+		c.data = this.data;
+		c.canceled = this.canceled;
+		this.postClone(c);
+		return c;
+	}
+	,__class__: haxe_ui_components_CalendarEvent
+});
+var haxe_ui_containers_Grid = function() {
+	this._columns = -1;
+	haxe_ui_containers_Box.call(this);
+	if(this._columns == -1) {
+		this.set_columns(2);
+	}
+};
+$hxClasses["haxe.ui.containers.Grid"] = haxe_ui_containers_Grid;
+haxe_ui_containers_Grid.__name__ = "haxe.ui.containers.Grid";
+haxe_ui_containers_Grid.__super__ = haxe_ui_containers_Box;
+haxe_ui_containers_Grid.prototype = $extend(haxe_ui_containers_Box.prototype,{
+	_columns: null
+	,get_columns: function() {
+		return (js_Boot.__cast(this._layout , haxe_ui_layouts_VerticalGridLayout)).get_columns();
+	}
+	,set_columns: function(value) {
+		if(this._layout == null) {
+			this.set_layout(this.createLayout());
+		}
+		(js_Boot.__cast(this._layout , haxe_ui_layouts_VerticalGridLayout)).set_columns(value);
+		this._columns = value;
+		return value;
+	}
+	,createDefaults: function() {
+		haxe_ui_containers_Box.prototype.createDefaults.call(this);
+		this._defaultLayoutClass = haxe_ui_layouts_VerticalGridLayout;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		c.set_columns(this.get_columns());
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_Grid();
+	}
+	,__class__: haxe_ui_containers_Grid
+	,__properties__: $extend(haxe_ui_containers_Box.prototype.__properties__,{set_columns:"set_columns",get_columns:"get_columns"})
+});
+var haxe_ui_components_Calendar = function() {
+	haxe_ui_containers_Grid.call(this);
+};
+$hxClasses["haxe.ui.components.Calendar"] = haxe_ui_components_Calendar;
+haxe_ui_components_Calendar.__name__ = "haxe.ui.components.Calendar";
+haxe_ui_components_Calendar.__super__ = haxe_ui_containers_Grid;
+haxe_ui_components_Calendar.prototype = $extend(haxe_ui_containers_Grid.prototype,{
+	previousMonth: function() {
+		return this.behaviours.call("previousMonth",null);
+	}
+	,nextMonth: function() {
+		return this.behaviours.call("nextMonth",null);
+	}
+	,previousYear: function() {
+		return this.behaviours.call("previousYear",null);
+	}
+	,nextYear: function() {
+		return this.behaviours.call("nextYear",null);
+	}
+	,createDefaults: function() {
+		haxe_ui_containers_Grid.prototype.createDefaults.call(this);
+		this._defaultLayoutClass = haxe_ui_components__$Calendar_Layout;
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_Grid.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_components__$Calendar_Events;
+		this._compositeBuilderClass = haxe_ui_components__$Calendar_Builder;
+		this._defaultLayoutClass = haxe_ui_components__$Calendar_Layout;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_Grid.prototype.registerBehaviours.call(this);
+		this.behaviours.register("date",haxe_ui_components__$Calendar_DateBehaviour);
+		this.behaviours.register("selectedDate",haxe_ui_components__$Calendar_SelectedDateBehaviour);
+		this.behaviours.register("previousMonth",haxe_ui_components__$Calendar_PreviousMonthBehaviour);
+		this.behaviours.register("nextMonth",haxe_ui_components__$Calendar_NextMonthBehaviour);
+		this.behaviours.register("previousYear",haxe_ui_components__$Calendar_PreviousYearBehaviour);
+		this.behaviours.register("nextYear",haxe_ui_components__$Calendar_NextYearBehaviour);
+	}
+	,get_date: function() {
+		return haxe_ui_util_Variant.toDate(this.behaviours.get("date"));
+	}
+	,set_date: function(value) {
+		this.behaviours.set("date",haxe_ui_util_Variant.fromDate(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"date"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"date");
+		return value;
+	}
+	,get_selectedDate: function() {
+		return haxe_ui_util_Variant.toDate(this.behaviours.get("selectedDate"));
+	}
+	,set_selectedDate: function(value) {
+		this.behaviours.set("selectedDate",haxe_ui_util_Variant.fromDate(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selectedDate"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedDate");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Grid.prototype.cloneComponent.call(this);
+		if(this.get_date() != null) {
+			c.set_date(this.get_date());
+		}
+		if(this.get_selectedDate() != null) {
+			c.set_selectedDate(this.get_selectedDate());
+		}
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_Calendar();
+	}
+	,__class__: haxe_ui_components_Calendar
+	,__properties__: $extend(haxe_ui_containers_Grid.prototype.__properties__,{set_selectedDate:"set_selectedDate",get_selectedDate:"get_selectedDate",set_date:"set_date",get_date:"get_date"})
+});
+var haxe_ui_components__$Calendar_PreviousMonthBehaviour = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Calendar.PreviousMonthBehaviour"] = haxe_ui_components__$Calendar_PreviousMonthBehaviour;
+haxe_ui_components__$Calendar_PreviousMonthBehaviour.__name__ = "haxe.ui.components._Calendar.PreviousMonthBehaviour";
+haxe_ui_components__$Calendar_PreviousMonthBehaviour.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_components__$Calendar_PreviousMonthBehaviour.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var calendar = js_Boot.__cast(this._component , haxe_ui_components_Calendar);
+		calendar.set_date(haxe_ui_components__$Calendar_DateUtils.previousMonth(calendar.get_date()));
+		return null;
+	}
+	,__class__: haxe_ui_components__$Calendar_PreviousMonthBehaviour
+});
+var haxe_ui_components__$Calendar_NextMonthBehaviour = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Calendar.NextMonthBehaviour"] = haxe_ui_components__$Calendar_NextMonthBehaviour;
+haxe_ui_components__$Calendar_NextMonthBehaviour.__name__ = "haxe.ui.components._Calendar.NextMonthBehaviour";
+haxe_ui_components__$Calendar_NextMonthBehaviour.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_components__$Calendar_NextMonthBehaviour.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var calendar = js_Boot.__cast(this._component , haxe_ui_components_Calendar);
+		calendar.set_date(haxe_ui_components__$Calendar_DateUtils.nextMonth(calendar.get_date()));
+		return null;
+	}
+	,__class__: haxe_ui_components__$Calendar_NextMonthBehaviour
+});
+var haxe_ui_components__$Calendar_PreviousYearBehaviour = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Calendar.PreviousYearBehaviour"] = haxe_ui_components__$Calendar_PreviousYearBehaviour;
+haxe_ui_components__$Calendar_PreviousYearBehaviour.__name__ = "haxe.ui.components._Calendar.PreviousYearBehaviour";
+haxe_ui_components__$Calendar_PreviousYearBehaviour.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_components__$Calendar_PreviousYearBehaviour.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var calendar = js_Boot.__cast(this._component , haxe_ui_components_Calendar);
+		calendar.set_date(haxe_ui_components__$Calendar_DateUtils.previousYear(calendar.get_date()));
+		return null;
+	}
+	,__class__: haxe_ui_components__$Calendar_PreviousYearBehaviour
+});
+var haxe_ui_components__$Calendar_NextYearBehaviour = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Calendar.NextYearBehaviour"] = haxe_ui_components__$Calendar_NextYearBehaviour;
+haxe_ui_components__$Calendar_NextYearBehaviour.__name__ = "haxe.ui.components._Calendar.NextYearBehaviour";
+haxe_ui_components__$Calendar_NextYearBehaviour.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_components__$Calendar_NextYearBehaviour.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var calendar = js_Boot.__cast(this._component , haxe_ui_components_Calendar);
+		calendar.set_date(haxe_ui_components__$Calendar_DateUtils.nextYear(calendar.get_date()));
+		return null;
+	}
+	,__class__: haxe_ui_components__$Calendar_NextYearBehaviour
+});
+var haxe_ui_components__$Calendar_SelectedDateBehaviour = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Calendar.SelectedDateBehaviour"] = haxe_ui_components__$Calendar_SelectedDateBehaviour;
+haxe_ui_components__$Calendar_SelectedDateBehaviour.__name__ = "haxe.ui.components._Calendar.SelectedDateBehaviour";
+haxe_ui_components__$Calendar_SelectedDateBehaviour.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_components__$Calendar_SelectedDateBehaviour.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	set: function(value) {
+		haxe_ui_behaviours_DefaultBehaviour.prototype.set.call(this,value);
+		var date = haxe_ui_util_Variant.toDate(value);
+		this._component.invalidateComponent("data");
+		var calendar = js_Boot.__cast(this._component , haxe_ui_components_Calendar);
+		calendar.set_date(date);
+		this._component.dispatch(new haxe_ui_events_UIEvent("change"));
+	}
+	,__class__: haxe_ui_components__$Calendar_SelectedDateBehaviour
+});
+var haxe_ui_components__$Calendar_DateBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Calendar.DateBehaviour"] = haxe_ui_components__$Calendar_DateBehaviour;
+haxe_ui_components__$Calendar_DateBehaviour.__name__ = "haxe.ui.components._Calendar.DateBehaviour";
+haxe_ui_components__$Calendar_DateBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$Calendar_DateBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var date = haxe_ui_util_Variant.toDate(this._value);
+		if(date == null) {
+			return;
+		}
+		var year = date.getFullYear();
+		var month = date.getMonth();
+		var startDay = new Date(year,month,1,0,0,0).getDay();
+		var endDay = haxe_ui_components__$Calendar_DateUtils.getEndDay(month,year);
+		var _g = 0;
+		var _this = this._component;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			child.set_opacity(.3);
+			child.removeClass("calendar-off-day");
+			child.removeClass("calendar-day");
+			child.removeClass("calendar-day-selected");
+			child.removeClass(":hover");
+		}
+		var prevMonth = haxe_ui_components__$Calendar_DateUtils.previousMonth(date);
+		var last = haxe_ui_components__$Calendar_DateUtils.getEndDay(prevMonth.getMonth(),prevMonth.getFullYear());
+		var n = startDay - 1;
+		var _g = 0;
+		var _g1 = startDay;
+		while(_g < _g1) {
+			var _ = _g++;
+			var _this = this._component;
+			var item = (_this._children == null ? [] : _this._children)[n];
+			item.addClass("calendar-off-day");
+			--n;
+			item.set_text("" + last);
+			--last;
+		}
+		var selectedDate = (js_Boot.__cast(this._component , haxe_ui_components_Calendar)).get_selectedDate();
+		if(selectedDate == null) {
+			selectedDate = new Date();
+		}
+		var _g = 0;
+		var _g1 = endDay;
+		while(_g < _g1) {
+			var i = _g++;
+			var _this = this._component;
+			var item = (_this._children == null ? [] : _this._children)[i + startDay];
+			item.addClass("calendar-day");
+			item.set_opacity(1);
+			item.set_hidden(false);
+			item.set_text("" + (i + 1));
+			if(i + 1 == selectedDate.getDate() && month == selectedDate.getMonth() && year == selectedDate.getFullYear()) {
+				item.addClass("calendar-day-selected");
+			}
+			last = i + startDay;
+		}
+		++last;
+		var n = 0;
+		var _g = last;
+		var _this = this._component;
+		var _g1 = (_this._children == null ? [] : _this._children).length;
+		while(_g < _g1) {
+			var i = _g++;
+			var _this = this._component;
+			var item = (_this._children == null ? [] : _this._children)[i];
+			item.addClass("calendar-off-day");
+			item.set_text("" + (n + 1));
+			++n;
+		}
+		this._component.registerInternalEvents(null,true);
+		this._component.dispatch(new haxe_ui_components_CalendarEvent("datechange"));
+	}
+	,__class__: haxe_ui_components__$Calendar_DateBehaviour
+});
+var haxe_ui_components__$Calendar_DateUtils = function() { };
+$hxClasses["haxe.ui.components._Calendar.DateUtils"] = haxe_ui_components__$Calendar_DateUtils;
+haxe_ui_components__$Calendar_DateUtils.__name__ = "haxe.ui.components._Calendar.DateUtils";
+haxe_ui_components__$Calendar_DateUtils.getEndDay = function(month,year) {
+	var endDay = -1;
+	switch(month) {
+	case 1:
+		if(year % 400 == 0 || year % 100 != 0 && year % 4 == 0) {
+			endDay = 29;
+		} else {
+			endDay = 28;
+		}
+		break;
+	case 3:case 5:case 8:case 10:
+		endDay = 30;
+		break;
+	default:
+		endDay = 31;
+	}
+	return endDay;
+};
+haxe_ui_components__$Calendar_DateUtils.previousMonth = function(date) {
+	var year = date.getFullYear();
+	var month = date.getMonth();
+	var day = date.getDate();
+	--month;
+	if(month < 0) {
+		month = 11;
+		--year;
+	}
+	day = js_Boot.__cast(Math.min(day,haxe_ui_components__$Calendar_DateUtils.getEndDay(month,year)) , Int);
+	date = new Date(year,month,day,0,0,0);
+	return date;
+};
+haxe_ui_components__$Calendar_DateUtils.nextMonth = function(date) {
+	var year = date.getFullYear();
+	var month = date.getMonth();
+	var day = date.getDate();
+	++month;
+	if(month > 11) {
+		month = 0;
+		++year;
+	}
+	day = js_Boot.__cast(Math.min(day,haxe_ui_components__$Calendar_DateUtils.getEndDay(month,year)) , Int);
+	date = new Date(year,month,day,0,0,0);
+	return date;
+};
+haxe_ui_components__$Calendar_DateUtils.previousYear = function(date) {
+	var year = date.getFullYear();
+	var month = date.getMonth();
+	var day = date.getDate();
+	--year;
+	day = js_Boot.__cast(Math.min(day,haxe_ui_components__$Calendar_DateUtils.getEndDay(month,year)) , Int);
+	date = new Date(year,month,day,0,0,0);
+	return date;
+};
+haxe_ui_components__$Calendar_DateUtils.nextYear = function(date) {
+	var year = date.getFullYear();
+	var month = date.getMonth();
+	var day = date.getDate();
+	++year;
+	day = js_Boot.__cast(Math.min(day,haxe_ui_components__$Calendar_DateUtils.getEndDay(month,year)) , Int);
+	date = new Date(year,month,day,0,0,0);
+	return date;
+};
+var haxe_ui_components__$Calendar_Events = function(target) {
+	haxe_ui_events_Events.call(this,target);
+};
+$hxClasses["haxe.ui.components._Calendar.Events"] = haxe_ui_components__$Calendar_Events;
+haxe_ui_components__$Calendar_Events.__name__ = "haxe.ui.components._Calendar.Events";
+haxe_ui_components__$Calendar_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_components__$Calendar_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	register: function() {
+		this.unregister();
+		var _g = 0;
+		var _this = this._target;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.hasEvent("click",$bind(this,this.onDayClicked)) == false && child.hasClass("calendar-day")) {
+				child.registerEvent("click",$bind(this,this.onDayClicked));
+			}
+		}
+	}
+	,unregister: function() {
+		var _g = 0;
+		var _this = this._target;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			child.unregisterEvent("click",$bind(this,this.onDayClicked));
+		}
+	}
+	,onDayClicked: function(event) {
+		var calendar = js_Boot.__cast(this._target , haxe_ui_components_Calendar);
+		var day = Std.parseInt(event.target.get_text());
+		var month = calendar.get_date().getMonth();
+		var year = calendar.get_date().getFullYear();
+		calendar.set_selectedDate(new Date(year,month,day,0,0,0));
+	}
+	,__class__: haxe_ui_components__$Calendar_Events
+});
+var haxe_ui_components__$Calendar_Builder = function(calendar) {
+	haxe_ui_core_CompositeBuilder.call(this,calendar);
+	this._calendar = calendar;
+};
+$hxClasses["haxe.ui.components._Calendar.Builder"] = haxe_ui_components__$Calendar_Builder;
+haxe_ui_components__$Calendar_Builder.__name__ = "haxe.ui.components._Calendar.Builder";
+haxe_ui_components__$Calendar_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_components__$Calendar_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_calendar: null
+	,create: function() {
+		this._calendar.set_columns(7);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		var item = new haxe_ui_components_Button();
+		item.scriptAccess = false;
+		this._calendar.addComponent(item);
+		this._calendar.set_date(new Date());
+	}
+	,__class__: haxe_ui_components__$Calendar_Builder
+});
+var haxe_ui_layouts_VerticalGridLayout = function() {
+	this._columns = 1;
+	haxe_ui_layouts_Layout.call(this);
+};
+$hxClasses["haxe.ui.layouts.VerticalGridLayout"] = haxe_ui_layouts_VerticalGridLayout;
+haxe_ui_layouts_VerticalGridLayout.__name__ = "haxe.ui.layouts.VerticalGridLayout";
+haxe_ui_layouts_VerticalGridLayout.__super__ = haxe_ui_layouts_Layout;
+haxe_ui_layouts_VerticalGridLayout.prototype = $extend(haxe_ui_layouts_Layout.prototype,{
+	_columns: null
+	,get_columns: function() {
+		return this._columns;
+	}
+	,set_columns: function(value) {
+		if(this._columns == value) {
+			return value;
+		}
+		this._columns = value;
+		if(this._component != null) {
+			var _this = this._component;
+			if(!(_this._layout == null || _this._layoutLocked == true)) {
+				_this.invalidateComponent("layout");
+			}
+		}
+		return value;
+	}
+	,get_usableSize: function() {
+		var size = haxe_ui_layouts_Layout.prototype.get_usableSize.call(this);
+		var columnWidths = this.calcColumnWidths(size,false);
+		var rowHeights = this.calcRowHeights(size,false);
+		var _g = 0;
+		while(_g < columnWidths.length) {
+			var columnWidth = columnWidths[_g];
+			++_g;
+			size.width -= columnWidth;
+		}
+		var _g = 0;
+		while(_g < rowHeights.length) {
+			var rowHeight = rowHeights[_g];
+			++_g;
+			size.height -= rowHeight;
+		}
+		var _this = this.get_component();
+		if((_this._children == null ? [] : _this._children).length > 1) {
+			var _this = this.get_component();
+			var rows = Math.ceil((_this._children == null ? [] : _this._children).length / this.get_columns());
+			var c = this.get_columns();
+			var _this = this.get_component();
+			var c1 = Math.min(c,(_this._children == null ? [] : _this._children).length);
+			size.width -= this.get_horizontalSpacing() * (c1 - 1);
+			size.height -= this.get_verticalSpacing() * (rows - 1);
+		}
+		if(size.width < 0) {
+			size.width = 0;
+		}
+		if(size.height < 0) {
+			size.height = 0;
+		}
+		return size;
+	}
+	,resizeChildren: function() {
+		var size = this.get_usableSize();
+		var columnWidths = this.calcColumnWidths(size,true);
+		var rowHeights = this.calcRowHeights(size,true);
+		var explicitWidths = this.calcExplicitWidths();
+		var explicitHeights = this.calcExplicitHeights();
+		var rowIndex = 0;
+		var columnIndex = 0;
+		var _g = 0;
+		var _this = this.get_component();
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.get_includeInLayout() == false) {
+				continue;
+			}
+			var cx = null;
+			var cy = null;
+			if(child.get_percentWidth() != null) {
+				var ucx = columnWidths[columnIndex];
+				if(explicitWidths[columnIndex] == false) {
+					cx = ucx;
+				} else {
+					cx = ucx * child.get_percentWidth() / 100;
+				}
+			}
+			if(child.get_percentHeight() != null) {
+				var ucy = rowHeights[rowIndex];
+				if(explicitHeights[rowIndex] == false) {
+					cy = ucy;
+				} else {
+					cy = ucy * child.get_percentHeight() / 100;
+				}
+			}
+			child.resizeComponent(cx,cy);
+			++columnIndex;
+			if(columnIndex >= this._columns) {
+				columnIndex = 0;
+				++rowIndex;
+			}
+		}
+	}
+	,repositionChildren: function() {
+		var size = this.get_usableSize();
+		var columnWidths = this.calcColumnWidths(size,true);
+		var rowHeights = this.calcRowHeights(size,true);
+		var rowIndex = 0;
+		var columnIndex = 0;
+		var xpos = this.get_paddingLeft();
+		var ypos = this.get_paddingTop();
+		var _g = 0;
+		var _this = this.get_component();
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.get_includeInLayout() == false) {
+				continue;
+			}
+			var halign = this.horizontalAlign(child);
+			var valign = this.verticalAlign(child);
+			var xposChild = 0;
+			var yposChild = 0;
+			switch(halign) {
+			case "center":
+				xposChild = xpos + (columnWidths[columnIndex] - child.get_componentWidth()) * 0.5 + this.marginLeft(child) - this.marginRight(child);
+				break;
+			case "right":
+				xposChild = xpos + (columnWidths[columnIndex] - child.get_componentWidth()) + this.marginLeft(child) - this.marginRight(child);
+				break;
+			default:
+				xposChild = xpos + this.marginLeft(child) - this.marginRight(child);
+			}
+			switch(valign) {
+			case "bottom":
+				yposChild = ypos + (rowHeights[rowIndex] - child.get_componentHeight()) + this.marginTop(child) - this.marginBottom(child);
+				break;
+			case "center":
+				yposChild = ypos + (rowHeights[rowIndex] - child.get_componentHeight()) * 0.5 + this.marginTop(child) - this.marginBottom(child);
+				break;
+			default:
+				yposChild = ypos + this.marginTop(child) - this.marginBottom(child);
+			}
+			child.moveComponent(xposChild,yposChild);
+			xpos += columnWidths[columnIndex] + this.get_horizontalSpacing();
+			++columnIndex;
+			if(columnIndex >= this.get_columns()) {
+				xpos = this.get_paddingLeft();
+				ypos += rowHeights[rowIndex] + this.get_verticalSpacing();
+				columnIndex = 0;
+				++rowIndex;
+			}
+		}
+	}
+	,calcColumnWidths: function(usableSize,includePercentage) {
+		var columnWidths = [];
+		var _g = 0;
+		var _g1 = this._columns;
+		while(_g < _g1) {
+			var _ = _g++;
+			columnWidths.push(0);
+		}
+		var rowIndex = 0;
+		var columnIndex = 0;
+		var _g = 0;
+		var _this = this.get_component();
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.get_includeInLayout() == false) {
+				continue;
+			}
+			if(child.get_percentWidth() == null) {
+				if(child.get_componentWidth() > columnWidths[columnIndex]) {
+					columnWidths[columnIndex] = child.get_componentWidth();
+				}
+			}
+			++columnIndex;
+			if(columnIndex >= this._columns) {
+				columnIndex = 0;
+				++rowIndex;
+			}
+		}
+		if(includePercentage) {
+			rowIndex = 0;
+			columnIndex = 0;
+			var fullWidthsCounts = [0];
+			var _g = 0;
+			var _this = this.get_component();
+			var _g1 = _this._children == null ? [] : _this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				if(child.get_includeInLayout() == false) {
+					continue;
+				}
+				if(child.get_percentWidth() != null && child.get_percentWidth() == 100) {
+					fullWidthsCounts[rowIndex]++;
+				}
+				++columnIndex;
+				if(columnIndex >= this._columns) {
+					columnIndex = 0;
+					++rowIndex;
+					fullWidthsCounts.push(0);
+				}
+			}
+			rowIndex = 0;
+			columnIndex = 0;
+			var _g = 0;
+			var _this = this.get_component();
+			var _g1 = _this._children == null ? [] : _this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				if(child.get_includeInLayout() == false) {
+					continue;
+				}
+				if(child.get_percentWidth() != null) {
+					var childPercentWidth = child.get_percentWidth();
+					if(childPercentWidth == 100 && fullWidthsCounts[rowIndex] != 0) {
+						var f = fullWidthsCounts[rowIndex];
+						if(rowIndex > 0 && fullWidthsCounts[rowIndex - 1] != 0) {
+							f = fullWidthsCounts[rowIndex - 1];
+						}
+						childPercentWidth = 100 / f;
+					}
+					var cx = usableSize.width * childPercentWidth / 100;
+					if(cx > columnWidths[columnIndex]) {
+						columnWidths[columnIndex] = cx;
+					}
+				}
+				++columnIndex;
+				if(columnIndex >= this._columns) {
+					columnIndex = 0;
+					++rowIndex;
+				}
+			}
+		}
+		return columnWidths;
+	}
+	,calcRowHeights: function(usableSize,includePercentage) {
+		var _this = this.get_component();
+		var visibleChildren = (_this._children == null ? [] : _this._children).length;
+		var _g = 0;
+		var _this = this.get_component();
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.get_includeInLayout() == false) {
+				--visibleChildren;
+			}
+		}
+		var rowCount = visibleChildren / this._columns | 0;
+		if(visibleChildren % this._columns != 0) {
+			++rowCount;
+		}
+		var rowHeights = [];
+		var _g = 0;
+		var _g1 = rowCount;
+		while(_g < _g1) {
+			var _ = _g++;
+			rowHeights.push(0);
+		}
+		var rowIndex = 0;
+		var columnIndex = 0;
+		var _g = 0;
+		var _this = this.get_component();
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.get_includeInLayout() == false) {
+				continue;
+			}
+			if(child.get_percentHeight() == null) {
+				if(child.get_height() > rowHeights[rowIndex]) {
+					rowHeights[rowIndex] = child.get_height();
+				}
+			}
+			++columnIndex;
+			if(columnIndex >= this._columns) {
+				columnIndex = 0;
+				++rowIndex;
+			}
+		}
+		if(includePercentage) {
+			rowIndex = 0;
+			columnIndex = 0;
+			var newRow = true;
+			var fullHeightRowCount = 0;
+			var _g = 0;
+			var _this = this.get_component();
+			var _g1 = _this._children == null ? [] : _this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				if(child.get_includeInLayout() == false) {
+					continue;
+				}
+				if(child.get_percentHeight() != null && child.get_percentHeight() == 100) {
+					if(newRow == true) {
+						newRow = false;
+						++fullHeightRowCount;
+					}
+				}
+				++columnIndex;
+				if(columnIndex >= this._columns) {
+					columnIndex = 0;
+					++rowIndex;
+					newRow = true;
+				}
+			}
+			rowIndex = 0;
+			columnIndex = 0;
+			var _g = 0;
+			var _this = this.get_component();
+			var _g1 = _this._children == null ? [] : _this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				if(child.get_includeInLayout() == false) {
+					continue;
+				}
+				if(child.get_percentHeight() != null) {
+					var childPercentHeight = child.get_percentHeight();
+					if(childPercentHeight == 100 && fullHeightRowCount > 1) {
+						childPercentHeight = 100 / fullHeightRowCount;
+					}
+					var cy = usableSize.height * childPercentHeight / 100;
+					if(cy > rowHeights[rowIndex]) {
+						rowHeights[rowIndex] = cy;
+					} else {
+						var tmp = usableSize.height > rowHeights[rowIndex];
+					}
+				}
+				++columnIndex;
+				if(columnIndex >= this._columns) {
+					columnIndex = 0;
+					++rowIndex;
+				}
+			}
+		}
+		return rowHeights;
+	}
+	,calcExplicitWidths: function() {
+		var explicitWidths = [];
+		var _g = 0;
+		var _g1 = this._columns;
+		while(_g < _g1) {
+			var _ = _g++;
+			explicitWidths.push(false);
+		}
+		var rowIndex = 0;
+		var columnIndex = 0;
+		var _g = 0;
+		var _this = this.get_component();
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.get_includeInLayout() == false) {
+				continue;
+			}
+			if(child.get_percentWidth() == null && child.get_componentWidth() > 0) {
+				explicitWidths[columnIndex] = true;
+			}
+			++columnIndex;
+			if(columnIndex >= this._columns) {
+				columnIndex = 0;
+				++rowIndex;
+			}
+		}
+		return explicitWidths;
+	}
+	,calcExplicitHeights: function() {
+		var _this = this.get_component();
+		var visibleChildren = (_this._children == null ? [] : _this._children).length;
+		var _g = 0;
+		var _this = this.get_component();
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.get_includeInLayout() == false) {
+				--visibleChildren;
+			}
+		}
+		var rowCount = visibleChildren / this.get_columns() | 0;
+		if(visibleChildren % this._columns != 0) {
+			++rowCount;
+		}
+		var explicitHeights = [];
+		var _g = 0;
+		var _g1 = rowCount;
+		while(_g < _g1) {
+			var _ = _g++;
+			explicitHeights.push(false);
+		}
+		var rowIndex = 0;
+		var columnIndex = 0;
+		var _g = 0;
+		var _this = this.get_component();
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.get_includeInLayout() == false) {
+				continue;
+			}
+			if(child.get_percentHeight() == null && child.get_componentHeight() > 0) {
+				explicitHeights[columnIndex % this._columns] = true;
+			}
+			++columnIndex;
+			if(columnIndex >= this._columns) {
+				columnIndex = 0;
+				++rowIndex;
+			}
+		}
+		return explicitHeights;
+	}
+	,__class__: haxe_ui_layouts_VerticalGridLayout
+	,__properties__: $extend(haxe_ui_layouts_Layout.prototype.__properties__,{set_columns:"set_columns",get_columns:"get_columns"})
+});
+var haxe_ui_components__$Calendar_Layout = function() {
+	haxe_ui_layouts_VerticalGridLayout.call(this);
+};
+$hxClasses["haxe.ui.components._Calendar.Layout"] = haxe_ui_components__$Calendar_Layout;
+haxe_ui_components__$Calendar_Layout.__name__ = "haxe.ui.components._Calendar.Layout";
+haxe_ui_components__$Calendar_Layout.__super__ = haxe_ui_layouts_VerticalGridLayout;
+haxe_ui_components__$Calendar_Layout.prototype = $extend(haxe_ui_layouts_VerticalGridLayout.prototype,{
+	resizeChildren: function() {
+		var max = 0;
+		var _g = 0;
+		var _this = this.get_component();
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child.get_layout() == null) {
+				continue;
+			}
+			if(child.get_width() > child.get_layout().get_paddingLeft() + child.get_layout().get_paddingRight() && child.get_width() > max) {
+				max = child.get_width();
+			}
+			if(child.get_width() > child.get_layout().get_paddingTop() + child.get_layout().get_paddingBottom() && child.get_height() > max) {
+				max = child.get_height();
+			}
+		}
+		if(max > 0) {
+			var _g = 0;
+			var _this = this.get_component();
+			var _g1 = _this._children == null ? [] : _this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				child.set_width(max);
+				child.set_height(max);
+			}
+		}
+	}
+	,__class__: haxe_ui_components__$Calendar_Layout
+});
 var haxe_ui_components_CheckBox = function() {
 	haxe_ui_core_InteractiveComponent.call(this);
 };
@@ -12809,6 +14730,826 @@ haxe_ui_components_Column.prototype = $extend(haxe_ui_components_Button.prototyp
 	,__class__: haxe_ui_components_Column
 	,__properties__: $extend(haxe_ui_components_Button.prototype.__properties__,{set_sortable:"set_sortable",get_sortable:"get_sortable"})
 });
+var haxe_ui_core_IDataComponent = function() { };
+$hxClasses["haxe.ui.core.IDataComponent"] = haxe_ui_core_IDataComponent;
+haxe_ui_core_IDataComponent.__name__ = "haxe.ui.core.IDataComponent";
+haxe_ui_core_IDataComponent.__isInterface__ = true;
+haxe_ui_core_IDataComponent.prototype = {
+	get_dataSource: null
+	,set_dataSource: null
+	,__class__: haxe_ui_core_IDataComponent
+	,__properties__: {set_dataSource:"set_dataSource",get_dataSource:"get_dataSource"}
+};
+var haxe_ui_components_DropDown = function() {
+	haxe_ui_components_Button.call(this);
+};
+$hxClasses["haxe.ui.components.DropDown"] = haxe_ui_components_DropDown;
+haxe_ui_components_DropDown.__name__ = "haxe.ui.components.DropDown";
+haxe_ui_components_DropDown.__interfaces__ = [haxe_ui_core_IDataComponent];
+haxe_ui_components_DropDown.__super__ = haxe_ui_components_Button;
+haxe_ui_components_DropDown.prototype = $extend(haxe_ui_components_Button.prototype,{
+	hideDropDown: function() {
+		return this.behaviours.call("hideDropDown",null);
+	}
+	,onThemeChanged: function() {
+		haxe_ui_components_Button.prototype.onThemeChanged.call(this);
+		var builder = js_Boot.__cast(this._compositeBuilder , haxe_ui_components_DropDownBuilder);
+		builder.onThemeChanged();
+	}
+	,registerComposite: function() {
+		haxe_ui_components_Button.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_components_DropDownEvents;
+		this._compositeBuilderClass = haxe_ui_components_DropDownBuilder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_components_Button.prototype.registerBehaviours.call(this);
+		this.behaviours.register("handlerStyleNames",haxe_ui_behaviours_DefaultBehaviour);
+		this.behaviours.register("dataSource",haxe_ui_components__$DropDown_DataSourceBehaviour);
+		this.behaviours.register("type",haxe_ui_behaviours_DefaultBehaviour,haxe_ui_util_Variant.fromString("list"));
+		this.behaviours.register("virtual",haxe_ui_behaviours_DefaultBehaviour,haxe_ui_util_Variant.fromBool(false));
+		this.behaviours.register("dropdownWidth",haxe_ui_behaviours_DefaultBehaviour);
+		this.behaviours.register("dropdownHeight",haxe_ui_behaviours_DefaultBehaviour);
+		this.behaviours.register("dropdownSize",haxe_ui_behaviours_DefaultBehaviour);
+		this.behaviours.register("selectedIndex",haxe_ui_components__$DropDown_SelectedIndexBehaviour,haxe_ui_util_Variant.fromInt(-1));
+		this.behaviours.register("selectedItem",haxe_ui_components__$DropDown_SelectedItemBehaviour);
+		this.behaviours.register("hideDropDown",haxe_ui_components__$DropDown_HideDropDown);
+	}
+	,get_handlerStyleNames: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("handlerStyleNames"));
+	}
+	,set_handlerStyleNames: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"handlerStyleNames",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("handlerStyleNames",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"handlerStyleNames"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"handlerStyleNames");
+		return value;
+	}
+	,get_dataSource: function() {
+		return haxe_ui_util_Variant.toDataSource(this.behaviours.get("dataSource"));
+	}
+	,set_dataSource: function(value) {
+		this.behaviours.set("dataSource",haxe_ui_util_Variant.fromDataSource(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"dataSource"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"dataSource");
+		return value;
+	}
+	,get_type: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("type"));
+	}
+	,set_type: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"type",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("type",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"type"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"type");
+		return value;
+	}
+	,get_virtual: function() {
+		return haxe_ui_util_Variant.toBool(this.behaviours.get("virtual"));
+	}
+	,set_virtual: function(value) {
+		this.behaviours.set("virtual",haxe_ui_util_Variant.fromBool(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"virtual"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"virtual");
+		return value;
+	}
+	,get_dropdownWidth: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("dropdownWidth"));
+	}
+	,set_dropdownWidth: function(value) {
+		this.behaviours.set("dropdownWidth",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"dropdownWidth"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"dropdownWidth");
+		return value;
+	}
+	,get_dropdownHeight: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("dropdownHeight"));
+	}
+	,set_dropdownHeight: function(value) {
+		this.behaviours.set("dropdownHeight",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"dropdownHeight"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"dropdownHeight");
+		return value;
+	}
+	,get_dropdownSize: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("dropdownSize"));
+	}
+	,set_dropdownSize: function(value) {
+		this.behaviours.set("dropdownSize",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"dropdownSize"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"dropdownSize");
+		return value;
+	}
+	,get_selectedIndex: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("selectedIndex"));
+	}
+	,set_selectedIndex: function(value) {
+		this.behaviours.set("selectedIndex",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selectedIndex"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedIndex");
+		return value;
+	}
+	,get_selectedItem: function() {
+		return this.behaviours.getDynamic("selectedItem");
+	}
+	,set_selectedItem: function(value) {
+		this.behaviours.setDynamic("selectedItem",value);
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"value");
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selectedItem"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedItem");
+		return value;
+	}
+	,get_value: function() {
+		return this.get_selectedItem();
+	}
+	,set_value: function(value) {
+		this.set_selectedItem(value);
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedItem");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_components_Button.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_DropDown();
+	}
+	,__class__: haxe_ui_components_DropDown
+	,__properties__: $extend(haxe_ui_components_Button.prototype.__properties__,{set_selectedItem:"set_selectedItem",get_selectedItem:"get_selectedItem",set_selectedIndex:"set_selectedIndex",get_selectedIndex:"get_selectedIndex",set_dropdownSize:"set_dropdownSize",get_dropdownSize:"get_dropdownSize",set_dropdownHeight:"set_dropdownHeight",get_dropdownHeight:"get_dropdownHeight",set_dropdownWidth:"set_dropdownWidth",get_dropdownWidth:"get_dropdownWidth",set_virtual:"set_virtual",get_virtual:"get_virtual",set_type:"set_type",get_type:"get_type",set_dataSource:"set_dataSource",get_dataSource:"get_dataSource",set_handlerStyleNames:"set_handlerStyleNames",get_handlerStyleNames:"get_handlerStyleNames"})
+});
+var haxe_ui_components__$DropDown_HideDropDown = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._DropDown.HideDropDown"] = haxe_ui_components__$DropDown_HideDropDown;
+haxe_ui_components__$DropDown_HideDropDown.__name__ = "haxe.ui.components._DropDown.HideDropDown";
+haxe_ui_components__$DropDown_HideDropDown.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_components__$DropDown_HideDropDown.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	call: function(param) {
+		var events = js_Boot.__cast(this._component._internalEvents , haxe_ui_components_DropDownEvents);
+		events.hideDropDown();
+		return null;
+	}
+	,__class__: haxe_ui_components__$DropDown_HideDropDown
+});
+var haxe_ui_components__$DropDown_DataSourceBehaviour = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._DropDown.DataSourceBehaviour"] = haxe_ui_components__$DropDown_DataSourceBehaviour;
+haxe_ui_components__$DropDown_DataSourceBehaviour.__name__ = "haxe.ui.components._DropDown.DataSourceBehaviour";
+haxe_ui_components__$DropDown_DataSourceBehaviour.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_components__$DropDown_DataSourceBehaviour.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	get: function() {
+		if(this._value == null || haxe_ui_util_Variant.get_isNull(this._value) == true) {
+			this._value = haxe_ui_util_Variant.fromDataSource(new haxe_ui_data_ArrayDataSource());
+		}
+		return this._value;
+	}
+	,set: function(value) {
+		haxe_ui_behaviours_DefaultBehaviour.prototype.set.call(this,value);
+		if(haxe_ui_util_Variant.eq(value,this._value)) {
+			return;
+		}
+		var handler = (js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		handler.reset();
+		if(this._component.get_text() == null && this._component.get_isReady()) {
+			(js_Boot.__cast(this._component , haxe_ui_components_DropDown)).set_selectedIndex(0);
+		}
+	}
+	,__class__: haxe_ui_components__$DropDown_DataSourceBehaviour
+});
+var haxe_ui_components__$DropDown_SelectedIndexBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._DropDown.SelectedIndexBehaviour"] = haxe_ui_components__$DropDown_SelectedIndexBehaviour;
+haxe_ui_components__$DropDown_SelectedIndexBehaviour.__name__ = "haxe.ui.components._DropDown.SelectedIndexBehaviour";
+haxe_ui_components__$DropDown_SelectedIndexBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$DropDown_SelectedIndexBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var handler = (js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		handler.set_selectedIndex(haxe_ui_util_Variant.toInt(this._value));
+	}
+	,get: function() {
+		if(this._component.get_isReady() == false) {
+			return haxe_ui_behaviours_DataBehaviour.prototype.get.call(this);
+		}
+		var handler = (js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		return haxe_ui_util_Variant.fromInt(handler.get_selectedIndex());
+	}
+	,set: function(value) {
+		if(this._component.get_isReady() == false) {
+			haxe_ui_behaviours_DataBehaviour.prototype.set.call(this,value);
+			return;
+		}
+		if(haxe_ui_util_Variant.eq(value,this.get())) {
+			return;
+		}
+		this._value = value;
+		this.invalidateData();
+		var handler = (js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		handler.set_selectedIndex(haxe_ui_util_Variant.toInt(this._value));
+	}
+	,__class__: haxe_ui_components__$DropDown_SelectedIndexBehaviour
+});
+var haxe_ui_components__$DropDown_SelectedItemBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._DropDown.SelectedItemBehaviour"] = haxe_ui_components__$DropDown_SelectedItemBehaviour;
+haxe_ui_components__$DropDown_SelectedItemBehaviour.__name__ = "haxe.ui.components._DropDown.SelectedItemBehaviour";
+haxe_ui_components__$DropDown_SelectedItemBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$DropDown_SelectedItemBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var handler = (js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		handler.set_selectedItem(this._value);
+	}
+	,getDynamic: function() {
+		var handler = (js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		return handler.get_selectedItem();
+	}
+	,set: function(value) {
+		if(this._component.get_isReady() == false) {
+			haxe_ui_behaviours_DataBehaviour.prototype.set.call(this,value);
+			return;
+		}
+		if(haxe_ui_util_Variant.toDynamic(value) == this.getDynamic()) {
+			return;
+		}
+		this._value = value;
+		this.invalidateData();
+		var handler = (js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		handler.set_selectedItem(value);
+	}
+	,__class__: haxe_ui_components__$DropDown_SelectedItemBehaviour
+});
+var haxe_ui_components_IDropDownHandler = function() { };
+$hxClasses["haxe.ui.components.IDropDownHandler"] = haxe_ui_components_IDropDownHandler;
+haxe_ui_components_IDropDownHandler.__name__ = "haxe.ui.components.IDropDownHandler";
+haxe_ui_components_IDropDownHandler.__isInterface__ = true;
+haxe_ui_components_IDropDownHandler.prototype = {
+	get_component: null
+	,get_selectedIndex: null
+	,set_selectedIndex: null
+	,get_selectedItem: null
+	,set_selectedItem: null
+	,component: null
+	,prepare: null
+	,reset: null
+	,applyDefault: null
+	,__class__: haxe_ui_components_IDropDownHandler
+	,__properties__: {set_selectedItem:"set_selectedItem",get_selectedItem:"get_selectedItem",set_selectedIndex:"set_selectedIndex",get_selectedIndex:"get_selectedIndex",get_component:"get_component"}
+};
+var haxe_ui_components_DropDownHandler = function(dropdown) {
+	this._dropdown = dropdown;
+};
+$hxClasses["haxe.ui.components.DropDownHandler"] = haxe_ui_components_DropDownHandler;
+haxe_ui_components_DropDownHandler.__name__ = "haxe.ui.components.DropDownHandler";
+haxe_ui_components_DropDownHandler.__interfaces__ = [haxe_ui_components_IDropDownHandler];
+haxe_ui_components_DropDownHandler.prototype = {
+	_dropdown: null
+	,component: null
+	,get_component: function() {
+		return null;
+	}
+	,prepare: function(wrapper) {
+	}
+	,reset: function() {
+	}
+	,get_selectedIndex: function() {
+		return -1;
+	}
+	,set_selectedIndex: function(value) {
+		return value;
+	}
+	,get_selectedItem: function() {
+		return null;
+	}
+	,set_selectedItem: function(value) {
+		return value;
+	}
+	,applyDefault: function() {
+	}
+	,__class__: haxe_ui_components_DropDownHandler
+	,__properties__: {set_selectedItem:"set_selectedItem",get_selectedItem:"get_selectedItem",set_selectedIndex:"set_selectedIndex",get_selectedIndex:"get_selectedIndex",get_component:"get_component"}
+};
+var haxe_ui_components_ListDropDownHandler = function(dropdown) {
+	this._cachedSelectedItem = null;
+	this._cachedSelectedIndex = -1;
+	haxe_ui_components_DropDownHandler.call(this,dropdown);
+};
+$hxClasses["haxe.ui.components.ListDropDownHandler"] = haxe_ui_components_ListDropDownHandler;
+haxe_ui_components_ListDropDownHandler.__name__ = "haxe.ui.components.ListDropDownHandler";
+haxe_ui_components_ListDropDownHandler.__super__ = haxe_ui_components_DropDownHandler;
+haxe_ui_components_ListDropDownHandler.prototype = $extend(haxe_ui_components_DropDownHandler.prototype,{
+	_listview: null
+	,get_component: function() {
+		this.createListView();
+		return this._listview;
+	}
+	,reset: function() {
+		if(this._listview != null) {
+			this._listview.set_dataSource(this._dropdown.get_dataSource());
+		}
+	}
+	,prepare: function(wrapper) {
+		var itemCount = 4;
+		if(this._dropdown.get_dropdownSize() != null) {
+			itemCount = this._dropdown.get_dropdownSize();
+		}
+		if(this._listview.get_dataSource() != null && this._listview.get_dataSource().get_size() < itemCount) {
+			itemCount = this._listview.get_dataSource().get_size();
+		}
+		if(itemCount > 0) {
+			this._listview.set_itemCount(itemCount);
+		}
+		if(this._dropdown.get_dropdownWidth() == null) {
+			wrapper.syncComponentValidation();
+			this._listview.set_width(this._dropdown.get_width() - (wrapper.get_layout().get_paddingLeft() + wrapper.get_layout().get_paddingRight()));
+		} else {
+			this._listview.set_width(this._dropdown.get_dropdownWidth());
+		}
+		if(this._dropdown.get_dropdownHeight() != null) {
+			this._listview.set_height(this._dropdown.get_dropdownHeight());
+		}
+		var selectedIndex = this._dropdown.get_selectedIndex();
+		if(this._dropdown.get_dataSource() != null && this._dropdown.get_text() != null && selectedIndex < 0) {
+			var text = this._dropdown.get_text();
+			var itemIndex = this.indexOfItem(text);
+			if(itemIndex != -1) {
+				selectedIndex = itemIndex;
+			}
+		}
+		this._listview.unregisterEvent("change",$bind(this,this.onListChange));
+		this._listview.set_selectedIndex(selectedIndex);
+		this._listview.syncComponentValidation();
+		this._listview.registerEvent("change",$bind(this,this.onListChange));
+	}
+	,_cachedSelectedIndex: null
+	,get_selectedIndex: function() {
+		if(this._listview == null) {
+			return this._cachedSelectedIndex;
+		}
+		return this._listview.get_selectedIndex();
+	}
+	,set_selectedIndex: function(value) {
+		if(this._listview != null && this._cachedSelectedIndex != value) {
+			this._cachedSelectedIndex = value;
+			this._listview.set_selectedIndex(value);
+		} else if(this._cachedSelectedIndex != value) {
+			this._cachedSelectedIndex = value;
+			var data = null;
+			if(this._dropdown.get_dataSource() != null && value >= 0 && value < this._dropdown.get_dataSource().get_size()) {
+				data = this._dropdown.get_dataSource().get(value);
+			}
+			this._dropdown.dispatch(new haxe_ui_events_UIEvent("change",false,data));
+		}
+		if(this._dropdown.get_dataSource() != null && value >= 0 && value < this._dropdown.get_dataSource().get_size()) {
+			var data = this._dropdown.get_dataSource().get(value);
+			var text = null;
+			if(Type.typeof(data) == ValueType.TObject) {
+				text = data.text;
+				if(text == null) {
+					text = data.value;
+				}
+			} else {
+				text = Std.string(data);
+			}
+			this._dropdown.set_text(text);
+		}
+		return value;
+	}
+	,indexOfItem: function(text) {
+		var index = -1;
+		if(this._dropdown.get_dataSource() != null) {
+			var _g = 0;
+			var _g1 = this._dropdown.get_dataSource().get_size();
+			while(_g < _g1) {
+				var i = _g++;
+				var item = this._dropdown.get_dataSource().get(i);
+				if(item == text || item.value == text || item.text == text) {
+					index = i;
+				}
+			}
+		}
+		if(index == -1 && this._dropdown.get_dataSource() != null) {
+			var info = haxe_ui_binding_BindingManager.get_instance().findLanguageBinding(this._dropdown,"text");
+			if(info != null && info.script != null) {
+				text = info.script;
+				var _g = 0;
+				var _g1 = this._dropdown.get_dataSource().get_size();
+				while(_g < _g1) {
+					var i = _g++;
+					var item = this._dropdown.get_dataSource().get(i);
+					if(item == text || item.value == text || item.text == text) {
+						index = i;
+					}
+				}
+			}
+		}
+		return index;
+	}
+	,get_selectedItem: function() {
+		if(this._listview == null) {
+			if(this._cachedSelectedIndex >= 0 && this._cachedSelectedIndex < this._dropdown.get_dataSource().get_size()) {
+				var data = this._dropdown.get_dataSource().get(this._cachedSelectedIndex);
+				return data;
+			} else {
+				return this._cachedSelectedItem;
+			}
+		}
+		return this._listview.get_selectedItem();
+	}
+	,_cachedSelectedItem: null
+	,set_selectedItem: function(value) {
+		var v = value;
+		var tmp;
+		switch(v._hx_index) {
+		case 0:
+			var _g = v.s;
+			tmp = true;
+			break;
+		case 1:
+			var _g = v.s;
+			tmp = true;
+			break;
+		default:
+			tmp = false;
+		}
+		if(tmp) {
+			var n = haxe_ui_util_Variant.toInt(v);
+			this.set_selectedIndex(n);
+			return value;
+		}
+		var index = this.indexOfItem(haxe_ui_util_Variant.toString(v));
+		this.set_selectedIndex(index);
+		return value;
+	}
+	,createListView: function() {
+		if(this._listview == null) {
+			this._listview = new haxe_ui_containers_ListView();
+			this._listview.set_virtual(this._dropdown.get_virtual());
+			this._listview.set_dataSource(this._dropdown.get_dataSource());
+		}
+	}
+	,onListChange: function(event) {
+		if(this._listview.get_selectedItem() == null) {
+			return;
+		}
+		var currentHover = this._listview.findComponent(":hover",null,true,"css");
+		if(currentHover != null) {
+			currentHover.removeClass(":hover");
+		}
+		var selectedItem = this._listview.get_selectedItem();
+		var text = null;
+		if(Type.typeof(selectedItem) == ValueType.TObject) {
+			text = this._listview.get_selectedItem().text;
+			if(text == null) {
+				text = this._listview.get_selectedItem().value;
+			}
+		} else {
+			text = Std.string(selectedItem);
+		}
+		this._dropdown.set_text(text);
+		(js_Boot.__cast(this._dropdown._internalEvents , haxe_ui_components_DropDownEvents)).hideDropDown();
+		this._dropdown.dispatch(new haxe_ui_events_UIEvent("change",false,selectedItem));
+	}
+	,applyDefault: function() {
+		var indexToSelect = 0;
+		if(this._cachedSelectedItem != null) {
+			var v = this._cachedSelectedItem;
+			var index = this.indexOfItem(haxe_ui_util_Variant.toString(v));
+			if(index != -1) {
+				indexToSelect = index;
+			}
+		}
+		this._dropdown.set_selectedIndex(indexToSelect);
+	}
+	,__class__: haxe_ui_components_ListDropDownHandler
+});
+var haxe_ui_components_CalendarDropDownHandler = function(dropdown) {
+	this._cachedSelectedDate = null;
+	haxe_ui_components_DropDownHandler.call(this,dropdown);
+};
+$hxClasses["haxe.ui.components.CalendarDropDownHandler"] = haxe_ui_components_CalendarDropDownHandler;
+haxe_ui_components_CalendarDropDownHandler.__name__ = "haxe.ui.components.CalendarDropDownHandler";
+haxe_ui_components_CalendarDropDownHandler.__super__ = haxe_ui_components_DropDownHandler;
+haxe_ui_components_CalendarDropDownHandler.prototype = $extend(haxe_ui_components_DropDownHandler.prototype,{
+	_calendar: null
+	,get_component: function() {
+		if(this._calendar == null) {
+			this._calendar = new haxe_ui_containers_CalendarView();
+			this._calendar.registerEvent("change",$bind(this,this.onCalendarChange));
+		}
+		return this._calendar;
+	}
+	,prepare: function(wrapper) {
+		if(this._dropdown.get_dropdownWidth() != null) {
+			this._calendar.set_width(this._dropdown.get_dropdownWidth());
+		}
+		if(this._dropdown.get_dropdownHeight() != null) {
+			this._calendar.set_height(this._dropdown.get_dropdownHeight());
+		}
+		if(this._cachedSelectedDate != null) {
+			this._calendar.unregisterEvent("change",$bind(this,this.onCalendarChange));
+			this._calendar.set_selectedDate(this._cachedSelectedDate);
+			this._calendar.registerEvent("change",$bind(this,this.onCalendarChange));
+		}
+		this._calendar.syncComponentValidation();
+	}
+	,_cachedSelectedDate: null
+	,get_selectedItem: function() {
+		if(this._calendar == null) {
+			return this._cachedSelectedDate;
+		}
+		return this._calendar.get_selectedDate();
+	}
+	,set_selectedItem: function(value) {
+		if(value == null) {
+			return value;
+		}
+		var v = value;
+		var date = null;
+		if(haxe_ui_util_Variant.get_isString(v) == true) {
+			date = HxOverrides.strDate(haxe_ui_util_Variant.toString(v));
+		} else if(haxe_ui_util_Variant.get_isDate(v)) {
+			date = haxe_ui_util_Variant.toDate(v);
+		}
+		if(this._calendar != null && date != null) {
+			if(HxOverrides.dateStr(date) == HxOverrides.dateStr(this._calendar.get_selectedDate())) {
+				this._dropdown.set_text(DateTools.format(date,haxe_ui_components_CalendarDropDownHandler.DATE_FORMAT));
+				return value;
+			}
+			this._cachedSelectedDate = date;
+			this._calendar.set_selectedDate(date);
+		} else if(date != null) {
+			this._cachedSelectedDate = date;
+			this._dropdown.set_text(DateTools.format(this._cachedSelectedDate,haxe_ui_components_CalendarDropDownHandler.DATE_FORMAT));
+		}
+		return value;
+	}
+	,onCalendarChange: function(event) {
+		if(this._calendar.get_selectedDate() == null) {
+			return;
+		}
+		this._cachedSelectedDate = this._calendar.get_selectedDate();
+		this._dropdown.set_text(DateTools.format(this._calendar.get_selectedDate(),haxe_ui_components_CalendarDropDownHandler.DATE_FORMAT));
+		(js_Boot.__cast(this._dropdown._internalEvents , haxe_ui_components_DropDownEvents)).hideDropDown();
+		this._dropdown.dispatch(new haxe_ui_events_UIEvent("change",false,this._calendar.get_selectedDate()));
+	}
+	,applyDefault: function() {
+		var now = new Date();
+		this._dropdown.set_selectedItem(now);
+	}
+	,__class__: haxe_ui_components_CalendarDropDownHandler
+});
+var haxe_ui_components_DropDownEvents = function(dropdown) {
+	this._wrapper = null;
+	this._overlay = null;
+	haxe_ui_components_ButtonEvents.call(this,dropdown);
+	this._dropdown = dropdown;
+};
+$hxClasses["haxe.ui.components.DropDownEvents"] = haxe_ui_components_DropDownEvents;
+haxe_ui_components_DropDownEvents.__name__ = "haxe.ui.components.DropDownEvents";
+haxe_ui_components_DropDownEvents.__super__ = haxe_ui_components_ButtonEvents;
+haxe_ui_components_DropDownEvents.prototype = $extend(haxe_ui_components_ButtonEvents.prototype,{
+	_dropdown: null
+	,register: function() {
+		haxe_ui_components_ButtonEvents.prototype.register.call(this);
+		this.registerEvent("mousedown",$bind(this,this.onClick));
+	}
+	,unregister: function() {
+		haxe_ui_components_ButtonEvents.prototype.unregister.call(this);
+		this.unregisterEvent("mousedown",$bind(this,this.onClick));
+	}
+	,onClick: function(event) {
+		this._dropdown.set_selected(!this._dropdown.get_selected());
+		if(this._dropdown.get_selected() == true) {
+			this.showDropDown();
+		} else {
+			this.hideDropDown();
+		}
+	}
+	,onMouseClick: function(event) {
+	}
+	,_overlay: null
+	,_wrapper: null
+	,showDropDown: function() {
+		var handler = (js_Boot.__cast(this._dropdown._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		if(handler == null) {
+			return;
+		}
+		if(this._wrapper == null) {
+			this._wrapper = new haxe_ui_containers_Box();
+			this._wrapper.addClass("popup");
+			this._wrapper.addClass("dropdown-popup");
+			this._wrapper.set_styleNames(this._dropdown.get_handlerStyleNames());
+			this._wrapper.addComponent(handler.get_component());
+			var filler = new haxe_ui_core_Component();
+			filler.set_horizontalAlign("right");
+			filler.set_includeInLayout(false);
+			filler.addClass("dropdown-filler");
+			filler.set_id("dropdown-filler");
+			this._wrapper.addComponent(filler);
+		}
+		var componentOffset = this._dropdown.getComponentOffset();
+		if(this._dropdown.get_style().mode != null && this._dropdown.get_style().mode == "mobile") {
+			if(this._overlay == null) {
+				this._overlay = new haxe_ui_core_Component();
+				this._overlay.set_id("modal-background");
+				this._overlay.addClass("modal-background");
+				this._overlay.set_percentWidth(this._overlay.set_percentHeight(100));
+			}
+			haxe_ui_core_Screen.get_instance().addComponent(this._overlay);
+			handler.prepare(this._wrapper);
+			haxe_ui_core_Screen.get_instance().addComponent(this._wrapper);
+			this._wrapper.set_left(haxe_ui_core_Screen.get_instance().get_width() / 2 - this._wrapper.get_actualComponentWidth() / 2);
+			this._wrapper.set_top(haxe_ui_core_Screen.get_instance().get_height() / 2 - this._wrapper.get_actualComponentHeight() / 2);
+		} else {
+			this._wrapper.set_left(this._dropdown.get_screenLeft() + componentOffset.x);
+			this._wrapper.set_top(this._dropdown.get_screenTop() + (this._dropdown.get_actualComponentHeight() - haxe_ui_Toolkit.get_scaleY()) + componentOffset.y);
+			haxe_ui_core_Screen.get_instance().addComponent(this._wrapper);
+			handler.prepare(this._wrapper);
+			this._wrapper.syncComponentValidation();
+			var cx = this._wrapper.get_width() - this._dropdown.get_width();
+			var filler = this._wrapper.findComponent("dropdown-filler",null,false);
+			if(cx > 0 && filler != null) {
+				this._wrapper.addClass("dropdown-popup-expanded");
+				cx += 2;
+				filler.set_width(cx);
+				filler.set_left(this._wrapper.get_width() - cx);
+				filler.set_hidden(false);
+			} else if(filler != null) {
+				filler.set_hidden(true);
+				this._wrapper.removeClass("dropdown-popup-expanded");
+			}
+			if(this._wrapper.get_screenLeft() + this._wrapper.get_actualComponentWidth() > haxe_ui_core_Screen.get_instance().get_width()) {
+				this._wrapper.set_left(this._wrapper.get_screenLeft() - this._wrapper.get_actualComponentWidth() + this._dropdown.get_actualComponentWidth());
+			}
+			if(this._wrapper.get_screenTop() + this._wrapper.get_actualComponentHeight() > haxe_ui_core_Screen.get_instance().get_height()) {
+				this._wrapper.set_top(this._dropdown.get_screenTop() - this._wrapper.get_actualComponentHeight());
+			}
+		}
+		haxe_ui_core_Screen.get_instance().registerEvent("mousedown",$bind(this,this.onScreenMouseDown));
+		haxe_ui_core_Screen.get_instance().registerEvent("rightmousedown",$bind(this,this.onScreenMouseDown));
+	}
+	,hideDropDown: function() {
+		var handler = (js_Boot.__cast(this._dropdown._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		if(handler == null) {
+			return;
+		}
+		if(this._overlay != null) {
+			haxe_ui_core_Screen.get_instance().removeComponent(this._overlay);
+			this._overlay = null;
+		}
+		this._dropdown.set_selected(false);
+		if(this._wrapper != null) {
+			haxe_ui_core_Screen.get_instance().removeComponent(this._wrapper);
+		}
+		haxe_ui_core_Screen.get_instance().unregisterEvent("mousedown",$bind(this,this.onScreenMouseDown));
+		haxe_ui_core_Screen.get_instance().unregisterEvent("rightmousedown",$bind(this,this.onScreenMouseDown));
+	}
+	,onScreenMouseDown: function(event) {
+		var handler = (js_Boot.__cast(this._dropdown._compositeBuilder , haxe_ui_components_DropDownBuilder)).get_handler();
+		if(handler.get_component().hitTest(event.screenX,event.screenY) == true) {
+			return;
+		}
+		var componentOffset = this._dropdown.getComponentOffset();
+		if(this._dropdown.hitTest(event.screenX - componentOffset.x,event.screenY - componentOffset.y) == true) {
+			return;
+		}
+		this.hideDropDown();
+	}
+	,dispatchChanged: function() {
+	}
+	,__class__: haxe_ui_components_DropDownEvents
+});
+var haxe_ui_components_DropDownBuilder = function(dropdown) {
+	haxe_ui_components_ButtonBuilder.call(this,dropdown);
+	this._dropdown = dropdown;
+	var this1 = haxe_ui_components_DropDownBuilder.HANDLER_MAP;
+	var value = haxe_ui_components_ListDropDownHandler.__name__;
+	this1.h["list"] = value;
+	var this1 = haxe_ui_components_DropDownBuilder.HANDLER_MAP;
+	var value = haxe_ui_components_CalendarDropDownHandler.__name__;
+	this1.h["date"] = value;
+};
+$hxClasses["haxe.ui.components.DropDownBuilder"] = haxe_ui_components_DropDownBuilder;
+haxe_ui_components_DropDownBuilder.__name__ = "haxe.ui.components.DropDownBuilder";
+haxe_ui_components_DropDownBuilder.__super__ = haxe_ui_components_ButtonBuilder;
+haxe_ui_components_DropDownBuilder.prototype = $extend(haxe_ui_components_ButtonBuilder.prototype,{
+	_dropdown: null
+	,_handler: null
+	,handler: null
+	,get_handler: function() {
+		if(this._handler == null) {
+			var this1 = haxe_ui_components_DropDownBuilder.HANDLER_MAP;
+			var key = this._dropdown.get_type();
+			var handlerClass = this1.h[key];
+			if(handlerClass == null) {
+				handlerClass = this._dropdown.get_type();
+			}
+			this._handler = Type.createInstance($hxClasses[handlerClass],[this._dropdown]);
+		}
+		return this._handler;
+	}
+	,onReady: function() {
+		haxe_ui_components_ButtonBuilder.prototype.onReady.call(this);
+		if(this._dropdown.get_text() == null) {
+			this.get_handler().applyDefault();
+		}
+	}
+	,create: function() {
+		this._dropdown.set_toggle(true);
+	}
+	,destroy: function() {
+		var events = js_Boot.__cast(this._dropdown._internalEvents , haxe_ui_components_DropDownEvents);
+		events.hideDropDown();
+		if(this._handler != null && this._handler.get_component() != null) {
+			this._handler.get_component().destroyComponent();
+		}
+	}
+	,onThemeChanged: function() {
+		if(this._handler != null) {
+			haxe_ui_core_Screen.get_instance().invalidateChildren(this._handler.get_component());
+			haxe_ui_core_Screen.get_instance().onThemeChangedChildren(this._handler.get_component());
+		}
+	}
+	,__class__: haxe_ui_components_DropDownBuilder
+	,__properties__: $extend(haxe_ui_components_ButtonBuilder.prototype.__properties__,{get_handler:"get_handler"})
+});
+var haxe_ui_components_HGrid = function() {
+	haxe_ui_core_Component.call(this);
+	this.set_rows(1);
+};
+$hxClasses["haxe.ui.components.HGrid"] = haxe_ui_components_HGrid;
+haxe_ui_components_HGrid.__name__ = "haxe.ui.components.HGrid";
+haxe_ui_components_HGrid.__super__ = haxe_ui_core_Component;
+haxe_ui_components_HGrid.prototype = $extend(haxe_ui_core_Component.prototype,{
+	createDefaults: function() {
+		haxe_ui_core_Component.prototype.createDefaults.call(this);
+		this._defaultLayoutClass = haxe_ui_layouts_HorizontalGridLayout;
+	}
+	,_rows: null
+	,get_rows: function() {
+		return this._rows;
+	}
+	,set_rows: function(value) {
+		if(this._rows != value) {
+			this._rows = value;
+			(js_Boot.__cast(this.get_layout() , haxe_ui_layouts_HorizontalGridLayout)).set_rows(value);
+			if(!(this._layout == null || this._layoutLocked == true)) {
+				this.invalidateComponent("layout");
+			}
+		}
+		return value;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_core_Component.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_Component.prototype.cloneComponent.call(this);
+		c.set_rows(this.get_rows());
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_HGrid();
+	}
+	,__class__: haxe_ui_components_HGrid
+	,__properties__: $extend(haxe_ui_core_Component.prototype.__properties__,{set_rows:"set_rows",get_rows:"get_rows"})
+});
 var haxe_ui_core_IDirectionalComponent = function() { };
 $hxClasses["haxe.ui.core.IDirectionalComponent"] = haxe_ui_core_IDirectionalComponent;
 haxe_ui_core_IDirectionalComponent.__name__ = "haxe.ui.core.IDirectionalComponent";
@@ -13134,6 +15875,65 @@ haxe_ui_components_HorizontalRangeLayout.prototype = $extend(haxe_ui_layouts_Def
 	}
 	,__class__: haxe_ui_components_HorizontalRangeLayout
 });
+var haxe_ui_components_Rule = function() {
+	haxe_ui_core_Component.call(this);
+};
+$hxClasses["haxe.ui.components.Rule"] = haxe_ui_components_Rule;
+haxe_ui_components_Rule.__name__ = "haxe.ui.components.Rule";
+haxe_ui_components_Rule.__interfaces__ = [haxe_ui_core_IDirectionalComponent];
+haxe_ui_components_Rule.__super__ = haxe_ui_core_Component;
+haxe_ui_components_Rule.prototype = $extend(haxe_ui_core_Component.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_core_Component.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_Component.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_Rule();
+	}
+	,__class__: haxe_ui_components_Rule
+});
+var haxe_ui_components_HorizontalRule = function() {
+	haxe_ui_components_Rule.call(this);
+};
+$hxClasses["haxe.ui.components.HorizontalRule"] = haxe_ui_components_HorizontalRule;
+haxe_ui_components_HorizontalRule.__name__ = "haxe.ui.components.HorizontalRule";
+haxe_ui_components_HorizontalRule.__super__ = haxe_ui_components_Rule;
+haxe_ui_components_HorizontalRule.prototype = $extend(haxe_ui_components_Rule.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_components_Rule.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_components_Rule.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_HorizontalRule();
+	}
+	,__class__: haxe_ui_components_HorizontalRule
+});
 var haxe_ui_components_Scroll = function() {
 	haxe_ui_core_InteractiveComponent.call(this);
 };
@@ -13396,6 +16196,241 @@ haxe_ui_components__$HorizontalScroll_HorizontalScrollLayout.prototype = $extend
 		return ucx;
 	}
 	,__class__: haxe_ui_components__$HorizontalScroll_HorizontalScrollLayout
+});
+var haxe_ui_components_Slider = function() {
+	haxe_ui_core_InteractiveComponent.call(this);
+};
+$hxClasses["haxe.ui.components.Slider"] = haxe_ui_components_Slider;
+haxe_ui_components_Slider.__name__ = "haxe.ui.components.Slider";
+haxe_ui_components_Slider.__interfaces__ = [haxe_ui_core_IDirectionalComponent];
+haxe_ui_components_Slider.__super__ = haxe_ui_core_InteractiveComponent;
+haxe_ui_components_Slider.prototype = $extend(haxe_ui_core_InteractiveComponent.prototype,{
+	posFromCoord: function(coord) {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.call("posFromCoord",coord));
+	}
+	,registerBehaviours: function() {
+		haxe_ui_core_InteractiveComponent.prototype.registerBehaviours.call(this);
+		this.behaviours.register("min",haxe_ui_components__$Slider_MinBehaviour,haxe_ui_util_Variant.fromInt(0));
+		this.behaviours.register("max",haxe_ui_components__$Slider_MaxBehaviour,haxe_ui_util_Variant.fromInt(100));
+		this.behaviours.register("precision",haxe_ui_behaviours_DefaultBehaviour,null);
+		this.behaviours.register("start",haxe_ui_components__$Slider_StartBehaviour,null);
+		this.behaviours.register("end",haxe_ui_components__$Slider_EndBehaviour,haxe_ui_util_Variant.fromInt(0));
+		this.behaviours.register("pos",haxe_ui_components__$Slider_PosBehaviour);
+		this.behaviours.register("posFromCoord",haxe_ui_components__$Slider_PosFromCoord);
+	}
+	,get_min: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("min"));
+	}
+	,set_min: function(value) {
+		this.behaviours.set("min",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"min"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"min");
+		return value;
+	}
+	,get_max: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("max"));
+	}
+	,set_max: function(value) {
+		this.behaviours.set("max",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"max"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"max");
+		return value;
+	}
+	,get_precision: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("precision"));
+	}
+	,set_precision: function(value) {
+		this.behaviours.set("precision",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"precision"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"precision");
+		return value;
+	}
+	,get_start: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("start"));
+	}
+	,set_start: function(value) {
+		this.behaviours.set("start",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"start"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"start");
+		return value;
+	}
+	,get_end: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("end"));
+	}
+	,set_end: function(value) {
+		this.behaviours.set("end",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"end"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"end");
+		return value;
+	}
+	,get_pos: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("pos"));
+	}
+	,set_pos: function(value) {
+		this.behaviours.set("pos",haxe_ui_util_Variant.fromFloat(value));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"value");
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"pos"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pos");
+		return value;
+	}
+	,get_value: function() {
+		return this.get_pos();
+	}
+	,set_value: function(value) {
+		this.set_pos(value);
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pos");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_InteractiveComponent.prototype.cloneComponent.call(this);
+		c.set_min(this.get_min());
+		c.set_max(this.get_max());
+		if(this.get_precision() != null) {
+			c.set_precision(this.get_precision());
+		}
+		if(this.get_start() != null) {
+			c.set_start(this.get_start());
+		}
+		c.set_end(this.get_end());
+		c.set_pos(this.get_pos());
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_Slider();
+	}
+	,registerComposite: function() {
+		haxe_ui_core_InteractiveComponent.prototype.registerComposite.call(this);
+		this._compositeBuilderClass = haxe_ui_components_SliderBuilder;
+	}
+	,__class__: haxe_ui_components_Slider
+	,__properties__: $extend(haxe_ui_core_InteractiveComponent.prototype.__properties__,{set_pos:"set_pos",get_pos:"get_pos",set_end:"set_end",get_end:"get_end",set_start:"set_start",get_start:"get_start",set_precision:"set_precision",get_precision:"get_precision",set_max:"set_max",get_max:"get_max",set_min:"set_min",get_min:"get_min"})
+});
+var haxe_ui_components_HorizontalSlider = function() {
+	haxe_ui_components_Slider.call(this);
+};
+$hxClasses["haxe.ui.components.HorizontalSlider"] = haxe_ui_components_HorizontalSlider;
+haxe_ui_components_HorizontalSlider.__name__ = "haxe.ui.components.HorizontalSlider";
+haxe_ui_components_HorizontalSlider.__super__ = haxe_ui_components_Slider;
+haxe_ui_components_HorizontalSlider.prototype = $extend(haxe_ui_components_Slider.prototype,{
+	registerComposite: function() {
+		haxe_ui_components_Slider.prototype.registerComposite.call(this);
+		this._defaultLayoutClass = haxe_ui_components_HorizontalSliderLayout;
+		this._compositeBuilderClass = haxe_ui_components__$HorizontalSlider_Builder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_components_Slider.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_components_Slider.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_HorizontalSlider();
+	}
+	,__class__: haxe_ui_components_HorizontalSlider
+});
+var haxe_ui_components_HorizontalSliderLayout = function() {
+	haxe_ui_layouts_DefaultLayout.call(this);
+};
+$hxClasses["haxe.ui.components.HorizontalSliderLayout"] = haxe_ui_components_HorizontalSliderLayout;
+haxe_ui_components_HorizontalSliderLayout.__name__ = "haxe.ui.components.HorizontalSliderLayout";
+haxe_ui_components_HorizontalSliderLayout.__super__ = haxe_ui_layouts_DefaultLayout;
+haxe_ui_components_HorizontalSliderLayout.prototype = $extend(haxe_ui_layouts_DefaultLayout.prototype,{
+	repositionChildren: function() {
+		haxe_ui_layouts_DefaultLayout.prototype.repositionChildren.call(this);
+		var range = this.findComponent(null,haxe_ui_components_Range);
+		var rangeValue = range.findComponent("range-value");
+		var startThumb = this.findComponent("start-thumb");
+		var endThumb = this.findComponent("end-thumb");
+		if(startThumb != null) {
+			startThumb.set_left(range.get_left() + rangeValue.get_left() - startThumb.get_width() / 2);
+		}
+		var cx = rangeValue.get_width();
+		if(rangeValue.get_hidden() == true) {
+			cx = 0;
+		}
+		endThumb.set_left(range.get_left() + rangeValue.get_left() + cx - endThumb.get_width() / 2);
+	}
+	,__class__: haxe_ui_components_HorizontalSliderLayout
+});
+var haxe_ui_components_SliderBuilder = function(component) {
+	haxe_ui_core_CompositeBuilder.call(this,component);
+};
+$hxClasses["haxe.ui.components.SliderBuilder"] = haxe_ui_components_SliderBuilder;
+haxe_ui_components_SliderBuilder.__name__ = "haxe.ui.components.SliderBuilder";
+haxe_ui_components_SliderBuilder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_components_SliderBuilder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	create: function() {
+		if(this._component.findComponent("range") == null) {
+			var v = this.createValueComponent();
+			v.scriptAccess = false;
+			v.set_id("range");
+			v.addClass("slider-value");
+			v.set_start(v.set_end(0));
+			this._component.addComponent(v);
+		}
+		this.createThumb("end-thumb");
+	}
+	,getStartOffset: function() {
+		return 0;
+	}
+	,createValueComponent: function() {
+		return null;
+	}
+	,createThumb: function(id) {
+		if(this._component.findComponent(id) != null) {
+			return;
+		}
+		var b = new haxe_ui_components_Button();
+		b.scriptAccess = false;
+		b.set_id(id);
+		b.addClass(id);
+		b.set_remainPressed(true);
+		this._component.addComponent(b);
+		this._component.registerInternalEvents(haxe_ui_components__$Slider_Events,true);
+	}
+	,__class__: haxe_ui_components_SliderBuilder
+});
+var haxe_ui_components__$HorizontalSlider_Builder = function(slider) {
+	haxe_ui_components_SliderBuilder.call(this,slider);
+	this._slider = slider;
+};
+$hxClasses["haxe.ui.components._HorizontalSlider.Builder"] = haxe_ui_components__$HorizontalSlider_Builder;
+haxe_ui_components__$HorizontalSlider_Builder.__name__ = "haxe.ui.components._HorizontalSlider.Builder";
+haxe_ui_components__$HorizontalSlider_Builder.__super__ = haxe_ui_components_SliderBuilder;
+haxe_ui_components__$HorizontalSlider_Builder.prototype = $extend(haxe_ui_components_SliderBuilder.prototype,{
+	_slider: null
+	,createValueComponent: function() {
+		return new haxe_ui_components_HorizontalRange();
+	}
+	,getStartOffset: function() {
+		var start = 0;
+		if(this._slider.get_start() != null) {
+			start = this._slider.get_start();
+		}
+		return start;
+	}
+	,__class__: haxe_ui_components__$HorizontalSlider_Builder
 });
 var haxe_ui_components_Image = function() {
 	haxe_ui_core_Component.call(this);
@@ -13900,6 +16935,381 @@ haxe_ui_components__$Label_Builder.prototype = $extend(haxe_ui_core_CompositeBui
 		}
 	}
 	,__class__: haxe_ui_components__$Label_Builder
+});
+var haxe_ui_components_NumberStepper = function() {
+	haxe_ui_core_InteractiveComponent.call(this);
+};
+$hxClasses["haxe.ui.components.NumberStepper"] = haxe_ui_components_NumberStepper;
+haxe_ui_components_NumberStepper.__name__ = "haxe.ui.components.NumberStepper";
+haxe_ui_components_NumberStepper.__super__ = haxe_ui_core_InteractiveComponent;
+haxe_ui_components_NumberStepper.prototype = $extend(haxe_ui_core_InteractiveComponent.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_core_InteractiveComponent.prototype.registerBehaviours.call(this);
+		this.behaviours.register("pos",haxe_ui_components__$NumberStepper_PosBehaviour,haxe_ui_util_Variant.fromInt(0));
+		this.behaviours.register("step",haxe_ui_components__$NumberStepper_StepBehaviour,haxe_ui_util_Variant.fromInt(1));
+		this.behaviours.register("min",haxe_ui_components__$NumberStepper_MinBehaviour,null);
+		this.behaviours.register("max",haxe_ui_components__$NumberStepper_MaxBehaviour,null);
+		this.behaviours.register("precision",haxe_ui_components__$NumberStepper_PrecisionBehaviour,null);
+	}
+	,get_pos: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("pos"));
+	}
+	,set_pos: function(value) {
+		this.behaviours.set("pos",haxe_ui_util_Variant.fromFloat(value));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"value");
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"pos"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pos");
+		return value;
+	}
+	,get_step: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("step"));
+	}
+	,set_step: function(value) {
+		this.behaviours.set("step",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"step"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"step");
+		return value;
+	}
+	,get_min: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("min"));
+	}
+	,set_min: function(value) {
+		this.behaviours.set("min",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"min"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"min");
+		return value;
+	}
+	,get_max: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("max"));
+	}
+	,set_max: function(value) {
+		this.behaviours.set("max",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"max"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"max");
+		return value;
+	}
+	,get_precision: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("precision"));
+	}
+	,set_precision: function(value) {
+		this.behaviours.set("precision",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"precision"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"precision");
+		return value;
+	}
+	,get_value: function() {
+		return this.get_pos();
+	}
+	,set_value: function(value) {
+		this.set_pos(value);
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pos");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_InteractiveComponent.prototype.cloneComponent.call(this);
+		c.set_pos(this.get_pos());
+		c.set_step(this.get_step());
+		if(this.get_min() != null) {
+			c.set_min(this.get_min());
+		}
+		if(this.get_max() != null) {
+			c.set_max(this.get_max());
+		}
+		if(this.get_precision() != null) {
+			c.set_precision(this.get_precision());
+		}
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_NumberStepper();
+	}
+	,registerComposite: function() {
+		haxe_ui_core_InteractiveComponent.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_components__$NumberStepper_Events;
+		this._compositeBuilderClass = haxe_ui_components__$NumberStepper_Builder;
+		this._defaultLayoutClass = haxe_ui_layouts_HorizontalLayout;
+	}
+	,__class__: haxe_ui_components_NumberStepper
+	,__properties__: $extend(haxe_ui_core_InteractiveComponent.prototype.__properties__,{set_precision:"set_precision",get_precision:"get_precision",set_max:"set_max",get_max:"get_max",set_min:"set_min",get_min:"get_min",set_step:"set_step",get_step:"get_step",set_pos:"set_pos",get_pos:"get_pos"})
+});
+var haxe_ui_components__$NumberStepper_PosBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._NumberStepper.PosBehaviour"] = haxe_ui_components__$NumberStepper_PosBehaviour;
+haxe_ui_components__$NumberStepper_PosBehaviour.__name__ = "haxe.ui.components._NumberStepper.PosBehaviour";
+haxe_ui_components__$NumberStepper_PosBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$NumberStepper_PosBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var step = this._component.findComponent("stepper-step",haxe_ui_components_Stepper);
+		var preciseValue = haxe_ui_util_Variant.toFloat(this._value);
+		if(step.get_precision() != null) {
+			var precision = step.get_precision();
+			if(precision == null) {
+				precision = 0;
+			}
+			preciseValue = Math.round(preciseValue * Math.pow(10,precision)) / Math.pow(10,precision);
+		}
+		var v = preciseValue;
+		var min = step.get_min();
+		var max = step.get_max();
+		if(v == null || isNaN(v)) {
+			preciseValue = min;
+		} else {
+			if(min != null && v < min) {
+				v = min;
+			} else if(max != null && v > max) {
+				v = max;
+			}
+			preciseValue = v;
+		}
+		step.set_pos(preciseValue);
+		var textfield = this._component.findComponent("stepper-textfield",haxe_ui_components_TextField);
+		var value = haxe_ui_util_StringUtil.padDecimal(preciseValue,step.get_precision());
+		textfield.set_text(value);
+		var event = new haxe_ui_events_UIEvent("change");
+		this._component.dispatch(event);
+	}
+	,__class__: haxe_ui_components__$NumberStepper_PosBehaviour
+});
+var haxe_ui_components__$NumberStepper_StepBehaviour = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._NumberStepper.StepBehaviour"] = haxe_ui_components__$NumberStepper_StepBehaviour;
+haxe_ui_components__$NumberStepper_StepBehaviour.__name__ = "haxe.ui.components._NumberStepper.StepBehaviour";
+haxe_ui_components__$NumberStepper_StepBehaviour.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_components__$NumberStepper_StepBehaviour.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	get: function() {
+		var step = this._component.findComponent("stepper-step",haxe_ui_components_Stepper);
+		return haxe_ui_util_Variant.fromFloat(step.get_step());
+	}
+	,set: function(value) {
+		var step = this._component.findComponent("stepper-step",haxe_ui_components_Stepper);
+		step.set_step(haxe_ui_util_Variant.toFloat(value));
+	}
+	,__class__: haxe_ui_components__$NumberStepper_StepBehaviour
+});
+var haxe_ui_components__$NumberStepper_MinBehaviour = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._NumberStepper.MinBehaviour"] = haxe_ui_components__$NumberStepper_MinBehaviour;
+haxe_ui_components__$NumberStepper_MinBehaviour.__name__ = "haxe.ui.components._NumberStepper.MinBehaviour";
+haxe_ui_components__$NumberStepper_MinBehaviour.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_components__$NumberStepper_MinBehaviour.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	get: function() {
+		var step = this._component.findComponent("stepper-step",haxe_ui_components_Stepper);
+		return haxe_ui_util_Variant.fromFloat(step.get_min());
+	}
+	,set: function(value) {
+		var step = this._component.findComponent("stepper-step",haxe_ui_components_Stepper);
+		step.set_min(haxe_ui_util_Variant.toFloat(value));
+	}
+	,__class__: haxe_ui_components__$NumberStepper_MinBehaviour
+});
+var haxe_ui_components__$NumberStepper_MaxBehaviour = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._NumberStepper.MaxBehaviour"] = haxe_ui_components__$NumberStepper_MaxBehaviour;
+haxe_ui_components__$NumberStepper_MaxBehaviour.__name__ = "haxe.ui.components._NumberStepper.MaxBehaviour";
+haxe_ui_components__$NumberStepper_MaxBehaviour.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_components__$NumberStepper_MaxBehaviour.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	get: function() {
+		var step = this._component.findComponent("stepper-step",haxe_ui_components_Stepper);
+		return haxe_ui_util_Variant.fromFloat(step.get_max());
+	}
+	,set: function(value) {
+		var step = this._component.findComponent("stepper-step",haxe_ui_components_Stepper);
+		step.set_max(haxe_ui_util_Variant.toFloat(value));
+	}
+	,__class__: haxe_ui_components__$NumberStepper_MaxBehaviour
+});
+var haxe_ui_components__$NumberStepper_PrecisionBehaviour = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._NumberStepper.PrecisionBehaviour"] = haxe_ui_components__$NumberStepper_PrecisionBehaviour;
+haxe_ui_components__$NumberStepper_PrecisionBehaviour.__name__ = "haxe.ui.components._NumberStepper.PrecisionBehaviour";
+haxe_ui_components__$NumberStepper_PrecisionBehaviour.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_components__$NumberStepper_PrecisionBehaviour.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	get: function() {
+		var step = this._component.findComponent("stepper-step",haxe_ui_components_Stepper);
+		return haxe_ui_util_Variant.fromInt(step.get_precision());
+	}
+	,set: function(value) {
+		var step = this._component.findComponent("stepper-step",haxe_ui_components_Stepper);
+		step.set_precision(haxe_ui_util_Variant.toInt(value));
+	}
+	,__class__: haxe_ui_components__$NumberStepper_PrecisionBehaviour
+});
+var haxe_ui_components__$NumberStepper_Builder = function(stepper) {
+	haxe_ui_core_CompositeBuilder.call(this,stepper);
+	this._stepper = stepper;
+};
+$hxClasses["haxe.ui.components._NumberStepper.Builder"] = haxe_ui_components__$NumberStepper_Builder;
+haxe_ui_components__$NumberStepper_Builder.__name__ = "haxe.ui.components._NumberStepper.Builder";
+haxe_ui_components__$NumberStepper_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_components__$NumberStepper_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_stepper: null
+	,create: function() {
+		this._stepper.addClass("textfield");
+		var textfield = new haxe_ui_components_TextField();
+		textfield.addClass("stepper-textfield");
+		textfield.set_id("stepper-textfield");
+		textfield.set_restrictChars("0-9\\-\\.\\,");
+		this._stepper.addComponent(textfield);
+		var step = new haxe_ui_components_Stepper();
+		step.addClass("stepper-step");
+		step.set_id("stepper-step");
+		this._stepper.addComponent(step);
+	}
+	,applyStyle: function(style) {
+		var textfield = this._stepper.findComponent(null,haxe_ui_components_TextField);
+		if(textfield != null && (textfield.customStyle.color != style.color || textfield.customStyle.fontName != style.fontName || textfield.customStyle.fontSize != style.fontSize || textfield.customStyle.cursor != style.cursor || textfield.customStyle.textAlign != style.textAlign)) {
+			textfield.customStyle.color = style.color;
+			textfield.customStyle.fontName = style.fontName;
+			textfield.customStyle.fontSize = style.fontSize;
+			textfield.customStyle.cursor = style.cursor;
+			textfield.customStyle.textAlign = style.textAlign;
+			textfield.invalidateComponent("style");
+		}
+	}
+	,__class__: haxe_ui_components__$NumberStepper_Builder
+});
+var haxe_ui_components__$NumberStepper_Events = function(stepper) {
+	haxe_ui_events_Events.call(this,stepper);
+	this._stepper = stepper;
+};
+$hxClasses["haxe.ui.components._NumberStepper.Events"] = haxe_ui_components__$NumberStepper_Events;
+haxe_ui_components__$NumberStepper_Events.__name__ = "haxe.ui.components._NumberStepper.Events";
+haxe_ui_components__$NumberStepper_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_components__$NumberStepper_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	_stepper: null
+	,register: function() {
+		if(!this.hasEvent("mousewheel",$bind(this,this.onMouseWheel))) {
+			this.registerEvent("mousewheel",$bind(this,this.onMouseWheel));
+		}
+		if(!this._stepper.hasEvent("keydown",$bind(this,this.onKeyDown))) {
+			this._stepper.registerEvent("keydown",$bind(this,this.onKeyDown));
+		}
+		var textfield = this._stepper.findComponent("stepper-textfield",haxe_ui_components_TextField);
+		if(!textfield.hasEvent("keyup",$bind(this,this.onTextFieldKeyUp))) {
+			textfield.registerEvent("keyup",$bind(this,this.onTextFieldKeyUp));
+		}
+		if(!textfield.hasEvent("focusin",$bind(this,this.onTextFieldFocusIn))) {
+			textfield.registerEvent("focusin",$bind(this,this.onTextFieldFocusIn));
+		}
+		if(!textfield.hasEvent("focusout",$bind(this,this.onTextFieldFocusOut))) {
+			textfield.registerEvent("focusout",$bind(this,this.onTextFieldFocusOut));
+		}
+		if(!textfield.hasEvent("change",$bind(this,this.onTextFieldChange))) {
+			textfield.registerEvent("change",$bind(this,this.onTextFieldChange));
+		}
+		var step = this._stepper.findComponent("stepper-step",haxe_ui_components_Stepper);
+		if(!step.hasEvent("change",$bind(this,this.onStepChange))) {
+			step.registerEvent("change",$bind(this,this.onStepChange));
+		}
+		if(!step.hasEvent("mousedown",$bind(this,this.onStepMouseDown))) {
+			step.registerEvent("mousedown",$bind(this,this.onStepMouseDown));
+		}
+	}
+	,unregister: function() {
+		this.unregisterEvent("mousewheel",$bind(this,this.onMouseWheel));
+		this._stepper.unregisterEvent("keydown",$bind(this,this.onKeyDown));
+		var textfield = this._stepper.findComponent("stepper-textfield",haxe_ui_components_TextField);
+		textfield.unregisterEvent("keyup",$bind(this,this.onTextFieldKeyUp));
+		textfield.unregisterEvent("focusin",$bind(this,this.onTextFieldFocusIn));
+		textfield.unregisterEvent("focusout",$bind(this,this.onTextFieldFocusOut));
+		textfield.unregisterEvent("change",$bind(this,this.onTextFieldChange));
+		var step = this._stepper.findComponent("stepper-step",haxe_ui_components_Stepper);
+		step.unregisterEvent("change",$bind(this,this.onStepChange));
+		step.unregisterEvent("mousedown",$bind(this,this.onStepMouseDown));
+	}
+	,onKeyDown: function(event) {
+		var step = this._stepper.findComponent("stepper-step",haxe_ui_components_Stepper);
+		if(event.keyCode == 38 || event.keyCode == 107) {
+			step.increment();
+		}
+		if(event.keyCode == 40 || event.keyCode == 109) {
+			step.deincrement();
+		}
+	}
+	,onMouseWheel: function(event) {
+		var textfield = this._stepper.findComponent("stepper-textfield",haxe_ui_components_TextField);
+		if(textfield.get_focus() == false) {
+			return;
+		}
+		event.cancel();
+		textfield.set_focus(true);
+		var step = this._stepper.findComponent("stepper-step",haxe_ui_components_Stepper);
+		if(event.delta > 0) {
+			step.increment();
+		} else {
+			step.deincrement();
+		}
+	}
+	,onStepChange: function(event) {
+		var step = this._stepper.findComponent("stepper-step",haxe_ui_components_Stepper);
+		this._stepper.set_pos(step.get_pos());
+	}
+	,onStepMouseDown: function(event) {
+		var textfield = this._stepper.findComponent("stepper-textfield",haxe_ui_components_TextField);
+		textfield.set_focus(true);
+	}
+	,onTextFieldKeyUp: function(event) {
+		if(event.keyCode == 13) {
+			var textfield = this._stepper.findComponent("stepper-textfield",haxe_ui_components_TextField);
+			textfield.set_focus(false);
+		}
+		event.cancel();
+	}
+	,onTextFieldFocusIn: function(event) {
+		this._stepper.addClass(":active");
+	}
+	,onTextFieldFocusOut: function(event) {
+		this._stepper.removeClass(":active");
+		var textfield = this._stepper.findComponent("stepper-textfield",haxe_ui_components_TextField);
+		if(textfield != null) {
+			var tmp = this._stepper;
+			var v = parseFloat(textfield.get_text());
+			var min = this._stepper.get_min();
+			var max = this._stepper.get_max();
+			var tmp1;
+			if(v == null || isNaN(v)) {
+				tmp1 = min;
+			} else {
+				if(min != null && v < min) {
+					v = min;
+				} else if(max != null && v > max) {
+					v = max;
+				}
+				tmp1 = v;
+			}
+			tmp.set_pos(tmp1);
+			textfield.set_text(Std.string(this._stepper.get_pos()));
+		} else {
+			event.cancel();
+		}
+	}
+	,onTextFieldChange: function(event) {
+		var step = this._stepper.findComponent("stepper-step",haxe_ui_components_Stepper);
+		var textfield = this._stepper.findComponent("stepper-textfield",haxe_ui_components_TextField);
+		var lastChar = textfield.get_text().charAt(textfield.get_text().length - 1);
+		var max = 2147483647;
+		if(step.get_max() != null) {
+			max = step.get_max();
+		}
+		var maxCappedVal = Math.min(parseFloat(textfield.get_text()),max);
+		this._stepper.set_pos(maxCappedVal);
+	}
+	,__class__: haxe_ui_components__$NumberStepper_Events
 });
 var haxe_ui_components_OptionBox = function() {
 	haxe_ui_components_CheckBox.call(this);
@@ -14474,124 +17884,6 @@ haxe_ui_components__$Scroll_ScrollValueBehaviour.prototype = $extend(haxe_ui_beh
 	}
 	,__class__: haxe_ui_components__$Scroll_ScrollValueBehaviour
 });
-var haxe_ui_components_Slider = function() {
-	haxe_ui_core_InteractiveComponent.call(this);
-};
-$hxClasses["haxe.ui.components.Slider"] = haxe_ui_components_Slider;
-haxe_ui_components_Slider.__name__ = "haxe.ui.components.Slider";
-haxe_ui_components_Slider.__interfaces__ = [haxe_ui_core_IDirectionalComponent];
-haxe_ui_components_Slider.__super__ = haxe_ui_core_InteractiveComponent;
-haxe_ui_components_Slider.prototype = $extend(haxe_ui_core_InteractiveComponent.prototype,{
-	posFromCoord: function(coord) {
-		return haxe_ui_util_Variant.toFloat(this.behaviours.call("posFromCoord",coord));
-	}
-	,registerBehaviours: function() {
-		haxe_ui_core_InteractiveComponent.prototype.registerBehaviours.call(this);
-		this.behaviours.register("min",haxe_ui_components__$Slider_MinBehaviour,haxe_ui_util_Variant.fromInt(0));
-		this.behaviours.register("max",haxe_ui_components__$Slider_MaxBehaviour,haxe_ui_util_Variant.fromInt(100));
-		this.behaviours.register("precision",haxe_ui_behaviours_DefaultBehaviour,null);
-		this.behaviours.register("start",haxe_ui_components__$Slider_StartBehaviour,null);
-		this.behaviours.register("end",haxe_ui_components__$Slider_EndBehaviour,haxe_ui_util_Variant.fromInt(0));
-		this.behaviours.register("pos",haxe_ui_components__$Slider_PosBehaviour);
-		this.behaviours.register("posFromCoord",haxe_ui_components__$Slider_PosFromCoord);
-	}
-	,get_min: function() {
-		return haxe_ui_util_Variant.toFloat(this.behaviours.get("min"));
-	}
-	,set_min: function(value) {
-		this.behaviours.set("min",haxe_ui_util_Variant.fromFloat(value));
-		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"min"));
-		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"min");
-		return value;
-	}
-	,get_max: function() {
-		return haxe_ui_util_Variant.toFloat(this.behaviours.get("max"));
-	}
-	,set_max: function(value) {
-		this.behaviours.set("max",haxe_ui_util_Variant.fromFloat(value));
-		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"max"));
-		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"max");
-		return value;
-	}
-	,get_precision: function() {
-		return haxe_ui_util_Variant.toInt(this.behaviours.get("precision"));
-	}
-	,set_precision: function(value) {
-		this.behaviours.set("precision",haxe_ui_util_Variant.fromInt(value));
-		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"precision"));
-		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"precision");
-		return value;
-	}
-	,get_start: function() {
-		return haxe_ui_util_Variant.toFloat(this.behaviours.get("start"));
-	}
-	,set_start: function(value) {
-		this.behaviours.set("start",haxe_ui_util_Variant.fromFloat(value));
-		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"start"));
-		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"start");
-		return value;
-	}
-	,get_end: function() {
-		return haxe_ui_util_Variant.toFloat(this.behaviours.get("end"));
-	}
-	,set_end: function(value) {
-		this.behaviours.set("end",haxe_ui_util_Variant.fromFloat(value));
-		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"end"));
-		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"end");
-		return value;
-	}
-	,get_pos: function() {
-		return haxe_ui_util_Variant.toFloat(this.behaviours.get("pos"));
-	}
-	,set_pos: function(value) {
-		this.behaviours.set("pos",haxe_ui_util_Variant.fromFloat(value));
-		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"value");
-		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"pos"));
-		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pos");
-		return value;
-	}
-	,get_value: function() {
-		return this.get_pos();
-	}
-	,set_value: function(value) {
-		this.set_pos(value);
-		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pos");
-		return value;
-	}
-	,cloneComponent: function() {
-		var c = haxe_ui_core_InteractiveComponent.prototype.cloneComponent.call(this);
-		c.set_min(this.get_min());
-		c.set_max(this.get_max());
-		if(this.get_precision() != null) {
-			c.set_precision(this.get_precision());
-		}
-		if(this.get_start() != null) {
-			c.set_start(this.get_start());
-		}
-		c.set_end(this.get_end());
-		c.set_pos(this.get_pos());
-		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
-			var _g = 0;
-			var _g1 = this._children == null ? [] : this._children;
-			while(_g < _g1.length) {
-				var child = _g1[_g];
-				++_g;
-				c.addComponent(child.cloneComponent());
-			}
-		}
-		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
-		return c;
-	}
-	,self: function() {
-		return new haxe_ui_components_Slider();
-	}
-	,registerComposite: function() {
-		haxe_ui_core_InteractiveComponent.prototype.registerComposite.call(this);
-		this._compositeBuilderClass = haxe_ui_components_SliderBuilder;
-	}
-	,__class__: haxe_ui_components_Slider
-	,__properties__: $extend(haxe_ui_core_InteractiveComponent.prototype.__properties__,{set_pos:"set_pos",get_pos:"get_pos",set_end:"set_end",get_end:"get_end",set_start:"set_start",get_start:"get_start",set_precision:"set_precision",get_precision:"get_precision",set_max:"set_max",get_max:"get_max",set_min:"set_min",get_min:"get_min"})
-});
 var haxe_ui_components__$Slider_StartBehaviour = function(component) {
 	haxe_ui_behaviours_DataBehaviour.call(this,component);
 };
@@ -14841,43 +18133,1368 @@ haxe_ui_components__$Slider_Events.prototype = $extend(haxe_ui_events_Events.pro
 	}
 	,__class__: haxe_ui_components__$Slider_Events
 });
-var haxe_ui_components_SliderBuilder = function(component) {
-	haxe_ui_core_CompositeBuilder.call(this,component);
+var haxe_ui_components_Spacer = function() {
+	haxe_ui_core_Component.call(this);
 };
-$hxClasses["haxe.ui.components.SliderBuilder"] = haxe_ui_components_SliderBuilder;
-haxe_ui_components_SliderBuilder.__name__ = "haxe.ui.components.SliderBuilder";
-haxe_ui_components_SliderBuilder.__super__ = haxe_ui_core_CompositeBuilder;
-haxe_ui_components_SliderBuilder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
-	create: function() {
-		if(this._component.findComponent("range") == null) {
-			var v = this.createValueComponent();
-			v.scriptAccess = false;
-			v.set_id("range");
-			v.addClass("slider-value");
-			v.set_start(v.set_end(0));
-			this._component.addComponent(v);
+$hxClasses["haxe.ui.components.Spacer"] = haxe_ui_components_Spacer;
+haxe_ui_components_Spacer.__name__ = "haxe.ui.components.Spacer";
+haxe_ui_components_Spacer.__super__ = haxe_ui_core_Component;
+haxe_ui_components_Spacer.prototype = $extend(haxe_ui_core_Component.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_core_Component.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_Component.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
 		}
-		this.createThumb("end-thumb");
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
 	}
-	,getStartOffset: function() {
-		return 0;
+	,self: function() {
+		return new haxe_ui_components_Spacer();
 	}
-	,createValueComponent: function() {
+	,__class__: haxe_ui_components_Spacer
+});
+var haxe_ui_containers_VBox = function() {
+	haxe_ui_containers_Box.call(this);
+	this.set_layout(new haxe_ui_layouts_VerticalLayout());
+};
+$hxClasses["haxe.ui.containers.VBox"] = haxe_ui_containers_VBox;
+haxe_ui_containers_VBox.__name__ = "haxe.ui.containers.VBox";
+haxe_ui_containers_VBox.__super__ = haxe_ui_containers_Box;
+haxe_ui_containers_VBox.prototype = $extend(haxe_ui_containers_Box.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_VBox();
+	}
+	,__class__: haxe_ui_containers_VBox
+});
+var haxe_ui_components_Stepper = function() {
+	haxe_ui_containers_VBox.call(this);
+};
+$hxClasses["haxe.ui.components.Stepper"] = haxe_ui_components_Stepper;
+haxe_ui_components_Stepper.__name__ = "haxe.ui.components.Stepper";
+haxe_ui_components_Stepper.__super__ = haxe_ui_containers_VBox;
+haxe_ui_components_Stepper.prototype = $extend(haxe_ui_containers_VBox.prototype,{
+	increment: function() {
+		return this.behaviours.call("increment",null);
+	}
+	,deincrement: function() {
+		return this.behaviours.call("deincrement",null);
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_VBox.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_components__$Stepper_Events;
+		this._compositeBuilderClass = haxe_ui_components__$Stepper_Builder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_VBox.prototype.registerBehaviours.call(this);
+		this.behaviours.register("pos",haxe_ui_components__$Stepper_PosBehaviour);
+		this.behaviours.register("step",haxe_ui_behaviours_DefaultBehaviour,haxe_ui_util_Variant.fromInt(1));
+		this.behaviours.register("min",haxe_ui_behaviours_DefaultBehaviour,null);
+		this.behaviours.register("max",haxe_ui_behaviours_DefaultBehaviour,null);
+		this.behaviours.register("precision",haxe_ui_behaviours_DefaultBehaviour,null);
+		this.behaviours.register("repeater",haxe_ui_behaviours_DefaultBehaviour,haxe_ui_util_Variant.fromBool(true));
+		this.behaviours.register("repeatInterval",haxe_ui_behaviours_DefaultBehaviour,haxe_ui_util_Variant.fromInt(100));
+		this.behaviours.register("increment",haxe_ui_components__$Stepper_IncBehaviour);
+		this.behaviours.register("deincrement",haxe_ui_components__$Stepper_DeincBehaviour);
+	}
+	,get_pos: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("pos"));
+	}
+	,set_pos: function(value) {
+		this.behaviours.set("pos",haxe_ui_util_Variant.fromFloat(value));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"value");
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"pos"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pos");
+		return value;
+	}
+	,get_step: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("step"));
+	}
+	,set_step: function(value) {
+		this.behaviours.set("step",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"step"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"step");
+		return value;
+	}
+	,get_min: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("min"));
+	}
+	,set_min: function(value) {
+		this.behaviours.set("min",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"min"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"min");
+		return value;
+	}
+	,get_max: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("max"));
+	}
+	,set_max: function(value) {
+		this.behaviours.set("max",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"max"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"max");
+		return value;
+	}
+	,get_precision: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("precision"));
+	}
+	,set_precision: function(value) {
+		this.behaviours.set("precision",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"precision"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"precision");
+		return value;
+	}
+	,get_repeater: function() {
+		return haxe_ui_util_Variant.toBool(this.behaviours.get("repeater"));
+	}
+	,set_repeater: function(value) {
+		this.behaviours.set("repeater",haxe_ui_util_Variant.fromBool(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"repeater"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"repeater");
+		return value;
+	}
+	,get_repeatInterval: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("repeatInterval"));
+	}
+	,set_repeatInterval: function(value) {
+		this.behaviours.set("repeatInterval",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"repeatInterval"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"repeatInterval");
+		return value;
+	}
+	,get_value: function() {
+		return this.get_pos();
+	}
+	,set_value: function(value) {
+		this.set_pos(value);
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pos");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_VBox.prototype.cloneComponent.call(this);
+		c.set_pos(this.get_pos());
+		c.set_step(this.get_step());
+		if(this.get_min() != null) {
+			c.set_min(this.get_min());
+		}
+		if(this.get_max() != null) {
+			c.set_max(this.get_max());
+		}
+		if(this.get_precision() != null) {
+			c.set_precision(this.get_precision());
+		}
+		c.set_repeater(this.get_repeater());
+		c.set_repeatInterval(this.get_repeatInterval());
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_Stepper();
+	}
+	,__class__: haxe_ui_components_Stepper
+	,__properties__: $extend(haxe_ui_containers_VBox.prototype.__properties__,{set_repeatInterval:"set_repeatInterval",get_repeatInterval:"get_repeatInterval",set_repeater:"set_repeater",get_repeater:"get_repeater",set_precision:"set_precision",get_precision:"get_precision",set_max:"set_max",get_max:"get_max",set_min:"set_min",get_min:"get_min",set_step:"set_step",get_step:"get_step",set_pos:"set_pos",get_pos:"get_pos"})
+});
+var haxe_ui_components__$Stepper_PosBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Stepper.PosBehaviour"] = haxe_ui_components__$Stepper_PosBehaviour;
+haxe_ui_components__$Stepper_PosBehaviour.__name__ = "haxe.ui.components._Stepper.PosBehaviour";
+haxe_ui_components__$Stepper_PosBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$Stepper_PosBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var stepper = js_Boot.__cast(this._component , haxe_ui_components_Stepper);
+		var v = haxe_ui_util_Variant.toFloat(this._value);
+		var min = stepper.get_min();
+		var max = stepper.get_max();
+		var v1;
+		if(v == null || isNaN(v)) {
+			v1 = min;
+		} else {
+			if(min != null && v < min) {
+				v = min;
+			} else if(max != null && v > max) {
+				v = max;
+			}
+			v1 = v;
+		}
+		stepper.set_pos(v1);
+		this._value = haxe_ui_util_Variant.fromFloat(v1);
+		var event = new haxe_ui_events_UIEvent("change");
+		this._component.dispatch(event);
+	}
+	,__class__: haxe_ui_components__$Stepper_PosBehaviour
+});
+var haxe_ui_components__$Stepper_IncBehaviour = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Stepper.IncBehaviour"] = haxe_ui_components__$Stepper_IncBehaviour;
+haxe_ui_components__$Stepper_IncBehaviour.__name__ = "haxe.ui.components._Stepper.IncBehaviour";
+haxe_ui_components__$Stepper_IncBehaviour.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_components__$Stepper_IncBehaviour.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var stepper = js_Boot.__cast(this._component , haxe_ui_components_Stepper);
+		var newPos = stepper.get_pos();
+		newPos += stepper.get_step();
+		if(stepper.get_max() != null && newPos > stepper.get_max()) {
+			newPos = stepper.get_max();
+		}
+		if(stepper.get_precision() != null) {
+			var precision = stepper.get_precision();
+			if(precision == null) {
+				precision = 0;
+			}
+			newPos = Math.round(newPos * Math.pow(10,precision)) / Math.pow(10,precision);
+		}
+		stepper.set_pos(newPos);
 		return null;
 	}
-	,createThumb: function(id) {
-		if(this._component.findComponent(id) != null) {
+	,__class__: haxe_ui_components__$Stepper_IncBehaviour
+});
+var haxe_ui_components__$Stepper_DeincBehaviour = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Stepper.DeincBehaviour"] = haxe_ui_components__$Stepper_DeincBehaviour;
+haxe_ui_components__$Stepper_DeincBehaviour.__name__ = "haxe.ui.components._Stepper.DeincBehaviour";
+haxe_ui_components__$Stepper_DeincBehaviour.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_components__$Stepper_DeincBehaviour.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var stepper = js_Boot.__cast(this._component , haxe_ui_components_Stepper);
+		var newPos = stepper.get_pos();
+		newPos -= stepper.get_step();
+		if(stepper.get_min() != null && newPos < stepper.get_min()) {
+			newPos = stepper.get_min();
+		}
+		if(stepper.get_precision() != null) {
+			var precision = stepper.get_precision();
+			if(precision == null) {
+				precision = 0;
+			}
+			newPos = Math.round(newPos * Math.pow(10,precision)) / Math.pow(10,precision);
+		}
+		stepper.set_pos(newPos);
+		return null;
+	}
+	,__class__: haxe_ui_components__$Stepper_DeincBehaviour
+});
+var haxe_ui_components__$Stepper_Builder = function(stepper) {
+	haxe_ui_core_CompositeBuilder.call(this,stepper);
+	this._stepper = stepper;
+};
+$hxClasses["haxe.ui.components._Stepper.Builder"] = haxe_ui_components__$Stepper_Builder;
+haxe_ui_components__$Stepper_Builder.__name__ = "haxe.ui.components._Stepper.Builder";
+haxe_ui_components__$Stepper_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_components__$Stepper_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_stepper: null
+	,create: function() {
+		var button = new haxe_ui_components_Button();
+		button.set_styleNames("stepper-button stepper-inc");
+		button.set_id("stepper-inc");
+		button.set_repeater(this._stepper.get_repeater());
+		button.set_easeInRepeater(true);
+		button.set_allowFocus(false);
+		button.set_repeatInterval(this._stepper.get_repeatInterval());
+		this._stepper.addComponent(button);
+		var button = new haxe_ui_components_Button();
+		button.set_styleNames("stepper-button stepper-deinc");
+		button.set_id("stepper-deinc");
+		button.set_repeater(this._stepper.get_repeater());
+		button.set_easeInRepeater(true);
+		button.set_allowFocus(false);
+		button.set_repeatInterval(this._stepper.get_repeatInterval());
+		this._stepper.addComponent(button);
+	}
+	,__class__: haxe_ui_components__$Stepper_Builder
+});
+var haxe_ui_components__$Stepper_Events = function(stepper) {
+	haxe_ui_events_Events.call(this,stepper);
+	this._stepper = stepper;
+};
+$hxClasses["haxe.ui.components._Stepper.Events"] = haxe_ui_components__$Stepper_Events;
+haxe_ui_components__$Stepper_Events.__name__ = "haxe.ui.components._Stepper.Events";
+haxe_ui_components__$Stepper_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_components__$Stepper_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	_stepper: null
+	,register: function() {
+		var button = this._stepper.findComponent("stepper-inc",haxe_ui_components_Button);
+		if(!button.hasEvent("click",$bind(this,this.onInc))) {
+			button.registerEvent("click",$bind(this,this.onInc));
+		}
+		var button = this._stepper.findComponent("stepper-deinc",haxe_ui_components_Button);
+		if(!button.hasEvent("click",$bind(this,this.onDeinc))) {
+			button.registerEvent("click",$bind(this,this.onDeinc));
+		}
+	}
+	,unregister: function() {
+		var button = this._stepper.findComponent("stepper-inc",haxe_ui_components_Button);
+		button.unregisterEvent("click",$bind(this,this.onInc));
+		var button = this._stepper.findComponent("stepper-deinc",haxe_ui_components_Button);
+		button.unregisterEvent("click",$bind(this,this.onDeinc));
+	}
+	,onInc: function(event) {
+		this._stepper.increment();
+	}
+	,onDeinc: function(event) {
+		this._stepper.deincrement();
+	}
+	,__class__: haxe_ui_components__$Stepper_Events
+});
+var haxe_ui_components_Switch = function() {
+	haxe_ui_core_Component.call(this);
+};
+$hxClasses["haxe.ui.components.Switch"] = haxe_ui_components_Switch;
+haxe_ui_components_Switch.__name__ = "haxe.ui.components.Switch";
+haxe_ui_components_Switch.__super__ = haxe_ui_core_Component;
+haxe_ui_components_Switch.prototype = $extend(haxe_ui_core_Component.prototype,{
+	registerComposite: function() {
+		haxe_ui_core_Component.prototype.registerComposite.call(this);
+		this._compositeBuilderClass = haxe_ui_components__$Switch_Builder;
+		this._defaultLayoutClass = haxe_ui_layouts_HorizontalLayout;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_core_Component.prototype.registerBehaviours.call(this);
+		this.behaviours.register("selected",haxe_ui_components__$Switch_SelectedBehaviour);
+		this.behaviours.register("value",haxe_ui_behaviours_DefaultBehaviour);
+		this.behaviours.register("text",haxe_ui_components__$Switch_TextBehaviour);
+		this.behaviours.register("textOn",haxe_ui_behaviours_DefaultBehaviour);
+		this.behaviours.register("textOff",haxe_ui_behaviours_DefaultBehaviour);
+	}
+	,get_selected: function() {
+		return haxe_ui_util_Variant.toBool(this.behaviours.get("selected"));
+	}
+	,set_selected: function(value) {
+		this.behaviours.set("selected",haxe_ui_util_Variant.fromBool(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selected"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selected");
+		return value;
+	}
+	,get_textOn: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("textOn"));
+	}
+	,set_textOn: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"textOn",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("textOn",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"textOn"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"textOn");
+		return value;
+	}
+	,get_textOff: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("textOff"));
+	}
+	,set_textOff: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"textOff",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("textOff",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"textOff"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"textOff");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_Component.prototype.cloneComponent.call(this);
+		c.set_selected(this.get_selected());
+		if(this.get_textOn() != null) {
+			c.set_textOn(this.get_textOn());
+		}
+		if(this.get_textOff() != null) {
+			c.set_textOff(this.get_textOff());
+		}
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_Switch();
+	}
+	,__class__: haxe_ui_components_Switch
+	,__properties__: $extend(haxe_ui_core_Component.prototype.__properties__,{set_textOff:"set_textOff",get_textOff:"get_textOff",set_textOn:"set_textOn",get_textOn:"get_textOn",set_selected:"set_selected",get_selected:"get_selected"})
+});
+var haxe_ui_components__$Switch_SelectedBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Switch.SelectedBehaviour"] = haxe_ui_components__$Switch_SelectedBehaviour;
+haxe_ui_components__$Switch_SelectedBehaviour.__name__ = "haxe.ui.components._Switch.SelectedBehaviour";
+haxe_ui_components__$Switch_SelectedBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$Switch_SelectedBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		this._component.findComponent(null,haxe_ui_components__$Switch_SwitchButtonSub).set_selected(haxe_ui_util_Variant.toBool(this._value));
+	}
+	,__class__: haxe_ui_components__$Switch_SelectedBehaviour
+});
+var haxe_ui_components__$Switch_TextBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._Switch.TextBehaviour"] = haxe_ui_components__$Switch_TextBehaviour;
+haxe_ui_components__$Switch_TextBehaviour.__name__ = "haxe.ui.components._Switch.TextBehaviour";
+haxe_ui_components__$Switch_TextBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$Switch_TextBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var label = this._component.findComponent(null,haxe_ui_components_Label,false);
+		if(label == null) {
+			label = new haxe_ui_components_Label();
+			label.set_styleNames("switch-label");
+			label.set_id("switch-label");
+			label.scriptAccess = false;
+			this._component.addComponentAt(label,0);
+			var spacer = new haxe_ui_components_Spacer();
+			spacer.set_percentWidth(100);
+			this._component.addComponentAt(spacer,1);
+			var _this = this._component;
+			var force = true;
+			if(force == null) {
+				force = false;
+			}
+			_this.invalidateComponent("style");
+			if(force == true) {
+				_this._style = null;
+			}
+		}
+		label.set_text(haxe_ui_util_Variant.toString(this._value));
+	}
+	,__class__: haxe_ui_components__$Switch_TextBehaviour
+});
+var haxe_ui_components__$Switch_Builder = function(s) {
+	haxe_ui_core_CompositeBuilder.call(this,s);
+	this._switch = s;
+};
+$hxClasses["haxe.ui.components._Switch.Builder"] = haxe_ui_components__$Switch_Builder;
+haxe_ui_components__$Switch_Builder.__name__ = "haxe.ui.components._Switch.Builder";
+haxe_ui_components__$Switch_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_components__$Switch_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_switch: null
+	,_button: null
+	,_label: null
+	,create: function() {
+		var _gthis = this;
+		if(this._button == null) {
+			this._button = new haxe_ui_components__$Switch_SwitchButtonSub();
+			this._button.set_onChange(function(e) {
+				_gthis._switch.set_selected(_gthis._button.get_selected());
+				_gthis._switch.dispatch(new haxe_ui_events_UIEvent("change"));
+			});
+			this._component.addComponent(this._button);
+		}
+	}
+	,__class__: haxe_ui_components__$Switch_Builder
+});
+var haxe_ui_components__$Switch_SwitchButtonSub = function() {
+	this._pos = 0;
+	this._unselectedText = "";
+	this._selectedText = "";
+	this._selected = false;
+	haxe_ui_core_InteractiveComponent.call(this);
+};
+$hxClasses["haxe.ui.components._Switch.SwitchButtonSub"] = haxe_ui_components__$Switch_SwitchButtonSub;
+haxe_ui_components__$Switch_SwitchButtonSub.__name__ = "haxe.ui.components._Switch.SwitchButtonSub";
+haxe_ui_components__$Switch_SwitchButtonSub.__super__ = haxe_ui_core_InteractiveComponent;
+haxe_ui_components__$Switch_SwitchButtonSub.prototype = $extend(haxe_ui_core_InteractiveComponent.prototype,{
+	_button: null
+	,_label: null
+	,createChildren: function() {
+		var _gthis = this;
+		haxe_ui_core_InteractiveComponent.prototype.createChildren.call(this);
+		if(this._button == null) {
+			this._label = new haxe_ui_components_Label();
+			this._label.set_id("switch-label");
+			this._label.addClass("switch-label");
+			this._label.set_text(this._unselectedText);
+			this.addComponent(this._label);
+			this._button = new haxe_ui_components_Button();
+			this._button.set_id("switch-button");
+			this._button.addClass("switch-button");
+			this.addComponent(this._button);
+			this.set_onClick(function(e) {
+				_gthis.set_selected(!_gthis.get_selected());
+			});
+			var component = new haxe_ui_core_Component();
+			component.addClass("switch-button-sub-extra");
+			this.addComponentAt(component,0);
+		}
+	}
+	,_selected: null
+	,get_selected: function() {
+		return this._selected;
+	}
+	,set_selected: function(value) {
+		if(value == this._selected) {
+			return value;
+		}
+		this.invalidateComponent("data");
+		if(!(this._layout == null || this._layoutLocked == true)) {
+			this.invalidateComponent("layout");
+		}
+		this._selected = value;
+		if(this._selected == false) {
+			this._label.set_text(this._unselectedText);
+			this._label.removeClass(":selected");
+			this.removeClass(":selected",true,true);
+			this.addClass(":unselected",true,true);
+		} else {
+			this._label.set_text(this._selectedText);
+			this._label.addClass(":selected");
+			this.removeClass(":unselected",true,true);
+			this.addClass(":selected",true,true);
+		}
+		var event = new haxe_ui_events_UIEvent("change");
+		this.dispatch(event);
+		return value;
+	}
+	,_selectedText: null
+	,get_selectedText: function() {
+		return this._selectedText;
+	}
+	,set_selectedText: function(value) {
+		this._selectedText = value;
+		if(this._ready && this._selected == true) {
+			this._label.set_text(this._selectedText);
+		}
+		return value;
+	}
+	,_unselectedText: null
+	,get_unselectedText: function() {
+		return this._unselectedText;
+	}
+	,set_unselectedText: function(value) {
+		this._unselectedText = value;
+		if(this._ready && this._selected == false) {
+			this._label.set_text(this._unselectedText);
+		}
+		return value;
+	}
+	,_pos: null
+	,get_pos: function() {
+		return this._pos;
+	}
+	,set_pos: function(value) {
+		if(this._pos == value) {
+			return value;
+		}
+		this._pos = value;
+		if(!(this._layout == null || this._layoutLocked == true)) {
+			this.invalidateComponent("layout");
+		}
+		return value;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_core_InteractiveComponent.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_InteractiveComponent.prototype.cloneComponent.call(this);
+		c.set_selected(this.get_selected());
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components__$Switch_SwitchButtonSub();
+	}
+	,registerComposite: function() {
+		haxe_ui_core_InteractiveComponent.prototype.registerComposite.call(this);
+		this._defaultLayoutClass = haxe_ui_components__$Switch_SwitchButtonLayout;
+	}
+	,__class__: haxe_ui_components__$Switch_SwitchButtonSub
+	,__properties__: $extend(haxe_ui_core_InteractiveComponent.prototype.__properties__,{set_pos:"set_pos",get_pos:"get_pos",set_unselectedText:"set_unselectedText",get_unselectedText:"get_unselectedText",set_selectedText:"set_selectedText",get_selectedText:"get_selectedText",set_selected:"set_selected",get_selected:"get_selected"})
+});
+var haxe_ui_components__$Switch_SwitchButtonLayout = function() {
+	haxe_ui_layouts_DefaultLayout.call(this);
+};
+$hxClasses["haxe.ui.components._Switch.SwitchButtonLayout"] = haxe_ui_components__$Switch_SwitchButtonLayout;
+haxe_ui_components__$Switch_SwitchButtonLayout.__name__ = "haxe.ui.components._Switch.SwitchButtonLayout";
+haxe_ui_components__$Switch_SwitchButtonLayout.__super__ = haxe_ui_layouts_DefaultLayout;
+haxe_ui_components__$Switch_SwitchButtonLayout.prototype = $extend(haxe_ui_layouts_DefaultLayout.prototype,{
+	repositionChildren: function() {
+		var switchComp = js_Boot.__cast(this._component , haxe_ui_components__$Switch_SwitchButtonSub);
+		var button = switchComp.findComponent("switch-button");
+		var label = switchComp.findComponent("switch-label");
+		if(button == null || label == null) {
 			return;
 		}
-		var b = new haxe_ui_components_Button();
-		b.scriptAccess = false;
-		b.set_id(id);
-		b.addClass(id);
-		b.set_remainPressed(true);
-		this._component.addComponent(b);
-		this._component.registerInternalEvents(haxe_ui_components__$Slider_Events,true);
+		button.set_top(this.get_paddingTop());
+		label.set_top(this.get_component().get_componentHeight() / 2 - label.get_componentHeight() / 2);
+		if(switchComp.get_selected() == true) {
+			label.set_left(button.get_componentWidth() / 2 - label.get_componentWidth() / 2);
+		} else {
+			label.set_left(button.get_left() + button.get_componentWidth() + button.get_componentWidth() / 2 - label.get_componentWidth() / 2);
+		}
+		var ucx = this.get_usableWidth() - button.get_width();
+		var min = 0;
+		var max = 100;
+		var x = (switchComp.get_pos() - min) / (max - min) * ucx;
+		button.set_left(this.get_paddingLeft() + x);
+		var extra = switchComp.findComponent("switch-button-sub-extra",null,null,"css");
+		if(extra != null) {
+			extra.set_top(this._component.get_height() / 2 - extra.get_height() / 2);
+		}
 	}
-	,__class__: haxe_ui_components_SliderBuilder
+	,__class__: haxe_ui_components__$Switch_SwitchButtonLayout
+});
+var haxe_ui_components_TabBar = function() {
+	haxe_ui_core_Component.call(this);
+};
+$hxClasses["haxe.ui.components.TabBar"] = haxe_ui_components_TabBar;
+haxe_ui_components_TabBar.__name__ = "haxe.ui.components.TabBar";
+haxe_ui_components_TabBar.__super__ = haxe_ui_core_Component;
+haxe_ui_components_TabBar.prototype = $extend(haxe_ui_core_Component.prototype,{
+	removeTab: function(index) {
+		return this.behaviours.call("removeTab",index);
+	}
+	,getTab: function(index) {
+		return haxe_ui_util_Variant.toComponent(this.behaviours.call("getTab",index));
+	}
+	,registerComposite: function() {
+		haxe_ui_core_Component.prototype.registerComposite.call(this);
+		this._compositeBuilderClass = haxe_ui_components__$TabBar_Builder;
+		this._internalEventsClass = haxe_ui_components__$TabBar_Events;
+		this._defaultLayoutClass = haxe_ui_components_TabBarLayout;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_core_Component.prototype.registerBehaviours.call(this);
+		this.behaviours.register("selectedIndex",haxe_ui_components__$TabBar_SelectedIndex,haxe_ui_util_Variant.fromInt(-1));
+		this.behaviours.register("selectedTab",haxe_ui_components__$TabBar_SelectedTab);
+		this.behaviours.register("tabPosition",haxe_ui_components__$TabBar_TabPosition,haxe_ui_util_Variant.fromString("top"));
+		this.behaviours.register("tabCount",haxe_ui_components__$TabBar_TabCount);
+		this.behaviours.register("closable",haxe_ui_components__$TabBar_Closable,haxe_ui_util_Variant.fromBool(false));
+		this.behaviours.register("removeTab",haxe_ui_components__$TabBar_RemoveTab);
+		this.behaviours.register("getTab",haxe_ui_components__$TabBar_GetTab);
+	}
+	,get_selectedIndex: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("selectedIndex"));
+	}
+	,set_selectedIndex: function(value) {
+		this.behaviours.set("selectedIndex",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selectedIndex"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedIndex");
+		return value;
+	}
+	,get_selectedTab: function() {
+		return haxe_ui_util_Variant.toComponent(this.behaviours.get("selectedTab"));
+	}
+	,set_selectedTab: function(value) {
+		this.behaviours.set("selectedTab",haxe_ui_util_Variant.fromComponent(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selectedTab"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedTab");
+		return value;
+	}
+	,get_tabPosition: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("tabPosition"));
+	}
+	,set_tabPosition: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"tabPosition",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("tabPosition",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"tabPosition"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"tabPosition");
+		return value;
+	}
+	,get_tabCount: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("tabCount"));
+	}
+	,set_tabCount: function(value) {
+		this.behaviours.set("tabCount",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"tabCount"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"tabCount");
+		return value;
+	}
+	,get_closable: function() {
+		return haxe_ui_util_Variant.toBool(this.behaviours.get("closable"));
+	}
+	,set_closable: function(value) {
+		this.behaviours.set("closable",haxe_ui_util_Variant.fromBool(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"closable"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"closable");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_Component.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_TabBar();
+	}
+	,__class__: haxe_ui_components_TabBar
+	,__properties__: $extend(haxe_ui_core_Component.prototype.__properties__,{set_closable:"set_closable",get_closable:"get_closable",set_tabCount:"set_tabCount",get_tabCount:"get_tabCount",set_tabPosition:"set_tabPosition",get_tabPosition:"get_tabPosition",set_selectedTab:"set_selectedTab",get_selectedTab:"get_selectedTab",set_selectedIndex:"set_selectedIndex",get_selectedIndex:"get_selectedIndex"})
+});
+var haxe_ui_components_TabBarLayout = function() {
+	haxe_ui_layouts_DefaultLayout.call(this);
+};
+$hxClasses["haxe.ui.components.TabBarLayout"] = haxe_ui_components_TabBarLayout;
+haxe_ui_components_TabBarLayout.__name__ = "haxe.ui.components.TabBarLayout";
+haxe_ui_components_TabBarLayout.__super__ = haxe_ui_layouts_DefaultLayout;
+haxe_ui_components_TabBarLayout.prototype = $extend(haxe_ui_layouts_DefaultLayout.prototype,{
+	repositionChildren: function() {
+		haxe_ui_layouts_DefaultLayout.prototype.repositionChildren.call(this);
+		var filler = this._component.findComponent("tabbar-filler",null,false);
+		if(filler != null) {
+			var container = this._component.findComponent("tabbar-contents",null,false);
+			filler.set_width(this._component.get_width() - container.get_width());
+			filler.set_height(this._component.get_height());
+			filler.set_left(container.get_width());
+		}
+		var left = this._component.findComponent("tabbar-scroll-left",null,false);
+		var right = this._component.findComponent("tabbar-scroll-right",null,false);
+		if(left != null && this.hidden(left) == false) {
+			var x = this._component.get_width() - left.get_width();
+			if(right != null) {
+				x -= right.get_width();
+			}
+			left.set_left(x + 1);
+			left.set_top(this._component.get_height() / 2 - left.get_height() / 2);
+		}
+		if(right != null && this.hidden(right) == false) {
+			right.set_left(this._component.get_width() - right.get_width());
+			right.set_top(this._component.get_height() / 2 - right.get_height() / 2);
+		}
+	}
+	,__class__: haxe_ui_components_TabBarLayout
+});
+var haxe_ui_components__$TabBar_Closable = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._TabBar.Closable"] = haxe_ui_components__$TabBar_Closable;
+haxe_ui_components__$TabBar_Closable.__name__ = "haxe.ui.components._TabBar.Closable";
+haxe_ui_components__$TabBar_Closable.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$TabBar_Closable.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		if(builder._container == null) {
+			return;
+		}
+		var buttons = builder._container.findComponents(null,haxe_ui_components__$TabBar_TabBarButton,1);
+		var _g = 0;
+		while(_g < buttons.length) {
+			var b = buttons[_g];
+			++_g;
+			b.set_closable(haxe_ui_util_Variant.toBool(this._value));
+		}
+	}
+	,__class__: haxe_ui_components__$TabBar_Closable
+});
+var haxe_ui_components__$TabBar_SelectedIndex = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._TabBar.SelectedIndex"] = haxe_ui_components__$TabBar_SelectedIndex;
+haxe_ui_components__$TabBar_SelectedIndex.__name__ = "haxe.ui.components._TabBar.SelectedIndex";
+haxe_ui_components__$TabBar_SelectedIndex.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$TabBar_SelectedIndex.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		if(builder._container == null) {
+			return;
+		}
+		if(haxe_ui_util_Variant.lt(this._value,haxe_ui_util_Variant.fromInt(0))) {
+			return;
+		}
+		var _this = builder._container;
+		if(haxe_ui_util_Variant.gt(this._value,haxe_ui_util_Variant.fromInt((_this._children == null ? [] : _this._children).length - 1))) {
+			var _this = builder._container;
+			this._value = haxe_ui_util_Variant.fromInt((_this._children == null ? [] : _this._children).length - 1);
+			return;
+		}
+		var tab = js_Boot.__cast(builder._container.getComponentAt(haxe_ui_util_Variant.toInt(this._value)) , haxe_ui_components_Button);
+		if(tab != null) {
+			var selectedTab = (js_Boot.__cast(this._component , haxe_ui_components_TabBar)).get_selectedTab();
+			if(selectedTab != null) {
+				selectedTab.removeClass("tabbar-button-selected");
+				var label = selectedTab.findComponent(null,haxe_ui_components_Label);
+				if(label != null) {
+					label.invalidateComponent();
+				}
+				var icon = selectedTab.findComponent(null,haxe_ui_components_Image);
+				if(icon != null) {
+					icon.invalidateComponent();
+				}
+			}
+			tab.addClass("tabbar-button-selected");
+			var label = tab.findComponent(null,haxe_ui_components_Label);
+			if(label != null) {
+				label.invalidateComponent();
+			}
+			var icon = tab.findComponent(null,haxe_ui_components_Image);
+			if(icon != null) {
+				icon.invalidateComponent();
+			}
+			var rangeMin = Math.abs(builder._container.get_left());
+			var rangeMax = rangeMin + this._component.get_width();
+			var left = this._component.findComponent("tabbar-scroll-left",haxe_ui_components_Button);
+			var right = this._component.findComponent("tabbar-scroll-right",haxe_ui_components_Button);
+			if(left != null && left.get_hidden() == false) {
+				rangeMax -= left.get_width();
+				rangeMax -= this._component.get_layout().get_horizontalSpacing();
+			}
+			if(right != null && right.get_hidden() == false) {
+				rangeMax -= right.get_width();
+			}
+			if(tab.get_left() < rangeMin || tab.get_left() + tab.get_width() > rangeMax) {
+				var max = -(builder._container.get_width() - this._component.get_width());
+				var x = -tab.get_left() + this._component.get_layout().get_paddingLeft();
+				if(left != null && left.get_hidden() == false) {
+					max -= left.get_width();
+					max -= this._component.get_layout().get_horizontalSpacing();
+				}
+				if(right != null && right.get_hidden() == false) {
+					max -= right.get_width();
+				}
+				if(x < max) {
+					x = max;
+				}
+				builder._containerPosition = x;
+				builder._container.set_left(x);
+			}
+			var _this = this._component;
+			if(!(_this._layout == null || _this._layoutLocked == true)) {
+				_this.invalidateComponent("layout");
+			}
+			this._component.dispatch(new haxe_ui_events_UIEvent("change"));
+		}
+	}
+	,__class__: haxe_ui_components__$TabBar_SelectedIndex
+});
+var haxe_ui_components__$TabBar_SelectedTab = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._TabBar.SelectedTab"] = haxe_ui_components__$TabBar_SelectedTab;
+haxe_ui_components__$TabBar_SelectedTab.__name__ = "haxe.ui.components._TabBar.SelectedTab";
+haxe_ui_components__$TabBar_SelectedTab.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$TabBar_SelectedTab.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	get: function() {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		return haxe_ui_util_Variant.fromComponent(builder._container.findComponent("tabbar-button-selected",null,false,"css"));
+	}
+	,__class__: haxe_ui_components__$TabBar_SelectedTab
+});
+var haxe_ui_components__$TabBar_TabPosition = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._TabBar.TabPosition"] = haxe_ui_components__$TabBar_TabPosition;
+haxe_ui_components__$TabBar_TabPosition.__name__ = "haxe.ui.components._TabBar.TabPosition";
+haxe_ui_components__$TabBar_TabPosition.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_components__$TabBar_TabPosition.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		if(haxe_ui_util_Variant.eq(this._value,haxe_ui_util_Variant.fromString("bottom"))) {
+			this._component.addClass(":bottom");
+			var _g = 0;
+			var _this = builder._container;
+			var _g1 = _this._children == null ? [] : _this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				child.addClass(":bottom");
+			}
+		} else {
+			this._component.removeClass(":bottom");
+			var _g = 0;
+			var _this = builder._container;
+			var _g1 = _this._children == null ? [] : _this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				child.removeClass(":bottom");
+			}
+		}
+	}
+	,__class__: haxe_ui_components__$TabBar_TabPosition
+});
+var haxe_ui_components__$TabBar_TabCount = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._TabBar.TabCount"] = haxe_ui_components__$TabBar_TabCount;
+haxe_ui_components__$TabBar_TabCount.__name__ = "haxe.ui.components._TabBar.TabCount";
+haxe_ui_components__$TabBar_TabCount.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_components__$TabBar_TabCount.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	get: function() {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		var _this = builder._container;
+		return haxe_ui_util_Variant.fromInt((_this._children == null ? [] : _this._children).length);
+	}
+	,__class__: haxe_ui_components__$TabBar_TabCount
+});
+var haxe_ui_components__$TabBar_RemoveTab = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._TabBar.RemoveTab"] = haxe_ui_components__$TabBar_RemoveTab;
+haxe_ui_components__$TabBar_RemoveTab.__name__ = "haxe.ui.components._TabBar.RemoveTab";
+haxe_ui_components__$TabBar_RemoveTab.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_components__$TabBar_RemoveTab.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		var index = param;
+		var _this = builder._container;
+		if(index < (_this._children == null ? [] : _this._children).length) {
+			var selectedIndex = (js_Boot.__cast(this._component , haxe_ui_components_TabBar)).get_selectedIndex();
+			var newSelectedIndex = selectedIndex;
+			if(index < selectedIndex) {
+				--newSelectedIndex;
+			} else if(index == selectedIndex) {
+				(js_Boot.__cast(this._component , haxe_ui_components_TabBar)).set_selectedIndex(-1);
+				newSelectedIndex = selectedIndex;
+				var _this = builder._container;
+				if(newSelectedIndex > (_this._children == null ? [] : _this._children).length - 2) {
+					var _this = builder._container;
+					newSelectedIndex = (_this._children == null ? [] : _this._children).length - 2;
+				}
+			}
+			builder._container.removeComponentAt(index);
+			this._component.dispatch(new haxe_ui_events_UIEvent("close",null,index));
+			(js_Boot.__cast(this._component , haxe_ui_components_TabBar)).set_selectedIndex(newSelectedIndex);
+		}
+		return null;
+	}
+	,__class__: haxe_ui_components__$TabBar_RemoveTab
+});
+var haxe_ui_components__$TabBar_GetTab = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.components._TabBar.GetTab"] = haxe_ui_components__$TabBar_GetTab;
+haxe_ui_components__$TabBar_GetTab.__name__ = "haxe.ui.components._TabBar.GetTab";
+haxe_ui_components__$TabBar_GetTab.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_components__$TabBar_GetTab.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		var index = param;
+		var tab = null;
+		var _this = builder._container;
+		if(index < (_this._children == null ? [] : _this._children).length) {
+			var _this = builder._container;
+			tab = (_this._children == null ? [] : _this._children)[index];
+		}
+		return haxe_ui_util_Variant.fromComponent(tab);
+	}
+	,__class__: haxe_ui_components__$TabBar_GetTab
+});
+var haxe_ui_components__$TabBar_Events = function(tabbar) {
+	haxe_ui_events_Events.call(this,tabbar);
+	this._tabbar = tabbar;
+};
+$hxClasses["haxe.ui.components._TabBar.Events"] = haxe_ui_components__$TabBar_Events;
+haxe_ui_components__$TabBar_Events.__name__ = "haxe.ui.components._TabBar.Events";
+haxe_ui_components__$TabBar_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_components__$TabBar_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	_tabbar: null
+	,register: function() {
+		var builder = js_Boot.__cast(this._tabbar._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		var _g = 0;
+		var _this = builder._container;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var t = _g1[_g];
+			++_g;
+			if(t.hasEvent("mousedown",$bind(this,this.onTabMouseDown)) == false) {
+				t.registerEvent("mousedown",$bind(this,this.onTabMouseDown));
+			}
+		}
+		this.registerEvent("mousewheel",$bind(this,this.onMouseWheel));
+	}
+	,unregister: function() {
+		this.unregisterEvent("mousewheel",$bind(this,this.onMouseWheel));
+	}
+	,onMouseWheel: function(event) {
+		var builder = js_Boot.__cast(this._tabbar._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		if(event.delta < 0) {
+			builder.scrollLeft();
+		} else {
+			builder.scrollRight();
+		}
+	}
+	,onTabMouseDown: function(event) {
+		var builder = js_Boot.__cast(this._tabbar._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		var button = event.target;
+		var close = button.findComponent("tab-close-button",haxe_ui_components_Image,false);
+		var select = true;
+		if(close != null) {
+			select = !close.hitTest(event.screenX,event.screenY);
+		}
+		if(select == true) {
+			this._tabbar.set_selectedIndex(builder._container.getComponentIndex(button));
+		}
+	}
+	,__class__: haxe_ui_components__$TabBar_Events
+});
+var haxe_ui_components__$TabBar_Builder = function(tabbar) {
+	haxe_ui_core_CompositeBuilder.call(this,tabbar);
+	this._tabbar = tabbar;
+	this.createContainer();
+};
+$hxClasses["haxe.ui.components._TabBar.Builder"] = haxe_ui_components__$TabBar_Builder;
+haxe_ui_components__$TabBar_Builder.__name__ = "haxe.ui.components._TabBar.Builder";
+haxe_ui_components__$TabBar_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_components__$TabBar_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_tabbar: null
+	,_container: null
+	,_filler: null
+	,create: function() {
+		this.createContainer();
+	}
+	,createContainer: function() {
+		if(this._filler == null) {
+			this._filler = new haxe_ui_containers_Box();
+			this._filler.set_id("tabbar-filler");
+			this._filler.addClass("tabbar-filler");
+			this._tabbar.addComponent(this._filler);
+		}
+		if(this._container == null) {
+			this._container = new haxe_ui_containers_HBox();
+			this._container.set_id("tabbar-contents");
+			this._container.addClass("tabbar-contents");
+			this._tabbar.addComponent(this._container);
+		}
+	}
+	,addTab: function(child) {
+		var button = this.createTabBarButton(child);
+		var v = this._container.addComponent(button);
+		this._tabbar.registerInternalEvents(haxe_ui_components__$TabBar_Events,true);
+		if(this._tabbar.get_selectedIndex() < 0) {
+			this._tabbar.set_selectedIndex(0);
+		}
+		return v;
+	}
+	,addTabAt: function(child,index) {
+		var button = this.createTabBarButton(child);
+		var v = this._container.addComponentAt(button,index);
+		this._tabbar.registerInternalEvents(haxe_ui_components__$TabBar_Events,true);
+		if(this._tabbar.get_selectedIndex() < 0) {
+			this._tabbar.set_selectedIndex(0);
+		}
+		return v;
+	}
+	,createTabBarButton: function(child) {
+		var button = new haxe_ui_components__$TabBar_TabBarButton();
+		button.addClass("tabbar-button");
+		if(this._tabbar.get_tabPosition() == "bottom") {
+			button.addClass(":bottom");
+		}
+		button.set_id(child.get_id());
+		button.set_text(child.get_text());
+		button.set_tooltip(child.get_tooltip());
+		if(((child) instanceof haxe_ui_components_Button)) {
+			button.set_icon((js_Boot.__cast(child , haxe_ui_components_Button)).get_icon());
+		}
+		button.set_closable(this._tabbar.get_closable());
+		return button;
+	}
+	,get_numComponents: function() {
+		return this._container.get_numComponents();
+	}
+	,addComponent: function(child) {
+		if(child != this._container && child != this._scrollLeft && child != this._scrollRight && child != this._filler) {
+			return this.addTab(child);
+		}
+		return null;
+	}
+	,addComponentAt: function(child,index) {
+		if(child != this._container && child != this._scrollLeft && child != this._scrollRight && child != this._filler) {
+			return this.addTabAt(child,index);
+		}
+		return null;
+	}
+	,removeComponent: function(child,dispose,invalidate) {
+		if(invalidate == null) {
+			invalidate = true;
+		}
+		if(dispose == null) {
+			dispose = true;
+		}
+		if(child != this._container && child != this._scrollLeft && child != this._scrollRight && child != this._filler) {
+			var index = this._container.getComponentIndex(child);
+			if(index != -1) {
+				this._tabbar.removeTab(index);
+				return child;
+			}
+		}
+		return null;
+	}
+	,removeComponentAt: function(index,dispose,invalidate) {
+		if(invalidate == null) {
+			invalidate = true;
+		}
+		if(dispose == null) {
+			dispose = true;
+		}
+		var child = this._container.getComponentAt(index);
+		if(child != null) {
+			this._tabbar.removeTab(index);
+		}
+		return child;
+	}
+	,getComponentIndex: function(child) {
+		if(child != this._container && child != this._scrollLeft && child != this._scrollRight && child != this._filler) {
+			return this._container.getComponentIndex(child);
+		}
+		return -1;
+	}
+	,setComponentIndex: function(child,index) {
+		if(child != this._container && child != this._scrollLeft && child != this._scrollRight && child != this._filler) {
+			return this._container.setComponentIndex(child,index);
+		}
+		return null;
+	}
+	,getComponentAt: function(index) {
+		return this._container.getComponentAt(index);
+	}
+	,validateComponentLayout: function() {
+		if(this._tabbar.get_native() == true || this._container == null) {
+			return false;
+		}
+		if(this._containerPosition == null) {
+			this._containerPosition = this._tabbar.get_layout().get_paddingLeft();
+		}
+		if(this._container.get_width() > this._tabbar.get_layout().get_usableWidth() && this._tabbar.get_layout().get_usableWidth() > 0) {
+			this.showScrollButtons();
+			this._container.set_left(this._containerPosition);
+		} else {
+			this.hideScrollButtons();
+			this._containerPosition = null;
+		}
+		return true;
+	}
+	,_scrollLeft: null
+	,_scrollRight: null
+	,showScrollButtons: function() {
+		var _gthis = this;
+		if(this._scrollLeft == null) {
+			this._scrollLeft = new haxe_ui_components_Button();
+			this._scrollLeft.set_id("tabbar-scroll-left");
+			this._scrollLeft.addClass("tabbar-scroll-left");
+			this._scrollLeft.set_includeInLayout(false);
+			this._scrollLeft.set_repeater(true);
+			this._tabbar.addComponent(this._scrollLeft);
+			this._scrollLeft.set_onClick(function(e) {
+				_gthis.scrollLeft();
+			});
+		} else {
+			this._scrollLeft.show();
+		}
+		if(this._scrollRight == null) {
+			this._scrollRight = new haxe_ui_components_Button();
+			this._scrollRight.set_id("tabbar-scroll-right");
+			this._scrollRight.addClass("tabbar-scroll-right");
+			this._scrollRight.set_includeInLayout(false);
+			this._scrollRight.set_repeater(true);
+			this._tabbar.addComponent(this._scrollRight);
+			this._scrollRight.set_onClick(function(e) {
+				_gthis.scrollRight();
+			});
+		} else {
+			this._scrollRight.show();
+		}
+	}
+	,_containerPosition: null
+	,scrollLeft: function() {
+		if(this._scrollLeft == null || this._scrollLeft.get_hidden() == true) {
+			return;
+		}
+		var x = this._container.get_left() + 20;
+		if(x > this._tabbar.get_layout().get_paddingLeft()) {
+			x = this._tabbar.get_layout().get_paddingLeft();
+		}
+		this._containerPosition = x;
+		this._container.set_left(x);
+	}
+	,scrollRight: function() {
+		if(this._scrollLeft == null || this._scrollLeft.get_hidden() == true) {
+			return;
+		}
+		var x = this._container.get_left() - 20;
+		var max = -(this._container.get_width() - this._tabbar.get_width());
+		var left = this._tabbar.findComponent("tabbar-scroll-left",haxe_ui_components_Button);
+		var right = this._tabbar.findComponent("tabbar-scroll-right",haxe_ui_components_Button);
+		if(left != null && left.get_hidden() == false) {
+			max -= left.get_width();
+			max -= this._tabbar.get_layout().get_horizontalSpacing();
+		}
+		if(right != null && right.get_hidden() == false) {
+			max -= right.get_width();
+		}
+		if(x < max) {
+			x = max;
+		}
+		this._containerPosition = x;
+		this._container.set_left(x);
+	}
+	,hideScrollButtons: function() {
+		if(this._scrollLeft != null) {
+			this._scrollLeft.hide();
+		}
+		if(this._scrollRight != null) {
+			this._scrollRight.hide();
+		}
+	}
+	,__class__: haxe_ui_components__$TabBar_Builder
+});
+var haxe_ui_components__$TabBar_TabBarButton = function() {
+	this._closable = false;
+	haxe_ui_components_Button.call(this);
+};
+$hxClasses["haxe.ui.components._TabBar.TabBarButton"] = haxe_ui_components__$TabBar_TabBarButton;
+haxe_ui_components__$TabBar_TabBarButton.__name__ = "haxe.ui.components._TabBar.TabBarButton";
+haxe_ui_components__$TabBar_TabBarButton.__super__ = haxe_ui_components_Button;
+haxe_ui_components__$TabBar_TabBarButton.prototype = $extend(haxe_ui_components_Button.prototype,{
+	_closable: null
+	,get_closable: function() {
+		return this._closable;
+	}
+	,set_closable: function(value) {
+		if(this._closable == value) {
+			return value;
+		}
+		this._closable = value;
+		var existing = this.findComponent("tab-close-button",haxe_ui_components_Image,false);
+		if(this._closable == true && existing == null) {
+			this.set_iconPosition("far-left");
+			var image = new haxe_ui_components_Image();
+			image.set_id("tab-close-button");
+			image.addClass("tab-close-button");
+			image.set_includeInLayout(false);
+			image.scriptAccess = false;
+			image.set_onClick($bind(this,this.onCloseClicked));
+			this.addComponent(image);
+		} else if(existing != null) {
+			this.removeComponent(existing);
+		}
+		return value;
+	}
+	,onCloseClicked: function(e) {
+		var tabbar = this.findAncestor(null,haxe_ui_components_TabBar);
+		var builder = js_Boot.__cast(tabbar._compositeBuilder , haxe_ui_components__$TabBar_Builder);
+		var index = builder._container.getComponentIndex(this);
+		var event = new haxe_ui_events_UIEvent("beforeClose",null,index);
+		tabbar.dispatch(event);
+		if(event.canceled == false) {
+			if(index != -1) {
+				tabbar.removeTab(index);
+			}
+		}
+	}
+	,registerComposite: function() {
+		haxe_ui_components_Button.prototype.registerComposite.call(this);
+		this._defaultLayoutClass = haxe_ui_components__$TabBar_TabBarButtonLayout;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_components_Button.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_components_Button.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components__$TabBar_TabBarButton();
+	}
+	,__class__: haxe_ui_components__$TabBar_TabBarButton
+	,__properties__: $extend(haxe_ui_components_Button.prototype.__properties__,{set_closable:"set_closable",get_closable:"get_closable"})
+});
+var haxe_ui_components__$TabBar_TabBarButtonLayout = function() {
+	haxe_ui_components_ButtonLayout.call(this);
+};
+$hxClasses["haxe.ui.components._TabBar.TabBarButtonLayout"] = haxe_ui_components__$TabBar_TabBarButtonLayout;
+haxe_ui_components__$TabBar_TabBarButtonLayout.__name__ = "haxe.ui.components._TabBar.TabBarButtonLayout";
+haxe_ui_components__$TabBar_TabBarButtonLayout.__super__ = haxe_ui_components_ButtonLayout;
+haxe_ui_components__$TabBar_TabBarButtonLayout.prototype = $extend(haxe_ui_components_ButtonLayout.prototype,{
+	repositionChildren: function() {
+		haxe_ui_components_ButtonLayout.prototype.repositionChildren.call(this);
+		var image = this._component.findComponent("tab-close-button",haxe_ui_components_Image,false);
+		if(image != null && this.get_component().get_componentWidth() > 0) {
+			image.set_top((this.get_component().get_componentHeight() / 2 - image.get_componentHeight() / 2 | 0) + this.marginTop(image) - this.marginBottom(image));
+			image.set_left(this.get_component().get_componentWidth() - image.get_componentWidth() - this.get_paddingRight() + this.marginLeft(image) - this.marginRight(image));
+		}
+	}
+	,calcAutoSize: function(exclusions) {
+		var size = haxe_ui_components_ButtonLayout.prototype.calcAutoSize.call(this,exclusions);
+		var image = this._component.findComponent("tab-close-button",haxe_ui_components_Image,false);
+		if(image != null) {
+			size.width += image.get_width() + this.get_horizontalSpacing();
+		}
+		return size;
+	}
+	,__class__: haxe_ui_components__$TabBar_TabBarButtonLayout
 });
 var haxe_ui_components_TextArea = function() {
 	haxe_ui_core_InteractiveComponent.call(this);
@@ -15771,6 +20388,86 @@ haxe_ui_components__$TextField_Builder.prototype = $extend(haxe_ui_core_Composit
 	}
 	,__class__: haxe_ui_components__$TextField_Builder
 });
+var haxe_ui_components_Toggle = function() {
+	haxe_ui_components_Button.call(this);
+	this.set_toggle(true);
+};
+$hxClasses["haxe.ui.components.Toggle"] = haxe_ui_components_Toggle;
+haxe_ui_components_Toggle.__name__ = "haxe.ui.components.Toggle";
+haxe_ui_components_Toggle.__super__ = haxe_ui_components_Button;
+haxe_ui_components_Toggle.prototype = $extend(haxe_ui_components_Button.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_components_Button.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_components_Button.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_Toggle();
+	}
+	,__class__: haxe_ui_components_Toggle
+});
+var haxe_ui_components_VGrid = function() {
+	haxe_ui_core_Component.call(this);
+	this.set_columns(1);
+};
+$hxClasses["haxe.ui.components.VGrid"] = haxe_ui_components_VGrid;
+haxe_ui_components_VGrid.__name__ = "haxe.ui.components.VGrid";
+haxe_ui_components_VGrid.__super__ = haxe_ui_core_Component;
+haxe_ui_components_VGrid.prototype = $extend(haxe_ui_core_Component.prototype,{
+	createDefaults: function() {
+		haxe_ui_core_Component.prototype.createDefaults.call(this);
+		this._defaultLayoutClass = haxe_ui_layouts_VerticalGridLayout;
+	}
+	,_columns: null
+	,get_columns: function() {
+		return this._columns;
+	}
+	,set_columns: function(value) {
+		if(this._columns != value) {
+			this._columns = value;
+			(js_Boot.__cast(this.get_layout() , haxe_ui_layouts_VerticalGridLayout)).set_columns(value);
+			if(!(this._layout == null || this._layoutLocked == true)) {
+				this.invalidateComponent("layout");
+			}
+		}
+		return value;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_core_Component.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_Component.prototype.cloneComponent.call(this);
+		c.set_columns(this.get_columns());
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_VGrid();
+	}
+	,__class__: haxe_ui_components_VGrid
+	,__properties__: $extend(haxe_ui_core_Component.prototype.__properties__,{set_columns:"set_columns",get_columns:"get_columns"})
+});
 var haxe_ui_components_VerticalProgress = function() {
 	haxe_ui_components_Progress.call(this);
 };
@@ -15913,6 +20610,35 @@ haxe_ui_components_VerticalRangeLayout.prototype = $extend(haxe_ui_layouts_Defau
 		value.set_top(this.get_paddingTop() + startInPixels);
 	}
 	,__class__: haxe_ui_components_VerticalRangeLayout
+});
+var haxe_ui_components_VerticalRule = function() {
+	haxe_ui_components_Rule.call(this);
+};
+$hxClasses["haxe.ui.components.VerticalRule"] = haxe_ui_components_VerticalRule;
+haxe_ui_components_VerticalRule.__name__ = "haxe.ui.components.VerticalRule";
+haxe_ui_components_VerticalRule.__super__ = haxe_ui_components_Rule;
+haxe_ui_components_VerticalRule.prototype = $extend(haxe_ui_components_Rule.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_components_Rule.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_components_Rule.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_components_VerticalRule();
+	}
+	,__class__: haxe_ui_components_VerticalRule
 });
 var haxe_ui_components_VerticalScroll = function() {
 	haxe_ui_components_Scroll.call(this);
@@ -16145,6 +20871,882 @@ haxe_ui_components__$VerticalSlider_Builder.prototype = $extend(haxe_ui_componen
 	}
 	,__class__: haxe_ui_components__$VerticalSlider_Builder
 });
+var haxe_ui_containers_Absolute = function() {
+	haxe_ui_containers_Box.call(this);
+	this.set_layout(new haxe_ui_layouts_AbsoluteLayout());
+};
+$hxClasses["haxe.ui.containers.Absolute"] = haxe_ui_containers_Absolute;
+haxe_ui_containers_Absolute.__name__ = "haxe.ui.containers.Absolute";
+haxe_ui_containers_Absolute.__super__ = haxe_ui_containers_Box;
+haxe_ui_containers_Absolute.prototype = $extend(haxe_ui_containers_Box.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_Absolute();
+	}
+	,__class__: haxe_ui_containers_Absolute
+});
+var haxe_ui_containers_Accordion = function() {
+	haxe_ui_containers_VBox.call(this);
+};
+$hxClasses["haxe.ui.containers.Accordion"] = haxe_ui_containers_Accordion;
+haxe_ui_containers_Accordion.__name__ = "haxe.ui.containers.Accordion";
+haxe_ui_containers_Accordion.__super__ = haxe_ui_containers_VBox;
+haxe_ui_containers_Accordion.prototype = $extend(haxe_ui_containers_VBox.prototype,{
+	registerComposite: function() {
+		haxe_ui_containers_VBox.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers__$Accordion_Events;
+		this._compositeBuilderClass = haxe_ui_containers__$Accordion_Builder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_VBox.prototype.registerBehaviours.call(this);
+		this.behaviours.register("pageIndex",haxe_ui_containers__$Accordion_PageIndex,haxe_ui_util_Variant.fromInt(-1));
+		this.behaviours.register("selectedPage",haxe_ui_behaviours_DefaultBehaviour);
+	}
+	,get_pageIndex: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("pageIndex"));
+	}
+	,set_pageIndex: function(value) {
+		this.behaviours.set("pageIndex",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"pageIndex"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pageIndex");
+		return value;
+	}
+	,get_selectedPage: function() {
+		return haxe_ui_util_Variant.toComponent(this.behaviours.get("selectedPage"));
+	}
+	,set_selectedPage: function(value) {
+		this.behaviours.set("selectedPage",haxe_ui_util_Variant.fromComponent(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selectedPage"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedPage");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_VBox.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_Accordion();
+	}
+	,__class__: haxe_ui_containers_Accordion
+	,__properties__: $extend(haxe_ui_containers_VBox.prototype.__properties__,{set_selectedPage:"set_selectedPage",get_selectedPage:"get_selectedPage",set_pageIndex:"set_pageIndex",get_pageIndex:"get_pageIndex"})
+});
+var haxe_ui_containers__$Accordion_PageIndex = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._Accordion.PageIndex"] = haxe_ui_containers__$Accordion_PageIndex;
+haxe_ui_containers__$Accordion_PageIndex.__name__ = "haxe.ui.containers._Accordion.PageIndex";
+haxe_ui_containers__$Accordion_PageIndex.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_containers__$Accordion_PageIndex.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	set: function(value) {
+		if(haxe_ui_util_Variant.eq(value,this._value)) {
+			return;
+		}
+		this._value = value;
+		if(haxe_ui_util_Variant.eq(this._value,haxe_ui_util_Variant.fromInt(-1))) {
+			return;
+		}
+		var buttons = this._component.findComponents(null,haxe_ui_components_Button,1);
+		var selectedIndex = haxe_ui_util_Variant.toInt(value);
+		var button = buttons[selectedIndex];
+		var panel = this._component.getComponentAt(this._component.getComponentIndex(button) + 1);
+		panel.swapClass(":expanded",":collapsed");
+		panel.set_hidden(false);
+		button.set_selected(true);
+		var _g = 0;
+		while(_g < buttons.length) {
+			var b = buttons[_g];
+			++_g;
+			if(b != button) {
+				var tempIndex = this._component.getComponentIndex(b);
+				var tempPanel = this._component.getComponentAt(tempIndex + 1);
+				b.set_selected(false);
+				tempPanel.swapClass(":collapsed",":expanded");
+			}
+		}
+	}
+	,__class__: haxe_ui_containers__$Accordion_PageIndex
+});
+var haxe_ui_containers__$Accordion_Events = function(accordion) {
+	haxe_ui_events_Events.call(this,accordion);
+	this._accordion = accordion;
+};
+$hxClasses["haxe.ui.containers._Accordion.Events"] = haxe_ui_containers__$Accordion_Events;
+haxe_ui_containers__$Accordion_Events.__name__ = "haxe.ui.containers._Accordion.Events";
+haxe_ui_containers__$Accordion_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_containers__$Accordion_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	_accordion: null
+	,register: function() {
+		var buttons = this._target.findComponents(null,haxe_ui_components_Button,1);
+		var _g = 0;
+		while(_g < buttons.length) {
+			var button = buttons[_g];
+			++_g;
+			if(button.hasEvent("change",$bind(this,this.onButtonChanged)) == false) {
+				button.registerEvent("change",$bind(this,this.onButtonChanged));
+			}
+		}
+	}
+	,unregister: function() {
+		var buttons = this._target.findComponents(null,haxe_ui_components_Button,1);
+		var _g = 0;
+		while(_g < buttons.length) {
+			var button = buttons[_g];
+			++_g;
+			button.unregisterEvent("change",$bind(this,this.onButtonChanged));
+		}
+	}
+	,onButtonChanged: function(event) {
+		var buttons = this._target.findComponents(null,haxe_ui_components_Button,1);
+		var button = event.target;
+		var index = buttons.indexOf(button);
+		if(button.get_selected() == true) {
+			if(index == this._accordion.get_pageIndex()) {
+				return;
+			}
+			this._accordion.set_pageIndex(index);
+		} else if(index == this._accordion.get_pageIndex()) {
+			button.set_selected(true);
+		}
+	}
+	,__class__: haxe_ui_containers__$Accordion_Events
+});
+var haxe_ui_containers__$Accordion_Builder = function(accordion) {
+	haxe_ui_core_CompositeBuilder.call(this,accordion);
+	this._accordion = accordion;
+};
+$hxClasses["haxe.ui.containers._Accordion.Builder"] = haxe_ui_containers__$Accordion_Builder;
+haxe_ui_containers__$Accordion_Builder.__name__ = "haxe.ui.containers._Accordion.Builder";
+haxe_ui_containers__$Accordion_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers__$Accordion_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_accordion: null
+	,onReady: function() {
+		haxe_ui_core_CompositeBuilder.prototype.onReady.call(this);
+		var _g = 0;
+		var _this = this._accordion;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			c.set_animatable(true);
+		}
+	}
+	,addComponent: function(child) {
+		if(!child.hasClass("accordion-button") && !child.hasClass("accordion-page")) {
+			var button = new haxe_ui_components_Button();
+			button.set_text(child.get_text());
+			button.addClass("accordion-button");
+			button.set_toggle(true);
+			button.scriptAccess = false;
+			this._accordion.addComponent(button);
+			child.set_animatable(false);
+			child.set_percentWidth(100);
+			child.addClass("accordion-page");
+			var c = this._accordion.addComponent(child);
+			if(this._accordion.get_pageIndex() == -1) {
+				child.set_percentHeight(100);
+				this._accordion.set_pageIndex(0);
+			} else {
+				child.set_hidden(true);
+			}
+			child.set_onAnimationEnd(function(e) {
+				if(e.target.hasClass(":collapsed")) {
+					e.target.set_hidden(true);
+				}
+			});
+			this._component.registerInternalEvents(null,true);
+			var buttonCount = 0;
+			var pageCount = 0;
+			var _g = 0;
+			var _this = this._accordion;
+			var _g1 = _this._children == null ? [] : _this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				if(child.hasClass("accordion-button")) {
+					if(buttonCount == 0) {
+						child.swapClass("first","last",false);
+					} else {
+						var tmp;
+						var _this = this._component;
+						if((_this._children == null ? [] : _this._children).length / 2 > 1) {
+							var _this1 = this._component;
+							tmp = buttonCount == (_this1._children == null ? [] : _this1._children).length / 2 - 1;
+						} else {
+							tmp = false;
+						}
+						if(tmp) {
+							child.swapClass("last","first",false);
+						} else {
+							child.removeClasses(["first","last"],false);
+						}
+					}
+					++buttonCount;
+				} else if(child.hasClass("accordion-page")) {
+					if(pageCount == 0) {
+						child.swapClass("first","last",false);
+					} else {
+						var tmp1;
+						var _this2 = this._component;
+						if((_this2._children == null ? [] : _this2._children).length / 2 > 1) {
+							var _this3 = this._component;
+							tmp1 = pageCount == (_this3._children == null ? [] : _this3._children).length / 2 - 1;
+						} else {
+							tmp1 = false;
+						}
+						if(tmp1) {
+							child.swapClass("last","first",false);
+						} else {
+							child.removeClasses(["first","last"],false);
+						}
+					}
+					++pageCount;
+				}
+			}
+			return c;
+		}
+		return null;
+	}
+	,__class__: haxe_ui_containers__$Accordion_Builder
+});
+var haxe_ui_containers_ButtonBar = function() {
+	haxe_ui_containers_Box.call(this);
+};
+$hxClasses["haxe.ui.containers.ButtonBar"] = haxe_ui_containers_ButtonBar;
+haxe_ui_containers_ButtonBar.__name__ = "haxe.ui.containers.ButtonBar";
+haxe_ui_containers_ButtonBar.__interfaces__ = [haxe_ui_core_IDirectionalComponent];
+haxe_ui_containers_ButtonBar.__super__ = haxe_ui_containers_Box;
+haxe_ui_containers_ButtonBar.prototype = $extend(haxe_ui_containers_Box.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+		this.behaviours.register("toggle",haxe_ui_behaviours_DefaultBehaviour,haxe_ui_util_Variant.fromBool(true));
+		this.behaviours.register("selectedIndex",haxe_ui_containers__$ButtonBar_SelectedIndex);
+	}
+	,get_toggle: function() {
+		return haxe_ui_util_Variant.toBool(this.behaviours.get("toggle"));
+	}
+	,set_toggle: function(value) {
+		this.behaviours.set("toggle",haxe_ui_util_Variant.fromBool(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"toggle"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"toggle");
+		return value;
+	}
+	,get_selectedIndex: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("selectedIndex"));
+	}
+	,set_selectedIndex: function(value) {
+		this.behaviours.set("selectedIndex",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selectedIndex"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedIndex");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_ButtonBar();
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_Box.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers__$ButtonBar_Events;
+		this._compositeBuilderClass = haxe_ui_containers__$ButtonBar_Builder;
+	}
+	,__class__: haxe_ui_containers_ButtonBar
+	,__properties__: $extend(haxe_ui_containers_Box.prototype.__properties__,{set_selectedIndex:"set_selectedIndex",get_selectedIndex:"get_selectedIndex",set_toggle:"set_toggle",get_toggle:"get_toggle"})
+});
+var haxe_ui_containers__$ButtonBar_SelectedIndex = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._ButtonBar.SelectedIndex"] = haxe_ui_containers__$ButtonBar_SelectedIndex;
+haxe_ui_containers__$ButtonBar_SelectedIndex.__name__ = "haxe.ui.containers._ButtonBar.SelectedIndex";
+haxe_ui_containers__$ButtonBar_SelectedIndex.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers__$ButtonBar_SelectedIndex.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_containers__$ButtonBar_Builder);
+		var currentButton = builder._currentButton;
+		var button = js_Boot.__cast(this._component.getComponentAt(haxe_ui_util_Variant.toInt(this._value)) , haxe_ui_components_Button);
+		if(currentButton == button) {
+			return;
+		}
+		if(currentButton != null) {
+			builder._currentButton.set_selected(false);
+		}
+		button.set_selected(true);
+		builder._currentButton = button;
+		this._component.dispatch(new haxe_ui_events_UIEvent("change"));
+	}
+	,__class__: haxe_ui_containers__$ButtonBar_SelectedIndex
+});
+var haxe_ui_containers__$ButtonBar_Events = function(bar) {
+	haxe_ui_events_Events.call(this,bar);
+	this._bar = bar;
+};
+$hxClasses["haxe.ui.containers._ButtonBar.Events"] = haxe_ui_containers__$ButtonBar_Events;
+haxe_ui_containers__$ButtonBar_Events.__name__ = "haxe.ui.containers._ButtonBar.Events";
+haxe_ui_containers__$ButtonBar_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_containers__$ButtonBar_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	_bar: null
+	,register: function() {
+		var buttons = this._target.findComponents(null,haxe_ui_components_Button,1);
+		var _g = 0;
+		while(_g < buttons.length) {
+			var button = buttons[_g];
+			++_g;
+			if(button.hasEvent("change",$bind(this,this.onButtonChanged)) == false) {
+				button.registerEvent("change",$bind(this,this.onButtonChanged));
+			}
+		}
+	}
+	,unregister: function() {
+		var buttons = this._target.findComponents(null,haxe_ui_components_Button,1);
+		var _g = 0;
+		while(_g < buttons.length) {
+			var button = buttons[_g];
+			++_g;
+			button.unregisterEvent("change",$bind(this,this.onButtonChanged));
+		}
+	}
+	,onButtonChanged: function(event) {
+		var button = js_Boot.__cast(event.target , haxe_ui_components_Button);
+		var index = this._bar.getComponentIndex(button);
+		if(index == this._bar.get_selectedIndex() && button.get_selected() == false) {
+			button.set_selected(true);
+			return;
+		}
+		if(button.get_selected() == true) {
+			this._bar.set_selectedIndex(index);
+		}
+	}
+	,__class__: haxe_ui_containers__$ButtonBar_Events
+});
+var haxe_ui_containers__$ButtonBar_Builder = function(bar) {
+	haxe_ui_core_CompositeBuilder.call(this,bar);
+	this._bar = bar;
+};
+$hxClasses["haxe.ui.containers._ButtonBar.Builder"] = haxe_ui_containers__$ButtonBar_Builder;
+haxe_ui_containers__$ButtonBar_Builder.__name__ = "haxe.ui.containers._ButtonBar.Builder";
+haxe_ui_containers__$ButtonBar_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers__$ButtonBar_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_bar: null
+	,_currentButton: null
+	,addComponent: function(child) {
+		if(((child) instanceof haxe_ui_components_Button)) {
+			(js_Boot.__cast(child , haxe_ui_components_Button)).set_toggle(this._bar.get_toggle());
+		}
+		this._component.registerInternalEvents(null,true);
+		return null;
+	}
+	,onReady: function() {
+		this._component.registerInternalEvents(null,true);
+	}
+	,__class__: haxe_ui_containers__$ButtonBar_Builder
+});
+var haxe_ui_containers_CalendarView = function() {
+	haxe_ui_containers_VBox.call(this);
+};
+$hxClasses["haxe.ui.containers.CalendarView"] = haxe_ui_containers_CalendarView;
+haxe_ui_containers_CalendarView.__name__ = "haxe.ui.containers.CalendarView";
+haxe_ui_containers_CalendarView.__super__ = haxe_ui_containers_VBox;
+haxe_ui_containers_CalendarView.prototype = $extend(haxe_ui_containers_VBox.prototype,{
+	registerComposite: function() {
+		haxe_ui_containers_VBox.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers__$CalendarView_Events;
+		this._compositeBuilderClass = haxe_ui_containers__$CalendarView_Builder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_VBox.prototype.registerBehaviours.call(this);
+		this.behaviours.register("selectedDate",haxe_ui_containers__$CalendarView_SelectedDateBehaviour);
+	}
+	,get_selectedDate: function() {
+		return haxe_ui_util_Variant.toDate(this.behaviours.get("selectedDate"));
+	}
+	,set_selectedDate: function(value) {
+		this.behaviours.set("selectedDate",haxe_ui_util_Variant.fromDate(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selectedDate"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedDate");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_VBox.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_CalendarView();
+	}
+	,__class__: haxe_ui_containers_CalendarView
+	,__properties__: $extend(haxe_ui_containers_VBox.prototype.__properties__,{set_selectedDate:"set_selectedDate",get_selectedDate:"get_selectedDate"})
+});
+var haxe_ui_containers__$CalendarView_SelectedDateBehaviour = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._CalendarView.SelectedDateBehaviour"] = haxe_ui_containers__$CalendarView_SelectedDateBehaviour;
+haxe_ui_containers__$CalendarView_SelectedDateBehaviour.__name__ = "haxe.ui.containers._CalendarView.SelectedDateBehaviour";
+haxe_ui_containers__$CalendarView_SelectedDateBehaviour.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_containers__$CalendarView_SelectedDateBehaviour.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	get: function() {
+		return haxe_ui_util_Variant.fromDate(this._component.findComponent(null,haxe_ui_components_Calendar).get_selectedDate());
+	}
+	,set: function(value) {
+		this._component.findComponent(null,haxe_ui_components_Calendar).set_selectedDate(haxe_ui_util_Variant.toDate(value));
+	}
+	,__class__: haxe_ui_containers__$CalendarView_SelectedDateBehaviour
+});
+var haxe_ui_containers__$CalendarView_Events = function(target) {
+	haxe_ui_events_Events.call(this,target);
+};
+$hxClasses["haxe.ui.containers._CalendarView.Events"] = haxe_ui_containers__$CalendarView_Events;
+haxe_ui_containers__$CalendarView_Events.__name__ = "haxe.ui.containers._CalendarView.Events";
+haxe_ui_containers__$CalendarView_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_containers__$CalendarView_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	register: function() {
+		var button = this._target.findComponent("prev-month");
+		if(button != null && button.hasEvent("click") == false) {
+			button.registerEvent("click",$bind(this,this.onPrevMonth));
+		}
+		var button = this._target.findComponent("next-month");
+		if(button != null && button.hasEvent("click") == false) {
+			button.registerEvent("click",$bind(this,this.onNextMonth));
+		}
+		var stepper = this._target.findComponent("current-year");
+		if(stepper != null && stepper.hasEvent("change") == false) {
+			stepper.registerEvent("change",$bind(this,this.onYearChange));
+		}
+		if(this._target.findComponent(null,haxe_ui_components_Calendar).hasEvent("datechange",$bind(this,this.onDateChange)) == false) {
+			this._target.findComponent(null,haxe_ui_components_Calendar).registerEvent("datechange",$bind(this,this.onDateChange));
+		}
+		if(this._target.findComponent(null,haxe_ui_components_Calendar).hasEvent("change",$bind(this,this.onCalendarChange)) == false) {
+			this._target.findComponent(null,haxe_ui_components_Calendar).registerEvent("change",$bind(this,this.onCalendarChange));
+		}
+		this.registerEvent("mousewheel",$bind(this,this.onMouseWheel));
+	}
+	,onPrevMonth: function(event) {
+		this._target.findComponent(null,haxe_ui_components_Calendar).previousMonth();
+	}
+	,onNextMonth: function(event) {
+		this._target.findComponent(null,haxe_ui_components_Calendar).nextMonth();
+	}
+	,onYearChange: function(event) {
+		var calendar = this._target.findComponent(null,haxe_ui_components_Calendar);
+		var stepper = this._target.findComponent("current-year");
+		if(stepper.get_pos() > calendar.get_date().getFullYear()) {
+			calendar.nextYear();
+		} else if(stepper.get_pos() < calendar.get_date().getFullYear()) {
+			calendar.previousYear();
+		}
+	}
+	,onDateChange: function(event) {
+		var calendar = this._target.findComponent(null,haxe_ui_components_Calendar);
+		var monthName = haxe_ui_containers_CalendarView.MONTH_NAMES[calendar.get_date().getMonth()];
+		this._target.findComponent("current-month",haxe_ui_components_Label).set_text(monthName + "  " + calendar.get_date().getFullYear());
+	}
+	,onCalendarChange: function(event) {
+		var calendar = this._target.findComponent(null,haxe_ui_components_Calendar);
+		var stepper = this._target.findComponent("current-year");
+		stepper.set_pos(calendar.get_selectedDate().getFullYear());
+		this._target.dispatch(new haxe_ui_events_UIEvent("change"));
+	}
+	,onMouseWheel: function(event) {
+		if(event.delta >= 1) {
+			this._target.findComponent(null,haxe_ui_components_Calendar).nextMonth();
+		} else {
+			this._target.findComponent(null,haxe_ui_components_Calendar).previousMonth();
+		}
+	}
+	,__class__: haxe_ui_containers__$CalendarView_Events
+});
+var haxe_ui_containers__$CalendarView_Builder = function(calendarView) {
+	haxe_ui_core_CompositeBuilder.call(this,calendarView);
+	this._calendarView = calendarView;
+};
+$hxClasses["haxe.ui.containers._CalendarView.Builder"] = haxe_ui_containers__$CalendarView_Builder;
+haxe_ui_containers__$CalendarView_Builder.__name__ = "haxe.ui.containers._CalendarView.Builder";
+haxe_ui_containers__$CalendarView_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers__$CalendarView_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_calendarView: null
+	,create: function() {
+		var box = new haxe_ui_containers_Box();
+		box.set_percentWidth(100);
+		var button = new haxe_ui_components_Button();
+		button.set_id("prev-month");
+		box.addComponent(button);
+		var hbox = new haxe_ui_containers_HBox();
+		hbox.set_horizontalAlign("center");
+		hbox.set_verticalAlign("center");
+		var label = new haxe_ui_components_Label();
+		label.set_id("current-month");
+		var now = new Date();
+		label.set_text(haxe_ui_containers_CalendarView.MONTH_NAMES[now.getMonth()] + "  " + now.getFullYear());
+		hbox.addComponent(label);
+		var stepper = new haxe_ui_components_Stepper();
+		stepper.set_id("current-year");
+		stepper.set_min(0);
+		stepper.set_max(now.getFullYear() + 1000);
+		stepper.set_pos(now.getFullYear());
+		stepper.set_repeater(false);
+		hbox.addComponent(stepper);
+		box.addComponent(hbox);
+		var button = new haxe_ui_components_Button();
+		button.set_id("next-month");
+		button.set_horizontalAlign("right");
+		box.addComponent(button);
+		this._calendarView.addComponent(box);
+		var calendar = new haxe_ui_components_Calendar();
+		this._calendarView.addComponent(calendar);
+	}
+	,__class__: haxe_ui_containers__$CalendarView_Builder
+});
+var haxe_ui_containers_ContinuousHBox = function() {
+	haxe_ui_containers_Box.call(this);
+	this.set_layout(new haxe_ui_layouts_HorizontalContinuousLayout());
+};
+$hxClasses["haxe.ui.containers.ContinuousHBox"] = haxe_ui_containers_ContinuousHBox;
+haxe_ui_containers_ContinuousHBox.__name__ = "haxe.ui.containers.ContinuousHBox";
+haxe_ui_containers_ContinuousHBox.__super__ = haxe_ui_containers_Box;
+haxe_ui_containers_ContinuousHBox.prototype = $extend(haxe_ui_containers_Box.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_ContinuousHBox();
+	}
+	,__class__: haxe_ui_containers_ContinuousHBox
+});
+var haxe_ui_containers_Frame = function() {
+	haxe_ui_containers_Box.call(this);
+};
+$hxClasses["haxe.ui.containers.Frame"] = haxe_ui_containers_Frame;
+haxe_ui_containers_Frame.__name__ = "haxe.ui.containers.Frame";
+haxe_ui_containers_Frame.__super__ = haxe_ui_containers_Box;
+haxe_ui_containers_Frame.prototype = $extend(haxe_ui_containers_Box.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+		this.behaviours.register("text",haxe_ui_containers__$Frame_TextBehaviour);
+		this.behaviours.register("icon",haxe_ui_containers__$Frame_IconBehaviour);
+	}
+	,get_value: function() {
+		return this.get_text();
+	}
+	,set_value: function(value) {
+		this.set_text(value);
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"text");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_Frame();
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_Box.prototype.registerComposite.call(this);
+		this._compositeBuilderClass = haxe_ui_containers__$Frame_Builder;
+		this._defaultLayoutClass = haxe_ui_containers__$Frame_Layout;
+	}
+	,__class__: haxe_ui_containers_Frame
+});
+var haxe_ui_containers__$Frame_TextBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._Frame.TextBehaviour"] = haxe_ui_containers__$Frame_TextBehaviour;
+haxe_ui_containers__$Frame_TextBehaviour.__name__ = "haxe.ui.containers._Frame.TextBehaviour";
+haxe_ui_containers__$Frame_TextBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers__$Frame_TextBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var label = this._component.findComponent(null,haxe_ui_components_Label,false);
+		label.set_text(haxe_ui_util_Variant.toString(this._value));
+	}
+	,__class__: haxe_ui_containers__$Frame_TextBehaviour
+});
+var haxe_ui_containers__$Frame_IconBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._Frame.IconBehaviour"] = haxe_ui_containers__$Frame_IconBehaviour;
+haxe_ui_containers__$Frame_IconBehaviour.__name__ = "haxe.ui.containers._Frame.IconBehaviour";
+haxe_ui_containers__$Frame_IconBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers__$Frame_IconBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var icon = this._component.findComponent("frame-icon",null,false);
+		if(icon == null) {
+			icon = new haxe_ui_components_Image();
+			icon.addClass("frame-icon");
+			icon.set_id("frame-icon");
+			icon.scriptAccess = false;
+			icon.set_includeInLayout(false);
+			this._component.addComponent(icon);
+		}
+		icon.set_resource(this._value);
+	}
+	,__class__: haxe_ui_containers__$Frame_IconBehaviour
+});
+var haxe_ui_containers__$Frame_Builder = function(frame) {
+	haxe_ui_core_CompositeBuilder.call(this,frame);
+	this._frame = frame;
+};
+$hxClasses["haxe.ui.containers._Frame.Builder"] = haxe_ui_containers__$Frame_Builder;
+haxe_ui_containers__$Frame_Builder.__name__ = "haxe.ui.containers._Frame.Builder";
+haxe_ui_containers__$Frame_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers__$Frame_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_frame: null
+	,_contents: null
+	,_label: null
+	,create: function() {
+		this._contents = new haxe_ui_containers_Box();
+		this._contents.set_id("frame-contents");
+		this._contents.addClass("frame-contents");
+		this._frame.addComponent(this._contents);
+		this._label = new haxe_ui_components_Label();
+		this._label.set_text("My Frame");
+		this._label.set_id("frame-title");
+		this._label.addClass("frame-title");
+		this._label.set_includeInLayout(false);
+		this._frame.addComponent(this._label);
+		var line = new haxe_ui_core_Component();
+		line.set_id("frame-left-line");
+		line.addClass("frame-left-line");
+		line.set_includeInLayout(false);
+		this._frame.addComponent(line);
+		var line = new haxe_ui_core_Component();
+		line.set_id("frame-right-line");
+		line.addClass("frame-right-line");
+		line.set_includeInLayout(false);
+		this._frame.addComponent(line);
+	}
+	,addComponent: function(child) {
+		if(child.get_id() != "frame-contents" && child.get_id() != "frame-title" && child.get_id() != "frame-icon" && child.get_id() != "frame-left-line" && child.get_id() != "frame-right-line") {
+			return this._contents.addComponent(child);
+		}
+		return haxe_ui_core_CompositeBuilder.prototype.addComponent.call(this,child);
+	}
+	,__class__: haxe_ui_containers__$Frame_Builder
+});
+var haxe_ui_containers__$Frame_Layout = function() {
+	haxe_ui_layouts_DefaultLayout.call(this);
+};
+$hxClasses["haxe.ui.containers._Frame.Layout"] = haxe_ui_containers__$Frame_Layout;
+haxe_ui_containers__$Frame_Layout.__name__ = "haxe.ui.containers._Frame.Layout";
+haxe_ui_containers__$Frame_Layout.__super__ = haxe_ui_layouts_DefaultLayout;
+haxe_ui_containers__$Frame_Layout.prototype = $extend(haxe_ui_layouts_DefaultLayout.prototype,{
+	resizeChildren: function() {
+		var contents = this.findComponent("frame-contents",haxe_ui_containers_Box,false);
+		var label = this.findComponent("frame-title",haxe_ui_components_Label,false);
+		var icon = this.findComponent("frame-icon",haxe_ui_components_Image,false);
+		var line1 = this.findComponent("frame-left-line",haxe_ui_core_Component,false);
+		var line2 = this.findComponent("frame-right-line",haxe_ui_core_Component,false);
+		if(this._component.get_autoWidth() == false) {
+			contents.set_width(this._component.get_width());
+		}
+		if(this._component.get_autoHeight() == false) {
+			contents.set_height(this._component.get_height() - label.get_height() / 2);
+		}
+		var offset = 2;
+		line1.set_width(this.get_paddingLeft() - offset);
+		var cx = label.get_width();
+		if(icon != null) {
+			cx += icon.get_width() + this.get_horizontalSpacing();
+		}
+		line2.set_width(this._component.get_width() - (this.get_paddingLeft() + cx) - offset);
+	}
+	,repositionChildren: function() {
+		var contents = this.findComponent("frame-contents",haxe_ui_containers_Box,false);
+		var label = this.findComponent("frame-title",haxe_ui_components_Label,false);
+		var icon = this.findComponent("frame-icon",haxe_ui_components_Image,false);
+		var line1 = this.findComponent("frame-left-line",haxe_ui_core_Component,false);
+		var line2 = this.findComponent("frame-right-line",haxe_ui_core_Component,false);
+		contents.set_top(this._component.get_height() - contents.get_height());
+		var offset = 2;
+		var x = this.get_paddingLeft();
+		if(icon != null) {
+			icon.set_top(label.get_height() / 2 - icon.get_height() / 2 - 1);
+			icon.set_left(this.get_paddingLeft());
+			x += icon.get_width() + this.get_horizontalSpacing();
+		}
+		label.set_left(x);
+		line1.set_top(contents.get_top());
+		line2.set_left(this._component.get_width() - line2.get_width());
+		line2.set_top(contents.get_top());
+	}
+	,calcAutoSize: function(exclusions) {
+		var label = this.findComponent("frame-title",haxe_ui_components_Label,false);
+		var size = haxe_ui_layouts_DefaultLayout.prototype.calcAutoSize.call(this,exclusions);
+		size.height += label.get_height() / 2;
+		size.width -= this.get_paddingLeft();
+		return size;
+	}
+	,__class__: haxe_ui_containers__$Frame_Layout
+});
+var haxe_ui_containers_Group = function() {
+	haxe_ui_containers_Box.call(this);
+};
+$hxClasses["haxe.ui.containers.Group"] = haxe_ui_containers_Group;
+haxe_ui_containers_Group.__name__ = "haxe.ui.containers.Group";
+haxe_ui_containers_Group.__super__ = haxe_ui_containers_Box;
+haxe_ui_containers_Group.prototype = $extend(haxe_ui_containers_Box.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+		this.behaviours.register("componentGroup",haxe_ui_behaviours_DataBehaviour,haxe_ui_util_Variant.fromString("group" + haxe_ui_util_GUID.uuid()));
+	}
+	,get_componentGroup: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("componentGroup"));
+	}
+	,set_componentGroup: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"componentGroup",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("componentGroup",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"componentGroup"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"componentGroup");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		if(this.get_componentGroup() != null) {
+			c.set_componentGroup(this.get_componentGroup());
+		}
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_Group();
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_Box.prototype.registerComposite.call(this);
+		this._compositeBuilderClass = haxe_ui_containers__$Group_Builder;
+	}
+	,__class__: haxe_ui_containers_Group
+	,__properties__: $extend(haxe_ui_containers_Box.prototype.__properties__,{set_componentGroup:"set_componentGroup",get_componentGroup:"get_componentGroup"})
+});
+var haxe_ui_containers__$Group_Builder = function(group) {
+	haxe_ui_core_CompositeBuilder.call(this,group);
+	this._group = group;
+};
+$hxClasses["haxe.ui.containers._Group.Builder"] = haxe_ui_containers__$Group_Builder;
+haxe_ui_containers__$Group_Builder.__name__ = "haxe.ui.containers._Group.Builder";
+haxe_ui_containers__$Group_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers__$Group_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_group: null
+	,addComponent: function(child) {
+		this.childAdd(child);
+		return haxe_ui_core_CompositeBuilder.prototype.addComponent.call(this,child);
+	}
+	,addComponentAt: function(child,index) {
+		this.childAdd(child);
+		return haxe_ui_core_CompositeBuilder.prototype.addComponentAt.call(this,child,index);
+	}
+	,childAdd: function(child) {
+		if(((child) instanceof haxe_ui_core_InteractiveComponent)) {
+			this.processGroupChild(child);
+		} else {
+			var interactiveChildren = child.findComponents(null,haxe_ui_core_InteractiveComponent);
+			var _g = 0;
+			while(_g < interactiveChildren.length) {
+				var interactiveChild = interactiveChildren[_g];
+				++_g;
+				this.processGroupChild(interactiveChild);
+			}
+		}
+	}
+	,processGroupChild: function(child) {
+		if(((child) instanceof haxe_ui_components_OptionBox)) {
+			if(this._group.get_componentGroup() == null) {
+				this._group.set_componentGroup("group" + haxe_ui_util_GUID.uuid());
+			}
+			(js_Boot.__cast(child , haxe_ui_components_OptionBox)).set_componentGroup(this._group.get_componentGroup());
+		}
+		if(child.hasEvent("change",$bind(this,this.childChangeHandler)) == false) {
+			child.registerEvent("change",$bind(this,this.childChangeHandler));
+		}
+	}
+	,childChangeHandler: function(e) {
+		this._group.dispatch(e.clone());
+	}
+	,__class__: haxe_ui_containers__$Group_Builder
+});
 var haxe_ui_containers_HBox = function() {
 	haxe_ui_containers_Box.call(this);
 	this.set_layout(new haxe_ui_layouts_HorizontalLayout());
@@ -16260,6 +21862,292 @@ haxe_ui_containers__$Header_Layout.prototype = $extend(haxe_ui_layouts_Horizonta
 		}
 	}
 	,__class__: haxe_ui_containers__$Header_Layout
+});
+var haxe_ui_containers_HorizontalButtonBar = function() {
+	haxe_ui_containers_ButtonBar.call(this);
+};
+$hxClasses["haxe.ui.containers.HorizontalButtonBar"] = haxe_ui_containers_HorizontalButtonBar;
+haxe_ui_containers_HorizontalButtonBar.__name__ = "haxe.ui.containers.HorizontalButtonBar";
+haxe_ui_containers_HorizontalButtonBar.__super__ = haxe_ui_containers_ButtonBar;
+haxe_ui_containers_HorizontalButtonBar.prototype = $extend(haxe_ui_containers_ButtonBar.prototype,{
+	registerComposite: function() {
+		haxe_ui_containers_ButtonBar.prototype.registerComposite.call(this);
+		this._defaultLayoutClass = haxe_ui_layouts_HorizontalLayout;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_ButtonBar.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_ButtonBar.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_HorizontalButtonBar();
+	}
+	,__class__: haxe_ui_containers_HorizontalButtonBar
+});
+var haxe_ui_containers_Splitter = function() {
+	haxe_ui_containers_Box.call(this);
+};
+$hxClasses["haxe.ui.containers.Splitter"] = haxe_ui_containers_Splitter;
+haxe_ui_containers_Splitter.__name__ = "haxe.ui.containers.Splitter";
+haxe_ui_containers_Splitter.__interfaces__ = [haxe_ui_core_IDirectionalComponent];
+haxe_ui_containers_Splitter.__super__ = haxe_ui_containers_Box;
+haxe_ui_containers_Splitter.prototype = $extend(haxe_ui_containers_Box.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_Splitter();
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_Box.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers_SplitterEvents;
+		this._compositeBuilderClass = haxe_ui_containers_SplitterBuilder;
+	}
+	,__class__: haxe_ui_containers_Splitter
+});
+var haxe_ui_containers_HorizontalSplitter = function() {
+	haxe_ui_containers_Splitter.call(this);
+	this.set_layoutName("horizontal");
+};
+$hxClasses["haxe.ui.containers.HorizontalSplitter"] = haxe_ui_containers_HorizontalSplitter;
+haxe_ui_containers_HorizontalSplitter.__name__ = "haxe.ui.containers.HorizontalSplitter";
+haxe_ui_containers_HorizontalSplitter.__super__ = haxe_ui_containers_Splitter;
+haxe_ui_containers_HorizontalSplitter.prototype = $extend(haxe_ui_containers_Splitter.prototype,{
+	registerComposite: function() {
+		haxe_ui_containers_Splitter.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterEvents;
+		this._compositeBuilderClass = haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterBuilder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_Splitter.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Splitter.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_HorizontalSplitter();
+	}
+	,__class__: haxe_ui_containers_HorizontalSplitter
+});
+var haxe_ui_containers_SplitterEvents = function(splitter) {
+	this._currentOffset = null;
+	this._currentGripper = null;
+	haxe_ui_events_Events.call(this,splitter);
+	this._splitter = splitter;
+};
+$hxClasses["haxe.ui.containers.SplitterEvents"] = haxe_ui_containers_SplitterEvents;
+haxe_ui_containers_SplitterEvents.__name__ = "haxe.ui.containers.SplitterEvents";
+haxe_ui_containers_SplitterEvents.__super__ = haxe_ui_events_Events;
+haxe_ui_containers_SplitterEvents.prototype = $extend(haxe_ui_events_Events.prototype,{
+	_splitter: null
+	,register: function() {
+		var builder = js_Boot.__cast(this._splitter._compositeBuilder , haxe_ui_containers_SplitterBuilder);
+		var grippers = this._splitter.findComponents(builder.getSplitterClass(),haxe_ui_core_Component,1);
+		var _g = 0;
+		while(_g < grippers.length) {
+			var g = grippers[_g];
+			++_g;
+			g.registerEvent("mousedown",$bind(this,this.onGripperMouseDown));
+		}
+	}
+	,unregister: function() {
+		var builder = js_Boot.__cast(this._splitter._compositeBuilder , haxe_ui_containers_SplitterBuilder);
+		var grippers = this._splitter.findComponents(builder.getSplitterClass(),haxe_ui_core_Component,1);
+		var _g = 0;
+		while(_g < grippers.length) {
+			var g = grippers[_g];
+			++_g;
+			g.unregisterEvent("mousedown",$bind(this,this.onGripperMouseDown));
+		}
+	}
+	,_currentGripper: null
+	,_currentOffset: null
+	,onGripperMouseDown: function(event) {
+		this._currentGripper = js_Boot.__cast(event.target , haxe_ui_containers__$Splitter_SizerGripper);
+		this._currentOffset = new haxe_ui_geom_Point(event.screenX,event.screenY);
+		haxe_ui_core_Screen.get_instance().registerEvent("mousemove",$bind(this,this.onScreenMouseMove));
+		haxe_ui_core_Screen.get_instance().registerEvent("mouseup",$bind(this,this.onScreenMouseUp));
+	}
+	,onScreenMouseMove: function(event) {
+		this._currentGripper.addClass(":hover");
+		var index = this._splitter.getComponentIndex(this._currentGripper);
+		var prev = this._splitter.getComponentAt(index - 1);
+		var next = this._splitter.getComponentAt(index + 1);
+		this.handleResize(prev,next,event);
+		this._currentOffset = new haxe_ui_geom_Point(event.screenX,event.screenY);
+	}
+	,handleResize: function(prev,next,event) {
+	}
+	,onScreenMouseUp: function(event) {
+		haxe_ui_core_Screen.get_instance().unregisterEvent("mousemove",$bind(this,this.onScreenMouseMove));
+		haxe_ui_core_Screen.get_instance().unregisterEvent("mouseup",$bind(this,this.onScreenMouseUp));
+		window.document.body.style.cursor = null;
+	}
+	,__class__: haxe_ui_containers_SplitterEvents
+});
+var haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterEvents = function(splitter) {
+	haxe_ui_containers_SplitterEvents.call(this,splitter);
+};
+$hxClasses["haxe.ui.containers._HorizontalSplitter.HorizontalSplitterEvents"] = haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterEvents;
+haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterEvents.__name__ = "haxe.ui.containers._HorizontalSplitter.HorizontalSplitterEvents";
+haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterEvents.__super__ = haxe_ui_containers_SplitterEvents;
+haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterEvents.prototype = $extend(haxe_ui_containers_SplitterEvents.prototype,{
+	onGripperMouseDown: function(event) {
+		haxe_ui_containers_SplitterEvents.prototype.onGripperMouseDown.call(this,event);
+		window.document.body.style.cursor = "col-resize";
+	}
+	,handleResize: function(prev,next,event) {
+		var delta = event.screenX - this._currentOffset.x;
+		var prevCX = prev.set_width(prev.get_width() + delta);
+		var nextCX = next.set_width(next.get_width() - delta);
+		var ucx = this._splitter.get_layout().get_usableWidth();
+		if(prev.get_percentWidth() != null) {
+			prev.set_percentWidth(prevCX / ucx * 100);
+		} else {
+			prev.set_width(prevCX);
+		}
+		if(next.get_percentWidth() != null) {
+			next.set_percentWidth(nextCX / ucx * 100);
+		} else {
+			next.set_width(nextCX);
+		}
+	}
+	,__class__: haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterEvents
+});
+var haxe_ui_containers_SplitterBuilder = function(splitter) {
+	haxe_ui_core_CompositeBuilder.call(this,splitter);
+	this._splitter = splitter;
+};
+$hxClasses["haxe.ui.containers.SplitterBuilder"] = haxe_ui_containers_SplitterBuilder;
+haxe_ui_containers_SplitterBuilder.__name__ = "haxe.ui.containers.SplitterBuilder";
+haxe_ui_containers_SplitterBuilder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers_SplitterBuilder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_splitter: null
+	,addComponent: function(child) {
+		var _this = this._splitter;
+		if((_this._children == null ? [] : _this._children).length > 0 && child.hasClass(this.getSplitterClass()) == false) {
+			var gripper = new haxe_ui_containers__$Splitter_SizerGripper();
+			gripper.set_id(this.getSplitterClass());
+			gripper.addClass(this.getSplitterClass());
+			this._splitter.addComponent(gripper);
+			this._splitter.registerInternalEvents(null,true);
+		}
+		if(child.hasClass(this.getSplitterClass()) == false) {
+			child.registerEvent("shown",$bind(this,this.onComponentShown));
+			child.registerEvent("hidden",$bind(this,this.onComponentHidden));
+		}
+		if(child.get_hidden() == true) {
+			this.onComponentHidden(null);
+		}
+		return null;
+	}
+	,getSplitterClass: function() {
+		return "splitter-gripper";
+	}
+	,onComponentShown: function(e) {
+		var _this = this._splitter;
+		var children = (_this._children == null ? [] : _this._children).slice();
+		var _g = 0;
+		while(_g < children.length) {
+			var c = children[_g];
+			++_g;
+			if(c.get_hidden() == true) {
+				if(((c) instanceof haxe_ui_containers__$Splitter_SizerGripper)) {
+					c.show();
+				}
+				break;
+			}
+		}
+		children.reverse();
+		var _g = 0;
+		while(_g < children.length) {
+			var c = children[_g];
+			++_g;
+			if(c.get_hidden() == true) {
+				if(((c) instanceof haxe_ui_containers__$Splitter_SizerGripper)) {
+					c.show();
+				}
+				break;
+			}
+		}
+	}
+	,onComponentHidden: function(e) {
+		var _this = this._splitter;
+		var children = (_this._children == null ? [] : _this._children).slice();
+		var _g = 0;
+		while(_g < children.length) {
+			var c = children[_g];
+			++_g;
+			if(c.get_hidden() == false) {
+				if(((c) instanceof haxe_ui_containers__$Splitter_SizerGripper)) {
+					c.hide();
+				}
+				break;
+			}
+		}
+		children.reverse();
+		var _g = 0;
+		while(_g < children.length) {
+			var c = children[_g];
+			++_g;
+			if(c.get_hidden() == false) {
+				if(((c) instanceof haxe_ui_containers__$Splitter_SizerGripper)) {
+					c.hide();
+				}
+				break;
+			}
+		}
+	}
+	,__class__: haxe_ui_containers_SplitterBuilder
+});
+var haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterBuilder = function(splitter) {
+	haxe_ui_containers_SplitterBuilder.call(this,splitter);
+};
+$hxClasses["haxe.ui.containers._HorizontalSplitter.HorizontalSplitterBuilder"] = haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterBuilder;
+haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterBuilder.__name__ = "haxe.ui.containers._HorizontalSplitter.HorizontalSplitterBuilder";
+haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterBuilder.__super__ = haxe_ui_containers_SplitterBuilder;
+haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterBuilder.prototype = $extend(haxe_ui_containers_SplitterBuilder.prototype,{
+	getSplitterClass: function() {
+		return "horizontal-splitter-gripper";
+	}
+	,__class__: haxe_ui_containers__$HorizontalSplitter_HorizontalSplitterBuilder
 });
 var haxe_ui_containers_IVirtualContainer = function() { };
 $hxClasses["haxe.ui.containers.IVirtualContainer"] = haxe_ui_containers_IVirtualContainer;
@@ -16501,16 +22389,6 @@ haxe_ui_containers_ScrollView.prototype = $extend(haxe_ui_core_Component.prototy
 	,__class__: haxe_ui_containers_ScrollView
 	,__properties__: $extend(haxe_ui_core_Component.prototype.__properties__,{set_contents:"set_contents",get_contents:"get_contents",set_scrollMode:"set_scrollMode",get_scrollMode:"get_scrollMode",set_vscrollPageSize:"set_vscrollPageSize",get_vscrollPageSize:"get_vscrollPageSize",set_vscrollMax:"set_vscrollMax",get_vscrollMax:"get_vscrollMax",set_vscrollPos:"set_vscrollPos",get_vscrollPos:"get_vscrollPos",set_hscrollPageSize:"set_hscrollPageSize",get_hscrollPageSize:"get_hscrollPageSize",set_hscrollMax:"set_hscrollMax",get_hscrollMax:"get_hscrollMax",set_hscrollPos:"set_hscrollPos",get_hscrollPos:"get_hscrollPos",set_percentContentHeight:"set_percentContentHeight",get_percentContentHeight:"get_percentContentHeight",set_contentHeight:"set_contentHeight",get_contentHeight:"get_contentHeight",set_percentContentWidth:"set_percentContentWidth",get_percentContentWidth:"get_percentContentWidth",set_contentWidth:"set_contentWidth",get_contentWidth:"get_contentWidth",set_contentLayoutName:"set_contentLayoutName",get_contentLayoutName:"get_contentLayoutName",set_virtual:"set_virtual",get_virtual:"get_virtual"})
 });
-var haxe_ui_core_IDataComponent = function() { };
-$hxClasses["haxe.ui.core.IDataComponent"] = haxe_ui_core_IDataComponent;
-haxe_ui_core_IDataComponent.__name__ = "haxe.ui.core.IDataComponent";
-haxe_ui_core_IDataComponent.__isInterface__ = true;
-haxe_ui_core_IDataComponent.prototype = {
-	get_dataSource: null
-	,set_dataSource: null
-	,__class__: haxe_ui_core_IDataComponent
-	,__properties__: {set_dataSource:"set_dataSource",get_dataSource:"get_dataSource"}
-};
 var haxe_ui_containers_ListView = function() {
 	haxe_ui_containers_ScrollView.call(this);
 };
@@ -18090,6 +23968,595 @@ haxe_ui_containers__$ScrollView_GetContents.prototype = $extend(haxe_ui_behaviou
 		return haxe_ui_util_Variant.fromComponent(contents);
 	}
 	,__class__: haxe_ui_containers__$ScrollView_GetContents
+});
+var haxe_ui_containers__$Splitter_SizerGripper = function() {
+	haxe_ui_core_InteractiveComponent.call(this);
+	this.registerEvent("mouseover",$bind(this,this.onMouseOver));
+	this.registerEvent("mouseout",$bind(this,this.onMouseOut));
+	var image = new haxe_ui_components_Image();
+	this.addComponent(image);
+};
+$hxClasses["haxe.ui.containers._Splitter.SizerGripper"] = haxe_ui_containers__$Splitter_SizerGripper;
+haxe_ui_containers__$Splitter_SizerGripper.__name__ = "haxe.ui.containers._Splitter.SizerGripper";
+haxe_ui_containers__$Splitter_SizerGripper.__super__ = haxe_ui_core_InteractiveComponent;
+haxe_ui_containers__$Splitter_SizerGripper.prototype = $extend(haxe_ui_core_InteractiveComponent.prototype,{
+	onMouseOver: function(event) {
+		this.addClass(":hover");
+	}
+	,onMouseOut: function(event) {
+		this.removeClass(":hover");
+	}
+	,registerBehaviours: function() {
+		haxe_ui_core_InteractiveComponent.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_InteractiveComponent.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers__$Splitter_SizerGripper();
+	}
+	,__class__: haxe_ui_containers__$Splitter_SizerGripper
+});
+var haxe_ui_containers_Stack = function() {
+	haxe_ui_containers_Box.call(this);
+};
+$hxClasses["haxe.ui.containers.Stack"] = haxe_ui_containers_Stack;
+haxe_ui_containers_Stack.__name__ = "haxe.ui.containers.Stack";
+haxe_ui_containers_Stack.__super__ = haxe_ui_containers_Box;
+haxe_ui_containers_Stack.prototype = $extend(haxe_ui_containers_Box.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_Stack();
+	}
+	,__class__: haxe_ui_containers_Stack
+});
+var haxe_ui_containers_TabView = function() {
+	haxe_ui_core_Component.call(this);
+};
+$hxClasses["haxe.ui.containers.TabView"] = haxe_ui_containers_TabView;
+haxe_ui_containers_TabView.__name__ = "haxe.ui.containers.TabView";
+haxe_ui_containers_TabView.__super__ = haxe_ui_core_Component;
+haxe_ui_containers_TabView.prototype = $extend(haxe_ui_core_Component.prototype,{
+	removePage: function(index) {
+		return this.behaviours.call("removePage",index);
+	}
+	,getPage: function(index) {
+		return haxe_ui_util_Variant.toComponent(this.behaviours.call("getPage",index));
+	}
+	,removeAllPages: function() {
+		return this.behaviours.call("removeAllPages",null);
+	}
+	,registerComposite: function() {
+		haxe_ui_core_Component.prototype.registerComposite.call(this);
+		this._compositeBuilderClass = haxe_ui_containers__$TabView_Builder;
+		this._internalEventsClass = haxe_ui_containers__$TabView_Events;
+		this._defaultLayoutClass = haxe_ui_containers__$TabView_Layout;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_core_Component.prototype.registerBehaviours.call(this);
+		this.behaviours.register("pageIndex",haxe_ui_containers__$TabView_PageIndex,haxe_ui_util_Variant.fromInt(-1));
+		this.behaviours.register("selectedPage",haxe_ui_containers__$TabView_SelectedPage,null);
+		this.behaviours.register("tabPosition",haxe_ui_containers__$TabView_TabPosition);
+		this.behaviours.register("pageCount",haxe_ui_containers__$TabView_PageCount);
+		this.behaviours.register("closable",haxe_ui_containers__$TabView_Closable,haxe_ui_util_Variant.fromBool(false));
+		this.behaviours.register("removePage",haxe_ui_containers__$TabView_RemovePage);
+		this.behaviours.register("getPage",haxe_ui_containers__$TabView_GetPage);
+		this.behaviours.register("removeAllPages",haxe_ui_containers__$TabView_RemoveAllPages);
+	}
+	,get_pageIndex: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("pageIndex"));
+	}
+	,set_pageIndex: function(value) {
+		this.behaviours.set("pageIndex",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"pageIndex"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pageIndex");
+		return value;
+	}
+	,get_selectedPage: function() {
+		return haxe_ui_util_Variant.toComponent(this.behaviours.get("selectedPage"));
+	}
+	,set_selectedPage: function(value) {
+		this.behaviours.set("selectedPage",haxe_ui_util_Variant.fromComponent(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selectedPage"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selectedPage");
+		return value;
+	}
+	,get_tabPosition: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("tabPosition"));
+	}
+	,set_tabPosition: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"tabPosition",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("tabPosition",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"tabPosition"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"tabPosition");
+		return value;
+	}
+	,get_pageCount: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("pageCount"));
+	}
+	,set_pageCount: function(value) {
+		this.behaviours.set("pageCount",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"pageCount"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"pageCount");
+		return value;
+	}
+	,get_closable: function() {
+		return haxe_ui_util_Variant.toBool(this.behaviours.get("closable"));
+	}
+	,set_closable: function(value) {
+		this.behaviours.set("closable",haxe_ui_util_Variant.fromBool(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"closable"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"closable");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_Component.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_TabView();
+	}
+	,__class__: haxe_ui_containers_TabView
+	,__properties__: $extend(haxe_ui_core_Component.prototype.__properties__,{set_closable:"set_closable",get_closable:"get_closable",set_pageCount:"set_pageCount",get_pageCount:"get_pageCount",set_tabPosition:"set_tabPosition",get_tabPosition:"get_tabPosition",set_selectedPage:"set_selectedPage",get_selectedPage:"get_selectedPage",set_pageIndex:"set_pageIndex",get_pageIndex:"get_pageIndex"})
+});
+var haxe_ui_containers__$TabView_Layout = function() {
+	haxe_ui_layouts_DefaultLayout.call(this);
+};
+$hxClasses["haxe.ui.containers._TabView.Layout"] = haxe_ui_containers__$TabView_Layout;
+haxe_ui_containers__$TabView_Layout.__name__ = "haxe.ui.containers._TabView.Layout";
+haxe_ui_containers__$TabView_Layout.__super__ = haxe_ui_layouts_DefaultLayout;
+haxe_ui_containers__$TabView_Layout.prototype = $extend(haxe_ui_layouts_DefaultLayout.prototype,{
+	repositionChildren: function() {
+		var tabs = this.get_component().findComponent(null,haxe_ui_components_TabBar,false);
+		var content = this.get_component().findComponent(null,haxe_ui_containers_Box,false);
+		if(tabs == null || content == null) {
+			return;
+		}
+		if(this.get_component().hasClass(":bottom")) {
+			content.set_left(this.get_paddingLeft());
+			content.set_top(this.get_paddingTop());
+			tabs.set_left(this.get_paddingLeft());
+			if(tabs.get_height() != 0) {
+				tabs.set_top(this.get_component().get_height() - tabs.get_height() - this.get_paddingBottom() + this.marginTop(tabs));
+			}
+		} else {
+			tabs.set_left(this.get_paddingLeft());
+			tabs.set_top(this.get_paddingTop() + this.marginTop(tabs));
+			content.set_left(this.get_paddingLeft());
+			if(tabs.get_height() != 0) {
+				content.set_top(tabs.get_top() + tabs.get_height() - this.marginTop(tabs) + this.marginTop(content));
+			}
+		}
+	}
+	,resizeChildren: function() {
+		var tabs = this.get_component().findComponent(null,haxe_ui_components_TabBar,false);
+		var content = this.get_component().findComponent(null,haxe_ui_containers_Box,false);
+		if(tabs == null || content == null) {
+			return;
+		}
+		var usableSize = this.get_usableSize();
+		tabs.set_width(usableSize.width);
+		if(this.get_component().get_autoHeight() == false) {
+			content.set_height(usableSize.height + 1);
+		}
+		if(this.get_component().get_autoWidth() == false) {
+			content.set_width(this.get_component().get_width());
+		}
+	}
+	,get_usableSize: function() {
+		var size = haxe_ui_layouts_DefaultLayout.prototype.get_usableSize.call(this);
+		var tabs = this.get_component().findComponent(null,haxe_ui_components_TabBar,false);
+		if(tabs != null && tabs.get_componentHeight() != null) {
+			size.height -= tabs.get_componentHeight();
+		}
+		return size;
+	}
+	,__class__: haxe_ui_containers__$TabView_Layout
+});
+var haxe_ui_containers__$TabView_Closable = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._TabView.Closable"] = haxe_ui_containers__$TabView_Closable;
+haxe_ui_containers__$TabView_Closable.__name__ = "haxe.ui.containers._TabView.Closable";
+haxe_ui_containers__$TabView_Closable.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers__$TabView_Closable.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		if(this._component.get_native() == true) {
+			return;
+		}
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_containers__$TabView_Builder);
+		builder._tabs.set_closable(haxe_ui_util_Variant.toBool(this._value));
+	}
+	,__class__: haxe_ui_containers__$TabView_Closable
+});
+var haxe_ui_containers__$TabView_PageIndex = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._TabView.PageIndex"] = haxe_ui_containers__$TabView_PageIndex;
+haxe_ui_containers__$TabView_PageIndex.__name__ = "haxe.ui.containers._TabView.PageIndex";
+haxe_ui_containers__$TabView_PageIndex.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers__$TabView_PageIndex.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		if(this._component.get_native() == true) {
+			return;
+		}
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_containers__$TabView_Builder);
+		if(haxe_ui_util_Variant.lt(this._value,haxe_ui_util_Variant.fromInt(0))) {
+			return;
+		}
+		if(haxe_ui_util_Variant.gt(this._value,haxe_ui_util_Variant.fromInt(builder._views.length - 1))) {
+			this._value = haxe_ui_util_Variant.fromInt(builder._views.length - 1);
+			return;
+		}
+		builder._tabs.set_selectedIndex(haxe_ui_util_Variant.toInt(this._value));
+		var view = builder._views[haxe_ui_util_Variant.toInt(this._value)];
+		if(view != null) {
+			if(builder._currentView != null) {
+				builder._currentView.hide();
+			}
+			if(builder._content.getComponentIndex(view) == -1) {
+				builder._content.addComponent(view);
+			} else {
+				view.show();
+			}
+			builder._currentView = view;
+		}
+		this._component.dispatch(new haxe_ui_events_UIEvent("change"));
+	}
+	,__class__: haxe_ui_containers__$TabView_PageIndex
+});
+var haxe_ui_containers__$TabView_SelectedPage = function(component) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._TabView.SelectedPage"] = haxe_ui_containers__$TabView_SelectedPage;
+haxe_ui_containers__$TabView_SelectedPage.__name__ = "haxe.ui.containers._TabView.SelectedPage";
+haxe_ui_containers__$TabView_SelectedPage.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_containers__$TabView_SelectedPage.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	get: function() {
+		var tabview = js_Boot.__cast(this._component , haxe_ui_containers_TabView);
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_containers__$TabView_Builder);
+		var view = builder._views[tabview.get_pageIndex()];
+		return haxe_ui_util_Variant.fromComponent(view);
+	}
+	,set: function(value) {
+		var tabview = js_Boot.__cast(this._component , haxe_ui_containers_TabView);
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_containers__$TabView_Builder);
+		var view = haxe_ui_util_Variant.toComponent(value);
+		var viewIndex = builder._views.indexOf(view);
+		if(viewIndex != -1) {
+			tabview.set_pageIndex(viewIndex);
+		}
+	}
+	,__class__: haxe_ui_containers__$TabView_SelectedPage
+});
+var haxe_ui_containers__$TabView_TabPosition = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._TabView.TabPosition"] = haxe_ui_containers__$TabView_TabPosition;
+haxe_ui_containers__$TabView_TabPosition.__name__ = "haxe.ui.containers._TabView.TabPosition";
+haxe_ui_containers__$TabView_TabPosition.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers__$TabView_TabPosition.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		if(haxe_ui_util_Variant.eq(this._value,haxe_ui_util_Variant.fromString("bottom"))) {
+			this._component.addClass(":bottom");
+		} else {
+			this._component.removeClass(":bottom");
+		}
+		this._component.findComponent(null,haxe_ui_components_TabBar,false).set_tabPosition(haxe_ui_util_Variant.toString(this._value));
+	}
+	,__class__: haxe_ui_containers__$TabView_TabPosition
+});
+var haxe_ui_containers__$TabView_PageCount = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._TabView.PageCount"] = haxe_ui_containers__$TabView_PageCount;
+haxe_ui_containers__$TabView_PageCount.__name__ = "haxe.ui.containers._TabView.PageCount";
+haxe_ui_containers__$TabView_PageCount.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_containers__$TabView_PageCount.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	get: function() {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_containers__$TabView_Builder);
+		return haxe_ui_util_Variant.fromInt(builder._tabs.get_tabCount());
+	}
+	,__class__: haxe_ui_containers__$TabView_PageCount
+});
+var haxe_ui_containers__$TabView_RemovePage = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._TabView.RemovePage"] = haxe_ui_containers__$TabView_RemovePage;
+haxe_ui_containers__$TabView_RemovePage.__name__ = "haxe.ui.containers._TabView.RemovePage";
+haxe_ui_containers__$TabView_RemovePage.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_containers__$TabView_RemovePage.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_containers__$TabView_Builder);
+		var index = param;
+		if(index < builder._views.length) {
+			builder._tabs.removeTab(index);
+		}
+		return null;
+	}
+	,__class__: haxe_ui_containers__$TabView_RemovePage
+});
+var haxe_ui_containers__$TabView_GetPage = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._TabView.GetPage"] = haxe_ui_containers__$TabView_GetPage;
+haxe_ui_containers__$TabView_GetPage.__name__ = "haxe.ui.containers._TabView.GetPage";
+haxe_ui_containers__$TabView_GetPage.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_containers__$TabView_GetPage.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_containers__$TabView_Builder);
+		var index = param;
+		var page = null;
+		if(index < builder._views.length) {
+			page = builder._views[index];
+		}
+		return haxe_ui_util_Variant.fromComponent(page);
+	}
+	,__class__: haxe_ui_containers__$TabView_GetPage
+});
+var haxe_ui_containers__$TabView_RemoveAllPages = function(component) {
+	haxe_ui_behaviours_Behaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers._TabView.RemoveAllPages"] = haxe_ui_containers__$TabView_RemoveAllPages;
+haxe_ui_containers__$TabView_RemoveAllPages.__name__ = "haxe.ui.containers._TabView.RemoveAllPages";
+haxe_ui_containers__$TabView_RemoveAllPages.__super__ = haxe_ui_behaviours_Behaviour;
+haxe_ui_containers__$TabView_RemoveAllPages.prototype = $extend(haxe_ui_behaviours_Behaviour.prototype,{
+	call: function(param) {
+		var builder = js_Boot.__cast(this._component._compositeBuilder , haxe_ui_containers__$TabView_Builder);
+		while(builder._views.length > 0) builder._tabs.removeTab(0);
+		(js_Boot.__cast(this._component , haxe_ui_containers_TabView)).set_pageIndex(-1);
+		builder._tabs.set_selectedIndex(-1);
+		return null;
+	}
+	,__class__: haxe_ui_containers__$TabView_RemoveAllPages
+});
+var haxe_ui_containers__$TabView_Events = function(tabview) {
+	haxe_ui_events_Events.call(this,tabview);
+	this._tabview = tabview;
+};
+$hxClasses["haxe.ui.containers._TabView.Events"] = haxe_ui_containers__$TabView_Events;
+haxe_ui_containers__$TabView_Events.__name__ = "haxe.ui.containers._TabView.Events";
+haxe_ui_containers__$TabView_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_containers__$TabView_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	_tabview: null
+	,register: function() {
+		var tabs = this._tabview.findComponent(null,haxe_ui_components_TabBar,false);
+		if(tabs.hasEvent("change",$bind(this,this.onTabChanged)) == false) {
+			tabs.registerEvent("change",$bind(this,this.onTabChanged));
+		}
+		if(tabs.hasEvent("beforeClose",$bind(this,this.onBeforeTabClosed)) == false) {
+			tabs.registerEvent("beforeClose",$bind(this,this.onBeforeTabClosed));
+		}
+		if(tabs.hasEvent("close",$bind(this,this.onTabClosed)) == false) {
+			tabs.registerEvent("close",$bind(this,this.onTabClosed));
+		}
+	}
+	,unregister: function() {
+		var tabs = this._tabview.findComponent(null,haxe_ui_components_TabBar,false);
+		tabs.unregisterEvent("change",$bind(this,this.onTabChanged));
+		tabs.unregisterEvent("beforeClose",$bind(this,this.onBeforeTabClosed));
+	}
+	,onBeforeTabClosed: function(event) {
+		this._tabview.dispatch(event);
+	}
+	,onTabClosed: function(event) {
+		var builder = js_Boot.__cast(this._tabview._compositeBuilder , haxe_ui_containers__$TabView_Builder);
+		var view = builder._views[event.data];
+		HxOverrides.remove(builder._views,view);
+		builder._content.removeComponent(view);
+		this._tabview.dispatch(new haxe_ui_events_UIEvent("close",event.data));
+	}
+	,onTabChanged: function(event) {
+		var tabs = this._tabview.findComponent(null,haxe_ui_components_TabBar,false);
+		this._tabview.set_pageIndex(-1);
+		this._tabview.set_pageIndex(tabs.get_selectedIndex());
+	}
+	,__class__: haxe_ui_containers__$TabView_Events
+});
+var haxe_ui_containers__$TabView_Builder = function(tabview) {
+	this._views = [];
+	this._currentView = null;
+	haxe_ui_core_CompositeBuilder.call(this,tabview);
+	this._tabview = tabview;
+};
+$hxClasses["haxe.ui.containers._TabView.Builder"] = haxe_ui_containers__$TabView_Builder;
+haxe_ui_containers__$TabView_Builder.__name__ = "haxe.ui.containers._TabView.Builder";
+haxe_ui_containers__$TabView_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers__$TabView_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_tabview: null
+	,_tabs: null
+	,_content: null
+	,_currentView: null
+	,_views: null
+	,create: function() {
+		if(this._content == null) {
+			this._content = new haxe_ui_containers_Box();
+			this._content.set_id("tabview-content");
+			this._content.addClass("tabview-content");
+			this._content.set_layout(haxe_ui_layouts_LayoutFactory.createFromName("vertical"));
+			this._tabview.addComponent(this._content);
+		}
+		if(this._tabs == null) {
+			this._tabs = new haxe_ui_components_TabBar();
+			this._tabs.set_id("tabview-tabs");
+			this._tabs.addClass("tabview-tabs");
+			this._tabview.addComponent(this._tabs);
+		}
+	}
+	,get_numComponents: function() {
+		return this._views.length;
+	}
+	,addComponent: function(child) {
+		if(child != this._content && child != this._tabs) {
+			var text = child.get_text();
+			var icon = null;
+			if(((child) instanceof haxe_ui_containers_Box)) {
+				icon = (js_Boot.__cast(child , haxe_ui_containers_Box)).get_icon();
+			}
+			child.registerEvent("propertyChange",$bind(this,this.onPagePropertyChanged));
+			this._views.push(child);
+			var button = new haxe_ui_components_Button();
+			button.set_text(text);
+			button.set_icon(haxe_ui_util_Variant.fromString(icon));
+			button.set_tooltip(child.get_tooltip());
+			if(child.get_id() != null) {
+				button.set_id(child.get_id() + "_button");
+			}
+			this._tabs.addComponent(button);
+			return child;
+		}
+		return null;
+	}
+	,addComponentAt: function(child,index) {
+		if(child != this._content && child != this._tabs) {
+			var text = child.get_text();
+			var icon = null;
+			if(((child) instanceof haxe_ui_containers_Box)) {
+				icon = (js_Boot.__cast(child , haxe_ui_containers_Box)).get_icon();
+			}
+			child.registerEvent("propertyChange",$bind(this,this.onPagePropertyChanged));
+			this._views.splice(index,0,child);
+			var button = new haxe_ui_components_Button();
+			button.set_text(text);
+			button.set_icon(haxe_ui_util_Variant.fromString(icon));
+			button.set_tooltip(child.get_tooltip());
+			if(child.get_id() != null) {
+				button.set_id(child.get_id() + "_button");
+			}
+			this._tabs.addComponentAt(button,index);
+			return child;
+		}
+		return null;
+	}
+	,onPagePropertyChanged: function(event) {
+		if(event.data == "text") {
+			var index = this._views.indexOf(event.target);
+			var button = this._tabs.getTab(index);
+			if(button != null && button.get_text() != event.target.get_text()) {
+				button.set_text(event.target.get_text());
+			}
+		} else if(event.data == "icon") {
+			var index = this._views.indexOf(event.target);
+			var button = js_Boot.__cast(this._tabs.getTab(index) , haxe_ui_components_Button);
+			if(button != null && haxe_ui_util_Variant.neq(button.get_icon(),haxe_ui_util_Variant.fromString((js_Boot.__cast(event.target , haxe_ui_containers_Box)).get_icon()))) {
+				button.set_icon(haxe_ui_util_Variant.fromString((js_Boot.__cast(event.target , haxe_ui_containers_Box)).get_icon()));
+			}
+		}
+	}
+	,removeComponent: function(child,dispose,invalidate) {
+		if(invalidate == null) {
+			invalidate = true;
+		}
+		if(dispose == null) {
+			dispose = true;
+		}
+		if(child != this._content && child != this._tabs) {
+			var _g = this._views.indexOf(child);
+			if(_g != -1) {
+				var i = _g;
+				this._views.splice(i,1);
+				this._tabs.removeComponentAt(i,dispose,invalidate);
+				return child;
+			}
+		}
+		return null;
+	}
+	,removeComponentAt: function(index,dispose,invalidate) {
+		if(invalidate == null) {
+			invalidate = true;
+		}
+		if(dispose == null) {
+			dispose = true;
+		}
+		this._views.splice(index,1);
+		return this._tabs.removeComponentAt(index,dispose,invalidate);
+	}
+	,getComponentIndex: function(child) {
+		return this._views.indexOf(child);
+	}
+	,setComponentIndex: function(child,index) {
+		if(child != this._content && child != this._tabs) {
+			var _g = this._views.indexOf(child);
+			if(_g != -1) {
+				var i = _g;
+				this._views.splice(i,1);
+				this._views.splice(index,0,child);
+				this._tabs.setComponentIndex(this._tabs.getComponentAt(i),index);
+				return child;
+			}
+		}
+		return null;
+	}
+	,getComponentAt: function(index) {
+		return this._views[index];
+	}
+	,findComponent: function(criteria,type,recursive,searchType) {
+		var match = haxe_ui_core_CompositeBuilder.prototype.findComponent.call(this,criteria,type,recursive,searchType);
+		if(match == null) {
+			var _g = 0;
+			var _g1 = this._views;
+			while(_g < _g1.length) {
+				var view = _g1[_g];
+				++_g;
+				match = view.findComponent(criteria,type,recursive,searchType);
+				if(view.matchesSearch(criteria,type,searchType)) {
+					return view;
+				} else {
+					match = view.findComponent(criteria,type,recursive,searchType);
+				}
+				if(match != null) {
+					break;
+				}
+			}
+		}
+		return match;
+	}
+	,__class__: haxe_ui_containers__$TabView_Builder
 });
 var haxe_ui_containers_TableView = function() {
 	haxe_ui_containers_ScrollView.call(this);
@@ -19910,19 +26377,22 @@ haxe_ui_containers__$TableView_RemoveColumn.prototype = $extend(haxe_ui_behaviou
 	}
 	,__class__: haxe_ui_containers__$TableView_RemoveColumn
 });
-var haxe_ui_containers_VBox = function() {
-	haxe_ui_containers_Box.call(this);
-	this.set_layout(new haxe_ui_layouts_VerticalLayout());
+var haxe_ui_containers_VerticalButtonBar = function() {
+	haxe_ui_containers_ButtonBar.call(this);
 };
-$hxClasses["haxe.ui.containers.VBox"] = haxe_ui_containers_VBox;
-haxe_ui_containers_VBox.__name__ = "haxe.ui.containers.VBox";
-haxe_ui_containers_VBox.__super__ = haxe_ui_containers_Box;
-haxe_ui_containers_VBox.prototype = $extend(haxe_ui_containers_Box.prototype,{
-	registerBehaviours: function() {
-		haxe_ui_containers_Box.prototype.registerBehaviours.call(this);
+$hxClasses["haxe.ui.containers.VerticalButtonBar"] = haxe_ui_containers_VerticalButtonBar;
+haxe_ui_containers_VerticalButtonBar.__name__ = "haxe.ui.containers.VerticalButtonBar";
+haxe_ui_containers_VerticalButtonBar.__super__ = haxe_ui_containers_ButtonBar;
+haxe_ui_containers_VerticalButtonBar.prototype = $extend(haxe_ui_containers_ButtonBar.prototype,{
+	registerComposite: function() {
+		haxe_ui_containers_ButtonBar.prototype.registerComposite.call(this);
+		this._defaultLayoutClass = haxe_ui_layouts_VerticalLayout;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_ButtonBar.prototype.registerBehaviours.call(this);
 	}
 	,cloneComponent: function() {
-		var c = haxe_ui_containers_Box.prototype.cloneComponent.call(this);
+		var c = haxe_ui_containers_ButtonBar.prototype.cloneComponent.call(this);
 		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
 			var _g = 0;
 			var _g1 = this._children == null ? [] : this._children;
@@ -19936,9 +26406,85 @@ haxe_ui_containers_VBox.prototype = $extend(haxe_ui_containers_Box.prototype,{
 		return c;
 	}
 	,self: function() {
-		return new haxe_ui_containers_VBox();
+		return new haxe_ui_containers_VerticalButtonBar();
 	}
-	,__class__: haxe_ui_containers_VBox
+	,__class__: haxe_ui_containers_VerticalButtonBar
+});
+var haxe_ui_containers_VerticalSplitter = function() {
+	haxe_ui_containers_Splitter.call(this);
+	this.set_layoutName("vertical");
+};
+$hxClasses["haxe.ui.containers.VerticalSplitter"] = haxe_ui_containers_VerticalSplitter;
+haxe_ui_containers_VerticalSplitter.__name__ = "haxe.ui.containers.VerticalSplitter";
+haxe_ui_containers_VerticalSplitter.__super__ = haxe_ui_containers_Splitter;
+haxe_ui_containers_VerticalSplitter.prototype = $extend(haxe_ui_containers_Splitter.prototype,{
+	registerComposite: function() {
+		haxe_ui_containers_Splitter.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers__$VerticalSplitter_VerticalSplitterEvents;
+		this._compositeBuilderClass = haxe_ui_containers__$VerticalSplitter_VerticalSplitterBuilder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_Splitter.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_Splitter.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_VerticalSplitter();
+	}
+	,__class__: haxe_ui_containers_VerticalSplitter
+});
+var haxe_ui_containers__$VerticalSplitter_VerticalSplitterEvents = function(splitter) {
+	haxe_ui_containers_SplitterEvents.call(this,splitter);
+};
+$hxClasses["haxe.ui.containers._VerticalSplitter.VerticalSplitterEvents"] = haxe_ui_containers__$VerticalSplitter_VerticalSplitterEvents;
+haxe_ui_containers__$VerticalSplitter_VerticalSplitterEvents.__name__ = "haxe.ui.containers._VerticalSplitter.VerticalSplitterEvents";
+haxe_ui_containers__$VerticalSplitter_VerticalSplitterEvents.__super__ = haxe_ui_containers_SplitterEvents;
+haxe_ui_containers__$VerticalSplitter_VerticalSplitterEvents.prototype = $extend(haxe_ui_containers_SplitterEvents.prototype,{
+	onGripperMouseDown: function(event) {
+		haxe_ui_containers_SplitterEvents.prototype.onGripperMouseDown.call(this,event);
+		window.document.body.style.cursor = "row-resize";
+	}
+	,handleResize: function(prev,next,event) {
+		var delta = event.screenY - this._currentOffset.y;
+		var prevCY = prev.set_height(prev.get_height() + delta);
+		var nextCY = next.set_height(next.get_height() - delta);
+		var ucy = this._splitter.get_layout().get_usableHeight();
+		if(prev.get_percentHeight() != null) {
+			prev.set_percentHeight(prevCY / ucy * 100);
+		} else {
+			prev.set_height(prevCY);
+		}
+		if(next.get_percentHeight() != null) {
+			next.set_percentHeight(nextCY / ucy * 100);
+		} else {
+			next.set_height(nextCY);
+		}
+	}
+	,__class__: haxe_ui_containers__$VerticalSplitter_VerticalSplitterEvents
+});
+var haxe_ui_containers__$VerticalSplitter_VerticalSplitterBuilder = function(splitter) {
+	haxe_ui_containers_SplitterBuilder.call(this,splitter);
+};
+$hxClasses["haxe.ui.containers._VerticalSplitter.VerticalSplitterBuilder"] = haxe_ui_containers__$VerticalSplitter_VerticalSplitterBuilder;
+haxe_ui_containers__$VerticalSplitter_VerticalSplitterBuilder.__name__ = "haxe.ui.containers._VerticalSplitter.VerticalSplitterBuilder";
+haxe_ui_containers__$VerticalSplitter_VerticalSplitterBuilder.__super__ = haxe_ui_containers_SplitterBuilder;
+haxe_ui_containers__$VerticalSplitter_VerticalSplitterBuilder.prototype = $extend(haxe_ui_containers_SplitterBuilder.prototype,{
+	getSplitterClass: function() {
+		return "vertical-splitter-gripper";
+	}
+	,__class__: haxe_ui_containers__$VerticalSplitter_VerticalSplitterBuilder
 });
 var haxe_ui_containers_dialogs_DialogButton = {};
 haxe_ui_containers_dialogs_DialogButton.bitOr = function(lhs,rhs) {
@@ -19980,40 +26526,6 @@ haxe_ui_containers_dialogs_DialogButton.toString = function(this1) {
 		return "" + this1;
 	}
 };
-var haxe_ui_events_UIEvent = function(type,bubble,data) {
-	if(bubble == null) {
-		bubble = false;
-	}
-	this.type = type;
-	this.bubble = bubble;
-	this.data = data;
-	this.canceled = false;
-};
-$hxClasses["haxe.ui.events.UIEvent"] = haxe_ui_events_UIEvent;
-haxe_ui_events_UIEvent.__name__ = "haxe.ui.events.UIEvent";
-haxe_ui_events_UIEvent.__super__ = haxe_ui_backend_EventImpl;
-haxe_ui_events_UIEvent.prototype = $extend(haxe_ui_backend_EventImpl.prototype,{
-	bubble: null
-	,type: null
-	,target: null
-	,data: null
-	,canceled: null
-	,cancel: function() {
-		haxe_ui_backend_EventImpl.prototype.cancel.call(this);
-		this.canceled = true;
-	}
-	,clone: function() {
-		var c = new haxe_ui_events_UIEvent(this.type);
-		c.type = this.type;
-		c.bubble = this.bubble;
-		c.target = this.target;
-		c.data = this.data;
-		c.canceled = this.canceled;
-		this.postClone(c);
-		return c;
-	}
-	,__class__: haxe_ui_events_UIEvent
-});
 var haxe_ui_containers_dialogs_DialogEvent = function(type,bubble,data) {
 	haxe_ui_events_UIEvent.call(this,type,bubble,data);
 };
@@ -20128,6 +26640,1787 @@ haxe_ui_containers_dialogs_MessageBox.prototype = $extend(haxe_ui_backend_Messag
 		return new haxe_ui_containers_dialogs_MessageBox();
 	}
 	,__class__: haxe_ui_containers_dialogs_MessageBox
+});
+var haxe_ui_containers_menus_MenuEvent = function(type,bubble,data) {
+	if(bubble == null) {
+		bubble = false;
+	}
+	this.menuItem = null;
+	this.menu = null;
+	haxe_ui_events_UIEvent.call(this,type,true,data);
+};
+$hxClasses["haxe.ui.containers.menus.MenuEvent"] = haxe_ui_containers_menus_MenuEvent;
+haxe_ui_containers_menus_MenuEvent.__name__ = "haxe.ui.containers.menus.MenuEvent";
+haxe_ui_containers_menus_MenuEvent.__super__ = haxe_ui_events_UIEvent;
+haxe_ui_containers_menus_MenuEvent.prototype = $extend(haxe_ui_events_UIEvent.prototype,{
+	menu: null
+	,menuItem: null
+	,clone: function() {
+		var c = new haxe_ui_containers_menus_MenuEvent(this.type);
+		c.menu = this.menu;
+		c.menuItem = this.menuItem;
+		c.type = this.type;
+		c.bubble = this.bubble;
+		c.target = this.target;
+		c.data = this.data;
+		c.canceled = this.canceled;
+		this.postClone(c);
+		return c;
+	}
+	,__class__: haxe_ui_containers_menus_MenuEvent
+});
+var haxe_ui_containers_menus_Menu = function() {
+	haxe_ui_containers_VBox.call(this);
+};
+$hxClasses["haxe.ui.containers.menus.Menu"] = haxe_ui_containers_menus_Menu;
+haxe_ui_containers_menus_Menu.__name__ = "haxe.ui.containers.menus.Menu";
+haxe_ui_containers_menus_Menu.__super__ = haxe_ui_containers_VBox;
+haxe_ui_containers_menus_Menu.prototype = $extend(haxe_ui_containers_VBox.prototype,{
+	onThemeChanged: function() {
+		haxe_ui_containers_VBox.prototype.onThemeChanged.call(this);
+		var builder = js_Boot.__cast(this._compositeBuilder , haxe_ui_containers_menus__$Menu_Builder);
+		builder.onThemeChanged();
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_VBox.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers_menus_MenuEvents;
+		this._compositeBuilderClass = haxe_ui_containers_menus__$Menu_Builder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_VBox.prototype.registerBehaviours.call(this);
+		this.behaviours.register("menuStyleNames",haxe_ui_behaviours_DefaultBehaviour);
+	}
+	,get_menuStyleNames: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("menuStyleNames"));
+	}
+	,set_menuStyleNames: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"menuStyleNames",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("menuStyleNames",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"menuStyleNames"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"menuStyleNames");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_VBox.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_menus_Menu();
+	}
+	,__class__: haxe_ui_containers_menus_Menu
+	,__properties__: $extend(haxe_ui_containers_VBox.prototype.__properties__,{set_menuStyleNames:"set_menuStyleNames",get_menuStyleNames:"get_menuStyleNames"})
+});
+var haxe_ui_containers_menus_MenuEvents = function(menu) {
+	this._over = false;
+	this.parentMenu = null;
+	this.currentSubMenu = null;
+	this._currentItem = null;
+	haxe_ui_events_Events.call(this,menu);
+	this._menu = menu;
+};
+$hxClasses["haxe.ui.containers.menus.MenuEvents"] = haxe_ui_containers_menus_MenuEvents;
+haxe_ui_containers_menus_MenuEvents.__name__ = "haxe.ui.containers.menus.MenuEvents";
+haxe_ui_containers_menus_MenuEvents.__super__ = haxe_ui_events_Events;
+haxe_ui_containers_menus_MenuEvents.prototype = $extend(haxe_ui_events_Events.prototype,{
+	_menu: null
+	,_currentItem: null
+	,currentSubMenu: null
+	,parentMenu: null
+	,register: function() {
+		if(!this.hasEvent("mouseover",$bind(this,this.onMouseOver))) {
+			this.registerEvent("mouseover",$bind(this,this.onMouseOver));
+		}
+		if(!this.hasEvent("mouseout",$bind(this,this.onMouseOut))) {
+			this.registerEvent("mouseout",$bind(this,this.onMouseOut));
+		}
+		var _g = 0;
+		var _this = this._menu;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(((child) instanceof haxe_ui_containers_menus_MenuItem)) {
+				var item = js_Boot.__cast(child , haxe_ui_containers_menus_MenuItem);
+				if(!item.hasEvent("click",$bind(this,this.onItemClick))) {
+					item.registerEvent("click",$bind(this,this.onItemClick));
+				}
+				if(!item.hasEvent("mouseover",$bind(this,this.onItemMouseOver))) {
+					item.registerEvent("mouseover",$bind(this,this.onItemMouseOver));
+				}
+				if(!item.hasEvent("mouseout",$bind(this,this.onItemMouseOut))) {
+					item.registerEvent("mouseout",$bind(this,this.onItemMouseOut));
+				}
+			}
+		}
+		if(!this.hasEvent("hidden",$bind(this,this.onHidden))) {
+			this.registerEvent("hidden",$bind(this,this.onHidden));
+		}
+	}
+	,unregister: function() {
+		this.unregisterEvent("mouseover",$bind(this,this.onMouseOver));
+		this.unregisterEvent("mouseout",$bind(this,this.onMouseOut));
+		var _g = 0;
+		var _this = this._menu;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			child.unregisterEvent("click",$bind(this,this.onItemClick));
+			child.unregisterEvent("mouseover",$bind(this,this.onItemMouseOver));
+			child.unregisterEvent("mouseout",$bind(this,this.onItemMouseOut));
+		}
+		this.unregisterEvent("hidden",$bind(this,this.onHidden));
+	}
+	,_over: null
+	,onMouseOver: function(event) {
+		this._over = true;
+	}
+	,onMouseOut: function(event) {
+		this._over = false;
+	}
+	,onItemClick: function(event) {
+		var item = js_Boot.__cast(event.target , haxe_ui_containers_menus_MenuItem);
+		if(!item.get_expandable()) {
+			var event = new haxe_ui_containers_menus_MenuEvent("menuselected");
+			event.menu = this._menu;
+			event.menuItem = item;
+			this.findRootMenu().dispatch(event);
+			this.hideCurrentSubMenu();
+			this.findRootMenu().hide();
+		}
+	}
+	,onItemMouseOver: function(event) {
+		var builder = js_Boot.__cast(this._menu._compositeBuilder , haxe_ui_containers_menus__$Menu_Builder);
+		var subMenus = builder._subMenus;
+		var item = js_Boot.__cast(event.target , haxe_ui_containers_menus_MenuItem);
+		var _g = 0;
+		var _this = this._menu;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			if(child != item) {
+				child.removeClass(":hover",true,true);
+			}
+		}
+		if(subMenus.h[item.__id__] != null) {
+			this._currentItem = item;
+			this.showSubMenu(js_Boot.__cast(subMenus.h[item.__id__] , haxe_ui_containers_menus_Menu),item);
+		} else {
+			this.hideCurrentSubMenu();
+		}
+	}
+	,onItemMouseOut: function(event) {
+		if(this.currentSubMenu != null) {
+			this._currentItem.addClass(":hover",true,true);
+			return;
+		} else {
+			this._currentItem = null;
+		}
+	}
+	,showSubMenu: function(subMenu,source) {
+		this.hideCurrentSubMenu();
+		subMenu.set_menuStyleNames(this._menu.get_menuStyleNames());
+		subMenu.addClass(this._menu.get_menuStyleNames());
+		var componentOffset = source.getComponentOffset();
+		var left = source.get_screenLeft() + source.get_actualComponentWidth() + componentOffset.x;
+		var top = source.get_screenTop();
+		haxe_ui_core_Screen.get_instance().addComponent(subMenu);
+		subMenu.syncComponentValidation();
+		if(left + subMenu.get_actualComponentWidth() > haxe_ui_core_Screen.get_instance().get_width()) {
+			left = source.get_screenLeft() - subMenu.get_actualComponentWidth();
+		}
+		subMenu.set_left(left);
+		subMenu.set_top(top);
+		this.currentSubMenu = subMenu;
+	}
+	,hideCurrentSubMenu: function() {
+		if(this.currentSubMenu == null) {
+			return;
+		}
+		var _g = 0;
+		var _this = this.currentSubMenu;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			child.removeClass(":hover",true,true);
+		}
+		var subMenuEvents = js_Boot.__cast(this.currentSubMenu._internalEvents , haxe_ui_containers_menus_MenuEvents);
+		subMenuEvents.hideCurrentSubMenu();
+		haxe_ui_core_Screen.get_instance().removeComponent(this.currentSubMenu);
+		this.currentSubMenu = null;
+	}
+	,onHidden: function(event) {
+		var _g = 0;
+		var _this = this._menu;
+		var _g1 = _this._children == null ? [] : _this._children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			child.removeClass(":hover",true,true);
+		}
+		this.hideCurrentSubMenu();
+	}
+	,findRootMenu: function() {
+		var root = null;
+		var ref = this._menu;
+		while(ref != null) {
+			var events = js_Boot.__cast(ref._internalEvents , haxe_ui_containers_menus_MenuEvents);
+			if(events.parentMenu == null) {
+				root = events._menu;
+				break;
+			}
+			ref = events.parentMenu;
+		}
+		return root;
+	}
+	,__class__: haxe_ui_containers_menus_MenuEvents
+});
+var haxe_ui_containers_menus__$Menu_Builder = function(menu) {
+	this._subMenus = new haxe_ds_ObjectMap();
+	haxe_ui_core_CompositeBuilder.call(this,menu);
+	this._menu = menu;
+};
+$hxClasses["haxe.ui.containers.menus._Menu.Builder"] = haxe_ui_containers_menus__$Menu_Builder;
+haxe_ui_containers_menus__$Menu_Builder.__name__ = "haxe.ui.containers.menus._Menu.Builder";
+haxe_ui_containers_menus__$Menu_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers_menus__$Menu_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_menu: null
+	,_subMenus: null
+	,onThemeChanged: function() {
+		var menuItem = this._subMenus.keys();
+		while(menuItem.hasNext()) {
+			var menuItem1 = menuItem.next();
+			var menu = this._subMenus.h[menuItem1.__id__];
+			haxe_ui_core_Screen.get_instance().invalidateChildren(menu);
+			haxe_ui_core_Screen.get_instance().onThemeChangedChildren(menu);
+		}
+	}
+	,addComponent: function(child) {
+		if(((child) instanceof haxe_ui_containers_menus_Menu)) {
+			var menu = js_Boot.__cast(child , haxe_ui_containers_menus_Menu);
+			var item = new haxe_ui_containers_menus_MenuItem();
+			item.set_text(child.get_text());
+			item.set_icon(menu.get_icon());
+			item.set_tooltip(child.get_tooltip());
+			item.set_expandable(true);
+			this._menu.addComponent(item);
+			(js_Boot.__cast(menu._internalEvents , haxe_ui_containers_menus_MenuEvents)).parentMenu = this._menu;
+			this._subMenus.set(item,menu);
+			return child;
+		}
+		return null;
+	}
+	,onComponentAdded: function(child) {
+		if(((child) instanceof haxe_ui_containers_menus_Menu) || ((child) instanceof haxe_ui_containers_menus_MenuItem)) {
+			this._menu.registerInternalEvents(null,true);
+		}
+	}
+	,findComponent: function(criteria,type,recursive,searchType) {
+		var match = haxe_ui_core_CompositeBuilder.prototype.findComponent.call(this,criteria,type,recursive,searchType);
+		if(match == null) {
+			var menu = this._subMenus.iterator();
+			while(menu.hasNext()) {
+				var menu1 = menu.next();
+				match = menu1.findComponent(criteria,type,recursive,searchType);
+				if(menu1.matchesSearch(criteria,type,searchType)) {
+					return menu1;
+				} else {
+					match = menu1.findComponent(criteria,type,recursive,searchType);
+				}
+				if(match != null) {
+					break;
+				}
+			}
+		}
+		return match;
+	}
+	,__class__: haxe_ui_containers_menus__$Menu_Builder
+});
+var haxe_ui_containers_menus_MenuBar = function() {
+	haxe_ui_containers_HBox.call(this);
+};
+$hxClasses["haxe.ui.containers.menus.MenuBar"] = haxe_ui_containers_menus_MenuBar;
+haxe_ui_containers_menus_MenuBar.__name__ = "haxe.ui.containers.menus.MenuBar";
+haxe_ui_containers_menus_MenuBar.__super__ = haxe_ui_containers_HBox;
+haxe_ui_containers_menus_MenuBar.prototype = $extend(haxe_ui_containers_HBox.prototype,{
+	onThemeChanged: function() {
+		haxe_ui_containers_HBox.prototype.onThemeChanged.call(this);
+		var builder = js_Boot.__cast(this._compositeBuilder , haxe_ui_containers_menus__$MenuBar_Builder);
+		builder.onThemeChanged();
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_HBox.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers_menus__$MenuBar_Events;
+		this._compositeBuilderClass = haxe_ui_containers_menus__$MenuBar_Builder;
+	}
+	,__onMenuSelected: null
+	,onMenuSelected: null
+	,set_onMenuSelected: function(value) {
+		if(this.__onMenuSelected != null) {
+			this.unregisterEvent("menuselected",this.__onMenuSelected);
+			this.__onMenuSelected = null;
+		}
+		if(value != null) {
+			this.__onMenuSelected = value;
+			this.registerEvent("menuselected",value);
+		}
+		return value;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_HBox.prototype.registerBehaviours.call(this);
+		this.behaviours.register("menuStyleNames",haxe_ui_behaviours_DefaultBehaviour);
+	}
+	,get_menuStyleNames: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("menuStyleNames"));
+	}
+	,set_menuStyleNames: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"menuStyleNames",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("menuStyleNames",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"menuStyleNames"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"menuStyleNames");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_HBox.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_menus_MenuBar();
+	}
+	,__class__: haxe_ui_containers_menus_MenuBar
+	,__properties__: $extend(haxe_ui_containers_HBox.prototype.__properties__,{set_menuStyleNames:"set_menuStyleNames",get_menuStyleNames:"get_menuStyleNames",set_onMenuSelected:"set_onMenuSelected"})
+});
+var haxe_ui_containers_menus__$MenuBar_Events = function(menubar) {
+	haxe_ui_events_Events.call(this,menubar);
+	this._menubar = menubar;
+};
+$hxClasses["haxe.ui.containers.menus._MenuBar.Events"] = haxe_ui_containers_menus__$MenuBar_Events;
+haxe_ui_containers_menus__$MenuBar_Events.__name__ = "haxe.ui.containers.menus._MenuBar.Events";
+haxe_ui_containers_menus__$MenuBar_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_containers_menus__$MenuBar_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	_menubar: null
+	,_currentMenu: null
+	,_currentButton: null
+	,register: function() {
+		var builder = js_Boot.__cast(this._menubar._compositeBuilder , haxe_ui_containers_menus__$MenuBar_Builder);
+		var _g = 0;
+		var _g1 = builder._buttons;
+		while(_g < _g1.length) {
+			var button = _g1[_g];
+			++_g;
+			if(!button.hasEvent("click",$bind(this,this.onButtonClick))) {
+				button.registerEvent("click",$bind(this,this.onButtonClick));
+			}
+			if(!button.hasEvent("mouseover",$bind(this,this.onButtonOver))) {
+				button.registerEvent("mouseover",$bind(this,this.onButtonOver));
+			}
+		}
+	}
+	,unregister: function() {
+		var builder = js_Boot.__cast(this._menubar._compositeBuilder , haxe_ui_containers_menus__$MenuBar_Builder);
+		var _g = 0;
+		var _g1 = builder._buttons;
+		while(_g < _g1.length) {
+			var button = _g1[_g];
+			++_g;
+			button.unregisterEvent("click",$bind(this,this.onButtonClick));
+			button.unregisterEvent("mouseover",$bind(this,this.onButtonOver));
+		}
+	}
+	,onCompleteButton: function(event) {
+		var target = js_Boot.__cast(event.target , haxe_ui_components_Button);
+		target.unregisterEvent("mouseout",$bind(this,this.onCompleteButton));
+		this.hideCurrentMenu();
+	}
+	,onButtonClick: function(event) {
+		var builder = js_Boot.__cast(this._menubar._compositeBuilder , haxe_ui_containers_menus__$MenuBar_Builder);
+		var target = js_Boot.__cast(event.target , haxe_ui_components_Button);
+		var index = builder._buttons.indexOf(target);
+		if(target.get_toggle() == false) {
+			var menu = builder._menus[index];
+			var newEvent = new haxe_ui_containers_menus_MenuEvent("menuselected");
+			newEvent.menu = menu;
+			this._menubar.dispatch(newEvent);
+			target.registerEvent("mouseout",$bind(this,this.onCompleteButton));
+			return;
+		}
+		if(target.get_selected() == true) {
+			this.showMenu(index);
+		} else if(this._currentButton != null) {
+			(js_Boot.__cast(this._currentButton._internalEvents , haxe_ui_components_ButtonEvents)).lastMouseEvent = event;
+			this.hideCurrentMenu();
+		}
+	}
+	,onButtonOver: function(event) {
+		if(this._currentMenu == null) {
+			return;
+		}
+		var builder = js_Boot.__cast(this._menubar._compositeBuilder , haxe_ui_containers_menus__$MenuBar_Builder);
+		var target = js_Boot.__cast(event.target , haxe_ui_components_Button);
+		var index = builder._buttons.indexOf(target);
+		var menu = builder._menus[index];
+		if(menu != this._currentMenu) {
+			this.showMenu(index);
+		}
+	}
+	,showMenu: function(index) {
+		var builder = js_Boot.__cast(this._menubar._compositeBuilder , haxe_ui_containers_menus__$MenuBar_Builder);
+		var menu = builder._menus[index];
+		var hasChildren = (menu._children == null ? [] : menu._children).length > 0;
+		var target = builder._buttons[index];
+		if(this._currentMenu == menu) {
+			return;
+		}
+		var _g = 0;
+		var _g1 = builder._buttons;
+		while(_g < _g1.length) {
+			var button = _g1[_g];
+			++_g;
+			if(button != target) {
+				button.set_selected(false);
+			}
+		}
+		target.set_selected(true);
+		this.hideCurrentMenu();
+		var _g = 0;
+		var _g1 = builder._buttons;
+		while(_g < _g1.length) {
+			var button = _g1[_g];
+			++_g;
+			if(button.hasClass("menubar-button-no-children")) {
+				button.swapClass("menubar-button-no-children-active","menubar-button-no-children");
+			}
+		}
+		var rtl = false;
+		if(hasChildren == true) {
+			var componentOffset = target.getComponentOffset();
+			var left = target.get_screenLeft() + componentOffset.x;
+			var marginTop = 0;
+			if(menu.get_style() != null && menu.get_style().marginTop != null) {
+				marginTop = menu.get_style().marginTop;
+			}
+			var top = target.get_screenTop() + (target.get_actualComponentHeight() - haxe_ui_Toolkit.get_scaleY()) + componentOffset.y + marginTop;
+			menu.set_menuStyleNames(this._menubar.get_menuStyleNames());
+			menu.addClasses([this._menubar.get_menuStyleNames(),"expanded"]);
+			if(menu.findComponent("menu-filler",null,false) == null) {
+				var filler = new haxe_ui_core_Component();
+				filler.set_horizontalAlign("right");
+				filler.set_includeInLayout(false);
+				filler.addClass("menu-filler");
+				filler.set_id("menu-filler");
+				menu.addComponent(filler);
+			}
+			menu.show();
+			haxe_ui_core_Screen.get_instance().addComponent(menu);
+			menu.syncComponentValidation();
+			if(left + menu.get_actualComponentWidth() > haxe_ui_core_Screen.get_instance().get_width()) {
+				left = target.get_screenLeft() - menu.get_actualComponentWidth() + target.get_actualComponentWidth();
+				rtl = true;
+			}
+			menu.set_left(left);
+			menu.set_top(top - haxe_ui_Toolkit.get_scaleY());
+		}
+		this._currentButton = target;
+		this._currentMenu = menu;
+		if(hasChildren == true) {
+			var cx = menu.get_width() - this._currentButton.get_width();
+			var filler = menu.findComponent("menu-filler",null,false);
+			if(cx > 0 && filler != null) {
+				++cx;
+				filler.set_width(cx);
+				if(rtl == false) {
+					filler.set_left(menu.get_width() - cx);
+				}
+				filler.set_hidden(false);
+			} else if(filler != null) {
+				filler.set_hidden(true);
+			}
+			haxe_ui_core_Screen.get_instance().registerEvent("mousedown",$bind(this,this.onScreenMouseDown));
+			if(!this._currentMenu.hasEvent("menuselected",$bind(this,this.onMenuSelected))) {
+				this._currentMenu.registerEvent("menuselected",$bind(this,this.onMenuSelected));
+			}
+		}
+	}
+	,hideCurrentMenu: function() {
+		if(this._currentMenu != null) {
+			var builder = js_Boot.__cast(this._menubar._compositeBuilder , haxe_ui_containers_menus__$MenuBar_Builder);
+			var _g = 0;
+			var _g1 = builder._buttons;
+			while(_g < _g1.length) {
+				var button = _g1[_g];
+				++_g;
+				if(button.hasClass("menubar-button-no-children-active")) {
+					button.swapClass("menubar-button-no-children","menubar-button-no-children-active");
+				}
+			}
+			this._currentMenu.unregisterEvent("menuselected",$bind(this,this.onMenuSelected));
+			this._currentMenu.hide();
+			this._currentButton.set_selected(false);
+			haxe_ui_core_Screen.get_instance().unregisterEvent("mousedown",$bind(this,this.onScreenMouseDown));
+			haxe_ui_core_Screen.get_instance().removeComponent(this._currentMenu);
+			this._currentButton = null;
+			this._currentMenu = null;
+		}
+	}
+	,onScreenMouseDown: function(event) {
+		var close = true;
+		if(this._currentMenu.hitTest(event.screenX,event.screenY)) {
+			close = false;
+		} else if(this._currentButton.hitTest(event.screenX,event.screenY)) {
+			close = false;
+		} else {
+			var ref = this._currentMenu;
+			var refEvents = js_Boot.__cast(ref._internalEvents , haxe_ui_containers_menus_MenuEvents);
+			var refSubMenu = refEvents.currentSubMenu;
+			while(refSubMenu != null) {
+				if(refSubMenu.hitTest(event.screenX,event.screenY)) {
+					close = false;
+					break;
+				}
+				ref = refSubMenu;
+				refEvents = js_Boot.__cast(ref._internalEvents , haxe_ui_containers_menus_MenuEvents);
+				refSubMenu = refEvents.currentSubMenu;
+			}
+		}
+		if(close) {
+			this.hideCurrentMenu();
+		}
+	}
+	,onMenuSelected: function(event) {
+		var newEvent = new haxe_ui_containers_menus_MenuEvent("menuselected");
+		newEvent.menu = event.menu;
+		newEvent.menuItem = event.menuItem;
+		this._menubar.dispatch(newEvent);
+		this.hideCurrentMenu();
+	}
+	,__class__: haxe_ui_containers_menus__$MenuBar_Events
+});
+var haxe_ui_containers_menus__$MenuBar_Builder = function(menubar) {
+	this._menus = [];
+	this._buttons = [];
+	haxe_ui_core_CompositeBuilder.call(this,menubar);
+	this._menubar = menubar;
+};
+$hxClasses["haxe.ui.containers.menus._MenuBar.Builder"] = haxe_ui_containers_menus__$MenuBar_Builder;
+haxe_ui_containers_menus__$MenuBar_Builder.__name__ = "haxe.ui.containers.menus._MenuBar.Builder";
+haxe_ui_containers_menus__$MenuBar_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers_menus__$MenuBar_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_menubar: null
+	,_buttons: null
+	,_menus: null
+	,onThemeChanged: function() {
+		var _g = 0;
+		var _g1 = this._menus;
+		while(_g < _g1.length) {
+			var menu = _g1[_g];
+			++_g;
+			haxe_ui_core_Screen.get_instance().invalidateChildren(menu);
+			haxe_ui_core_Screen.get_instance().onThemeChangedChildren(menu);
+		}
+	}
+	,create: function() {
+	}
+	,destroy: function() {
+	}
+	,addComponent: function(child) {
+		if(((child) instanceof haxe_ui_containers_menus_Menu)) {
+			var menu = js_Boot.__cast(child , haxe_ui_containers_menus_Menu);
+			var button = new haxe_ui_components_Button();
+			var hasChildren = (menu._children == null ? [] : menu._children).length > 0;
+			if(hasChildren == true) {
+				button.set_styleNames("menubar-button");
+			} else {
+				button.set_styleNames("menubar-button-no-children");
+			}
+			button.set_text(menu.get_text());
+			button.set_icon(haxe_ui_util_Variant.fromString(menu.get_icon()));
+			button.set_tooltip(menu.get_tooltip());
+			button.set_toggle(hasChildren);
+			haxe_ui_binding_BindingManager.get_instance().cloneBinding(child,button);
+			this._buttons.push(button);
+			this._menubar.addComponent(button);
+			this._menubar.registerInternalEvents(null,true);
+			this._menus.push(menu);
+			return menu;
+		}
+		return null;
+	}
+	,addComponentAt: function(child,index) {
+		return null;
+	}
+	,removeComponent: function(child,dispose,invalidate) {
+		if(invalidate == null) {
+			invalidate = true;
+		}
+		if(dispose == null) {
+			dispose = true;
+		}
+		return null;
+	}
+	,getComponentIndex: function(child) {
+		return -1;
+	}
+	,setComponentIndex: function(child,index) {
+		return null;
+	}
+	,getComponentAt: function(index) {
+		return null;
+	}
+	,findComponent: function(criteria,type,recursive,searchType) {
+		var match = haxe_ui_core_CompositeBuilder.prototype.findComponent.call(this,criteria,type,recursive,searchType);
+		if(match == null) {
+			var _g = 0;
+			var _g1 = this._menus;
+			while(_g < _g1.length) {
+				var menu = _g1[_g];
+				++_g;
+				match = menu.findComponent(criteria,type,recursive,searchType);
+				if(menu.matchesSearch(criteria,type,searchType)) {
+					return menu;
+				} else {
+					match = menu.findComponent(criteria,type,recursive,searchType);
+				}
+				if(match != null) {
+					break;
+				}
+			}
+		}
+		return match;
+	}
+	,__class__: haxe_ui_containers_menus__$MenuBar_Builder
+});
+var haxe_ui_containers_menus_MenuItem = function() {
+	haxe_ui_containers_HBox.call(this);
+};
+$hxClasses["haxe.ui.containers.menus.MenuItem"] = haxe_ui_containers_menus_MenuItem;
+haxe_ui_containers_menus_MenuItem.__name__ = "haxe.ui.containers.menus.MenuItem";
+haxe_ui_containers_menus_MenuItem.__super__ = haxe_ui_containers_HBox;
+haxe_ui_containers_menus_MenuItem.prototype = $extend(haxe_ui_containers_HBox.prototype,{
+	registerComposite: function() {
+		haxe_ui_containers_HBox.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers_menus__$MenuItem_Events;
+		this._compositeBuilderClass = haxe_ui_containers_menus__$MenuItem_Builder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_HBox.prototype.registerBehaviours.call(this);
+		this.behaviours.register("text",haxe_ui_containers_menus__$MenuItem_TextBehaviour);
+		this.behaviours.register("shortcutText",haxe_ui_containers_menus__$MenuItem_ShortcutTextBehaviour);
+		this.behaviours.register("icon",haxe_ui_containers_menus__$MenuItem_IconBehaviour);
+		this.behaviours.register("expandable",haxe_ui_containers_menus__$MenuItem_ExpandableBehaviour);
+	}
+	,get_shortcutText: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("shortcutText"));
+	}
+	,set_shortcutText: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"shortcutText",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("shortcutText",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"shortcutText"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"shortcutText");
+		return value;
+	}
+	,get_expandable: function() {
+		return haxe_ui_util_Variant.toBool(this.behaviours.get("expandable"));
+	}
+	,set_expandable: function(value) {
+		this.behaviours.set("expandable",haxe_ui_util_Variant.fromBool(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"expandable"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"expandable");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_HBox.prototype.cloneComponent.call(this);
+		if(this.get_shortcutText() != null) {
+			c.set_shortcutText(this.get_shortcutText());
+		}
+		c.set_expandable(this.get_expandable());
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_menus_MenuItem();
+	}
+	,__class__: haxe_ui_containers_menus_MenuItem
+	,__properties__: $extend(haxe_ui_containers_HBox.prototype.__properties__,{set_expandable:"set_expandable",get_expandable:"get_expandable",set_shortcutText:"set_shortcutText",get_shortcutText:"get_shortcutText"})
+});
+var haxe_ui_containers_menus_MenuCheckBox = function() {
+	haxe_ui_containers_menus_MenuItem.call(this);
+};
+$hxClasses["haxe.ui.containers.menus.MenuCheckBox"] = haxe_ui_containers_menus_MenuCheckBox;
+haxe_ui_containers_menus_MenuCheckBox.__name__ = "haxe.ui.containers.menus.MenuCheckBox";
+haxe_ui_containers_menus_MenuCheckBox.__super__ = haxe_ui_containers_menus_MenuItem;
+haxe_ui_containers_menus_MenuCheckBox.prototype = $extend(haxe_ui_containers_menus_MenuItem.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_menus_MenuItem.prototype.registerBehaviours.call(this);
+		this.behaviours.register("text",haxe_ui_containers_menus__$MenuCheckBox_TextBehaviour);
+		this.behaviours.register("shortcutText",haxe_ui_containers_menus__$MenuCheckBox_ShortcutTextBehaviour);
+		this.behaviours.register("selected",haxe_ui_containers_menus__$MenuCheckBox_SelectedBehaviour);
+	}
+	,get_selected: function() {
+		return haxe_ui_util_Variant.toBool(this.behaviours.get("selected"));
+	}
+	,set_selected: function(value) {
+		this.behaviours.set("selected",haxe_ui_util_Variant.fromBool(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selected"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selected");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_menus_MenuItem.prototype.cloneComponent.call(this);
+		c.set_selected(this.get_selected());
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_menus_MenuCheckBox();
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_menus_MenuItem.prototype.registerComposite.call(this);
+		this._compositeBuilderClass = haxe_ui_containers_menus__$MenuCheckBox_Builder;
+	}
+	,__class__: haxe_ui_containers_menus_MenuCheckBox
+	,__properties__: $extend(haxe_ui_containers_menus_MenuItem.prototype.__properties__,{set_selected:"set_selected",get_selected:"get_selected"})
+});
+var haxe_ui_containers_menus__$MenuCheckBox_TextBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuCheckBox.TextBehaviour"] = haxe_ui_containers_menus__$MenuCheckBox_TextBehaviour;
+haxe_ui_containers_menus__$MenuCheckBox_TextBehaviour.__name__ = "haxe.ui.containers.menus._MenuCheckBox.TextBehaviour";
+haxe_ui_containers_menus__$MenuCheckBox_TextBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuCheckBox_TextBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var checkbox = this._component.findComponent(null,haxe_ui_components_CheckBox,false);
+		if(checkbox == null) {
+			checkbox = new haxe_ui_components_CheckBox();
+			checkbox.set_styleNames("menuitem-checkbox");
+			checkbox.scriptAccess = false;
+			this._component.addComponent(checkbox);
+		}
+		checkbox.set_text(haxe_ui_util_Variant.toString(this._value));
+	}
+	,__class__: haxe_ui_containers_menus__$MenuCheckBox_TextBehaviour
+});
+var haxe_ui_containers_menus__$MenuCheckBox_ShortcutTextBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuCheckBox.ShortcutTextBehaviour"] = haxe_ui_containers_menus__$MenuCheckBox_ShortcutTextBehaviour;
+haxe_ui_containers_menus__$MenuCheckBox_ShortcutTextBehaviour.__name__ = "haxe.ui.containers.menus._MenuCheckBox.ShortcutTextBehaviour";
+haxe_ui_containers_menus__$MenuCheckBox_ShortcutTextBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuCheckBox_ShortcutTextBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var label = this._component.findComponent("menuitem-shortcut-label",null,false);
+		if(label != null) {
+			label.set_text(haxe_ui_util_Variant.toString(this._value));
+		}
+	}
+	,__class__: haxe_ui_containers_menus__$MenuCheckBox_ShortcutTextBehaviour
+});
+var haxe_ui_containers_menus__$MenuCheckBox_SelectedBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuCheckBox.SelectedBehaviour"] = haxe_ui_containers_menus__$MenuCheckBox_SelectedBehaviour;
+haxe_ui_containers_menus__$MenuCheckBox_SelectedBehaviour.__name__ = "haxe.ui.containers.menus._MenuCheckBox.SelectedBehaviour";
+haxe_ui_containers_menus__$MenuCheckBox_SelectedBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuCheckBox_SelectedBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var checkbox = this._component.findComponent(null,haxe_ui_components_CheckBox,false);
+		if(checkbox == null) {
+			checkbox = new haxe_ui_components_CheckBox();
+			checkbox.set_styleNames("menuitem-checkbox");
+			checkbox.scriptAccess = false;
+			this._component.addComponent(checkbox);
+		}
+		checkbox.set_selected(haxe_ui_util_Variant.toBool(this._value));
+	}
+	,__class__: haxe_ui_containers_menus__$MenuCheckBox_SelectedBehaviour
+});
+var haxe_ui_containers_menus__$MenuCheckBox_Builder = function(component) {
+	haxe_ui_core_CompositeBuilder.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuCheckBox.Builder"] = haxe_ui_containers_menus__$MenuCheckBox_Builder;
+haxe_ui_containers_menus__$MenuCheckBox_Builder.__name__ = "haxe.ui.containers.menus._MenuCheckBox.Builder";
+haxe_ui_containers_menus__$MenuCheckBox_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers_menus__$MenuCheckBox_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_checkbox: null
+	,create: function() {
+		this._checkbox = new haxe_ui_components_CheckBox();
+		this._checkbox.set_styleNames("menuitem-checkbox");
+		this._checkbox.scriptAccess = false;
+		this._component.addComponent(this._checkbox);
+		var label = new haxe_ui_components_Label();
+		label.set_id("menuitem-shortcut-label");
+		label.set_styleNames("menuitem-shortcut-label");
+		label.scriptAccess = false;
+		this._component.addComponent(label);
+	}
+	,__class__: haxe_ui_containers_menus__$MenuCheckBox_Builder
+});
+var haxe_ui_containers_menus__$MenuItem_TextBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuItem.TextBehaviour"] = haxe_ui_containers_menus__$MenuItem_TextBehaviour;
+haxe_ui_containers_menus__$MenuItem_TextBehaviour.__name__ = "haxe.ui.containers.menus._MenuItem.TextBehaviour";
+haxe_ui_containers_menus__$MenuItem_TextBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuItem_TextBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var label = this._component.findComponent("menuitem-label",null,true);
+		label.set_text(haxe_ui_util_Variant.toString(this._value));
+	}
+	,__class__: haxe_ui_containers_menus__$MenuItem_TextBehaviour
+});
+var haxe_ui_containers_menus__$MenuItem_ShortcutTextBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuItem.ShortcutTextBehaviour"] = haxe_ui_containers_menus__$MenuItem_ShortcutTextBehaviour;
+haxe_ui_containers_menus__$MenuItem_ShortcutTextBehaviour.__name__ = "haxe.ui.containers.menus._MenuItem.ShortcutTextBehaviour";
+haxe_ui_containers_menus__$MenuItem_ShortcutTextBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuItem_ShortcutTextBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var label = this._component.findComponent("menuitem-shortcut-label",null,true);
+		if(label != null) {
+			label.set_text(haxe_ui_util_Variant.toString(this._value));
+		}
+	}
+	,__class__: haxe_ui_containers_menus__$MenuItem_ShortcutTextBehaviour
+});
+var haxe_ui_containers_menus__$MenuItem_IconBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuItem.IconBehaviour"] = haxe_ui_containers_menus__$MenuItem_IconBehaviour;
+haxe_ui_containers_menus__$MenuItem_IconBehaviour.__name__ = "haxe.ui.containers.menus._MenuItem.IconBehaviour";
+haxe_ui_containers_menus__$MenuItem_IconBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuItem_IconBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		if(this._value == null || haxe_ui_util_Variant.get_isNull(this._value)) {
+			return;
+		}
+		var icon = this._component.findComponent("menuitem-icon",null,true);
+		if(icon == null) {
+			icon = new haxe_ui_components_Image();
+			icon.scriptAccess = false;
+			icon.set_id("menuitem-icon");
+			icon.addClass("menuitem-icon");
+			this._component.addComponentAt(icon,0);
+		}
+		icon.set_resource(this._value);
+	}
+	,__class__: haxe_ui_containers_menus__$MenuItem_IconBehaviour
+});
+var haxe_ui_containers_menus__$MenuItem_ExpandableBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuItem.ExpandableBehaviour"] = haxe_ui_containers_menus__$MenuItem_ExpandableBehaviour;
+haxe_ui_containers_menus__$MenuItem_ExpandableBehaviour.__name__ = "haxe.ui.containers.menus._MenuItem.ExpandableBehaviour";
+haxe_ui_containers_menus__$MenuItem_ExpandableBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuItem_ExpandableBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var image = this._component.findComponent("menuitem-expandable");
+		if(image == null && haxe_ui_util_Variant.eq(this._value,haxe_ui_util_Variant.fromBool(true))) {
+			image = new haxe_ui_components_Image();
+			image.set_id("menuitem-expandable");
+			image.set_styleNames("menuitem-expandable");
+			image.scriptAccess = false;
+			this._component.addComponent(image);
+			var _this = this._component;
+			var force = true;
+			if(force == null) {
+				force = false;
+			}
+			_this.invalidateComponent("style");
+			if(force == true) {
+				_this._style = null;
+			}
+		} else if(haxe_ui_util_Variant.eq(this._value,haxe_ui_util_Variant.fromBool(false))) {
+			this._component.removeComponent(image);
+		}
+	}
+	,__class__: haxe_ui_containers_menus__$MenuItem_ExpandableBehaviour
+});
+var haxe_ui_containers_menus__$MenuItem_Events = function(target) {
+	haxe_ui_events_Events.call(this,target);
+};
+$hxClasses["haxe.ui.containers.menus._MenuItem.Events"] = haxe_ui_containers_menus__$MenuItem_Events;
+haxe_ui_containers_menus__$MenuItem_Events.__name__ = "haxe.ui.containers.menus._MenuItem.Events";
+haxe_ui_containers_menus__$MenuItem_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_containers_menus__$MenuItem_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	register: function() {
+		if(!this.hasEvent("mouseover",$bind(this,this.onMouseOver))) {
+			this.registerEvent("mouseover",$bind(this,this.onMouseOver));
+		}
+		if(!this.hasEvent("mouseout",$bind(this,this.onMouseOut))) {
+			this.registerEvent("mouseout",$bind(this,this.onMouseOut));
+		}
+	}
+	,unregister: function() {
+		this.unregisterEvent("mouseover",$bind(this,this.onMouseOver));
+		this.unregisterEvent("mouseout",$bind(this,this.onMouseOut));
+	}
+	,onMouseOver: function(event) {
+		this._target.addClass(":hover",true,true);
+	}
+	,onMouseOut: function(event) {
+		this._target.removeClass(":hover",true,true);
+	}
+	,__class__: haxe_ui_containers_menus__$MenuItem_Events
+});
+var haxe_ui_containers_menus__$MenuItem_Builder = function(component) {
+	haxe_ui_core_CompositeBuilder.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuItem.Builder"] = haxe_ui_containers_menus__$MenuItem_Builder;
+haxe_ui_containers_menus__$MenuItem_Builder.__name__ = "haxe.ui.containers.menus._MenuItem.Builder";
+haxe_ui_containers_menus__$MenuItem_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers_menus__$MenuItem_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	create: function() {
+		haxe_ui_core_CompositeBuilder.prototype.create.call(this);
+		var box = new haxe_ui_containers_Box();
+		box.set_percentWidth(100);
+		box.set_verticalAlign("center");
+		var label = new haxe_ui_components_Label();
+		label.set_id("menuitem-label");
+		label.set_styleNames("menuitem-label");
+		label.scriptAccess = false;
+		box.addComponent(label);
+		var label = new haxe_ui_components_Label();
+		label.set_id("menuitem-shortcut-label");
+		label.set_styleNames("menuitem-shortcut-label");
+		label.scriptAccess = false;
+		box.addComponent(label);
+		this._component.addComponent(box);
+	}
+	,__class__: haxe_ui_containers_menus__$MenuItem_Builder
+});
+var haxe_ui_containers_menus_MenuOptionBox = function() {
+	haxe_ui_containers_menus_MenuItem.call(this);
+};
+$hxClasses["haxe.ui.containers.menus.MenuOptionBox"] = haxe_ui_containers_menus_MenuOptionBox;
+haxe_ui_containers_menus_MenuOptionBox.__name__ = "haxe.ui.containers.menus.MenuOptionBox";
+haxe_ui_containers_menus_MenuOptionBox.__super__ = haxe_ui_containers_menus_MenuItem;
+haxe_ui_containers_menus_MenuOptionBox.prototype = $extend(haxe_ui_containers_menus_MenuItem.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_menus_MenuItem.prototype.registerBehaviours.call(this);
+		this.behaviours.register("componentGroup",haxe_ui_containers_menus__$MenuOptionBox_GroupBehaviour);
+		this.behaviours.register("text",haxe_ui_containers_menus__$MenuOptionBox_TextBehaviour);
+		this.behaviours.register("shortcutText",haxe_ui_containers_menus__$MenuOptionBox_ShortcutTextBehaviour);
+		this.behaviours.register("selected",haxe_ui_containers_menus__$MenuOptionBox_SelectedBehaviour);
+	}
+	,get_componentGroup: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("componentGroup"));
+	}
+	,set_componentGroup: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"componentGroup",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("componentGroup",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"componentGroup"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"componentGroup");
+		return value;
+	}
+	,get_selected: function() {
+		return haxe_ui_util_Variant.toBool(this.behaviours.get("selected"));
+	}
+	,set_selected: function(value) {
+		this.behaviours.set("selected",haxe_ui_util_Variant.fromBool(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"selected"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"selected");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_menus_MenuItem.prototype.cloneComponent.call(this);
+		if(this.get_componentGroup() != null) {
+			c.set_componentGroup(this.get_componentGroup());
+		}
+		c.set_selected(this.get_selected());
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_menus_MenuOptionBox();
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_menus_MenuItem.prototype.registerComposite.call(this);
+		this._compositeBuilderClass = haxe_ui_containers_menus__$MenuOptionBox_Builder;
+	}
+	,__class__: haxe_ui_containers_menus_MenuOptionBox
+	,__properties__: $extend(haxe_ui_containers_menus_MenuItem.prototype.__properties__,{set_selected:"set_selected",get_selected:"get_selected",set_componentGroup:"set_componentGroup",get_componentGroup:"get_componentGroup"})
+});
+var haxe_ui_containers_menus__$MenuOptionBox_GroupBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuOptionBox.GroupBehaviour"] = haxe_ui_containers_menus__$MenuOptionBox_GroupBehaviour;
+haxe_ui_containers_menus__$MenuOptionBox_GroupBehaviour.__name__ = "haxe.ui.containers.menus._MenuOptionBox.GroupBehaviour";
+haxe_ui_containers_menus__$MenuOptionBox_GroupBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuOptionBox_GroupBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var optionbox = this._component.findComponent(null,haxe_ui_components_OptionBox,false);
+		if(optionbox == null) {
+			optionbox = new haxe_ui_components_OptionBox();
+			optionbox.set_styleNames("menuitem-optionbox");
+			optionbox.scriptAccess = false;
+			this._component.addComponent(optionbox);
+		}
+		optionbox.set_componentGroup(haxe_ui_util_Variant.toString(this._value));
+	}
+	,__class__: haxe_ui_containers_menus__$MenuOptionBox_GroupBehaviour
+});
+var haxe_ui_containers_menus__$MenuOptionBox_ShortcutTextBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuOptionBox.ShortcutTextBehaviour"] = haxe_ui_containers_menus__$MenuOptionBox_ShortcutTextBehaviour;
+haxe_ui_containers_menus__$MenuOptionBox_ShortcutTextBehaviour.__name__ = "haxe.ui.containers.menus._MenuOptionBox.ShortcutTextBehaviour";
+haxe_ui_containers_menus__$MenuOptionBox_ShortcutTextBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuOptionBox_ShortcutTextBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var label = this._component.findComponent("menuitem-shortcut-label",null,false);
+		if(label != null) {
+			label.set_text(haxe_ui_util_Variant.toString(this._value));
+		}
+	}
+	,__class__: haxe_ui_containers_menus__$MenuOptionBox_ShortcutTextBehaviour
+});
+var haxe_ui_containers_menus__$MenuOptionBox_TextBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuOptionBox.TextBehaviour"] = haxe_ui_containers_menus__$MenuOptionBox_TextBehaviour;
+haxe_ui_containers_menus__$MenuOptionBox_TextBehaviour.__name__ = "haxe.ui.containers.menus._MenuOptionBox.TextBehaviour";
+haxe_ui_containers_menus__$MenuOptionBox_TextBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuOptionBox_TextBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var optionbox = this._component.findComponent(null,haxe_ui_components_OptionBox,false);
+		if(optionbox == null) {
+			optionbox = new haxe_ui_components_OptionBox();
+			optionbox.set_styleNames("menuitem-optionbox");
+			optionbox.scriptAccess = false;
+			this._component.addComponent(optionbox);
+		}
+		optionbox.set_text(haxe_ui_util_Variant.toString(this._value));
+	}
+	,__class__: haxe_ui_containers_menus__$MenuOptionBox_TextBehaviour
+});
+var haxe_ui_containers_menus__$MenuOptionBox_SelectedBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuOptionBox.SelectedBehaviour"] = haxe_ui_containers_menus__$MenuOptionBox_SelectedBehaviour;
+haxe_ui_containers_menus__$MenuOptionBox_SelectedBehaviour.__name__ = "haxe.ui.containers.menus._MenuOptionBox.SelectedBehaviour";
+haxe_ui_containers_menus__$MenuOptionBox_SelectedBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_menus__$MenuOptionBox_SelectedBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var optionbox = this._component.findComponent(null,haxe_ui_components_OptionBox,false);
+		if(optionbox == null) {
+			optionbox = new haxe_ui_components_OptionBox();
+			optionbox.set_styleNames("menuitem-optionbox");
+			optionbox.scriptAccess = false;
+			this._component.addComponent(optionbox);
+		}
+		optionbox.set_selected(haxe_ui_util_Variant.toBool(this._value));
+	}
+	,__class__: haxe_ui_containers_menus__$MenuOptionBox_SelectedBehaviour
+});
+var haxe_ui_containers_menus__$MenuOptionBox_Builder = function(component) {
+	haxe_ui_core_CompositeBuilder.call(this,component);
+};
+$hxClasses["haxe.ui.containers.menus._MenuOptionBox.Builder"] = haxe_ui_containers_menus__$MenuOptionBox_Builder;
+haxe_ui_containers_menus__$MenuOptionBox_Builder.__name__ = "haxe.ui.containers.menus._MenuOptionBox.Builder";
+haxe_ui_containers_menus__$MenuOptionBox_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers_menus__$MenuOptionBox_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_optionbox: null
+	,create: function() {
+		this._optionbox = new haxe_ui_components_OptionBox();
+		this._optionbox.set_styleNames("menuitem-optionbox");
+		this._optionbox.scriptAccess = false;
+		this._component.addComponent(this._optionbox);
+		var label = new haxe_ui_components_Label();
+		label.set_id("menuitem-shortcut-label");
+		label.set_styleNames("menuitem-shortcut-label");
+		label.scriptAccess = false;
+		this._component.addComponent(label);
+	}
+	,__class__: haxe_ui_containers_menus__$MenuOptionBox_Builder
+});
+var haxe_ui_containers_menus_MenuSeparator = function() {
+	haxe_ui_core_Component.call(this);
+};
+$hxClasses["haxe.ui.containers.menus.MenuSeparator"] = haxe_ui_containers_menus_MenuSeparator;
+haxe_ui_containers_menus_MenuSeparator.__name__ = "haxe.ui.containers.menus.MenuSeparator";
+haxe_ui_containers_menus_MenuSeparator.__super__ = haxe_ui_core_Component;
+haxe_ui_containers_menus_MenuSeparator.prototype = $extend(haxe_ui_core_Component.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_core_Component.prototype.registerBehaviours.call(this);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_core_Component.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_menus_MenuSeparator();
+	}
+	,__class__: haxe_ui_containers_menus_MenuSeparator
+});
+var haxe_ui_containers_properties_Property = function() {
+	haxe_ui_containers_HBox.call(this);
+};
+$hxClasses["haxe.ui.containers.properties.Property"] = haxe_ui_containers_properties_Property;
+haxe_ui_containers_properties_Property.__name__ = "haxe.ui.containers.properties.Property";
+haxe_ui_containers_properties_Property.__interfaces__ = [haxe_ui_core_IDataComponent];
+haxe_ui_containers_properties_Property.__super__ = haxe_ui_containers_HBox;
+haxe_ui_containers_properties_Property.prototype = $extend(haxe_ui_containers_HBox.prototype,{
+	registerComposite: function() {
+		haxe_ui_containers_HBox.prototype.registerComposite.call(this);
+		this._compositeBuilderClass = haxe_ui_containers_properties_PropertyBuilder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_HBox.prototype.registerBehaviours.call(this);
+		this.behaviours.register("label",haxe_ui_containers_properties__$Property_LabelBehaviour);
+		this.behaviours.register("type",haxe_ui_behaviours_DefaultBehaviour,haxe_ui_util_Variant.fromString("text"));
+		this.behaviours.register("dataSource",haxe_ui_containers_properties__$Property_DataSourceBehaviour);
+		this.behaviours.register("value",haxe_ui_containers_properties__$Property_PropertyValueBehaviour);
+		this.behaviours.register("step",haxe_ui_behaviours_DefaultBehaviour);
+		this.behaviours.register("min",haxe_ui_behaviours_DefaultBehaviour);
+		this.behaviours.register("max",haxe_ui_behaviours_DefaultBehaviour);
+		this.behaviours.register("precision",haxe_ui_behaviours_DefaultBehaviour);
+	}
+	,get_label: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("label"));
+	}
+	,set_label: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"label",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("label",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"label"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"label");
+		return value;
+	}
+	,get_type: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("type"));
+	}
+	,set_type: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"type",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("type",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"type"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"type");
+		return value;
+	}
+	,get_dataSource: function() {
+		return haxe_ui_util_Variant.toDataSource(this.behaviours.get("dataSource"));
+	}
+	,set_dataSource: function(value) {
+		this.behaviours.set("dataSource",haxe_ui_util_Variant.fromDataSource(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"dataSource"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"dataSource");
+		return value;
+	}
+	,get_step: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("step"));
+	}
+	,set_step: function(value) {
+		this.behaviours.set("step",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"step"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"step");
+		return value;
+	}
+	,get_min: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("min"));
+	}
+	,set_min: function(value) {
+		this.behaviours.set("min",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"min"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"min");
+		return value;
+	}
+	,get_max: function() {
+		return haxe_ui_util_Variant.toFloat(this.behaviours.get("max"));
+	}
+	,set_max: function(value) {
+		this.behaviours.set("max",haxe_ui_util_Variant.fromFloat(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"max"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"max");
+		return value;
+	}
+	,get_precision: function() {
+		return haxe_ui_util_Variant.toInt(this.behaviours.get("precision"));
+	}
+	,set_precision: function(value) {
+		this.behaviours.set("precision",haxe_ui_util_Variant.fromInt(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"precision"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"precision");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_HBox.prototype.cloneComponent.call(this);
+		if(this.get_label() != null) {
+			c.set_label(this.get_label());
+		}
+		if(this.get_type() != null) {
+			c.set_type(this.get_type());
+		}
+		if(this.get_step() != null) {
+			c.set_step(this.get_step());
+		}
+		if(this.get_min() != null) {
+			c.set_min(this.get_min());
+		}
+		if(this.get_max() != null) {
+			c.set_max(this.get_max());
+		}
+		if(this.get_precision() != null) {
+			c.set_precision(this.get_precision());
+		}
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_properties_Property();
+	}
+	,__class__: haxe_ui_containers_properties_Property
+	,__properties__: $extend(haxe_ui_containers_HBox.prototype.__properties__,{set_precision:"set_precision",get_precision:"get_precision",set_max:"set_max",get_max:"get_max",set_min:"set_min",get_min:"get_min",set_step:"set_step",get_step:"get_step",set_dataSource:"set_dataSource",get_dataSource:"get_dataSource",set_type:"set_type",get_type:"get_type",set_label:"set_label",get_label:"get_label"})
+});
+var haxe_ui_containers_properties__$Property_LabelBehaviour = function(property) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,property);
+	this._property = property;
+};
+$hxClasses["haxe.ui.containers.properties._Property.LabelBehaviour"] = haxe_ui_containers_properties__$Property_LabelBehaviour;
+haxe_ui_containers_properties__$Property_LabelBehaviour.__name__ = "haxe.ui.containers.properties._Property.LabelBehaviour";
+haxe_ui_containers_properties__$Property_LabelBehaviour.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_containers_properties__$Property_LabelBehaviour.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	_property: null
+	,set: function(value) {
+		haxe_ui_behaviours_DefaultBehaviour.prototype.set.call(this,value);
+		var builder = js_Boot.__cast(this._property._compositeBuilder , haxe_ui_containers_properties_PropertyBuilder);
+		if(builder.label != null) {
+			builder.label.set_text(haxe_ui_util_Variant.toString(value));
+		}
+	}
+	,__class__: haxe_ui_containers_properties__$Property_LabelBehaviour
+});
+var haxe_ui_containers_properties__$Property_DataSourceBehaviour = function(property) {
+	haxe_ui_behaviours_DefaultBehaviour.call(this,property);
+	this._property = property;
+};
+$hxClasses["haxe.ui.containers.properties._Property.DataSourceBehaviour"] = haxe_ui_containers_properties__$Property_DataSourceBehaviour;
+haxe_ui_containers_properties__$Property_DataSourceBehaviour.__name__ = "haxe.ui.containers.properties._Property.DataSourceBehaviour";
+haxe_ui_containers_properties__$Property_DataSourceBehaviour.__super__ = haxe_ui_behaviours_DefaultBehaviour;
+haxe_ui_containers_properties__$Property_DataSourceBehaviour.prototype = $extend(haxe_ui_behaviours_DefaultBehaviour.prototype,{
+	_property: null
+	,get: function() {
+		if(this._value == null) {
+			this._value = haxe_ui_util_Variant.fromDataSource(new haxe_ui_data_ArrayDataSource());
+		}
+		return this._value;
+	}
+	,set: function(value) {
+		haxe_ui_behaviours_DefaultBehaviour.prototype.set.call(this,value);
+		var builder = js_Boot.__cast(this._property._compositeBuilder , haxe_ui_containers_properties_PropertyBuilder);
+		if(builder.editor != null && js_Boot.__implements(builder.editor,haxe_ui_core_IDataComponent)) {
+			(js_Boot.__cast(builder.editor , haxe_ui_core_IDataComponent)).set_dataSource(haxe_ui_util_Variant.toDataSource(value));
+		}
+	}
+	,__class__: haxe_ui_containers_properties__$Property_DataSourceBehaviour
+});
+var haxe_ui_containers_properties__$Property_PropertyValueBehaviour = function(property) {
+	haxe_ui_behaviours_DataBehaviour.call(this,property);
+	this._property = property;
+};
+$hxClasses["haxe.ui.containers.properties._Property.PropertyValueBehaviour"] = haxe_ui_containers_properties__$Property_PropertyValueBehaviour;
+haxe_ui_containers_properties__$Property_PropertyValueBehaviour.__name__ = "haxe.ui.containers.properties._Property.PropertyValueBehaviour";
+haxe_ui_containers_properties__$Property_PropertyValueBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_properties__$Property_PropertyValueBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	_property: null
+	,set: function(value) {
+		var builder = js_Boot.__cast(this._property._compositeBuilder , haxe_ui_containers_properties_PropertyBuilder);
+		this._value = value;
+		if(builder.editor != null) {
+			builder.editor.set_value(haxe_ui_util_Variant.toDynamic(this._value));
+		}
+		this.invalidateData();
+	}
+	,get: function() {
+		var builder = js_Boot.__cast(this._property._compositeBuilder , haxe_ui_containers_properties_PropertyBuilder);
+		if(builder.editor != null) {
+			return builder.editor.get_value();
+		}
+		return this._value;
+	}
+	,getDynamic: function() {
+		var builder = js_Boot.__cast(this._property._compositeBuilder , haxe_ui_containers_properties_PropertyBuilder);
+		if(builder.editor != null) {
+			return builder.editor.get_value();
+		}
+		return haxe_ui_util_Variant.toDynamic(this._value);
+	}
+	,validateData: function() {
+		var builder = js_Boot.__cast(this._property._compositeBuilder , haxe_ui_containers_properties_PropertyBuilder);
+		if(builder.editor != null) {
+			builder.editor.set_value(haxe_ui_util_Variant.toDynamic(this._value));
+		}
+	}
+	,__class__: haxe_ui_containers_properties__$Property_PropertyValueBehaviour
+});
+var haxe_ui_containers_properties_PropertyBuilder = function(component) {
+	this.label = null;
+	this.editor = null;
+	haxe_ui_core_CompositeBuilder.call(this,component);
+};
+$hxClasses["haxe.ui.containers.properties.PropertyBuilder"] = haxe_ui_containers_properties_PropertyBuilder;
+haxe_ui_containers_properties_PropertyBuilder.__name__ = "haxe.ui.containers.properties.PropertyBuilder";
+haxe_ui_containers_properties_PropertyBuilder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers_properties_PropertyBuilder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	editor: null
+	,label: null
+	,__class__: haxe_ui_containers_properties_PropertyBuilder
+});
+var haxe_ui_containers_properties_PropertyGrid = function() {
+	haxe_ui_containers_ScrollView.call(this);
+};
+$hxClasses["haxe.ui.containers.properties.PropertyGrid"] = haxe_ui_containers_properties_PropertyGrid;
+haxe_ui_containers_properties_PropertyGrid.__name__ = "haxe.ui.containers.properties.PropertyGrid";
+haxe_ui_containers_properties_PropertyGrid.__super__ = haxe_ui_containers_ScrollView;
+haxe_ui_containers_properties_PropertyGrid.prototype = $extend(haxe_ui_containers_ScrollView.prototype,{
+	registerBehaviours: function() {
+		haxe_ui_containers_ScrollView.prototype.registerBehaviours.call(this);
+		this.behaviours.register("popupStyleNames",haxe_ui_behaviours_DefaultBehaviour);
+	}
+	,get_popupStyleNames: function() {
+		return haxe_ui_util_Variant.toString(this.behaviours.get("popupStyleNames"));
+	}
+	,set_popupStyleNames: function(value) {
+		var _g = Type.typeof(value);
+		if(_g._hx_index == 6) {
+			if(_g.c == String) {
+				if(value != null && value.indexOf("{{") != -1 && value.indexOf("}}") != -1) {
+					haxe_ui_binding_BindingManager.get_instance().addLanguageBinding(this,"popupStyleNames",value);
+					return value;
+				}
+			}
+		}
+		this.behaviours.set("popupStyleNames",haxe_ui_util_Variant.fromString(value));
+		this.dispatch(new haxe_ui_events_UIEvent("propertyChange",null,"popupStyleNames"));
+		haxe_ui_binding_BindingManager.get_instance().componentPropChanged(this,"popupStyleNames");
+		return value;
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_ScrollView.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_properties_PropertyGrid();
+	}
+	,registerComposite: function() {
+		haxe_ui_containers_ScrollView.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers_properties__$PropertyGrid_Events;
+		this._compositeBuilderClass = haxe_ui_containers_properties__$PropertyGrid_Builder;
+	}
+	,__class__: haxe_ui_containers_properties_PropertyGrid
+	,__properties__: $extend(haxe_ui_containers_ScrollView.prototype.__properties__,{set_popupStyleNames:"set_popupStyleNames",get_popupStyleNames:"get_popupStyleNames"})
+});
+var haxe_ui_containers_properties__$PropertyGrid_Events = function(scrollview) {
+	haxe_ui_containers_ScrollViewEvents.call(this,scrollview);
+};
+$hxClasses["haxe.ui.containers.properties._PropertyGrid.Events"] = haxe_ui_containers_properties__$PropertyGrid_Events;
+haxe_ui_containers_properties__$PropertyGrid_Events.__name__ = "haxe.ui.containers.properties._PropertyGrid.Events";
+haxe_ui_containers_properties__$PropertyGrid_Events.__super__ = haxe_ui_containers_ScrollViewEvents;
+haxe_ui_containers_properties__$PropertyGrid_Events.prototype = $extend(haxe_ui_containers_ScrollViewEvents.prototype,{
+	__class__: haxe_ui_containers_properties__$PropertyGrid_Events
+});
+var haxe_ui_containers_properties__$PropertyGrid_Builder = function(scrollview) {
+	haxe_ui_containers_ScrollViewBuilder.call(this,scrollview);
+};
+$hxClasses["haxe.ui.containers.properties._PropertyGrid.Builder"] = haxe_ui_containers_properties__$PropertyGrid_Builder;
+haxe_ui_containers_properties__$PropertyGrid_Builder.__name__ = "haxe.ui.containers.properties._PropertyGrid.Builder";
+haxe_ui_containers_properties__$PropertyGrid_Builder.__super__ = haxe_ui_containers_ScrollViewBuilder;
+haxe_ui_containers_properties__$PropertyGrid_Builder.prototype = $extend(haxe_ui_containers_ScrollViewBuilder.prototype,{
+	createVScroll: function() {
+		var _g = 0;
+		var _g1 = this._component.findComponents(null,haxe_ui_containers_properties_PropertyGroup);
+		while(_g < _g1.length) {
+			var g = _g1[_g];
+			++_g;
+			g.findComponent("property-group-header",haxe_ui_core_Component).addClass("scrolling");
+			g.findComponent("property-group-contents",haxe_ui_core_Component).addClass("scrolling");
+		}
+		return haxe_ui_containers_ScrollViewBuilder.prototype.createVScroll.call(this);
+	}
+	,destroyVScroll: function() {
+		var _g = 0;
+		var _g1 = this._component.findComponents(null,haxe_ui_containers_properties_PropertyGroup);
+		while(_g < _g1.length) {
+			var g = _g1[_g];
+			++_g;
+			g.findComponent("property-group-header",haxe_ui_core_Component).removeClass("scrolling");
+			g.findComponent("property-group-contents",haxe_ui_core_Component).removeClass("scrolling");
+		}
+		haxe_ui_containers_ScrollViewBuilder.prototype.destroyVScroll.call(this);
+	}
+	,__class__: haxe_ui_containers_properties__$PropertyGrid_Builder
+});
+var haxe_ui_containers_properties_PropertyGroup = function() {
+	haxe_ui_containers_VBox.call(this);
+};
+$hxClasses["haxe.ui.containers.properties.PropertyGroup"] = haxe_ui_containers_properties_PropertyGroup;
+haxe_ui_containers_properties_PropertyGroup.__name__ = "haxe.ui.containers.properties.PropertyGroup";
+haxe_ui_containers_properties_PropertyGroup.__super__ = haxe_ui_containers_VBox;
+haxe_ui_containers_properties_PropertyGroup.prototype = $extend(haxe_ui_containers_VBox.prototype,{
+	registerComposite: function() {
+		haxe_ui_containers_VBox.prototype.registerComposite.call(this);
+		this._internalEventsClass = haxe_ui_containers_properties__$PropertyGroup_Events;
+		this._compositeBuilderClass = haxe_ui_containers_properties__$PropertyGroup_Builder;
+	}
+	,registerBehaviours: function() {
+		haxe_ui_containers_VBox.prototype.registerBehaviours.call(this);
+		this.behaviours.register("text",haxe_ui_containers_properties__$PropertyGroup_TextBehaviour);
+	}
+	,cloneComponent: function() {
+		var c = haxe_ui_containers_VBox.prototype.cloneComponent.call(this);
+		if((this._children == null ? [] : this._children).length != (c._children == null ? [] : c._children).length) {
+			var _g = 0;
+			var _g1 = this._children == null ? [] : this._children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				c.addComponent(child.cloneComponent());
+			}
+		}
+		haxe_ui_binding_BindingManager.get_instance().cloneBinding(this,c);
+		return c;
+	}
+	,self: function() {
+		return new haxe_ui_containers_properties_PropertyGroup();
+	}
+	,__class__: haxe_ui_containers_properties_PropertyGroup
+});
+var haxe_ui_containers_properties__$PropertyGroup_TextBehaviour = function(component) {
+	haxe_ui_behaviours_DataBehaviour.call(this,component);
+};
+$hxClasses["haxe.ui.containers.properties._PropertyGroup.TextBehaviour"] = haxe_ui_containers_properties__$PropertyGroup_TextBehaviour;
+haxe_ui_containers_properties__$PropertyGroup_TextBehaviour.__name__ = "haxe.ui.containers.properties._PropertyGroup.TextBehaviour";
+haxe_ui_containers_properties__$PropertyGroup_TextBehaviour.__super__ = haxe_ui_behaviours_DataBehaviour;
+haxe_ui_containers_properties__$PropertyGroup_TextBehaviour.prototype = $extend(haxe_ui_behaviours_DataBehaviour.prototype,{
+	validateData: function() {
+		var label = this._component.findComponent("property-group-header-label");
+		label.set_text(haxe_ui_util_Variant.toString(this._value));
+	}
+	,__class__: haxe_ui_containers_properties__$PropertyGroup_TextBehaviour
+});
+var haxe_ui_containers_properties__$PropertyGroup_Events = function(target) {
+	haxe_ui_events_Events.call(this,target);
+};
+$hxClasses["haxe.ui.containers.properties._PropertyGroup.Events"] = haxe_ui_containers_properties__$PropertyGroup_Events;
+haxe_ui_containers_properties__$PropertyGroup_Events.__name__ = "haxe.ui.containers.properties._PropertyGroup.Events";
+haxe_ui_containers_properties__$PropertyGroup_Events.__super__ = haxe_ui_events_Events;
+haxe_ui_containers_properties__$PropertyGroup_Events.prototype = $extend(haxe_ui_events_Events.prototype,{
+	register: function() {
+		var header = this._target.findComponent("property-group-header",haxe_ui_core_Component);
+		if(header.hasEvent("click") == false) {
+			header.registerEvent("click",$bind(this,this.onHeaderClicked));
+		}
+	}
+	,unregister: function() {
+		var header = this._target.findComponent("property-group-header",haxe_ui_core_Component);
+		header.unregisterEvent("click",$bind(this,this.onHeaderClicked));
+	}
+	,onHeaderClicked: function(event) {
+		var header = this._target.findComponent("property-group-header",haxe_ui_core_Component);
+		var contents = this._target.findComponent("property-group-contents",haxe_ui_core_Component);
+		if(header.hasClass(":expanded")) {
+			header.swapClass(":collapsed",":expanded",true,true);
+			contents.hideInternal();
+		} else {
+			header.swapClass(":expanded",":collapsed",true,true);
+			contents.showInternal();
+		}
+	}
+	,__class__: haxe_ui_containers_properties__$PropertyGroup_Events
+});
+var haxe_ui_containers_properties__$PropertyGroup_Builder = function(propertyGroup) {
+	this._editorMap = new haxe_ds_ObjectMap();
+	haxe_ui_core_CompositeBuilder.call(this,propertyGroup);
+	this._propertyGroup = propertyGroup;
+};
+$hxClasses["haxe.ui.containers.properties._PropertyGroup.Builder"] = haxe_ui_containers_properties__$PropertyGroup_Builder;
+haxe_ui_containers_properties__$PropertyGroup_Builder.__name__ = "haxe.ui.containers.properties._PropertyGroup.Builder";
+haxe_ui_containers_properties__$PropertyGroup_Builder.__super__ = haxe_ui_core_CompositeBuilder;
+haxe_ui_containers_properties__$PropertyGroup_Builder.prototype = $extend(haxe_ui_core_CompositeBuilder.prototype,{
+	_propertyGroup: null
+	,_propertyGroupHeader: null
+	,_propertyGroupContents: null
+	,_editorMap: null
+	,onReady: function() {
+		var propGrid = this._component.findAncestor(null,haxe_ui_containers_properties_PropertyGrid);
+		var _g = 0;
+		var _g1 = this._propertyGroupContents.findComponents(null,haxe_ui_components_DropDown);
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			c.set_handlerStyleNames(propGrid.get_popupStyleNames());
+		}
+	}
+	,create: function() {
+		this._propertyGroupHeader = new haxe_ui_containers_HBox();
+		this._propertyGroupHeader.scriptAccess = false;
+		this._propertyGroupHeader.addClass("property-group-header");
+		this._propertyGroupHeader.addClass(":expanded");
+		this._propertyGroupHeader.set_id("property-group-header");
+		var image = new haxe_ui_components_Image();
+		image.addClass("property-group-header-icon");
+		image.scriptAccess = false;
+		this._propertyGroupHeader.addComponent(image);
+		var label = new haxe_ui_components_Label();
+		label.addClass("property-group-header-label");
+		label.set_id("property-group-header-label");
+		label.scriptAccess = false;
+		this._propertyGroupHeader.addComponent(label);
+		this._propertyGroup.addComponent(this._propertyGroupHeader);
+		this._propertyGroupContents = new haxe_ui_containers_Grid();
+		this._propertyGroupContents.scriptAccess = false;
+		this._propertyGroupContents.addClass("property-group-contents");
+		this._propertyGroupContents.set_id("property-group-contents");
+		this._propertyGroup.addComponent(this._propertyGroupContents);
+	}
+	,addComponent: function(child) {
+		if(((child) instanceof haxe_ui_containers_properties_Property)) {
+			var prop = js_Boot.__cast(child , haxe_ui_containers_properties_Property);
+			var labelContainer = new haxe_ui_containers_Box();
+			labelContainer.scriptAccess = false;
+			labelContainer.addClass("property-group-item-label-container");
+			this._propertyGroupContents.addComponent(labelContainer);
+			var label = new haxe_ui_components_Label();
+			label.scriptAccess = false;
+			label.set_text(prop.get_label());
+			label.set_disabled(prop.get_disabled());
+			label.addClass("property-group-item-label");
+			labelContainer.addComponent(label);
+			labelContainer.set_hidden(prop.get_hidden());
+			labelContainer.set_disabled(prop.get_disabled());
+			(js_Boot.__cast(prop._compositeBuilder , haxe_ui_containers_properties_PropertyBuilder)).label = label;
+			var editorContainer = new haxe_ui_containers_Box();
+			editorContainer.scriptAccess = false;
+			editorContainer.addClass("property-group-item-editor-container");
+			this._propertyGroupContents.addComponent(editorContainer);
+			var editor = this.buildEditor(prop);
+			editor.set_disabled(prop.get_disabled());
+			editor.registerEvent("shown",$bind(this,this.onPropertyShown));
+			editor.registerEvent("hidden",$bind(this,this.onPropertyHidden));
+			editor.registerEvent("enabled",$bind(this,this.onPropertyEnabled));
+			editor.registerEvent("disabled",$bind(this,this.onPropertyDisabled));
+			editor.scriptAccess = false;
+			editor.set_id(child.get_id());
+			editor.addClass("property-group-item-editor");
+			editorContainer.addComponent(editor);
+			editorContainer.set_hidden(prop.get_hidden());
+			editor.registerEvent("change",$bind(this,this.onPropertyEditorChange));
+			(js_Boot.__cast(prop._compositeBuilder , haxe_ui_containers_properties_PropertyBuilder)).editor = editor;
+			this._propertyGroup.registerInternalEvents(haxe_ui_containers_properties__$PropertyGroup_Events,true);
+			this._editorMap.set(editor,prop);
+			return editor;
+		}
+		return null;
+	}
+	,onPropertyShown: function(event) {
+		var container = event.target.findAncestor("property-group-item-editor-container",haxe_ui_containers_Box,"css");
+		var index = this._propertyGroupContents.getComponentIndex(container);
+		var label = this._propertyGroupContents.getComponentAt(index - 1);
+		label.show();
+		container.show();
+	}
+	,onPropertyHidden: function(event) {
+		var container = event.target.findAncestor("property-group-item-editor-container",haxe_ui_containers_Box,"css");
+		var index = this._propertyGroupContents.getComponentIndex(container);
+		var label = this._propertyGroupContents.getComponentAt(index - 1);
+		label.hide();
+		container.hide();
+	}
+	,onPropertyEnabled: function(event) {
+		var container = event.target.findAncestor("property-group-item-editor-container",haxe_ui_containers_Box,"css");
+		var index = this._propertyGroupContents.getComponentIndex(container);
+		var label = this._propertyGroupContents.getComponentAt(index - 1);
+		label.set_disabled(false);
+	}
+	,onPropertyDisabled: function(event) {
+		var container = event.target.findAncestor("property-group-item-editor-container",haxe_ui_containers_Box,"css");
+		var index = this._propertyGroupContents.getComponentIndex(container);
+		var label = this._propertyGroupContents.getComponentAt(index - 1);
+		label.set_disabled(true);
+	}
+	,onPropertyEditorChange: function(event) {
+		var newEvent = new haxe_ui_events_UIEvent("change");
+		newEvent.target = event.target;
+		newEvent.data = event.data;
+		var prop = this._editorMap.h[event.target.__id__];
+		if(prop != null) {
+			prop.dispatch(newEvent);
+		}
+		this._component.dispatch(newEvent);
+		this._component.findAncestor(null,haxe_ui_containers_properties_PropertyGrid).dispatch(newEvent);
+	}
+	,buildEditor: function(property) {
+		var type = property.get_type();
+		var c = null;
+		switch(type) {
+		case "boolean":
+			c = new haxe_ui_components_CheckBox();
+			c.set_value(property.get_value());
+			break;
+		case "date":
+			c = new haxe_ui_components_DropDown();
+			(js_Boot.__cast(c , haxe_ui_components_DropDown)).set_type("date");
+			break;
+		case "float":case "int":case "number":
+			var stepper = new haxe_ui_components_NumberStepper();
+			c = stepper;
+			c.set_value(property.get_value());
+			if(property.get_min() != null) {
+				stepper.set_min(property.get_min());
+			}
+			if(property.get_max() != null) {
+				stepper.set_max(property.get_max());
+			}
+			if(property.get_step() != null) {
+				stepper.set_step(property.get_step());
+			}
+			if(property.get_precision() != null) {
+				stepper.set_precision(property.get_precision());
+			}
+			break;
+		case "list":
+			c = new haxe_ui_components_DropDown();
+			(js_Boot.__cast(c , haxe_ui_components_DropDown)).set_dataSource(property.get_dataSource());
+			if(Type.typeof(property.get_value())._hx_index == 1) {
+				(js_Boot.__cast(c , haxe_ui_components_DropDown)).set_selectedIndex(property.get_value());
+			} else {
+				c.set_value(property.get_value());
+			}
+			break;
+		case "text":
+			c = new haxe_ui_components_TextField();
+			c.set_value(property.get_value());
+			break;
+		default:
+			c = new haxe_ui_components_TextField();
+			c.set_value(property.get_value());
+		}
+		return c;
+	}
+	,__class__: haxe_ui_containers_properties__$PropertyGroup_Builder
 });
 var haxe_ui_core_BasicItemRenderer = function() {
 	haxe_ui_core_ItemRenderer.call(this);
@@ -23018,431 +31311,6 @@ haxe_ui_layouts_LayoutFactory.createFromName = function(name) {
 	}
 	return new haxe_ui_layouts_DefaultLayout();
 };
-var haxe_ui_layouts_VerticalGridLayout = function() {
-	this._columns = 1;
-	haxe_ui_layouts_Layout.call(this);
-};
-$hxClasses["haxe.ui.layouts.VerticalGridLayout"] = haxe_ui_layouts_VerticalGridLayout;
-haxe_ui_layouts_VerticalGridLayout.__name__ = "haxe.ui.layouts.VerticalGridLayout";
-haxe_ui_layouts_VerticalGridLayout.__super__ = haxe_ui_layouts_Layout;
-haxe_ui_layouts_VerticalGridLayout.prototype = $extend(haxe_ui_layouts_Layout.prototype,{
-	_columns: null
-	,get_columns: function() {
-		return this._columns;
-	}
-	,set_columns: function(value) {
-		if(this._columns == value) {
-			return value;
-		}
-		this._columns = value;
-		if(this._component != null) {
-			var _this = this._component;
-			if(!(_this._layout == null || _this._layoutLocked == true)) {
-				_this.invalidateComponent("layout");
-			}
-		}
-		return value;
-	}
-	,get_usableSize: function() {
-		var size = haxe_ui_layouts_Layout.prototype.get_usableSize.call(this);
-		var columnWidths = this.calcColumnWidths(size,false);
-		var rowHeights = this.calcRowHeights(size,false);
-		var _g = 0;
-		while(_g < columnWidths.length) {
-			var columnWidth = columnWidths[_g];
-			++_g;
-			size.width -= columnWidth;
-		}
-		var _g = 0;
-		while(_g < rowHeights.length) {
-			var rowHeight = rowHeights[_g];
-			++_g;
-			size.height -= rowHeight;
-		}
-		var _this = this.get_component();
-		if((_this._children == null ? [] : _this._children).length > 1) {
-			var _this = this.get_component();
-			var rows = Math.ceil((_this._children == null ? [] : _this._children).length / this.get_columns());
-			var c = this.get_columns();
-			var _this = this.get_component();
-			var c1 = Math.min(c,(_this._children == null ? [] : _this._children).length);
-			size.width -= this.get_horizontalSpacing() * (c1 - 1);
-			size.height -= this.get_verticalSpacing() * (rows - 1);
-		}
-		if(size.width < 0) {
-			size.width = 0;
-		}
-		if(size.height < 0) {
-			size.height = 0;
-		}
-		return size;
-	}
-	,resizeChildren: function() {
-		var size = this.get_usableSize();
-		var columnWidths = this.calcColumnWidths(size,true);
-		var rowHeights = this.calcRowHeights(size,true);
-		var explicitWidths = this.calcExplicitWidths();
-		var explicitHeights = this.calcExplicitHeights();
-		var rowIndex = 0;
-		var columnIndex = 0;
-		var _g = 0;
-		var _this = this.get_component();
-		var _g1 = _this._children == null ? [] : _this._children;
-		while(_g < _g1.length) {
-			var child = _g1[_g];
-			++_g;
-			if(child.get_includeInLayout() == false) {
-				continue;
-			}
-			var cx = null;
-			var cy = null;
-			if(child.get_percentWidth() != null) {
-				var ucx = columnWidths[columnIndex];
-				if(explicitWidths[columnIndex] == false) {
-					cx = ucx;
-				} else {
-					cx = ucx * child.get_percentWidth() / 100;
-				}
-			}
-			if(child.get_percentHeight() != null) {
-				var ucy = rowHeights[rowIndex];
-				if(explicitHeights[rowIndex] == false) {
-					cy = ucy;
-				} else {
-					cy = ucy * child.get_percentHeight() / 100;
-				}
-			}
-			child.resizeComponent(cx,cy);
-			++columnIndex;
-			if(columnIndex >= this._columns) {
-				columnIndex = 0;
-				++rowIndex;
-			}
-		}
-	}
-	,repositionChildren: function() {
-		var size = this.get_usableSize();
-		var columnWidths = this.calcColumnWidths(size,true);
-		var rowHeights = this.calcRowHeights(size,true);
-		var rowIndex = 0;
-		var columnIndex = 0;
-		var xpos = this.get_paddingLeft();
-		var ypos = this.get_paddingTop();
-		var _g = 0;
-		var _this = this.get_component();
-		var _g1 = _this._children == null ? [] : _this._children;
-		while(_g < _g1.length) {
-			var child = _g1[_g];
-			++_g;
-			if(child.get_includeInLayout() == false) {
-				continue;
-			}
-			var halign = this.horizontalAlign(child);
-			var valign = this.verticalAlign(child);
-			var xposChild = 0;
-			var yposChild = 0;
-			switch(halign) {
-			case "center":
-				xposChild = xpos + (columnWidths[columnIndex] - child.get_componentWidth()) * 0.5 + this.marginLeft(child) - this.marginRight(child);
-				break;
-			case "right":
-				xposChild = xpos + (columnWidths[columnIndex] - child.get_componentWidth()) + this.marginLeft(child) - this.marginRight(child);
-				break;
-			default:
-				xposChild = xpos + this.marginLeft(child) - this.marginRight(child);
-			}
-			switch(valign) {
-			case "bottom":
-				yposChild = ypos + (rowHeights[rowIndex] - child.get_componentHeight()) + this.marginTop(child) - this.marginBottom(child);
-				break;
-			case "center":
-				yposChild = ypos + (rowHeights[rowIndex] - child.get_componentHeight()) * 0.5 + this.marginTop(child) - this.marginBottom(child);
-				break;
-			default:
-				yposChild = ypos + this.marginTop(child) - this.marginBottom(child);
-			}
-			child.moveComponent(xposChild,yposChild);
-			xpos += columnWidths[columnIndex] + this.get_horizontalSpacing();
-			++columnIndex;
-			if(columnIndex >= this.get_columns()) {
-				xpos = this.get_paddingLeft();
-				ypos += rowHeights[rowIndex] + this.get_verticalSpacing();
-				columnIndex = 0;
-				++rowIndex;
-			}
-		}
-	}
-	,calcColumnWidths: function(usableSize,includePercentage) {
-		var columnWidths = [];
-		var _g = 0;
-		var _g1 = this._columns;
-		while(_g < _g1) {
-			var _ = _g++;
-			columnWidths.push(0);
-		}
-		var rowIndex = 0;
-		var columnIndex = 0;
-		var _g = 0;
-		var _this = this.get_component();
-		var _g1 = _this._children == null ? [] : _this._children;
-		while(_g < _g1.length) {
-			var child = _g1[_g];
-			++_g;
-			if(child.get_includeInLayout() == false) {
-				continue;
-			}
-			if(child.get_percentWidth() == null) {
-				if(child.get_componentWidth() > columnWidths[columnIndex]) {
-					columnWidths[columnIndex] = child.get_componentWidth();
-				}
-			}
-			++columnIndex;
-			if(columnIndex >= this._columns) {
-				columnIndex = 0;
-				++rowIndex;
-			}
-		}
-		if(includePercentage) {
-			rowIndex = 0;
-			columnIndex = 0;
-			var fullWidthsCounts = [0];
-			var _g = 0;
-			var _this = this.get_component();
-			var _g1 = _this._children == null ? [] : _this._children;
-			while(_g < _g1.length) {
-				var child = _g1[_g];
-				++_g;
-				if(child.get_includeInLayout() == false) {
-					continue;
-				}
-				if(child.get_percentWidth() != null && child.get_percentWidth() == 100) {
-					fullWidthsCounts[rowIndex]++;
-				}
-				++columnIndex;
-				if(columnIndex >= this._columns) {
-					columnIndex = 0;
-					++rowIndex;
-					fullWidthsCounts.push(0);
-				}
-			}
-			rowIndex = 0;
-			columnIndex = 0;
-			var _g = 0;
-			var _this = this.get_component();
-			var _g1 = _this._children == null ? [] : _this._children;
-			while(_g < _g1.length) {
-				var child = _g1[_g];
-				++_g;
-				if(child.get_includeInLayout() == false) {
-					continue;
-				}
-				if(child.get_percentWidth() != null) {
-					var childPercentWidth = child.get_percentWidth();
-					if(childPercentWidth == 100 && fullWidthsCounts[rowIndex] != 0) {
-						var f = fullWidthsCounts[rowIndex];
-						if(rowIndex > 0 && fullWidthsCounts[rowIndex - 1] != 0) {
-							f = fullWidthsCounts[rowIndex - 1];
-						}
-						childPercentWidth = 100 / f;
-					}
-					var cx = usableSize.width * childPercentWidth / 100;
-					if(cx > columnWidths[columnIndex]) {
-						columnWidths[columnIndex] = cx;
-					}
-				}
-				++columnIndex;
-				if(columnIndex >= this._columns) {
-					columnIndex = 0;
-					++rowIndex;
-				}
-			}
-		}
-		return columnWidths;
-	}
-	,calcRowHeights: function(usableSize,includePercentage) {
-		var _this = this.get_component();
-		var visibleChildren = (_this._children == null ? [] : _this._children).length;
-		var _g = 0;
-		var _this = this.get_component();
-		var _g1 = _this._children == null ? [] : _this._children;
-		while(_g < _g1.length) {
-			var child = _g1[_g];
-			++_g;
-			if(child.get_includeInLayout() == false) {
-				--visibleChildren;
-			}
-		}
-		var rowCount = visibleChildren / this._columns | 0;
-		if(visibleChildren % this._columns != 0) {
-			++rowCount;
-		}
-		var rowHeights = [];
-		var _g = 0;
-		var _g1 = rowCount;
-		while(_g < _g1) {
-			var _ = _g++;
-			rowHeights.push(0);
-		}
-		var rowIndex = 0;
-		var columnIndex = 0;
-		var _g = 0;
-		var _this = this.get_component();
-		var _g1 = _this._children == null ? [] : _this._children;
-		while(_g < _g1.length) {
-			var child = _g1[_g];
-			++_g;
-			if(child.get_includeInLayout() == false) {
-				continue;
-			}
-			if(child.get_percentHeight() == null) {
-				if(child.get_height() > rowHeights[rowIndex]) {
-					rowHeights[rowIndex] = child.get_height();
-				}
-			}
-			++columnIndex;
-			if(columnIndex >= this._columns) {
-				columnIndex = 0;
-				++rowIndex;
-			}
-		}
-		if(includePercentage) {
-			rowIndex = 0;
-			columnIndex = 0;
-			var newRow = true;
-			var fullHeightRowCount = 0;
-			var _g = 0;
-			var _this = this.get_component();
-			var _g1 = _this._children == null ? [] : _this._children;
-			while(_g < _g1.length) {
-				var child = _g1[_g];
-				++_g;
-				if(child.get_includeInLayout() == false) {
-					continue;
-				}
-				if(child.get_percentHeight() != null && child.get_percentHeight() == 100) {
-					if(newRow == true) {
-						newRow = false;
-						++fullHeightRowCount;
-					}
-				}
-				++columnIndex;
-				if(columnIndex >= this._columns) {
-					columnIndex = 0;
-					++rowIndex;
-					newRow = true;
-				}
-			}
-			rowIndex = 0;
-			columnIndex = 0;
-			var _g = 0;
-			var _this = this.get_component();
-			var _g1 = _this._children == null ? [] : _this._children;
-			while(_g < _g1.length) {
-				var child = _g1[_g];
-				++_g;
-				if(child.get_includeInLayout() == false) {
-					continue;
-				}
-				if(child.get_percentHeight() != null) {
-					var childPercentHeight = child.get_percentHeight();
-					if(childPercentHeight == 100 && fullHeightRowCount > 1) {
-						childPercentHeight = 100 / fullHeightRowCount;
-					}
-					var cy = usableSize.height * childPercentHeight / 100;
-					if(cy > rowHeights[rowIndex]) {
-						rowHeights[rowIndex] = cy;
-					} else {
-						var tmp = usableSize.height > rowHeights[rowIndex];
-					}
-				}
-				++columnIndex;
-				if(columnIndex >= this._columns) {
-					columnIndex = 0;
-					++rowIndex;
-				}
-			}
-		}
-		return rowHeights;
-	}
-	,calcExplicitWidths: function() {
-		var explicitWidths = [];
-		var _g = 0;
-		var _g1 = this._columns;
-		while(_g < _g1) {
-			var _ = _g++;
-			explicitWidths.push(false);
-		}
-		var rowIndex = 0;
-		var columnIndex = 0;
-		var _g = 0;
-		var _this = this.get_component();
-		var _g1 = _this._children == null ? [] : _this._children;
-		while(_g < _g1.length) {
-			var child = _g1[_g];
-			++_g;
-			if(child.get_includeInLayout() == false) {
-				continue;
-			}
-			if(child.get_percentWidth() == null && child.get_componentWidth() > 0) {
-				explicitWidths[columnIndex] = true;
-			}
-			++columnIndex;
-			if(columnIndex >= this._columns) {
-				columnIndex = 0;
-				++rowIndex;
-			}
-		}
-		return explicitWidths;
-	}
-	,calcExplicitHeights: function() {
-		var _this = this.get_component();
-		var visibleChildren = (_this._children == null ? [] : _this._children).length;
-		var _g = 0;
-		var _this = this.get_component();
-		var _g1 = _this._children == null ? [] : _this._children;
-		while(_g < _g1.length) {
-			var child = _g1[_g];
-			++_g;
-			if(child.get_includeInLayout() == false) {
-				--visibleChildren;
-			}
-		}
-		var rowCount = visibleChildren / this.get_columns() | 0;
-		if(visibleChildren % this._columns != 0) {
-			++rowCount;
-		}
-		var explicitHeights = [];
-		var _g = 0;
-		var _g1 = rowCount;
-		while(_g < _g1) {
-			var _ = _g++;
-			explicitHeights.push(false);
-		}
-		var rowIndex = 0;
-		var columnIndex = 0;
-		var _g = 0;
-		var _this = this.get_component();
-		var _g1 = _this._children == null ? [] : _this._children;
-		while(_g < _g1.length) {
-			var child = _g1[_g];
-			++_g;
-			if(child.get_includeInLayout() == false) {
-				continue;
-			}
-			if(child.get_percentHeight() == null && child.get_componentHeight() > 0) {
-				explicitHeights[columnIndex % this._columns] = true;
-			}
-			++columnIndex;
-			if(columnIndex >= this._columns) {
-				columnIndex = 0;
-				++rowIndex;
-			}
-		}
-		return explicitHeights;
-	}
-	,__class__: haxe_ui_layouts_VerticalGridLayout
-	,__properties__: $extend(haxe_ui_layouts_Layout.prototype.__properties__,{set_columns:"set_columns",get_columns:"get_columns"})
-});
 var haxe_ui_layouts_VerticalLayout = function() {
 	haxe_ui_layouts_DefaultLayout.call(this);
 	this._calcFullHeights = true;
@@ -28015,13 +35883,13 @@ haxe_ui_styles_elements_RuleElement.prototype = {
 					var value = new haxe_ui_styles_elements_Directive("font-bold",haxe_ui_styles_Value.VBool(true));
 					this1.h["font-bold"] = value;
 				} else if(s == "italic") {
-					var this11 = this.directives;
+					var this2 = this.directives;
 					var value1 = new haxe_ui_styles_elements_Directive("font-italic",haxe_ui_styles_Value.VBool(true));
-					this11.h["font-italic"] = value1;
+					this2.h["font-italic"] = value1;
 				} else if(s == "underline") {
-					var this12 = this.directives;
+					var this3 = this.directives;
 					var value2 = new haxe_ui_styles_elements_Directive("font-underline",haxe_ui_styles_Value.VBool(true));
-					this12.h["font-underline"] = value2;
+					this3.h["font-underline"] = value2;
 				}
 			}
 			break;
@@ -28997,6 +36865,28 @@ haxe_ui_util_FunctionArray.prototype = {
 	}
 	,__class__: haxe_ui_util_FunctionArray
 	,__properties__: {get_length:"get_length"}
+};
+var haxe_ui_util_GUID = function() { };
+$hxClasses["haxe.ui.util.GUID"] = haxe_ui_util_GUID;
+haxe_ui_util_GUID.__name__ = "haxe.ui.util.GUID";
+haxe_ui_util_GUID.randomIntegerWithinRange = function(min,max) {
+	return Math.floor(Math.random() * (1 + max - min) + min);
+};
+haxe_ui_util_GUID.createRandomIdentifier = function(length,radix) {
+	if(radix == null) {
+		radix = 61;
+	}
+	var characters = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];
+	var id = [];
+	if(radix > 61) {
+		radix = 61;
+	}
+	while(length-- > 0) id.push(characters[Math.floor(Math.random() * (1 + radix))]);
+	return id.join("");
+};
+haxe_ui_util_GUID.uuid = function() {
+	var specialChars = ["8","9","A","B"];
+	return haxe_ui_util_GUID.createRandomIdentifier(8,15) + "-" + haxe_ui_util_GUID.createRandomIdentifier(4,15) + "-4" + haxe_ui_util_GUID.createRandomIdentifier(3,15) + "-" + specialChars[Math.floor(Math.random() * 4)] + haxe_ui_util_GUID.createRandomIdentifier(3,15) + "-" + haxe_ui_util_GUID.createRandomIdentifier(12,15);
 };
 var haxe_ui_util_ImageLoader = function(resource) {
 	this._resource = resource;
@@ -33726,10 +41616,14 @@ var Float = Number;
 var Bool = Boolean;
 var Class = { };
 var Enum = { };
-haxe_Resource.content = [];
+haxe_Resource.content = [{ name : "haxeui-core/styles/dark/dropdowns.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogRFJPUERPV05TDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmRyb3Bkb3duIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RhcmsvdXBfZG93bl9hcnJvd3MucG5nIjsNCn0NCg0KLmRyb3Bkb3duLXBvcHVwIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjUyNzI4Ow0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQp9DQo"},{ name : "haxeui-core/styles/dark/scrollview.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogU0NST0xMVklFVw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5zY3JvbGx2aWV3IHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjMTgxYTFiOw0KICAgIGJvcmRlci1yYWRpdXM6IDFweDsNCiAgICBwYWRkaW5nOiAxcHg7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyNTI3Mjg7DQp9DQo"},{ name : "haxeui-core/styles/default/dialogs/question-small.png", data : "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABLFBMVEUAAAB7e4AzMzNLS0tUVFQ/Pz8lJSVRUVGenp6mprLIyMg6Oj0LCwtqamoLCws+Pj5CQkJVVVU6OjpFRUUmJiZVVVULCwsXFxdRUVENDQ1UVFSqqqyfn6K/v76zs7KZmZlRUVNQUFFzc3NycnIsWdUqVMn////o6Oju7u7a2uvc3NvPz9FJas4nTr0mTLrh4eFfgeFbfd9XedvMzMwrVcs5Wr4xVb5cc7pzlvRtj+4wYuXW1uSjsNeRotVPctVLbdJ1jNBeectBY8qVoshadciJlsYtVMPAwMGJlsBlfMA3V7kfRrZEX7MkSLNOZK08V6wSM5S2wuZ/mOIyYeEwX+GcreDR0dvPz9rY2NgzX9jJydA+ZM+lrsfDw8M+YMN1h8IqUL93iLwmSrQkRq3qyJ1kAAAAJHRSTlMArkdAPRgJB6Hc0pKHfHRubGNhXFxVVE9NHRXX19TUooaGeHiocz46AAAA7ElEQVQY0yXI1XbCUBRF0ROD4K719gbSuAd397oL8P//wA3Mhz3GXuAp0plEIkMX4cRP3wbLWPCO9h9/ni03OpLUaahs3isUq3aNaqVSNbrCFQXARNSBZpSwR33wHmGAuui3tHaz+VB60dv9SwpSwlSTpJ79Z273v1MzBXHR1nvOzhW/l0vH/olDzJy1/mVFEBRZHs3GMUiK7hfHcYqCZ+SOk0CeTZwPZPG8hZA8OSeBuRYX1hPiefTMLT5vGACSeF3PUa2G5us3ggQAX5qoD1ebzWpYJ9I+8EouFLjHAqEc/keFbDQcjmYLgB0Ay8YloSiVm/0AAAAASUVORK5CYII"},{ name : "haxeui-core/styles/default/right_arrow_square.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAIAAABLMMCEAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAMUlEQVQImWN8K6PCwMCQbKIz98wVBhhggrOSTXSwiCJLoIjCJdBFIaYzYQqhiCK7AQAMqA07hk2gSAAAAABJRU5ErkJggg"},{ name : "styles/default/main.css", data : "LmJ1dHRvbiwgLmxhYmVsLCAudGV4dGFyZWEsIC50ZXh0ZmllbGQgew0KICAgIGZvbnQtbmFtZTogIkFyaWFsIjsNCiAgICBmb250LXNpemU6IDEzcHg7DQp9DQoNCi5idXR0b246bmF0aXZlIHsNCiAgICBiYWNrZ3JvdW5kOiBub25lOw0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBib3JkZXItcmFkaXVzOiBub25lOw0KfQ0KDQoucHJvZ3Jlc3M6bmF0aXZlLCAuc2xpZGVyOm5hdGl2ZSB7DQogICAgYmFja2dyb3VuZDogbm9uZTsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYm9yZGVyLXJhZGl1czogbm9uZTsNCiAgICBmaWx0ZXI6IG5vbmU7DQogICAgY29sb3I6IG5vbmU7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KfQ0KDQoudGV4dGZpZWxkOm5hdGl2ZSB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGJvcmRlci1yYWRpdXM6IG5vbmU7DQogICAgZmlsdGVyOiBub25lOw0KICAgIGNvbG9yOiBub25lOw0KICAgIGJhY2tncm91bmQtY29sb3I6IG5vbmU7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KfQ0KDQoubnVtYmVyc3RlcHBlcjpuYXRpdmUgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBib3JkZXItcmFkaXVzOiBub25lOw0KICAgIGZpbHRlcjogbm9uZTsNCiAgICBjb2xvcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiBub25lOw0KICAgIHdpZHRoOiA3MHB4Ow0KICAgIGhlaWdodDogMjBweDsNCn0NCg0KLnRleHRhcmVhOm5hdGl2ZSB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGJvcmRlci1yYWRpdXM6IG5vbmU7DQogICAgZmlsdGVyOiBub25lOw0KICAgIGNvbG9yOiBub25lOw0KICAgIGJhY2tncm91bmQtY29sb3I6IG5vbmU7DQogICAgZm9udC1uYW1lOiAiQXJpYWwiOw0KICAgIGZvbnQtc2l6ZTogMTNweDsNCn0NCg0KLmNvbXBvbmVudDpkaXNhYmxlZCB7DQogICAgY3Vyc29yOiBub3QtYWxsb3dlZDsNCn0"},{ name : "haxeui-core/styles/default/right_arrow_white.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAIAAACgB3uHAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAM0lEQVQImWP8////O1lVBgYGBgYGJgYGBqHHtxEcOJ/x////DDDABGe9k1VlgrOgMnDTADWiDmfiE8U7AAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/up_arrow.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAECAIAAADNpLIqAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAKklEQVQImWN8K6PCwMDAwMCQbKIz98wVCJsJLgQnoaJwDpzNGBAQwIABAOGNCDDIObJsAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/global.css", data : ""},{ name : "haxeui-core/styles/default/ranges.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogUkFOR0UNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoucmFuZ2Ugew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICNBQkFCQUI7DQogICAgcGFkZGluZzogMnB4Ow0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjODg4ODg4LCAwLjIsIDIsIDIsIDEsIDMsIHRydWUpOw0KfQ0KDQoucmFuZ2UtdmFsdWUgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQp9DQoNCi5ob3Jpem9udGFsLXJhbmdlIHsNCiAgICBiYWNrZ3JvdW5kOiAjRjFGMUYxICNGRkZGRkYgdmVydGljYWw7DQogICAgaW5pdGlhbC13aWR0aDogMTUwcHg7DQogICAgaW5pdGlhbC1oZWlnaHQ6IDIwcHg7DQp9ICAgIA0KDQouaG9yaXpvbnRhbC1yYW5nZSAucmFuZ2UtdmFsdWUgew0KICAgIGJhY2tncm91bmQ6ICM2Q0FBREIgIzIxNkFBRSB2ZXJ0aWNhbDsNCiAgICBoZWlnaHQ6IDEwMCU7DQp9DQoNCi52ZXJ0aWNhbC1yYW5nZSB7DQogICAgYmFja2dyb3VuZDogI0YxRjFGMSAjRkZGRkZGIGhvcml6b250YWw7DQogICAgaW5pdGlhbC13aWR0aDogMjBweDsNCiAgICBpbml0aWFsLWhlaWdodDogMTUwcHg7DQp9DQoNCi52ZXJ0aWNhbC1yYW5nZSAucmFuZ2UtdmFsdWUgew0KICAgIGJhY2tncm91bmQ6ICM2Q0FBREIgIzIxNkFBRSBob3Jpem9udGFsOw0KICAgIHdpZHRoOiAxMDAlOw0KfQ0K"},{ name : "haxeui-core/styles/default/dialogs/cross-circle.png", data : "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAC1lBMVEUAAABFRUVSUlIgICDj4+PJycnOztq7u8hxcXaWlpZAQEBeXl5AQEA/Pz9PT09QUFCfn5/a2urPz9/Z2dng4OC7u77ExNLPz8+2trfW1tbU1NSNjZhxcXl/f4JPT1VoaGpWVlmKiooHBwcHBwcWFhd2dnUgICF6enoHBwc8PDw8PD09PT1DQ0NYWFhSUlJVVVVVVVUiIiIHBwcaGhpVVVUrKysNDQ1RUVE5OTlGRkYzMzNLS0sUFBRUVFQvLy8ICAhOTk5TU1NVVVUQEBDb29vY2NfKytPHx9Hc3NzU1NPJycnExMS9vby3t7zFxcTa2trZ2dm6usG2tr3IyMetra/CwsGampuQkJKpqamenp25ubm4uLiTk5NISEtHR0t+fn54eHj////b29vSSkrQERHf39/aUlLY2NjW1tbT09PUERGwEBDu7u7ZERHKERHiWlqqERHKQkK7MzO+vr7DOzu9NjbFEhK0ERHb2+rQ0NDOzs7CwsLVTU3AERHi4u/n5+fY2OXUwcrCwsXTv7/vZ2fqYWHlXV3APz/GPj7AOTmpICCsHh6yGBi1FRWnFRWdFRW7FBSwFBSyERGfERHs7OzExMXJtri+gIL2bm7za2vsZGToYGDfV1e0UlLYT0+5LCytIyOrGxuuGBirFha6ERH5+fnf3+zq6url5eXX1+Hd3d3T093OztbLy9HLy8vGsrHCra7Dk5fKlpbAj5TGkpHLjIzGhoa2fYK4env8dHTEa2u7Y2LDYGCyXV6lVFfbU1O/R0fPRkaZQUO5PT2vOjqrNze5MDCrKyukKiqpKSmyJCSlJCTGISG2Hx+IHh+xHBynGxuhGxulGRnLGBjCExPTERHGERGtERGlERGNDxDBDg6lCwt+CQnIyM/IyM3GxsrGxsXOu8C5foKtTU7IQUHKPj62NDS1MzO/KyuyKiq3JSWVHh+UHh7GHBy5GBjMFRW+FBTVEhJdMPSIAAAAYXRSTlMADUQJ/v745amacGVgKAgHpP309PDt7OTf3t7NuK6pmZKNjYaFhISDd3ZzbWppaWVhXVxXVlJQTExIRT48OzYyLy4kEPj49fX09PHx8enn5ubj4+Df3sLCv7+8vKaampKSidxtUQAAAtNJREFUOMtiIAHwOTGZGOjrG5gwOfFhkWa05VaMkhRhYRGRilbktmVEl3fkFvBPTYKC1AABbkcUaX4mdclV6c1b9xwoLT2wZ2tzepKUOhM/krw5p0dG8672mtYZO3fOnF3Tvqs5Q5jTHKGCidMlc1P7/hkzWma1trbOmjkzrX1TpisnE0zeQVW4cltnS0tbPgzMmt25LdNT1QHqfoB0xau2dLa0pcHBvHlz2kq3VAXrQvxiLVC5/vDsOcnJiclQkHjwYM3+w9OqYqzB4aMn/mB38pzCwsTExEIgADM6OpKf7Gb10wOFGG/8ug3P2jpKEkGgBAjAjM6S5OfrWRN4gQosI6p3dNSUli4AiS992bUKFFL9XQtKi6ZXR1oCFfCEFs9NLikqKupaWp9RVZmZkQ6Uv3Sha8GxudUSPEAFOl7FR+aVFhUd6568Dio/ue/ShYXd849U++gAFXCxFh9PKyo61XfjxmSYfN/ihUAFx6cWc0EUAHSyZv6iAhAAy7MUFCxevGjR+VcnIQq0vYuPPu3JBgGI/Ir6iUDQ03P26FRRbZAjJaofv3hXDgQw+eVTynuB4PzcphCQIy3CmnacOrNkyRKwfEEBUD4nZwIQdE9vCrcABZT8/Q2nz1ypBctfr629PiUHCGprP5ye1iQPCihmLdF7e89eLssGymeXAUE2UB7I6Nm71leLGRQZVrJrp514+z5vUuqkPDCYlANkXDnx8K6sFSS6NQPXbL54OSWlPAUMwIy8ixvXBGlCky5gdgpuqx/1X/uYhQDX+qevdlewgyUpUw62lZvfZF/NhYKr2a83rmTjMIWnSWZDDraGxn03b99Kyc1NuXX75r7GBjYOQ2YGhArjWPaGisbth87duXPu0PbGigb2OGOQPALYqMmIVVQsqwOCZRUVYjJqNuhZy9lMRU6aXUhQUIhdWk7FzBlb7rQ30lBWUlLWMLJnJCHPAwCfzkekVgjZxAAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/default/left_arrow.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAIAAACgB3uHAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAANklEQVQImWN8K6PCwMDAwMCQbKLDBGcxMDAwwVkMDAzMt5zsGGCAae6ZKwgOAwMDnA81AMIHAN2yC5bbbdIbAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/dark/down_arrow_white.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAECAIAAADNpLIqAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAJElEQVQImWP8//8/AwZgeieriib0TlaVCUIhCzEwMDAhc+DSAPKbCiUI9YmvAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/buttons.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogQlVUVE9OUw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5idXR0b24gew0KICAgIGJhY2tncm91bmQ6ICNFREVERUQgI0U2RTZFNiB2ZXJ0aWNhbDsNCiAgICBjb2xvcjogIzIyMjIyMjsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjQUJBQkFCOw0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICBwYWRkaW5nOiA1cHggOHB4Ow0KICAgIGN1cnNvcjogcG9pbnRlcjsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBoZWlnaHQ6IGF1dG87DQogICAgc3BhY2luZzogNXB4IDVweDsNCiAgICB0ZXh0LWFsaWduOiBjZW50ZXI7DQp9DQoNCi5idXR0b246aG92ZXIgew0KICAgIGJhY2tncm91bmQ6ICNGNUY1RjUgI0YxRjFGMSB2ZXJ0aWNhbDsNCiAgICBjb2xvcjogIzAwMDAwMDsNCn0NCg0KLmJ1dHRvbjpkb3duIHsNCiAgICBiYWNrZ3JvdW5kOiAjRDJEMkQyICNDMkMyQzIgdmVydGljYWw7DQogICAgY29sb3I6ICMwMDAwMDA7DQogICAgYm9yZGVyLWNvbG9yOiAjN0Y3RjdGOw0KfQ0KDQouYnV0dG9uOmFjdGl2ZSB7DQogICAgYm9yZGVyOiAycHggc29saWQgIzc3QzZGRjsNCn0NCg0KLmJ1dHRvbi5lbXBoYXNpemVkIHsNCiAgICBiYWNrZ3JvdW5kOiAjREFFNEVFICNENERFRTggdmVydGljYWw7DQogICAgYm9yZGVyLWNvbG9yOiAjNkNBMUQ3Ow0KfQ0KDQouYnV0dG9uLmVtcGhhc2l6ZWQ6aG92ZXIgew0KICAgIGJhY2tncm91bmQ6ICNFMkVDRjYgI0RFRThGMiB2ZXJ0aWNhbDsNCiAgICBib3JkZXItY29sb3I6ICM2Q0ExRDc7DQp9DQoNCi5idXR0b24uZW1waGFzaXplZDpkb3duIHsNCiAgICBiYWNrZ3JvdW5kOiAjQzJDQ0Q2ICNCNEJFQzggdmVydGljYWw7DQogICAgYm9yZGVyLWNvbG9yOiAjNTY4Q0MxOw0KfQ0KDQouYnV0dG9uOmRpc2FibGVkIHsNCiAgICBiYWNrZ3JvdW5kOiAjRDRENEQ0ICNDQ0NDQ0MgdmVydGljYWw7DQogICAgY29sb3I6ICM5MDkwOTA7DQogICAgY3Vyc29yOiBkZWZhdWx0Ow0KfQ0KDQouYnV0dG9uIC5sYWJlbCB7DQogICAgcG9pbnRlci1ldmVudHM6IG5vbmU7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIEJVVFRPTiBCQVJTDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmJ1dHRvbi1iYXIgew0KICAgIHNwYWNpbmc6IDA7DQp9DQoNCi5idXR0b24tYmFyIC5idXR0b24gew0KICAgIGJvcmRlci1yYWRpdXM6IDA7DQogICAgYm9yZGVyLWNvbG9yOiAjQUJBQkFCOw0KfQ0KDQouYnV0dG9uLWJhciAuYnV0dG9uOmRvd24gew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNhN2M0ZTI7DQogICAgY29sb3I6IHdoaXRlOw0KfQ0KDQouaG9yaXpvbnRhbC1idXR0b24tYmFyIC5idXR0b24gew0KICAgIGJvcmRlci1sZWZ0LXNpemU6IDA7DQp9DQoNCi5ob3Jpem9udGFsLWJ1dHRvbi1iYXIgLmJ1dHRvbi5maXJzdCB7DQogICAgYm9yZGVyLWxlZnQtc2l6ZTogMTsNCn0NCg0KLnZlcnRpY2FsLWJ1dHRvbi1iYXIgLmJ1dHRvbiB7DQogICAgYm9yZGVyLXRvcC1zaXplOiAwOw0KfQ0KDQoudmVydGljYWwtYnV0dG9uLWJhciAuYnV0dG9uLmZpcnN0IHsNCiAgICBib3JkZXItdG9wLXNpemU6IDE7DQp9DQo"},{ name : "haxeui-core/styles/default/dialogs/exclamation-small.png", data : "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAwFBMVEUAAACbhQDBqAHk2jj68Jn89avSwBnp3W7l11+4ogbQux67pAXMswG/pwKmjwCchgDErAHJsAG1nQHMswG7owHCqQHHrgGwmQHLsgG+pQHk1ynm22PVzzXr33fUzEzr33jp22zPvy7LuxnSvzfGth7RvCzQuiXPuBLPuBHs3CXm2Sve1jHY0zkAAADz5XjS0D/77Yzs6YL27nh2dnZsbGzw32lgYGDTy0b06Ift4XDv3mnp22Hc1UzU0kUvLy8YGBjuZRp0AAAAKXRSTlMAyRH+/fnm29DBurKro52WkHt0ZVxFLyQdCfz29u/v5eXa2tDQxMSvr6tslocAAACYSURBVBjTdY9FEsJAFESHuLvibpOJC879b0UyFJAUlbfoX/1W/UEPhCQRHWFynNnu3o6m915L6Gwcs/qvOwKVZZTgfIU2C/M8nGufbm9ORVkW4dZ+d1+eXK6PZ1VNZR8La3W+RQhF0X1t4U3iKAiCJKljLDbrjAUJIUQI1iwNAFyePNYg1OSQd4HCHBrSFB9GAeqgg/r39wsyaBDiN04O2AAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/default/down_arrow.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAECAIAAADNpLIqAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAJElEQVQImWMMCAhgwABMc89cQROae+YKE4RCFmJgYGBC5sClAQxaDmYcnISCAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/tabs.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogVEFCQkFSIChUT1ApDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLnRhYmJhciB7DQogICAgcGFkZGluZy1sZWZ0OiAwcHg7DQogICAgcGFkZGluZy1yaWdodDogMHB4Ow0KICAgIGhlaWdodDogYXV0bzsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1jb2xvcjogI0FCQUJBQjsNCiAgICBib3JkZXItdG9wLXdpZHRoOiAwcHg7DQogICAgY2xpcDogdHJ1ZTsNCn0NCg0KLnRhYmJhciA+IC50YWJiYXItY29udGVudHMgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1jb2xvcjogI0FCQUJBQjsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQoudGFiYmFyLWJ1dHRvbiB7DQogICAgYm9yZGVyLXJhZGl1czogMHB4Ow0KICAgIGJhY2tncm91bmQ6ICNFREVERUQgI0U2RTZFNiB2ZXJ0aWNhbDsNCiAgICBwYWRkaW5nOiA2cHggOHB4Ow0KICAgIHZlcnRpY2FsLWFsaWduOiBib3R0b207DQogICAgYm9yZGVyLWxlZnQtd2lkdGg6IDBweDsNCn0NCg0KLnRhYmJhci1idXR0b24uZmlyc3Qgew0KICAgIGJvcmRlci1sZWZ0LXdpZHRoOiAxcHg7DQp9DQoNCi50YWJiYXItYnV0dG9uOmhvdmVyIHsNCiAgICBiYWNrZ3JvdW5kOiAjRjVGNUY1ICNGMUYxRjEgdmVydGljYWw7DQp9DQoNCi50YWJiYXItYnV0dG9uOmRvd24gew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICNBQkFCQUI7DQp9DQoNCi50YWJiYXItYnV0dG9uLXNlbGVjdGVkIHsNCiAgICBib3JkZXItcmFkaXVzOiAwcHg7DQoNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1jb2xvcjogd2hpdGU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQogICAgYm9yZGVyLWxlZnQtd2lkdGg6IDBweDsNCn0NCg0KLnRhYmJhci1idXR0b24tc2VsZWN0ZWQuZmlyc3Qgew0KICAgIGJvcmRlci1sZWZ0LXdpZHRoOiAxcHg7DQp9DQoNCi50YWJiYXItc2Nyb2xsLWxlZnQgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9sZWZ0X2Fycm93LnBuZyI7DQogICAgYm9yZGVyLXJhZGl1czogMDsNCiAgICBwYWRkaW5nOiA1cHg7DQp9DQoNCi50YWJiYXItc2Nyb2xsLXJpZ2h0IHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvcmlnaHRfYXJyb3cucG5nIjsNCiAgICBib3JkZXItcmFkaXVzOiAwOw0KICAgIHBhZGRpbmc6IDVweDsNCn0NCg0KLnRhYmJhci1idXR0b24tc2VsZWN0ZWQgLmxhYmVsIHsNCn0NCg0KLnRhYmJhci1idXR0b24tc2VsZWN0ZWQgLmljb24gew0KfQ0KDQoudGFiYmFyLWJ1dHRvbiAudGFiLWNsb3NlLWJ1dHRvbiB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC90aW55LWNsb3NlLWJ1dHRvbi5wbmciOw0KfQ0KDQovKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqDQoqKiBUQUJCQVIgKEJPVFRPTSkNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoudGFiYmFyOmJvdHRvbSB7DQogICAgcGFkZGluZy1sZWZ0OiAwcHg7DQogICAgcGFkZGluZy1yaWdodDogMHB4Ow0KICAgIGhlaWdodDogYXV0bzsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAwcHg7DQogICAgYm9yZGVyLXRvcC13aWR0aDogMXB4Ow0KICAgIGJvcmRlci10b3AtY29sb3I6ICNBQkFCQUI7DQogICAgY2xpcDogdHJ1ZTsNCn0NCg0KLnRhYmJhcjpib3R0b20gLnRhYmJhci1jb250ZW50cyB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGJvcmRlci1ib3R0b20td2lkdGg6IDBweDsNCiAgICBib3JkZXItdG9wLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLXRvcC1jb2xvcjogI0FCQUJBQjsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQoudGFiYmFyLWJ1dHRvbjpib3R0b20gew0KICAgIHZlcnRpY2FsLWFsaWduOiB0b3A7DQogICAgYm9yZGVyLWxlZnQtd2lkdGg6IDBweDsNCn0NCg0KLnRhYmJhci1idXR0b24uZmlyc3Qgew0KICAgIGJvcmRlci1sZWZ0LXdpZHRoOiAxcHg7DQp9DQoNCi50YWJiYXItYnV0dG9uLXNlbGVjdGVkOmJvdHRvbSB7DQogICAgYm9yZGVyLXJhZGl1czogMHB4Ow0KDQogICAgYm9yZGVyOiAxcHggc29saWQgI0FCQUJBQjsNCiAgICBib3JkZXItdG9wLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLXRvcC1jb2xvcjogd2hpdGU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQogICAgYm9yZGVyLWxlZnQtd2lkdGg6IDBweDsNCn0NCg0KLnRhYmJhci1idXR0b24tc2VsZWN0ZWQuZmlyc3Qgew0KICAgIGJvcmRlci1sZWZ0LXdpZHRoOiAxcHg7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIFRBQlZJRVcNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoudGFidmlldyB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGhlaWdodDogYXV0bzsNCn0NCg0KLnRhYnZpZXcgPiAudGFidmlldy10YWJzIHsNCiAgICBtYXJnaW4tdG9wOiAxcHg7DQp9DQoNCi50YWJ2aWV3OmJvdHRvbSA+IC50YWJ2aWV3LXRhYnMgew0KICAgIG1hcmdpbi10b3A6IDBweDsNCn0NCg0KLnRhYnZpZXcgPiAudGFidmlldy1jb250ZW50IHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjQUJBQkFCOw0KICAgIHBhZGRpbmc6IDVweDsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiB3aGl0ZTsNCn0NCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogVEFCVklFVyBBTFQgU1RZTEVTDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmNvbGxhcHNpYmxlLWxhYmVscyAudGFiYmFyLWJ1dHRvbiAubGFiZWwgew0KICAgIGhpZGRlbjogdHJ1ZTsNCn0NCg0KLmNvbGxhcHNpYmxlLWxhYmVscyAudGFiYmFyLWJ1dHRvbi1zZWxlY3RlZCAubGFiZWwgew0KICAgIGhpZGRlbjogZmFsc2U7DQp9DQo"},{ name : "haxeui-core/styles/dark/check.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH5QEaCTskh/mOvAAAAS5JREFUKM+NkbtKA2EQhb/ZrLIGL2BnExDEIr2FguADBLMo/IWFCF7AwiewEkRQ7GwUkXRiY4LZGASLtbIQK4tgo7VWgmBMdrM7FokQxBinO2fmzAczwj8qn78cFzuaCmu1U7vbcLlcHqyH0TUqqR7HweoWqDXiPSAFBBLHd38SCgVvBtW1ppJt13UrHQme5yWxOAZE4SGsV3cBOhIaMTvAGNBIEC/PGRMA2OfF4oSFXBFLMQyqK8aYKO95k8RsAIiwn53N3n8vsiwYRRlGdMl2+g5zvu+IcgJYAo9vA/1b7WRRVbkolo4UVltWBTQNxKIy7bqZ2/aAJSIa1D/XBc6alqZbvYOfw0DzD8aY6PVlZBEotfynpNO7+dsxpF3kfN8Zev9Y0AQ385nM82+BL3sbaMn2+wKIAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/dark/tooltips.css", data : "LnRvb2x0aXAgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyYzJmMzA7DQogICAgYm9yZGVyOiAxcHggc29saWQgIzE4MWExYjsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjMDAwMDAwLCAwLjA1LCA2LCAxLCAzMCwgMzUsIGZhbHNlKTsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQogICAgcGFkZGluZzogNHB4IDVweDsNCiAgICBtYXJnaW4tbGVmdDogMHB4Ow0KICAgIG1hcmdpbi10b3A6IDMwcHg7DQp9DQoNCi50b29sdGlwIC5sYWJlbCB7DQogICAgY29sb3I6ICNkNGQ0ZDQ7DQp9"},{ name : "haxeui-core/styles/default/dropdowns.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogRFJPUERPV05TDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmRyb3Bkb3duIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvdXBfZG93bl9hcnJvd3MucG5nIjsNCiAgICBpY29uLXBvc2l0aW9uOiBmYXItcmlnaHQ7DQogICAgdGV4dC1hbGlnbjogbGVmdDsNCiAgICBwYWRkaW5nOiA1cHg7DQp9DQoNCi5kcm9wZG93bi1wb3B1cCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQogICAgYm9yZGVyOiAxcHggc29saWQgI0FCQUJBQjsNCn0NCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogTU9CSUxFIFZBUklBTlRTDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmRyb3Bkb3duOm1vYmlsZSB7DQogICAgbW9kZTogbW9iaWxlOw0KfQ0KDQouZHJvcGRvd24tcG9wdXA6bW9iaWxlIHsNCiAgICB3aWR0aDogNzUlOw0KfQ0K"},{ name : "haxeui-core/styles/default/small-close-button.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAwAAAANCAMAAACq939wAAAAhFBMVEV4eHj///8AAAAAAAAAAAAbGxsAAAAAAADn5+cAAADv7+8gICAiIiIZGRnr6+sAAADj4+Pm5uYAAAB4eHiOjo4TExMKCgqJiYkfHx/////Jycn09PT////////o6OgAAAD///+QkJCRkZEFBQUAAAAiIiIAAABiYmJtbW0+Pj5OTk4AAAByRYNBAAAALHRSTlMBgGhkXmBbeHd1eHVrW3U2c3FwZmVkZGFOQDc1MBwcDQdralhYVUxLRkY7Ld49hcYAAACESURBVAjXFY1HDoNAEAQnbYLFYHIG5/T//3moU5dUUoOSiws2h4ONXEnMZDcVCpURm3XtXRtX4clkZ6z5B1KaE/oCk0hPcCRqmKSBLTi2WYHoU5IbNKx94tFH28OHOm1Sj1f+wtq0dQwUL8GsAKNhYhE2o57u0+shtn9POxws8zDMi44/AScHBY0KWggAAAAASUVORK5CYII"},{ name : "haxeui-core/locale/en/dialog.properties", data : "ZGlhbG9nLnNhdmU9U2F2ZQ0KZGlhbG9nLnllcz1ZZXMNCmRpYWxvZy5ubz1Obw0KZGlhbG9nLmNsb3NlPUNsb3NlDQpkaWFsb2cub2s9T0sNCmRpYWxvZy5jYW5jZWw9Q2FuY2VsDQpkaWFsb2cuYXBwbHk9QXBwbHkNCg"},{ name : "haxeui-core/styles/dark/main.css", data : "LmxhYmVsLCAuYnV0dG9uLCAudGV4dGZpZWxkLCAudGV4dGFyZWEgew0KICAgIGNvbG9yOiAjYjRiNGI0Ow0KfQ0KDQouZGVmYXVsdC1iYWNrZ3JvdW5kIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMmMyZjMwOw0KfQ0KDQoubW9kYWwtYmFja2dyb3VuZCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogYmxhY2s7DQogICAgb3BhY2l0eTogMC44NTsNCn0NCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogTEFCRUwNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoubGFiZWwgew0KICAgIGNvbG9yOiAjYjRiNGI0Ow0KfQ0KICAgIA0KLmxhYmVsOmRpc2FibGVkIHsNCiAgICBjb2xvcjogIzU5NTk1OTsNCn0NCg"},{ name : "haxeui-core/styles/dark/sliders.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogU0xJREVSUw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5ob3Jpem9udGFsLXNsaWRlciB7DQogICAgcGFkZGluZy1sZWZ0OiA1cHg7DQogICAgcGFkZGluZy1yaWdodDogNXB4Ow0KICAgIHBhZGRpbmctdG9wOiAwcHg7DQogICAgcGFkZGluZy1ib3R0b206IDBweDsNCiAgICBoZWlnaHQ6IGF1dG87DQogICAgaW5pdGlhbC13aWR0aDogMTUwcHg7DQp9DQoNCi5ob3Jpem9udGFsLXNsaWRlciAuc2xpZGVyLXZhbHVlIHsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBoZWlnaHQ6IDhweDsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQp9DQoNCi5ob3Jpem9udGFsLXNsaWRlciAuYnV0dG9uIHsNCiAgICB3aWR0aDogMTBweDsNCiAgICBoZWlnaHQ6IDIwcHg7DQogICAgYm9yZGVyLXJhZGl1czogMnB4Ow0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQogICAgZmlsdGVyOiBub25lOw0KfQ0KICAgIA0KLnZlcnRpY2FsLXNsaWRlciB7DQogICAgcGFkZGluZy10b3A6IDVweDsNCiAgICBwYWRkaW5nLWJvdHRvbTogNXB4Ow0KICAgIHBhZGRpbmctbGVmdDogMHB4Ow0KICAgIHBhZGRpbmctcmlnaHQ6IDBweDsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBpbml0aWFsLWhlaWdodDogMTUwcHg7DQp9DQoNCi52ZXJ0aWNhbC1zbGlkZXIgLnNsaWRlci12YWx1ZSB7DQogICAgaGVpZ2h0OiAxMDAlOw0KICAgIHdpZHRoOiA4cHg7DQogICAgYm9yZGVyLXJhZGl1czogMnB4Ow0KICAgIGhvcml6b250YWwtYWxpZ246IGNlbnRlcjsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQp9DQoNCi52ZXJ0aWNhbC1zbGlkZXIgLmJ1dHRvbiB7DQogICAgd2lkdGg6IDIwcHg7DQogICAgaGVpZ2h0OiAxMHB4Ow0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICBob3Jpem9udGFsLWFsaWduOiBjZW50ZXI7DQogICAgZmlsdGVyOiBub25lOw0KfQ0KDQo"},{ name : "haxeui-core/styles/dark/left_arrow_white.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAIAAACgB3uHAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAANklEQVQImWN8K6PCwMDAwMAg9Pg2E5zFwMDABGcxMDAw/v//nwEGmN7JqiI4DAwMcD7UAAgfAMkKDTd2MVgoAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/tooltips.css", data : "LnRvb2x0aXAgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNmZmZmZjg7DQogICAgYm9yZGVyOiAxcHggc29saWQgI0FCQUJBQjsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjMDAwMDAwLCAwLjA1LCA2LCAxLCAzMCwgMzUsIGZhbHNlKTsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQogICAgcGFkZGluZzogNHB4IDVweDsNCiAgICBtYXJnaW4tbGVmdDogMHB4Ow0KICAgIG1hcmdpbi10b3A6IDMwcHg7DQp9DQo"},{ name : "haxeui-core/styles/default/up_arrow_white.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAECAIAAADNpLIqAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAK0lEQVQImWN8K6PCwMDAwMAg9Pj2O1lVCJsJLgQnoaJwDpzN+P//fwYMAADCtw5xBtAKnQAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/dark/tiny-close-button.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAEZXpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjarVdr0uMoDPyvU+wRECAQx8HYVO0N9vjbPGLH5LHfzGxIDJaFJLoluULHP39X+gsfa1jJS9SQQjD4+OSTzVioGZ8xs/H9+ixr9zc5nQ9g1jjMbtyGY+pnyOXaEP2Ub3c5xTLt6DT08DwNuubZYjH1dBpydsh53lOa+7J/Cn3+6iPaOKb13keAsQvsOUv2cOwMrtq8uPZjlzG3q3UBSsYlrKVfrUvvsaNzuYB3rhbsTJ5yd4eCTJgKYcFoylneY9cReo6IL8+3B2U7XbxiV3et9Rinyz4AqUDzUI+j9BUUN0Dp+raAEfETrGMfCUNxxALGdrC5YRTixBZoV/a8c+bKR58LF4To7WEjZmsLOGgyddEmWzoZvg2uNoKGnZyCiQLWHMT2jIW739T9FVZ43hmalmGMseNl0Dvh74zTUK0tdZmNnlghLttyGmE05toVWiCE68RUOr590FPemCdiHRiUDrPigNlsw8QmfOWW6zw76InxZEZpcNynAUAE34Jg2IEBE9gJBzbR2sgMHBX8ZERunbcbGGARuzNVcONQCdGqbb6xJ3LXtWKHGK0FRIgLLoIaFArI8l6QP9ErciiLE08iEiSKSpIcXPBBQggxtB6Vo4s+SgwxRo0pZnXqVTRoVNWkOdnk0MIkhRQpaUopZzjNMJ2xO0Mj581ubvObbGGLm25pywXpU3yREkosWlLJu93djvLfwx5p1z3t+eADqXT4Q45wxEOPdOSKXKuu+io11Fi1pppP1iard9Z4Ye47azxZa4z5rhcv1iCO8WGCWzuRxhkYs57BeGwMIKFt48woe28bc40zkyyKQixYY2nk7NwYA4P+YCuVT+4u5r7yRuJ/iTf7iTlq1P0fzFGjbjL3ytsb1vbc3yiuE9SqsGFqXEVjO9BlMr4Z7acvjJE22aSoFI+vaU2nL1tZTdkyk/nwwFxGAF83gnWTiHnMXi9dum/eugYqt4ekpp21LzNyacrez/TpQTOyjWVW8zjznNNDh0MXeGvovruNscVPmE5BTe7oy3QpPc00lPIDcPPq6+Yqablb8X7gQidAbQwo7RCUUxBLqn2JJF7wPmeKexhrWSG3vBBYwpPlfVg+M4TesYvCayv1i8Cc4IQhKCeVTO+hUH7JRa/5G7+0EjyT+nIui2WzD410j5eeTzBn+5KOiT+CfIJ94vcA3a0l93IU1iW4lhL0yLa5O5nvlfBxpqsSUrIrS2sBl5W1KyGoZF4y4lfnkUB0zyCXl2zgtaxeYxmh0J/HMkKhP49lhEI/9p1mwenqaSQ8XR3DnEnnhiDIf5Xxlf+V0uNM8vvRPBXtn0XTgqF7NI2HffH+sy5MX9rwvQuH6+UzYsRL8umgrWcHtzZqvxzjB22YvvXhLx3h6gBpaBDrd1DF2x+9LemHzQI9goeRku7P8O9o1tqnricLwW2pH1kh84muJ9oGBdsF1GyCJyz4a0E7eiL9C50ommlvGMFPAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH5QEaCDsd2T5sgwAAALJJREFUGNNdi7FKw2AYRc/98j7O1oIuikM1ISk6CAVfwidShIJJ++dvQejS4uTs2wjmuhgonvGec9Wl/ATx1VSzd45YrzfXg3wSlj/E8NymzexIXlp+KYhP/Q1nllcED/rRt+U3y/dNWR40vtqUpqHIGDFQ1/XtHiDGoHBhIf4TAF3OE8sry3eySoJl1/cXAGr7/jSsPKDHeXWzBehSuhLxKquJsM5NLEYJ0FTVzsTC8uQXPKRNkQsV0ywAAAAASUVORK5CYII"},{ name : "haxeui-core/styles/default/dialogs/information-small.png", data : "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABJlBMVEUAAAB7e4CdnZ0REREzMzNUVFQ/Pz8lJSVRUVGmprLIyMg6Oj0LCwtQUFJqampycnILCws+Pj5CQkJVVVU6OjpFRUUmJiZVVVVRUVFISEhOTk4NDQ1UVFSqqqyfn6K/v76zs7IsWdUqVMj////a2utGaM4wVL8nTr3m5ubj4+NfgeFbfd9NcNXMzMwrVcvBwcIlSbMlSLAjRa1zlvTt7e1nievq6uowYuXW1uQxYOHg4N/c3NvQ0NtXedtQctijsNfW1tbPz9B1jNDNzc1LbM1eectBY8qVoshadciJlsYoUMKJlsBlfMA7W7xddLk3V7kmS7kfRrZEX7NOZK08V6wSM5Tu7u5ukO5sju3Y2NgzX9hSdNXOztRMbtHJydA+ZM8+YMMqUL/uhb8yAAAAIXRSTlMArqJRRz0YCQfc0pKHhnx4dG5sY2FcXFVNQj8dFdfX1NTah6qMAAAA7ElEQVQY0yXI02LEUBSF4R2ObRQnaeyMbVs13/8l2tP5rtb6ASsymUQiwxThystE/FVZrvojjPf/Z0m5NxyPhz2FzOKSJ5uTzlOp9NyZtMg8ABtuztWKzvN6RZu/hFnI3c3e1K7A80JX+5jd5yDVWquCMHVcx3W/10YK4oONNhVtY+TYtrix4hAzdvqPtB/195Ik7qwYJAfbL45b9pUlx3FbKwn0zUp8RaZSNhGSVrc0sKH3o9lA5UfU4I6fIRaAJtrnA6rV0OHcJmgA8KSJ+uJ0uZwWdSLtAVyogO/hjy9A4Y8VqGgwGKUKeP8C2jElNUboO20AAAAASUVORK5CYII"},{ name : "haxeui-core/styles/default/haxeui.png", data : "iVBORw0KGgoAAAANSUhEUgAAAIgAAACICAMAAAALZFNgAAAC7lBMVEUAAACxubtjcotcaIKYmKs9RWc9Sl9jcYuutME+SGKstMPHyNhhcIrBxdNCT2esssBgbIiGiaLAwM56hZ5jb4zGydqyt8V7hJs6SF9hbYlfaYTGxtatssGmrb09SWB/iJ5/h56/wdFha4g+TWRhbIe0uMdhbYhue5dibonDxNXGx9lfbIU+TGOwtcM/TWXM1+h8hZy5vMumq7vBw9RvfJezuMfGyNaAiJ+Bi6NhbYhvfJfGx9g8S2Cpr71DUGh9h501Xotli7iiqbp8hZ2ytsV2gZg+TGNJdq55g5p/h569v89vfJZsdpLK1OWxtsRtepU8S2M7SmE9TGQ8SmHKyt26vs1+iJ5jb4tRXXU4V3s9VnZhbIfExddhbIdIVW3DxNWjqbtwfJWkqrtwe5ZgbIWkqbmmq7yCi6Ccss3N2OmrscBOW3M9TGO4u8uytsWus8JbZ4FKV298hZtWY3uqxOB7hZujqLlQXXW3vMtSXnU8Wn49S2KsscBseJTHyNnIyNifpbZve5VkibREUmp/iqGtssHHyNlGU2pkd5d/iqCkqrpRX3dib4mswdrEx9ebo7PFxtc+XYNufZmQmK2uv9S4vc+1uclUYXk6SWGxtsSutcNteZRebIW4u8tDd7JYe6k3VXmAjqWKk6iAiaBWY3uOl6pAdrSswdqtwdubsMuIlKtjboeQmKydtM+ZrclRd6dJYYGnr8B8h51UYnlJV3CmuNCPl6u+zeHM1uZjb4dga4Q+aZjG1OeWsM9mjbtTf7ONqMlNerBvkbtNaY9Yc5mUna+nv9qlu9Y4UHCLpMKKpMNomc08drVRiMR+p9OUttszZp2pxOLP3u9nmMxtnM5BerlckMlyoNBSh8Gbut3G2OyRtNqGrNbO3e5wns99ptJQhsCYuNxUicJ9ptOStdujwOBYjcdKgbxnl8tgksg6c7A1aJ+4z+edvN5kk8c2a6NEebM8cKiwyeRLgb03b6qbu944bqhMgryyyuWdu96j3pigAAAAy3RSTlMAAwQHBQUNCQcJDw8NBRULEAoJEBgLGRgfFCMYJBcRMCNrMSxYMSkkQTEjHFBEPfFEIyBWMisUFA5rQz8ZFGU+8vEsHWtYJPFsTkQsIOJWVUg4MSoeHVY3KsGjY19RUE46bFVNR0MyKvHwa2VZV049PDs3Nf5jTUs/HcBhVj02KGFg625rYC0fl3hpQy7vhHdGuHof1IliXkE1emZMN/7TvJdlXlU6/vLw7JVvSPDp1ayVi3Fb0VTx24V29/T09PTy7unBjYn06pPnxN39F5cAAAyOSURBVHjarNl5bIthHAdw64oqdZQ56xpzz2zUXWSOOOY29zGjc2/DzFBMGHHf9xFn3OK+ibhFHBUhrSORGH+0oo2I+M/v97zv26ft8x71vv3+tWTp+sn393vfvutTgiZGPiVUJQaj0+ligqPDiP1NqtCbTCZ9aEwQvSoLvCO+qV40aMHfizhMBoPBbDZXCI8ZAr8CzX9Z4F2IIbaSWEqXjoWQYsIYegMSjMEpC+F+ijMix0ApymUQBb5le0xlJuXKlUMMUoIr1BsMqLDZamOqhqW2zWYzGgEDvVCKAiMWqgBBO0g1kdRohxikUAk6KlUw2kCQArGEJBmSnp4OmrZljXEVzCZCUW6DKIDQvXv3eiFpjElLS2vevEqNithKSUGCY4E2UGFJTU3NwiSExGq1WiyAqW0jtSBFnmEABijQMGXKlLrBaUPSr1+/Ro3TOAp2wr/SUAnqQEVWRkaOHZNIUwDJ2b8bNMnQi60sS2HbIAxQgGHOnK6QVjQdMYsXLx4Rv65RzeYggenE0ELAAQy7PT8/MzPTkenADBCSnZ0Nnv0JVpgSQ5FkoAIEffr0GU7SU8hAyKRJk5uMiOckMBwdeTXvyLADorBwDWQ6SQ8hO3YUzRqQ3bdg/26GIs1ABRiOHJk3r/eKFb0DmQjZu3fZsoHjgIISHE4MvtxkNtqqguPKk8ePj68XcpzkBMn6E+u37dkBlsSc3WRCdFfkGKCYd+rc1KlnSaaG5c6de/cfxjdKqwKVEIiOFJKaZV//6tWXv8XFTvHkbdvTo4inWAiFXEEYVIgx5q04dTLPKZ4vL99+e/HiQW48VIKz4SdT1WLNyL/2iuTLj2IlCl5D9AoiChFGb2BIIzDfN0+e22hB+YowG4DAqsJksuyZt38Dg8EoUAwGPSY2NpTRU4rx5SMghBzYvC93ZM3yFctwEFiRFGtGoiPJiQaK+V0sSpkeoHD3lUpcKiOjcT/KUEBgfm4+unZuzeYAgSWBXYUVsebkFyV5qYI2I0pxcJSUFLj5G9tD8B6axjDkEBgPQkYuqFEqGJJdlOSmAhkMpWSlpqakbK1ta4d3cmC0mdO14yRgHApjuAiCzffXm3fOpxC9GXY1IccxPenNb0bBjEmgrCly5NszgGLZunUr3EORsRgYyyYiQxmBOfB64c75s0cuKF+qDFw25KJJTkhECF0SpWaQUpgJFLCQT5M2czpOIoxzSggaPwdZFYCURcgAgLBLwmIoZSNSztiPHTvWtSvMZGDPvUGM34hQiOf1whkMpGBAj6Q3zJLIYvKuAKXw6tUz+GnScxky8njEZzkEXRGAjJ/dIACJI40ghFkSeQxSNh4+fBg/TibybbgUEXRFxCGzAMIsiQIGKY9WY7YAg0EoxM9DqlNIreSmfRHCLokyJu/KqYsXD91jEMrxEEhLBlIfIMySRIJxPbvLLGZEKwKQLmGQZjzkjUuF5MPndy9UxAeQUcEQUzDEqcbx/LkaiV8C0ppAvKocqiQeAmkhAXGrcaiQ4IrIQCAuFQ5VEp80ZBpCnCocqiR+CUgnHuJV4VAl8ShA3CocKiS4IghZFAQxUAjGpcKhQuITgZhDIE4VDhUSvwAZjJBYMppQiFeFQ4XEQyAHFw0aPBQhOh4ybGWnCWM5iDtCx3sGwUiUVoSFtBUgGFekDi0SHw+ZCZDOdYTRxLUdtnRJAOKMcC6aJP4AZEgvgJQsSf7ljGubvnTJprHX30S6JF/BoU3i4SBPW+xCCFw0CBFuJBs+RbgkX2EuGiR0RboJVy9C6LYKlbg0OahEeUVG44ogRAcQfklwNnwlTmWHVomfK6TLTDIZoRFcEu5O0p8uiez1olni4Qohk4EVoV9dcbPhK3ErOTRLvnOFLBcmUzIGHEGzESpxyTu0S3xCIcGTCVw3tBKnvEO7xB9aCDpEK/HKO7RLPKSQLnwhsRTCPwoIlbhlHdolf8ILoRDyeUMrcck5tEt8oYWgQ6ISp5xDu8QfVAh/7UpU4pVzaJd4uEJa0kLCK1lZMGHHdqjELePQLvklFNKAFsJU0ncWqcQl7dAu8UkXItxek4VKnNIO7RI/FnJZZENoJenW/fA9CVTiZT/noifxQCEzxosWQitJKMjGStyMI3qSP6SQ+bNpIUwlRlqJi3FETeIjhaylhYhVUhUrKYJKnIxDs4SuSLdLWMgqelMVrwS+ce1Pl4RxaJZ45AuhleRgJW7GES3JHyiEft9MIWwluxMdUImLOqIpwRU5PwPOJMhzCJ6gSVZiycrJXHPhk5M6oivxYyG5MoUgRE9OTDLyCzf291JHdCWe8x3IIQ19MGODD0jkVA0qcVNHVCW/bt0cMy43npyfUQi7JXDgiZDCjddcxBF1yYHzN8fsyxXOaCQhenLyirO5UIyO6Etu3TjdkBxtliPP7tKzESCP7oAj+vn2gIfAYa8uMsg/Vu1gtYEQisLwpg/WR+8DyGEWs6ggpKU7N4JI18VFMOkfxzAn5wXyMeMYvfd+7P7PMl+ALF/N9w8lviPg1SwXaxIlviP8PrVY324+X4kS3xHyOz7fRzvr2NCqeiDxHD3b4YY2TtC9Bdy3+ChIfEdPwRZ//KeXBInv6Gk3f3p8JDwGSJD4jp6MY8DhwagKEtdxzTgp9pLV7IFcT89xQPDteI5QcFQ8OjwnQeI5RhoOz0fXCQkSzzGSeZ2YX7CqXij5DPfZcMGaXzmj7nPZbcdIwZVzfglPgsR9LyMNl/B5WUJyJcOBZJQlpoWaKkMCB7LhkcxKV1GGBA6koHQ1K+YlGRI4kIZi3qy8KRkSOJCM8uak4FtlSPjdMhsLviyBY4lgZ7MdoaAEzgeCJQKJ7wiNTYGHbRLJk9DBRcI2CRtHVZaEDmZD4witNCwRZrcdoaCV9qi5mGRK6OAiYXOR7VbJktDBZLZb2YCuMiV0MBsa0GzJRzFcsZ4jFLTkOaSQZEjgmKRhSIFjG5IhgWOSjLENDLJUGRI4pgEEoz1RT+ayG45Q/o32cNgp6YQEjmXaFTId/5JOSOBYJq8gVSckdKyzLUYEo05I6FinLIYmk05K/kq5Y5A2ojAO4FAjdugQaUAiFCWEJJDBUoRUoYgN0hYD2ZohZKgX6HpYQqcOEQcLtyQZDRUsdakgONilKIpQKEEECe0gUlyqKWqxJbVbv+9L7l5evjtfLv0LBjKcv7x3qHDv/x1X3KV+LYRuEfcS7lCndj3kcq8rCXeoI0HYUeOzva4k3KHOBUIcD18f7nUjAYf7/CaI03H0LhhH5ztbf6ruITVxHJ0f0L90izj99nNpfX19YfL8+JdbzL44oM8qC2fuENUKMLCwUCwuzJ0cnLrDXIjKAitxHHb4l/foHBCVypul1/PzuVwuD1WS90g5cIOpNyF2tZbOEF/pRxFj+e1TKLVoWjKYTzconWNqHGI2jq5UiC+EsBiouDsxMQsV0Ug5ExSUzjD77UUf7GAR5EyNkBigmB0amoYYqVQkC5QxQUHM92sxF1L1iZ6x0pOAEedbRCCq8FVZAUauwXg+PJyAhENGgFFUmLpUBjPrcTNQj+sEgYziY4sRjw8MxPw+XzQxGGIUxTbVWD2u8fhs5MoZUcUvel1ZA8aUBozp8HB8IEY9c6/X7/cxihKzX2g8urEgDxAy8/GvMwJiMp7lp7TxidEm4/6t/j4IWXxRW4rzNv2QKpSiVHpovx1iQYiR1MZfASNMjP6+Hg/8Cw4jAMCioHBMvfBSlEqpZkt788FEHEsIfIVIjFA47ovdxrK9B8YUUFQUkRMLUyvAzpg1W1E8/iQQEIGhb8hYbGH4sfTvAYBZPFZROAauXpCKx7g3uCSfd7a2trcf2WetmE+2MdqmIHBKORhM785NOmRzc257F54A++gWscrppXsP362ubmwsQ+YxZpEcm+SLeVLQvcEYEuWGoBgpHX7dgiWdHmNJp4PBTFZ/IcrptCT9TQlQVp9siG59shlNQ0UKGDRzgDGcKAGwZMvlTAY8UuCdcjaiB9BBD4BvmAMMYHNKJSipUkG0ZdCANW0AFAqG3QahJaXrER5dZwMM6C6BNYndKYn5C6OtMWD+QogUjKGgRBOIMYxAewwjFBocFCMdxJALrJZDqbtUMidRiCQgUVLgTAqPYCgpYCGMXRqXxM/Va13PHEsBFsBY8VnxI4IWQ6yGgiIsftDw0CXF2A9pEApaANMaL4aGlsBa9OFmSgwVBS0YLwsi2AezKJ6bPTi0xS44xgXibjQMWVBjEz4aRkjMwTY9UgjABtt0uiyYXhLJobclBrPY5b/HB7Hw8UH/AM3ZIm9FzQVkAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/dark/up_arrow.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAECAIAAADNpLIqAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAK0lEQVQImWN8K6PCwMDAwMBwfMYEy4wCCJsJLgQnoaJwDpzNuGXLFgYMAADK0A4MJuH53gAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/default/down_arrow_square.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAIAAABLMMCEAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAMUlEQVQImWN8K6PCgAGYMIUYGBhYkk10sKide+YKmtDcM1eYIBSyEMJcCAcuzYjVDQAFcxCadfC9sQAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/dark/progressbars.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogUFJPR1JFU1MNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQpAa2V5ZnJhbWVzIGluZGV0ZXJtaW5hdGUgew0KICAgIDAlIHsNCiAgICAgICAgc3RhcnQ6IDA7DQogICAgICAgIGVuZDogMjU7DQogICAgfQ0KICAgIDUwJSB7DQogICAgICAgIHN0YXJ0OiA3NTsNCiAgICAgICAgZW5kOiAxMDA7DQogICAgfQ0KICAgIDEwMCUgew0KICAgICAgICBzdGFydDogMDsNCiAgICAgICAgZW5kOiAyNTsNCiAgICB9DQp9DQoNCi5wcm9ncmVzczppbmRldGVybWluYXRlIHsNCiAgICBhbmltYXRpb246IGluZGV0ZXJtaW5hdGUgMXMgZWFzZSAwcyBpbmZpbml0ZTsNCn0NCg0KLnByb2dyZXNzLXZhbHVlIHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYm9yZGVyLXJhZGl1czogMnB4Ow0KfQ0KDQouaG9yaXpvbnRhbC1wcm9ncmVzcyB7DQogICAgYmFja2dyb3VuZDogIzI1MjcyOCAjMjUyNzI4IHZlcnRpY2FsOw0KICAgIGluaXRpYWwtd2lkdGg6IDE1MHB4Ow0KICAgIGluaXRpYWwtaGVpZ2h0OiAyMHB4Ow0KfQ0KDQouaG9yaXpvbnRhbC1wcm9ncmVzcyAucHJvZ3Jlc3MtdmFsdWUgew0KICAgIGJhY2tncm91bmQ6ICM0MTU5ODIgIzJmMzc0NiB2ZXJ0aWNhbDsNCiAgICBoZWlnaHQ6IDEwMCU7DQp9DQoNCi52ZXJ0aWNhbC1wcm9ncmVzcyB7DQogICAgYmFja2dyb3VuZDogIzI1MjcyOCAjMjUyNzI4IGhvcml6b250YWw7DQogICAgaW5pdGlhbC13aWR0aDogMjBweDsNCiAgICBpbml0aWFsLWhlaWdodDogMTUwcHg7DQp9DQoNCi52ZXJ0aWNhbC1wcm9ncmVzcyAucHJvZ3Jlc3MtdmFsdWUgew0KICAgIGJhY2tncm91bmQ6ICM0MTU5ODIgIzJmMzc0NiBob3Jpem9udGFsOw0KICAgIHdpZHRoOiAxMDAlOw0KfQ0KDQo"},{ name : "haxeui-core/styles/dark/propertygrids.css", data : "LnByb3BlcnR5LWdyaWQgew0KfQ0KDQoucHJvcGVydHktZ3JpZCAuc2Nyb2xsdmlldy1jb250ZW50cyB7DQogICAgcGFkZGluZzogMDsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQoucHJvcGVydHktZ3JvdXAgew0KICAgIHdpZHRoOiAxMDAlOw0KICAgIHNwYWNpbmc6IDA7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cC1oZWFkZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICMzRDNGNDE7DQogICAgcG9pbnRlci1ldmVudHM6IHRydWU7DQogICAgd2lkdGg6IDEwMCU7DQogICAgcGFkZGluZzogNXB4Ow0KICAgIGJvcmRlci1jb2xvcjogIzE4MWExYjsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1zaXplOiAxcHg7DQogICAgY3Vyc29yOiBwb2ludGVyOw0KfQ0KDQoucHJvcGVydHktZ3JvdXAtaGVhZGVyLnNjcm9sbGluZyB7DQogICAgYm9yZGVyLXJpZ2h0LXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLXJpZ2h0LXNpemU6IDFweDsNCn0NCg0KLnByb3BlcnR5LWdyb3VwLWhlYWRlcjpob3ZlciB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzQzNDY0NzsNCn0NCg0KLnByb3BlcnR5LWdyb3VwLWhlYWRlci1pY29uIHsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KfQ0KDQoucHJvcGVydHktZ3JvdXAtaGVhZGVyOmV4cGFuZGVkIC5wcm9wZXJ0eS1ncm91cC1oZWFkZXItaWNvbiB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGFyay9kb3duX2Fycm93X3NxdWFyZS5wbmciOw0KfQ0KDQoucHJvcGVydHktZ3JvdXAtaGVhZGVyOmNvbGxhcHNlZCAucHJvcGVydHktZ3JvdXAtaGVhZGVyLWljb24gew0KICAgIHJlc291cmNlOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RhcmsvcmlnaHRfYXJyb3dfc3F1YXJlLnBuZyI7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cC1oZWFkZXItbGFiZWwgew0KfQ0KDQoucHJvcGVydHktZ3JvdXAtY29udGVudHMgew0KICAgIHdpZHRoOiAxMDAlOw0KICAgIHNwYWNpbmc6IDE7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzE4MWExYjsNCiAgICBwYWRkaW5nLWJvdHRvbTogMXB4Ow0KfQ0KDQoucHJvcGVydHktZ3JvdXAtaXRlbS1sYWJlbC1jb250YWluZXIgew0KICAgIHdpZHRoOiA1MCU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzI1MjcyODsNCiAgICBoZWlnaHQ6IDEwMCU7DQogICAgcGFkZGluZy1sZWZ0OiA1cHg7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cC1pdGVtLWVkaXRvci1jb250YWluZXIgew0KICAgIHdpZHRoOiA1MCU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzI1MjcyODsNCn0gICAgICAgIA0KDQoucHJvcGVydHktZ3JvdXAtaXRlbS1sYWJlbCB7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCn0NCg0KLnByb3BlcnR5LWdyb3VwLWl0ZW0tZWRpdG9yIHsNCiAgICB3aWR0aDogMTAwJTsNCn0NCg0KLnByb3BlcnR5LWdyb3VwIC50ZXh0ZmllbGQgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBmaWx0ZXI6IG5vbmU7DQogICAgYm9yZGVyLXJhZGl1czogMDsNCn0NCg0KLnByb3BlcnR5LWdyb3VwIC5jaGVja2JveCB7DQogICAgcGFkZGluZzogNXB4Ow0KICAgIHBhZGRpbmctbGVmdDogNHB4Ow0KfQ0KDQoucHJvcGVydHktZ3JvdXAgLm51bWJlci1zdGVwcGVyIHsNCiAgICBwYWRkaW5nOiAwOw0KfQ0KDQoucHJvcGVydHktZ3JvdXAgLmRyb3Bkb3duIHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYm9yZGVyLXJhZGl1czogbm9uZTsNCn0NCg"},{ name : "haxeui-core/styles/dark/ranges.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogUkFOR0UNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoucmFuZ2Ugew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQogICAgcGFkZGluZzogMXB4Ow0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjMDAwMDAwLCAwLjIsIDIsIDIsIDEsIDMsIHRydWUpOw0KfQ0KDQoucmFuZ2UtdmFsdWUgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQp9DQoNCi5ob3Jpem9udGFsLXJhbmdlIHsNCiAgICBiYWNrZ3JvdW5kOiAjMjUyNzI4ICMyNTI3MjggdmVydGljYWw7DQogICAgaW5pdGlhbC13aWR0aDogMTUwcHg7DQogICAgaW5pdGlhbC1oZWlnaHQ6IDIwcHg7DQp9ICAgIA0KDQouaG9yaXpvbnRhbC1yYW5nZSAucmFuZ2UtdmFsdWUgew0KICAgIGJhY2tncm91bmQ6ICM0MTU5ODIgIzJmMzc0NiB2ZXJ0aWNhbDsNCiAgICBoZWlnaHQ6IDEwMCU7DQp9DQoNCi52ZXJ0aWNhbC1yYW5nZSB7DQogICAgYmFja2dyb3VuZDogIzI1MjcyOCAjMjUyNzI4IGhvcml6b250YWw7DQogICAgaW5pdGlhbC13aWR0aDogMjBweDsNCiAgICBpbml0aWFsLWhlaWdodDogMTUwcHg7DQp9DQoNCi52ZXJ0aWNhbC1yYW5nZSAucmFuZ2UtdmFsdWUgew0KICAgIGJhY2tncm91bmQ6ICM0MTU5ODIgIzJmMzc0NiBob3Jpem9udGFsOw0KICAgIHdpZHRoOiAxMDAlOw0KfQ0K"},{ name : "haxeui-core/styles/default/main.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogR0VORVJBTA0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5jb21wb25lbnQgew0KfQ0KDQouY3VzdG9tLWNvbXBvbmVudCB7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KfQ0KDQoubW9kYWwtYmFja2dyb3VuZCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQogICAgb3BhY2l0eTogMC43NTsNCn0NCg0KLm1vZGFsLWNvbXBvbmVudCB7DQogICAgZmlsdGVyOiBibHVyKDEpOw0KfQ0KDQoucG9wdXAgew0KICAgIGZpbHRlcjogZHJvcC1zaGFkb3coMiwgNDUsICMwMDAwMDAsIDAuMTUsIDYsIDEsIDMwLCAzNSwgZmFsc2UpOw0KfQ0KDQpAa2V5ZnJhbWVzIGFuaW1hdGlvbkZhZGVJbiB7DQogICAgMCUgew0KICAgICAgICBvcGFjaXR5OiAwOw0KICAgIH0NCiAgICAxMDAlIHsNCiAgICAgICAgb3BhY2l0eTogMTsNCiAgICB9DQp9DQoNCi5mYWRlLWluIHsNCiAgICBhbmltYXRpb246IGFuaW1hdGlvbkZhZGVJbiAwLjFzIGxpbmVhciAwcyAxOw0KfQ0KDQouZmFkZS1vdXQgew0KICAgIGFuaW1hdGlvbjogYW5pbWF0aW9uRmFkZUluIDAuMXMgbGluZWFyIDBzIDEgcmV2ZXJzZTsNCn0NCg0KLmRlZmF1bHQtYmFja2dyb3VuZCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIENPTlRBSU5FUlMNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQouYm94LCAudmJveCwgLmhib3gsIC5hYnNvbHV0ZSwgLmNvbnRpbnVvdXNoYm94LCAuaGdyaWQsIC52Z3JpZCwgLmdyaWQgew0KICAgIHNwYWNpbmc6IDVweCA1cHg7DQp9DQoNCi5ib3gsIC52Ym94LCAuaGJveCwgLmNvbnRpbnVvdXNoYm94LCAuaGdyaWQsIC52Z3JpZCwgLmdyaWQgew0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGhlaWdodDogYXV0bzsNCn0NCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogTEFCRUwNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoubGFiZWwgew0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGhlaWdodDogYXV0bzsNCiAgICBjb250ZW50LXR5cGU6IGF1dG87DQogICAgY29sb3I6IGJsYWNrOw0KfQ0KICAgIA0KLmxhYmVsOmRpc2FibGVkIHsNCiAgICBjb2xvcjogIzkwOTA5MDsNCn0NCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogSU1BR0UNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQouaW1hZ2Ugew0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGhlaWdodDogYXV0bzsNCn0NCg0KLmltYWdlOmRpc2FibGVkIHsNCiAgICBmaWx0ZXI6IGdyYXlzY2FsZTsNCn0NCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogRFJBRyAmIERST1ANCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQouZHJhZ2dhYmxlIHsNCiAgICBjdXJzb3I6IG1vdmU7DQp9DQoNCi5kcmFnZ2luZyB7DQp9"},{ name : "haxeui-core/styles/default/right_arrow.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAIAAACgB3uHAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAL0lEQVQImWMMCAiYe+YKAwMDAwMDEwMDQ7KJDoID50M5ED6CM/fMFSY4C6oMbhoAEcwMOy/jUHEAAAAASUVORK5CYII"},{ name : "haxeui-core/styles/dark/right_arrow_white.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAIAAACgB3uHAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAM0lEQVQImWP8////O1lVBgYGBgYGJgYGBqHHtxEcOJ/x////DDDABGe9k1VlgrOgMnDTADWiDmfiE8U7AAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/dark/accordion.css", data : "LmFjY29yZGlvbiB7DQogICAgYm9yZGVyOiAxcHggc29saWQgI2FiYWJhYjsNCiAgICBzcGFjaW5nOiAwOw0KICAgIHBhZGRpbmc6IDFweDsNCiAgICBwYWRkaW5nLWJvdHRvbTogMHB4Ow0KICAgIGNsaXA6IHRydWU7DQp9DQoNCi5hY2NvcmRpb24tYnV0dG9uIHsNCiAgICBib3JkZXItcmFkaXVzOiAwOw0KICAgIGJvcmRlcjogMHB4IHNvbGlkICNhYmFiYWI7DQogICAgd2lkdGg6IDEwMCU7DQogICAgdGV4dC1hbGlnbjogbGVmdDsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvcmlnaHRfYXJyb3dfc3F1YXJlLnBuZyI7DQogICAgaWNvbi1wb3NpdGlvbjogbGVmdDsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYm9yZGVyLWNvbG9yOiAjYWJhYmFiOw0KICAgIGJvcmRlci1ib3R0b20td2lkdGg6IDFweDsNCn0NCg0KLmFjY29yZGlvbi1idXR0b246ZG93biB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kZWZhdWx0L2Rvd25fYXJyb3dfc3F1YXJlLnBuZyI7DQp9DQoNCi5hY2NvcmRpb24tcGFnZSB7DQogICAgd2lkdGg6IDEwMCU7DQogICAgY2xpcDogdHJ1ZTsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBib3JkZXItY29sb3I6ICNhYmFiYWI7DQogICAgYm9yZGVyLWJvdHRvbS13aWR0aDogMXB4Ow0KICAgIG9wYWNpdHk6IDE7DQogICAgcGFkZGluZzogNXB4Ow0KfQ0KDQouYWNjb3JkaW9uLXBhZ2U6ZXhwYW5kZWQgew0KICAgIGFuaW1hdGlvbjogYWNjb3JkaW9uQW5pbWF0ZUV4cGFuZCAwLjNzIGVhc2UgMHMgMTsNCn0NCg0KLmFjY29yZGlvbi1wYWdlOmNvbGxhcHNlZCB7DQogICAgYW5pbWF0aW9uOiBhY2NvcmRpb25BbmltYXRlQ29sbHBhc2UgMC4zcyBlYXNlIDBzIDE7DQp9DQoNCkBrZXlmcmFtZXMgYWNjb3JkaW9uQW5pbWF0ZUV4cGFuZCB7DQogICAgMCUgew0KICAgICAgICBvcGFjaXR5OiAwOw0KICAgICAgICBoZWlnaHQ6IDAlOw0KICAgIH0NCiAgICAxMDAlIHsNCiAgICAgICAgb3BhY2l0eTogMTsNCiAgICAgICAgaGVpZ2h0OiAxMDAlOw0KICAgIH0NCn0NCg0KQGtleWZyYW1lcyBhY2NvcmRpb25BbmltYXRlQ29sbHBhc2Ugew0KICAgIDAlIHsNCiAgICAgICAgb3BhY2l0eTogMTsNCiAgICAgICAgaGVpZ2h0OiAxMDAlOw0KICAgIH0NCiAgICAxMDAlIHsNCiAgICAgICAgb3BhY2l0eTogMDsNCiAgICAgICAgaGVpZ2h0OiAwJTsNCiAgICB9DQp9DQoNCi5hY2NvcmRpb24tcGFnZSAuc2Nyb2xsdmlldyB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIHBhZGRpbmctdG9wOiAwOw0KICAgIHBhZGRpbmctcmlnaHQ6IDA7DQogICAgcGFkZGluZy1sZWZ0OiAwOw0KICAgIHBhZGRpbmctYm90dG9tOiAwOw0KfQ0K"},{ name : "haxeui-core/styles/dark/switches.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogU1dJVENIIChERUZBVUxUKQ0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5zd2l0Y2ggew0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGhlaWdodDogYXV0bzsNCiAgICBob3Jpem9udGFsLXNwYWNpbmc6IDVweDsNCn0NCg0KLnN3aXRjaC1sYWJlbCB7DQogICAgY29sb3I6IGJsYWNrOw0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQp9DQoNCi5zd2l0Y2gtYnV0dG9uLXN1YiB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGZpbHRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiBub25lOw0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQogICAgcGFkZGluZzogMHB4Ow0KICAgIGluaXRpYWwtaGVpZ2h0OiAyMHB4Ow0KICAgIGluaXRpYWwtd2lkdGg6IDQwcHg7DQp9DQoNCi5zd2l0Y2gtYnV0dG9uLXN1Yi1leHRyYSB7DQogICAgaGVpZ2h0OiAxNHB4Ow0KICAgIHdpZHRoOiAxMDAlOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyNTI3Mjg7DQogICAgYm9yZGVyOiAxcHggc29saWQgIzE4MWExYjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGJvcmRlci1yYWRpdXM6IDEwcHg7DQogICAgZmlsdGVyOiBkcm9wLXNoYWRvdygxLCA0NSwgIzAwMDAwMCwgMC4yLCAyLCAyLCAxLCAzLCB0cnVlKTsNCn0NCg0KLnN3aXRjaC1idXR0b24tc3ViIC5idXR0b24gew0KICAgIHdpZHRoOiAyMHB4Ow0KICAgIGhlaWdodDogMjBweDsNCiAgICBib3JkZXItcmFkaXVzOiA1MHB4Ow0KICAgIGZpbHRlcjogZHJvcC1zaGFkb3coMSwgNDUsICMwMDAwMDAsIDAuMiwgMCwgMCwgMCwgMywgZmFsc2UpOw0KfQ0KDQpAa2V5ZnJhbWVzIHN3aXRjaEFuaW1hdGVTZWxlY3RlZCB7DQogICAgMCUgew0KICAgICAgICBwb3M6IDA7DQogICAgfQ0KICAgIDEwMCUgew0KICAgICAgICBwb3M6IDEwMDsNCiAgICB9DQp9DQoNCi5zd2l0Y2gtYnV0dG9uLXN1YjpzZWxlY3RlZCB7DQogICAgYW5pbWF0aW9uOiBzd2l0Y2hBbmltYXRlU2VsZWN0ZWQgMC4ycyBlYXNlIDBzIDE7DQp9DQogDQouc3dpdGNoLWJ1dHRvbi1zdWI6dW5zZWxlY3RlZCB7DQogICAgYW5pbWF0aW9uOiBzd2l0Y2hBbmltYXRlU2VsZWN0ZWQgMC4ycyBlYXNlIDBzIDEgcmV2ZXJzZSBiYWNrd2FyZHM7DQp9DQoNCg0KQGtleWZyYW1lcyBzd2l0Y2hBbmltYXRlRXh0cmFTZWxlY3RlZCB7DQogICAgMCUgew0KICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjUyNzI4Ow0KICAgIH0NCiAgICAxMDAlIHsNCiAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogIzQxNTk4MjsNCiAgICB9DQp9DQoNCi5zd2l0Y2gtYnV0dG9uLXN1Yi1leHRyYTpzZWxlY3RlZCB7DQogICAgYW5pbWF0aW9uOiBzd2l0Y2hBbmltYXRlRXh0cmFTZWxlY3RlZCAwLjJzIGVhc2UgMHMgMTsNCn0NCg0KLnN3aXRjaC1idXR0b24tc3ViLWV4dHJhOnVuc2VsZWN0ZWQgew0KICAgIGFuaW1hdGlvbjogc3dpdGNoQW5pbWF0ZUV4dHJhU2VsZWN0ZWQgMC4ycyBlYXNlIDBzIDEgcmV2ZXJzZSBiYWNrd2FyZHM7DQp9DQo"},{ name : "styles/native/main.css", data : "LmJ1dHRvbiB7DQp9DQoNCi50YWJiYXItYnV0dG9uLCAubWVudWJhci1idXR0b24sIC50YWJiYXIgLmJ1dHRvbiB7DQogICAgbmF0aXZlOiBmYWxzZTsNCn0NCg0KLnN3aXRjaCAuYnV0dG9uIHsNCiAgICBuYXRpdmU6IGZhbHNlOw0KfQ0KDQoudGFiYmFyLWJ1dHRvbiB7DQogICAgYm9yZGVyLXJhZGl1czogMHB4Ow0KICAgIGJhY2tncm91bmQ6ICNFREVERUQgI0U2RTZFNjsNCiAgICBwYWRkaW5nOiA2cHg7DQogICAgdmVydGljYWwtYWxpZ246IGJvdHRvbTsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjQUJBQkFCOw0KfQ0KDQoudGFiYmFyLWJ1dHRvbjpkb3duIHsNCn0NCg0KLnRhYmJhci1idXR0b24tc2VsZWN0ZWQsIC50YWJiYXItYnV0dG9uLXNlbGVjdGVkOmhvdmVyLCAudGFiYmFyLWJ1dHRvbi1zZWxlY3RlZDpkb3duIHsNCiAgICBib3JkZXItcmFkaXVzOiAwcHg7DQoNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjQUJBQkFCOw0KICAgIGJvcmRlci1ib3R0b20td2lkdGg6IDFweDsNCiAgICBib3JkZXItYm90dG9tLWNvbG9yOiB3aGl0ZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiB3aGl0ZTsNCn0NCg0KLnRhYmxldmlldyAuaGVhZGVyIHsNCiAgICBtYXJnaW4tdG9wOiAwcHg7DQogICAgbWFyZ2luLWxlZnQ6IDBweDsNCn0"},{ name : "haxeui-core/styles/dark/textinputs.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogVEVYVCBGSUVMRA0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi50ZXh0ZmllbGQgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyNTI3Mjg7DQogICAgY29sb3I6ICNiNGI0YjQ7DQogICAgYm9yZGVyOiAxcHggc29saWQgIzE4MWExYjsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQogICAgcGFkZGluZzogNXB4IDVweDsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjMDAwMDAwLCAwLjIsIDIsIDIsIDEsIDMsIHRydWUpOw0KICAgIGluaXRpYWwtd2lkdGg6IDE1MHB4Ow0KICAgIGhlaWdodDogYXV0bzsNCiAgICBzcGFjaW5nOiA1cHg7DQogICAgaWNvbi1wb3NpdGlvbjogcmlnaHQ7DQp9DQoNCi50ZXh0ZmllbGQ6YWN0aXZlIHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjNDE1OTgyOw0KfQ0KDQoudGV4dGZpZWxkOmVtcHR5IHsNCiAgICBjb2xvcjogIzQ0NDQ0NDsNCn0NCg0KLnRleHRmaWVsZDpkaXNhYmxlZCB7DQogICAgY29sb3I6ICM1OTU5NTk7DQogICAgYmFja2dyb3VuZDogIzJjMmYzMCAjMmMyZjMwIHZlcnRpY2FsOw0KfQ0KDQovKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqDQoqKiBURVhUIEFSRUENCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoudGV4dGFyZWEgew0KICAgIGNvbG9yOiAjYjRiNGI0Ow0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQogICAgYm9yZGVyLXJhZGl1czogMnB4Ow0KICAgIHBhZGRpbmc6IDFweDsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjMDAwMDAwLCAwLjIsIDIsIDIsIDEsIDMsIHRydWUpOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyNTI3Mjg7DQogICAgaW5pdGlhbC13aWR0aDogMTUwcHg7DQogICAgaW5pdGlhbC1oZWlnaHQ6IDEwMHB4Ow0KfQ0KDQoudGV4dGFyZWE6YWN0aXZlIHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjNDE1OTgyOw0KfQ0KDQoudGV4dGFyZWE6ZW1wdHkgew0KICAgIGNvbG9yOiAjNDQ0NDQ0Ow0KfQ0KDQoudGV4dGFyZWE6ZGlzYWJsZWQgew0KICAgIGNvbG9yOiAjNTk1OTU5Ow0KICAgIGJhY2tncm91bmQ6ICMyYzJmMzAgIzJjMmYzMCB2ZXJ0aWNhbDsNCn0NCg"},{ name : "haxeui-core/styles/dark/down_arrow_square.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAIAAABLMMCEAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAMUlEQVQImWN8K6PCgAGYMIUYGBgYt2zZgkWtZUYBmpBlRgEThEIWQpgL4cClGbG6AQAStwro4kB3hAAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/default/dialogs/question.png", data : "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAC/VBMVEUAAABQUFBSUlIoKCi+vr7a2urJycm7u8jV1dUHBwcbGxx4eHg+Pj5UVFReXl5AQEBLS0tQUFBOTk5QUFAhISFRUVEiIiLi4uPZ2di8vL2fn5+Xl5fOztnc3NzOztrPz9/g4ODExNLa2tq5ub+NjZicnJy5ublxcXl/f4JubnRPT1Vzc3dHR0toaGp7e3uKiooHBwc8PDxBQUE9PT1DQ0NYWFhVVVUiIiIHBwcaGhpVVVUrKysNDQ05OTkzMzNLS0sUFBRUVFQvLy8ICAg3NzcQEBDKytPHx9HU1NPJycnExMTOzs7FxcS2tr3Pz8/IyMe4uLmtra/CwsG0tLSQkJKpqamTk5OTk5NXV1pWVln///81YdozXdM7aekwWMw4ZeHc3NxGaM49be9Ja9FEZswtVMVAcPXT09IrUL9Cc/rW1tZIas4oTbgsT7cmSbPY2eZafN5TddzZ2dlOcNfCx9ZBZMpBYsfCwsKAkMI1V742V7ooTLQ+b/Jvku7g4O1sj+3c3Ophg+JbfeA1Yt1Rc9c0X9XQ0NAzXM/Ozs0xWMjExMXCwsUxVsIvVMAjRq57nfd2mPXu7u7k5O5gguU5Z+VegOBXed/X19dNb9RLbdLLy9BPb82Wo8ySn8mzuMiFlcc4W8RZc8EsUcAsUbwxU7r7/P6Epv3m6vfg5fZ0l/Lr6+vo6Ohgg+iqueantuPX1+HT1d/Cx9/e3t7Axd5Aat7OztaUpNNmgtK3vNCxuNCcqdBshdBMbdB2jM/IyM5WdM6Nns02XMoqVMo8YMlKashuhMc1WsYvVsZgeMBmfL+/v75FY74vU70hSr1SbLwoTbpBX7kwUrY0VLVWbLMWOZ8fPZgKK47t8fp9n/na4PPK0/BoiuxmiOlmiOc/a+ObreGJn+DJz96crN7S0txaedk+Z9i9w9W8wdWdq9Ree9OlsNF8ktBBZ9CZpsy4vcukrsovVsnGxsiOnMYtVcZsgsU6XsWus8KGlMB7jMBsgLw5WLZCW6hCW6clRaYkRaZYIOnQAAAAWnRSTlMAB0QJ/v7+5d6KhYRyZ2VgSi4lDAwBAf7276Sa+fb29PDs5ubNwby4rqqpp5qZko13dXBtamlhXVxXVlJQTEU+PDs2MioQ9fX08fHn5+Pg4N/f3t7Cv6aakpIMnnIpAAADAUlEQVQ4y2IgATAKMVmZ8fKaWTEJMWKRFnbk01fjUBAXV+BQ0+dzFEaTFhXkk1LalAAFm5Sk+ARFUUxn4uZIKCrZtnt/dvb+3dtKihI4uJkYkeQFpGWnl+zd01Tbv2xZf23Tnr0l0yWkBeAqRJmkZdN3zW68MaF+8rTCptsT+qfO3pUuEc4Es0WQW6LtQPbKlWsKH9y6vnTF2idrauuzD6R7cAtC3Q+QqV/HnOwJd5qm3Y8CgxUt0ybXJ77t8DeF+MVeqm3ekdrJhYWFL5dCVKwrbiloPPKuI8we7EJe764vBXeLgWDmurXbty+PirqZMmNmQctRNh9ekDuF9Dq+ldXPSAaBlMTk5EdRUcvLgOyCsnlsekJABQKh5RUzpiZCQOmCJTunZ73Py11SmVg6v1xVAKiAP+jUwoKZKUBQWpnb1/e9LT3rZHUuUEXZifJgfqACE0+W042JIOnqvLy8n0D5nUD5xWcqy06XS5oAFRixsVQ1pqQsOJ8DBL9mpWeVVJ1fvPhMb8/hqi4WI6ACgHiACqaW9mSAwY/0rKJzixYt6u3tASvgASow9jp1oaUzFQLmZhU9y0hN/Xz8eGfnwQtdksYgRwaUn3vTHgcGHz4VJbxKhbDbjy3sDgQ50la1u2LB0xgIyMnLy4EyW3vnd4fYAhW46H6cd3FLNAS0HvvaDmNe3NGt6wJUwMwjue/EwXvxINB8VHz1i5h4MOg8OUuZhxkUGXYas3Zc2hILAu0bVq+aOBvMbL70fJ+GHTg2RQyVt86tjk0CguiHqyZOzAaxplTP2eprKAJJEIA5Rbg9ruibkpaWVrMwf9LrWCBjSt/8De6RTtAUJWatLbN+7r9DNZmZadGtQLLm0N8562W0rcVgiZLZXFMuf/PlK2ebkzIzk5rPXrm8MV9O0xzoQrgKSx32/IbNFX+uXrt29XfFxoZ8dh1LiDzMFgcudUXWhrq6SZPq6hpYFdW5HMTQ8parDZeWCrs8K6s8u4oWl40rAyYQcbYw4AQCAwtnERLyPAC79kQQQ6yMVwAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/default/menus.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogTUVOVUJBUg0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5tZW51YmFyIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRUVFRUVFOw0KICAgIHBhZGRpbmc6IDVweDsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1jb2xvcjogI0FCQUJBQjsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDIsIDQ1LCAjMDAwMDAwLCAwLjE1LCA2LCAxLCAzMCwgMzUsIGZhbHNlKTsNCn0NCg0KLm1lbnViYXItYnV0dG9uIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRUVFRUVFOw0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBjb2xvcjogIzY2NjY2NjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KfQ0KDQoubWVudWJhci1idXR0b246aG92ZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNDQ0NDQ0M7DQogICAgY29sb3I6ICM0NDQ0NDQ7DQp9DQoNCi5tZW51YmFyLWJ1dHRvbjpkb3duIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiB3aGl0ZTsNCiAgICBjb2xvcjogYmxhY2s7DQogICAgYm9yZGVyOiAxcHggc29saWQgI0FCQUJBQjsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAwcHg7DQogICAgYm9yZGVyLWJvdHRvbS1zaXplOiAwcHg7DQp9DQoNCi5tZW51YmFyLWJ1dHRvbi1uby1jaGlsZHJlbiB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0VFRUVFRTsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgY29sb3I6ICM2NjY2NjY7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCn0NCg0KLm1lbnViYXItYnV0dG9uLW5vLWNoaWxkcmVuOmhvdmVyIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjQ0NDQ0NDOw0KICAgIGNvbG9yOiAjNDQ0NDQ0Ow0KfQ0KDQoubWVudWJhci1idXR0b24tbm8tY2hpbGRyZW46ZG93biB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQogICAgY29sb3I6IGJsYWNrOw0KICAgIGJvcmRlcjogMXB4IHNvbGlkICNBQkFCQUI7DQp9DQoNCi5tZW51YmFyLWJ1dHRvbi1uby1jaGlsZHJlbi1hY3RpdmUgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNFRUVFRUU7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGNvbG9yOiAjNjY2NjY2Ow0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQp9DQoNCi5tZW51YmFyLWJ1dHRvbi1uby1jaGlsZHJlbi1hY3RpdmU6aG92ZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6IHdoaXRlOw0KICAgIGNvbG9yOiBibGFjazsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjQUJBQkFCOw0KfQ0KDQoubWVudWJhci1idXR0b24tbm8tY2hpbGRyZW4tYWN0aXZlOmRvd24gew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNDQ0NDQ0M7DQogICAgY29sb3I6ICM0NDQ0NDQ7DQogICAgYm9yZGVyOiBub25lOw0KfQ0KDQovKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqDQoqKiBNRU5VDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLm1lbnUgew0KICAgIGJhY2tncm91bmQtY29sb3I6IHdoaXRlOw0KICAgIHBhZGRpbmc6IDFweDsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjQUJBQkFCOw0KICAgIGZpbHRlcjogZHJvcC1zaGFkb3coMiwgNDUsICMwMDAwMDAsIDAuMTUsIDYsIDEsIDMwLCAzNSwgZmFsc2UpOw0KICAgIHNwYWNpbmc6IDA7DQogICAgd2lkdGg6IDIwMHB4Ow0KfQ0KDQoubWVudS5leHBhbmRlZCB7DQogICAgYm9yZGVyLXRvcC13aWR0aDogMHB4Ow0KICAgIGJvcmRlci10b3Atc2l6ZTogMHB4Ow0KfQ0KDQoubWVudS1maWxsZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNBQkFCQUI7DQogICAgaGVpZ2h0OiAxcHg7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIE1FTlVJVEVNUw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5tZW51aXRlbSB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQogICAgd2lkdGg6IDEwMCU7DQogICAgcGFkZGluZzogNXB4Ow0KICAgIGN1cnNvcjogcG9pbnRlcjsNCn0NCg0KLm1lbnVpdGVtLWxhYmVsLCAubWVudWl0ZW0tY2hlY2tib3gsIC5tZW51aXRlbS1vcHRpb25ib3gsIC5tZW51aXRlbS1zaG9ydGN1dC1sYWJlbCB7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCn0NCg0KLm1lbnVpdGVtLXNob3J0Y3V0LWxhYmVsIHsNCiAgICB0ZXh0LWFsaWduOiByaWdodDsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGhvcml6b250YWwtYWxpZ246IHJpZ2h0Ow0KfQ0KDQoubWVudWl0ZW0taWNvbiB7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCn0NCg0KLm1lbnVpdGVtOmhvdmVyLCAubWVudWl0ZW06c2VsZWN0ZWQgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNkOWU1ZjI7DQp9DQoNCi5tZW51aXRlbSAubGFiZWw6aG92ZXIsIC5tZW51aXRlbSAubGFiZWw6c2VsZWN0ZWQgew0KICAgIGNvbG9yOiAjMjIyMjIyOw0KfQ0KDQoubWVudWl0ZW0tZXhwYW5kYWJsZSB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9yaWdodF9hcnJvdy5wbmciOw0KICAgIHZlcnRpY2FsLWFsaWduOiAiY2VudGVyIjsNCn0NCg0KLm1lbnVzZXBhcmF0b3Igew0KICAgIGhlaWdodDogMXB4Ow0KICAgIHdpZHRoOiAxMDAlOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICNBQkFCQUI7DQogICAgaG9yaXpvbnRhbC1hbGlnbjogImNlbnRlciI7DQp9DQo"},{ name : "haxeui-core/styles/dark/left_arrow.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAIAAACgB3uHAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAANklEQVQImWN8K6PCwMDAwMBwfMYEJjiLgYGBCc5iYGBg3LJlCwMMMFlmFCA4DAwMcD7UAAgfAK7lDFY1UPqoAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/check.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH5QITChsNaCG5cQAAAS5JREFUKM+NkDFLw1AUhb/3DG0Q6pBOdSgI4tBRsaCTP0EcHeSBEpAQkt2lggiKUGg6WMRVhGziILg4CRUnh+KibiVLl06lmPdcglRsrXe5nMP9uJwj+Md4nrckpVwvFotX1rRj3/fnhBD3QLnX6yGnAVLKU6AMDIGnP4EwDDeMMW4mj6Io6kwEXNedTdP0AhDAi+M4JwATM9i2fQwsAp9a691arTYEsIIgWDXG3Akhbrrd7l4cx2kYhmtaaz9jz5rN5vN3JmPMAuAYY1SpVDpXStla60tAAq/9fv9w9PNMu93uVKvVeSHECrCcz+e3gAqggc1Wq/XxozXAJEmyD1xnXiXbUaPRePxVM0Acx+lgMNgBbjP/LZfLHYwrQ4wKpZRdKBS2Lct6qNfr7+OAL7OwYq6nyWzXAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/dark/scrollbars.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogU0NST0xMDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLnNjcm9sbCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzJjMmYzMDsNCn0NCg0KLnNjcm9sbCAuYnV0dG9uIHsNCiAgICBib3JkZXItcmFkaXVzOiAwOw0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMmMyZjMwOw0KICAgIHBhZGRpbmc6IDA7DQogICAgZmlsdGVyOiBub25lOw0KfQ0KDQouc2Nyb2xsIC5idXR0b246aG92ZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICM0NTQ4NGE7DQp9DQoNCi5zY3JvbGwgLmJ1dHRvbjpkb3duIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjNDU0ODRhOw0KICAgIGZpbHRlcjogbm9uZTsNCn0NCg0KLnNjcm9sbCAuZGVpbmMgew0KICAgIGhlaWdodDogMTdweDsNCiAgICB3aWR0aDogMTdweDsNCiAgICBvcGFjaXR5OiAxOw0KfQ0KDQouc2Nyb2xsIGRlaW5jOmRpc2FibGVkIHsNCiAgICBvcGFjaXR5OiAwLjU7DQp9DQoNCi5zY3JvbGwgZGVpbmM6ZG93biB7DQp9DQoNCi5zY3JvbGwgLmluYyB7DQogICAgaGVpZ2h0OiAxN3B4Ow0KICAgIHdpZHRoOiAxN3B4Ow0KICAgIG9wYWNpdHk6IDE7DQp9DQoNCi5zY3JvbGwgLmluYzpkaXNhYmxlZCB7DQogICAgb3BhY2l0eTogMC41Ow0KfQ0KDQouc2Nyb2xsIC5pbmM6ZG93biB7DQp9DQoNCi5zY3JvbGwgLnRodW1iIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjM2Q0MDQyOw0KfQ0KDQouc2Nyb2xsIC50aHVtYjpob3ZlciB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzQ1NDg0YTsNCn0NCg0KLnNjcm9sbCAudGh1bWI6ZG93biB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzQ1NDg0YTsNCn0NCg0KLnNjcm9sbCAudGh1bWI6ZGlzYWJsZWQgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICMzMzM3Mzg7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIFZFUlRJQ0FMIFNDUk9MTA0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi52ZXJ0aWNhbC1zY3JvbGwgLmRlaW5jIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RhcmsvdXBfYXJyb3cucG5nIjsNCn0NCg0KLnZlcnRpY2FsLXNjcm9sbCAuZGVpbmM6ZG93biB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kYXJrL3VwX2Fycm93X3doaXRlLnBuZyI7DQp9DQoNCi52ZXJ0aWNhbC1zY3JvbGwgLmluYyB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kYXJrL2Rvd25fYXJyb3cucG5nIjsNCn0NCg0KLnZlcnRpY2FsLXNjcm9sbCAuaW5jOmRvd24gew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGFyay9kb3duX2Fycm93X3doaXRlLnBuZyI7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIEhPUklaT05UQUwgU0NST0xMDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmhvcml6b250YWwtc2Nyb2xsIHsNCiAgICBoZWlnaHQ6IDE3cHg7DQp9DQoNCi5ob3Jpem9udGFsLXNjcm9sbCAudGh1bWIgew0KICAgIHdpZHRoOiAxN3B4Ow0KICAgIGhlaWdodDogMTdweDsNCn0NCg0KLmhvcml6b250YWwtc2Nyb2xsIC5kZWluYyB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kYXJrL2xlZnRfYXJyb3cucG5nIjsNCn0NCg0KLmhvcml6b250YWwtc2Nyb2xsIC5kZWluYzpkb3duIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RhcmsvbGVmdF9hcnJvd193aGl0ZS5wbmciOw0KfQ0KDQouaG9yaXpvbnRhbC1zY3JvbGwgLmluYyB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kYXJrL3JpZ2h0X2Fycm93LnBuZyI7DQp9DQoNCi5ob3Jpem9udGFsLXNjcm9sbCAuaW5jOmRvd24gew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGFyay9yaWdodF9hcnJvd193aGl0ZS5wbmciOw0KfQ0K"},{ name : "haxeui-core/styles/default/option.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D+PAAAAQlBMVEVYWGzW/9EAAACYtdLCqYPP6PTU////9KxYWFhUVlhXVVJ4rthXkMHs1Kxsj6lSYXvElmdYWGeefViUXFhfUVNWUk58LX/QAAAACHRSTlMnCADr69QWFksN2hQAAAA8SURBVAjXY2BiZxDi5OBjYGNiYGTh4OTg4BJkZmTgFeEAA35WBgFOCFOUm0EYyuTiQWYiFCBrQxiGZAUAvXcDb/w8amgAAAAASUVORK5CYII"},{ name : "haxeui-core/styles/default/optionboxes.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogT1BUSU9OQk9YDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLm9wdGlvbmJveCB7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KICAgIGhvcml6b250YWwtc3BhY2luZzogNHB4Ow0KICAgIGN1cnNvcjogcG9pbnRlcjsNCiAgICBjb2xvcjogIzAwMDAwMDsNCn0NCg0KLm9wdGlvbmJveDpob3ZlciB7DQp9DQoNCi5vcHRpb25ib3g6ZGlzYWJsZWQgew0KICAgIGN1cnNvcjogZGVmYXVsdDsNCiAgICBjb2xvcjogIzkwOTA5MDsNCn0NCg0KLm9wdGlvbmJveC12YWx1ZSB7DQogICAgYm9yZGVyOiAxcHggc29saWQgI0FCQUJBQjsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRkZGRkZGOw0KICAgIHdpZHRoOiAxNnB4Ow0KICAgIGhlaWdodDogMTZweDsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGJvcmRlci1yYWRpdXM6IDE4cHg7DQogICAgaWNvbjogbm9uZTsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjODg4ODg4LCAwLjIsIDIsIDIsIDEsIDMsIHRydWUpOw0KICAgIHBhZGRpbmctdG9wOiAxcHg7DQogICAgY3Vyc29yOiBwb2ludGVyOw0KfQ0KDQoub3B0aW9uYm94LXZhbHVlOmhvdmVyIHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjMjE2QUFFOw0KfQ0KDQoub3B0aW9uYm94LXZhbHVlOnNlbGVjdGVkIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvb3B0aW9uLnBuZyI7DQp9DQoNCi5vcHRpb25ib3gtdmFsdWU6ZGlzYWJsZWQgew0KICAgIGJhY2tncm91bmQ6ICNENEQ0RDQgI0NDQ0NDQyB2ZXJ0aWNhbDsNCiAgICBjdXJzb3I6IGRlZmF1bHQ7DQp9DQoNCi5vcHRpb25ib3gtbGFiZWwgew0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQogICAgY3Vyc29yOiBwb2ludGVyOw0KfQ0KDQoub3B0aW9uYm94LWljb24gew0KICAgIGhvcml6b250YWwtYWxpZ246IGNlbnRlcjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGN1cnNvcjogcG9pbnRlcjsNCiAgICBvcGFjaXR5OiAxOw0KfQ0KDQoub3B0aW9uYm94LWljb246ZGlzYWJsZWQgew0KICAgIGN1cnNvcjogZGVmYXVsdDsNCiAgICBvcGFjaXR5OiAwLjU7DQp9DQo"},{ name : "haxeui-core/styles/default/calendars.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogQ0FMRU5EQVINCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQouY2FsZW5kYXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNGRkZGRkY7DQogICAgcGFkZGluZzogNXB4Ow0KICAgIGJvcmRlcjogMXB4IHNvbGlkICNBQkFCQUI7DQogICAgYm9yZGVyLXJhZGl1czogMXB4Ow0KfQ0KDQouY2FsZW5kYXIgLmJ1dHRvbiB7DQogICAgcGFkZGluZzogOHB4Ow0KfQ0KDQouY2FsZW5kYXIgLmNhbGVuZGFyLW9mZi1kYXkgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiB3aGl0ZTsNCiAgICBjdXJzb3I6IGRlZmF1bHQ7DQp9DQoNCi5jYWxlbmRhciAuY2FsZW5kYXItZGF5IHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI2VjZjJmOTsNCn0NCg0KLmNhbGVuZGFyIC5jYWxlbmRhci1kYXk6aG92ZXIgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjYTdjNGUyOw0KfQ0KDQouY2FsZW5kYXIgLmNhbGVuZGFyLWRheS1zZWxlY3RlZCB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICNhN2M0ZTI7DQogICAgY29sb3I6IHdoaXRlOw0KfQ0KDQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIENBTEVOREFSVklFVw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5jYWxlbmRhci12aWV3IHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRkZGRkZGOw0KICAgIHBhZGRpbmc6IDVweDsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjQUJBQkFCOw0KICAgIGJvcmRlci1yYWRpdXM6IDFweDsNCn0NCg0KLmNhbGVuZGFyLXZpZXcgLmNhbGVuZGFyIHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgcGFkZGluZzogMHB4Ow0KfQ0KDQouY2FsZW5kYXItdmlldyAuaGJveCB7DQoJc3BhY2luZzogMDsNCn0NCg0KLmNhbGVuZGFyLXZpZXcgI3ByZXYtbW9udGggew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9sZWZ0X2Fycm93LnBuZyI7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQp9DQoNCi5jYWxlbmRhci12aWV3ICNuZXh0LW1vbnRoIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvcmlnaHRfYXJyb3cucG5nIjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiB3aGl0ZTsNCn0NCg0KLmNhbGVuZGFyLXZpZXcgI2N1cnJlbnQtbW9udGggew0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQp9DQoNCi5jYWxlbmRhci12aWV3ICNjdXJyZW50LXllYXIgew0KICAgIHRleHQtYWxpZ246IHJpZ2h0Ow0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQoJYm9yZGVyOiBub25lOw0KCXBhZGRpbmctdG9wOiAxcHg7DQoJYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQp9DQouY2FsZW5kYXItdmlldyAjY3VycmVudC15ZWFyIC5idXR0b24gew0KCWJhY2tncm91bmQtY29sb3I6IHdoaXRlOw0KCWJvcmRlcjogbm9uZTsNCn0NCg"},{ name : "haxeui-core/styles/dark/buttons.css", data : "LmJ1dHRvbiB7DQogICAgYmFja2dyb3VuZDogIzNlNDE0MiAjMzYzODNhOw0KICAgIGJvcmRlci1jb2xvcjogIzE4MWExYjsNCiAgICBjb2xvcjogI2I0YjRiNDsNCn0NCg0KLmJ1dHRvbjpob3ZlciB7DQogICAgYmFja2dyb3VuZDogIzQzNDY0NyAjMzkzYjNjOw0KICAgIGJvcmRlci1jb2xvcjogIzE4MWExYjsNCiAgICBjb2xvcjogI2Q0ZDRkNDsNCn0NCg0KLmJ1dHRvbjpkb3duIHsNCiAgICBiYWNrZ3JvdW5kOiAjMmYzMTMyICMyNzI5MmE7DQogICAgYm9yZGVyLWNvbG9yOiAjMTgxYTFiOw0KICAgIGNvbG9yOiAjZDRkNGQ0Ow0KfQ0KDQouYnV0dG9uOmRpc2FibGVkIHsNCiAgICBjb2xvcjogIzU5NTk1OTsNCiAgICBjdXJzb3I6IGRlZmF1bHQ7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIEJVVFRPTiBCQVJTDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmJ1dHRvbi1iYXIgew0KICAgIHNwYWNpbmc6IDA7DQp9DQoNCi5idXR0b24tYmFyIC5idXR0b24gew0KICAgIGJvcmRlci1yYWRpdXM6IDA7DQogICAgYm9yZGVyLWNvbG9yOiAjMTgxYTFiOw0KfQ0KDQouYnV0dG9uLWJhciAuYnV0dG9uOmRvd24gew0KICAgIGJhY2tncm91bmQtY29sb3I6ICM0MTU5ODI7DQogICAgY29sb3I6IHdoaXRlOw0KfQ0KDQouaG9yaXpvbnRhbC1idXR0b24tYmFyIC5idXR0b24gew0KICAgIGJvcmRlci1sZWZ0LXNpemU6IDA7DQp9DQoNCi5ob3Jpem9udGFsLWJ1dHRvbi1iYXIgLmJ1dHRvbi5maXJzdCB7DQogICAgYm9yZGVyLWxlZnQtc2l6ZTogMTsNCn0NCg0KLnZlcnRpY2FsLWJ1dHRvbi1iYXIgLmJ1dHRvbiB7DQogICAgYm9yZGVyLXRvcC1zaXplOiAwOw0KfQ0KDQoudmVydGljYWwtYnV0dG9uLWJhciAuYnV0dG9uLmZpcnN0IHsNCiAgICBib3JkZXItdG9wLXNpemU6IDE7DQp9DQo"},{ name : "haxeui-core/styles/dark/right_arrow_square.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAIAAABLMMCEAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAMUlEQVQImWN8K6PCwMBwfMYEy4wCBhhggrOOz5iARRRZAkUULoEuCjGdCVMIRRTZDQD4NA07+SZ5fAAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/dark/splitters.css", data : "LnNwbGl0dGVyIHsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQoudmVydGljYWwtc3BsaXR0ZXItZ3JpcHBlciB7DQogICAgd2lkdGg6IDEwMCU7DQogICAgaGVpZ2h0OiA2cHg7DQogICAgY3Vyc29yOiByb3ctcmVzaXplOw0KICAgIF9fYmFja2dyb3VuZC1jb2xvcjogI0VFRUVFRTsNCn0NCg0KLnZlcnRpY2FsLXNwbGl0dGVyLWdyaXBwZXI6aG92ZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNEREREREQ7DQp9DQoNCi52ZXJ0aWNhbC1zcGxpdHRlci1ncmlwcGVyIC5pbWFnZSB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9zaXplcl9ncmlwcGVyX2hvcml6b250YWwucG5nIjsNCiAgICBob3Jpem9udGFsLWFsaWduOiBjZW50ZXI7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCn0NCg0KLmhvcml6b250YWwtc3BsaXR0ZXItZ3JpcHBlciB7DQogICAgd2lkdGg6IDZweDsNCiAgICBoZWlnaHQ6IDEwMCU7DQogICAgY3Vyc29yOiBjb2wtcmVzaXplOw0KICAgIF9fYmFja2dyb3VuZC1jb2xvcjogI0VFRUVFRTsNCn0NCg0KLmhvcml6b250YWwtc3BsaXR0ZXItZ3JpcHBlcjpob3ZlciB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0RERERERDsNCn0NCg0KLmhvcml6b250YWwtc3BsaXR0ZXItZ3JpcHBlciAuaW1hZ2Ugew0KICAgIHJlc291cmNlOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvc2l6ZXJfZ3JpcHBlcl92ZXJ0aWNhbC5wbmciOw0KICAgIGhvcml6b250YWwtYWxpZ246IGNlbnRlcjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KfQ0K"},{ name : "haxeui-core/styles/default/haxeui_tiny.png", data : "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAwFBMVEUAAAA+drJml8uevd7K2+1Ee7c1aaBcjsWfv99RhsA7cKqfvt/J2e01aaHJ3Ow1Z56kweGsxuM5cKxzoM9PhMCnxOJBd7SBqdSTtNp6otG90ui2zeetx+RFerM1a6Rllsiow+JDe7qhvt9jlsqfvt9dj8SzzOaoxeJCd7A5bqhVicKAqdOev95ik8SsyOOivuCmw99ThcJ4pNCnv99kl8tomc1+p9RRiMSUtts8drV0oNFdkcibu96IrtdOhL9Cerg7AHaNAAAANXRSTlMASfTz8fHx5uTh4d/T00RE9PLy8fHw5+bl4uHh4eHh39bW0NC/v7m5ubm4tVROSkpIR0ZAQIt9oOEAAACUSURBVBjTRc1FEsMwEETRjpkdZmZmS5FD979VRjVVce/e3zS8MGyMz6DdpuV2x0X/QTPn++uu9pRSDtAl0wRJL4DFzjIuDqIXm8snRlJhc7FTYMnmsgZwZHMpUTjlRZA6rET+t9oAiSl0YatqiugtqLBpMSyyLmzloCe4sNUQnpaxOFy29S+FAK2Rb0/0G+4zw/WbP+FUKshItzNPAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/splitters.css", data : "LnNwbGl0dGVyIHsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQoudmVydGljYWwtc3BsaXR0ZXItZ3JpcHBlciB7DQogICAgd2lkdGg6IDEwMCU7DQogICAgaGVpZ2h0OiA2cHg7DQogICAgY3Vyc29yOiByb3ctcmVzaXplOw0KICAgIF9fYmFja2dyb3VuZC1jb2xvcjogI0VFRUVFRTsNCn0NCg0KLnZlcnRpY2FsLXNwbGl0dGVyLWdyaXBwZXI6aG92ZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNEREREREQ7DQp9DQoNCi52ZXJ0aWNhbC1zcGxpdHRlci1ncmlwcGVyIC5pbWFnZSB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9zaXplcl9ncmlwcGVyX2hvcml6b250YWwucG5nIjsNCiAgICBob3Jpem9udGFsLWFsaWduOiBjZW50ZXI7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCn0NCg0KLmhvcml6b250YWwtc3BsaXR0ZXItZ3JpcHBlciB7DQogICAgd2lkdGg6IDZweDsNCiAgICBoZWlnaHQ6IDEwMCU7DQogICAgY3Vyc29yOiBjb2wtcmVzaXplOw0KICAgIF9fYmFja2dyb3VuZC1jb2xvcjogI0VFRUVFRTsNCn0NCg0KLmhvcml6b250YWwtc3BsaXR0ZXItZ3JpcHBlcjpob3ZlciB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0RERERERDsNCn0NCg0KLmhvcml6b250YWwtc3BsaXR0ZXItZ3JpcHBlciAuaW1hZ2Ugew0KICAgIHJlc291cmNlOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvc2l6ZXJfZ3JpcHBlcl92ZXJ0aWNhbC5wbmciOw0KICAgIGhvcml6b250YWwtYWxpZ246IGNlbnRlcjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KfQ0K"},{ name : "haxeui-core/styles/dark/optionboxes.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogT1BUSU9OQk9YDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLm9wdGlvbmJveCB7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KICAgIGhvcml6b250YWwtc3BhY2luZzogNHB4Ow0KICAgIGN1cnNvcjogcG9pbnRlcjsNCiAgICBjb2xvcjogI2I0YjRiNDsNCn0NCg0KLm9wdGlvbmJveDpob3ZlciB7DQp9DQoNCi5vcHRpb25ib3g6ZGlzYWJsZWQgew0KICAgIGN1cnNvcjogZGVmYXVsdDsNCiAgICBjb2xvcjogIzU5NTk1OTsNCn0NCg0KLm9wdGlvbmJveC12YWx1ZSB7DQogICAgYm9yZGVyOiAxcHggc29saWQgIzE4MWExYjsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjUyNzI4Ow0KICAgIHdpZHRoOiAxNnB4Ow0KICAgIGhlaWdodDogMTZweDsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGJvcmRlci1yYWRpdXM6IDE4cHg7DQogICAgaWNvbjogbm9uZTsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjMDAwMDAwLCAwLjIsIDIsIDIsIDEsIDMsIHRydWUpOw0KICAgIHBhZGRpbmctdG9wOiAxcHg7DQogICAgY3Vyc29yOiBwb2ludGVyOw0KfQ0KDQoub3B0aW9uYm94LXZhbHVlOmhvdmVyIHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjMjE2QUFFOw0KfQ0KDQoub3B0aW9uYm94LXZhbHVlOnNlbGVjdGVkIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2Rhcmsvb3B0aW9uLnBuZyI7DQp9DQoNCi5vcHRpb25ib3gtdmFsdWU6ZGlzYWJsZWQgew0KICAgIGJhY2tncm91bmQ6ICMyYzJmMzAgIzJjMmYzMCB2ZXJ0aWNhbDsNCiAgICBjdXJzb3I6IGRlZmF1bHQ7DQp9DQoNCi5vcHRpb25ib3gtbGFiZWwgew0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQogICAgY3Vyc29yOiBwb2ludGVyOw0KfQ0KDQoub3B0aW9uYm94LWljb24gew0KICAgIGhvcml6b250YWwtYWxpZ246IGNlbnRlcjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGN1cnNvcjogcG9pbnRlcjsNCiAgICBvcGFjaXR5OiAxOw0KfQ0KDQoub3B0aW9uYm94LWljb246ZGlzYWJsZWQgew0KICAgIGN1cnNvcjogZGVmYXVsdDsNCiAgICBvcGFjaXR5OiAwLjU7DQp9DQo"},{ name : "haxeui-core/styles/default/listview.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogTElTVFZJRVcNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoubGlzdHZpZXcgew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICNBQkFCQUI7DQogICAgYm9yZGVyLXJhZGl1czogMXB4Ow0KICAgIHBhZGRpbmc6IDFweDsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBoZWlnaHQ6IGF1dG87DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0ZGRkZGRjsNCn0NCg0KLmxpc3R2aWV3IC5saXN0dmlldy1jb250ZW50cyB7DQogICAgc3BhY2luZzogMDsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBwYWRkaW5nOiAwcHg7DQp9DQoNCi5saXN0dmlldyAuaXRlbXJlbmRlcmVyIHsNCiAgICBjdXJzb3I6IHBvaW50ZXI7ICAgIA0KfQ0KDQoubGlzdHZpZXcgLml0ZW1yZW5kZXJlciAubGFiZWwgew0KICAgIGNvbG9yOiBibGFjazsNCn0NCg0KLmxpc3R2aWV3IC5ldmVuIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRkZGRkZGOw0KfQ0KDQoubGlzdHZpZXcgLmV2ZW46aG92ZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNkOWU1ZjI7DQp9DQoNCi5saXN0dmlldyAub2RkIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjZjhmOGY4Ow0KfQ0KDQoubGlzdHZpZXcgLm9kZDpob3ZlciB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI2Q5ZTVmMjsNCn0NCg0KLmxpc3R2aWV3IC5pdGVtcmVuZGVyZXIgew0KICAgIGhlaWdodDogYXV0bzsNCiAgICBwYWRkaW5nOiA1cHg7DQp9DQoNCi5saXN0dmlldyAuaXRlbXJlbmRlcmVyOnNlbGVjdGVkIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjYTdjNGUyOw0KICAgIGNvbG9yOiB3aGl0ZTsNCn0NCg0KLmxpc3R2aWV3IC5pdGVtcmVuZGVyZXI6c2VsZWN0ZWQgLmxhYmVsIHsNCiAgICBjb2xvcjogd2hpdGU7DQp9DQo"},{ name : "haxeui-core/styles/default/dialogs.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogRElBTE9HUw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5kaWFsb2cgew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICNBQkFCQUI7DQogICAgZmlsdGVyOiBkcm9wLXNoYWRvdygxLCA0NSwgIzAwMDAwMCwgMC4yLCAzMCwgMiwgMSwgMywgZmFsc2UpOw0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBoZWlnaHQ6IGF1dG87DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQogICAgcGFkZGluZzogMXB4Ow0KfQ0KDQouZGlhbG9nLWNvbnRhaW5lciB7DQogICAgc3BhY2luZzogMDsNCn0NCg0KLmRpYWxvZy10aXRsZSB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0VFRUVFRTsNCiAgICBwYWRkaW5nOiA1cHg7DQogICAgYm9yZGVyLWJvdHRvbS13aWR0aDogMXB4Ow0KICAgIGJvcmRlci1ib3R0b20tY29sb3I6ICNBQkFCQUI7DQp9DQoNCi5kaWFsb2ctdGl0bGUtbGFiZWwgew0KICAgIHdpZHRoOiAxMDAlOw0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQogICAgY29sb3I6ICM4ODg4ODg7DQogICAgdmVydGljYWwtYWxpZ246ICJjZW50ZXIiOw0KfQ0KDQouZGlhbG9nLWNvbnRlbnQgew0KICAgIHBhZGRpbmc6IDVweDsNCn0NCg0KLmRpYWxvZy1mb290ZXItY29udGFpbmVyIHsNCiAgICBib3JkZXItdG9wLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLXRvcC1jb2xvcjogI0FCQUJBQjsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRUVFRUVFOw0KfQ0KDQouZGlhbG9nLWZvb3RlciB7DQogICAgcGFkZGluZzogNXB4Ow0KICAgIGhvcml6b250YWwtYWxpZ246IHJpZ2h0Ow0KfQ0KDQouZGlhbG9nLWNsb3NlLWJ1dHRvbiB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9zbWFsbC1jbG9zZS1idXR0b24ucG5nIjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogImNlbnRlciI7DQogICAgY3Vyc29yOiAicG9pbnRlciI7DQp9DQoNCi5kaWFsb2cgI2ljb25JbWFnZS5pbmZvIHsNCiAgICByZXNvdXJjZTogImhheGV1aS1jb3JlL3N0eWxlcy9kZWZhdWx0L2RpYWxvZ3MvaW5mb3JtYXRpb24ucG5nIjsNCn0NCg0KLmRpYWxvZyAjaWNvbkltYWdlLnF1ZXN0aW9uIHsNCiAgICByZXNvdXJjZTogImhheGV1aS1jb3JlL3N0eWxlcy9kZWZhdWx0L2RpYWxvZ3MvcXVlc3Rpb24ucG5nIjsNCn0NCg0KLmRpYWxvZyAjaWNvbkltYWdlLndhcm5pbmcgew0KICAgIHJlc291cmNlOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvZGlhbG9ncy9leGNsYW1hdGlvbi5wbmciOw0KfQ0KDQouZGlhbG9nICNpY29uSW1hZ2UuZXJyb3Igew0KICAgIHJlc291cmNlOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvZGlhbG9ncy9jcm9zcy1jaXJjbGUucG5nIjsNCn0NCg0KLm1lc3NhZ2Vib3ggew0KICAgIGluaXRpYWwtd2lkdGg6IDMwMHB4Ow0KfQ"},{ name : "haxeui-core/styles/default/scrollview.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogU0NST0xMVklFVw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5zY3JvbGx2aWV3IHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjQUJBQkFCOw0KICAgIGJvcmRlci1yYWRpdXM6IDFweDsNCiAgICBwYWRkaW5nOiAxcHg7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KfQ0KDQouc2Nyb2xsdmlldyAuc2Nyb2xsdmlldy1jb250ZW50cyB7DQogICAgaGVpZ2h0OiBhdXRvOw0KICAgIHNwYWNpbmc6IDVweDsNCiAgICBwYWRkaW5nOiA1cHg7DQogICAgYm9yZGVyOiBub25lOw0KfQ0KDQovKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqDQoqKiBNT0JJTEUgVkFSSUFOVFMNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQouc2Nyb2xsdmlldzptb2JpbGUgew0KICAgIG1vZGU6IG1vYmlsZTsNCn0NCg"},{ name : "haxeui-core/styles/default/sizer_gripper_horizontal.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAECAIAAAA4WjmaAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAJElEQVQImWN8K6PCgBswMTAwTEqOnpQcjZXBhEcrAwMDI37DARkxCkFtOZfXAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/dark/calendars.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogQ0FMRU5EQVINCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQouY2FsZW5kYXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyNTI3Mjg7DQogICAgcGFkZGluZzogNXB4Ow0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQogICAgYm9yZGVyLXJhZGl1czogMXB4Ow0KfQ0KDQouY2FsZW5kYXIgLmJ1dHRvbiB7DQogICAgcGFkZGluZzogOHB4Ow0KfQ0KDQouY2FsZW5kYXIgLmNhbGVuZGFyLW9mZi1kYXkgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjUyNzI4Ow0KICAgIGN1cnNvcjogZGVmYXVsdDsNCn0NCg0KLmNhbGVuZGFyIC5jYWxlbmRhci1kYXkgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMmYzNzQ2Ow0KfQ0KDQouY2FsZW5kYXIgLmNhbGVuZGFyLWRheTpob3ZlciB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICM0MTU5ODI7DQp9DQoNCi5jYWxlbmRhciAuY2FsZW5kYXItZGF5LXNlbGVjdGVkIHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzQxNTk4MjsNCiAgICBjb2xvcjogd2hpdGU7DQp9DQoNCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogQ0FMRU5EQVJWSUVXDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmNhbGVuZGFyLXZpZXcgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyNTI3Mjg7DQogICAgcGFkZGluZzogNXB4Ow0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQogICAgYm9yZGVyLXJhZGl1czogMXB4Ow0KfQ0KDQouY2FsZW5kYXItdmlldyAuY2FsZW5kYXIgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBwYWRkaW5nOiAwcHg7DQp9DQoNCi5jYWxlbmRhci12aWV3IC5oYm94IHsNCglzcGFjaW5nOiAwOw0KfQ0KDQouY2FsZW5kYXItdmlldyAjcHJldi1tb250aCB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kYXJrL2xlZnRfYXJyb3cucG5nIjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjUyNzI4Ow0KfQ0KDQouY2FsZW5kYXItdmlldyAjbmV4dC1tb250aCB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kYXJrL3JpZ2h0X2Fycm93LnBuZyI7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzI1MjcyODsNCn0NCg0KLmNhbGVuZGFyLXZpZXcgI2N1cnJlbnQtbW9udGggew0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQp9DQoNCi5jYWxlbmRhci12aWV3ICNjdXJyZW50LXllYXIgew0KICAgIHRleHQtYWxpZ246IHJpZ2h0Ow0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQoJYm9yZGVyOiBub25lOw0KCXBhZGRpbmctdG9wOiAxcHg7DQoJYmFja2dyb3VuZC1jb2xvcjogIzI1MjcyODsNCn0NCi5jYWxlbmRhci12aWV3ICNjdXJyZW50LXllYXIgLmJ1dHRvbiB7DQoJYmFja2dyb3VuZC1jb2xvcjogIzI1MjcyODsNCglib3JkZXI6IG5vbmU7DQp9DQo"},{ name : "haxeui-core/styles/dark/listview.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogTElTVFZJRVcNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoubGlzdHZpZXcgew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQogICAgYm9yZGVyLXJhZGl1czogMXB4Ow0KICAgIHBhZGRpbmc6IDFweDsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBoZWlnaHQ6IGF1dG87DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzI1MjcyODsNCn0NCg0KDQoubGlzdHZpZXcgLmxpc3R2aWV3LWNvbnRlbnRzIHsNCiAgICBzcGFjaW5nOiAwOw0KICAgIHdpZHRoOiAxMDAlOw0KICAgIHBhZGRpbmc6IDBweDsNCn0NCg0KLmxpc3R2aWV3IC5pdGVtcmVuZGVyZXIgew0KICAgIGN1cnNvcjogcG9pbnRlcjsgICAgDQp9DQoNCi5saXN0dmlldyAuaXRlbXJlbmRlcmVyIC5sYWJlbCB7DQogICAgY29sb3I6ICNkNGQ0ZDQ7DQp9DQoNCi5saXN0dmlldyAuZXZlbiB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzI1MjcyODsNCn0NCg0KLmxpc3R2aWV3IC5ldmVuOmhvdmVyIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMmYzNzQ2Ow0KfQ0KDQoubGlzdHZpZXcgLm9kZCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzJhMmMyZDsNCn0NCg0KLmxpc3R2aWV3IC5vZGQ6aG92ZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyZjM3NDY7DQp9DQoNCi5saXN0dmlldyAuaXRlbXJlbmRlcmVyIHsNCiAgICBoZWlnaHQ6IGF1dG87DQogICAgcGFkZGluZzogNXB4Ow0KfQ0KDQoubGlzdHZpZXcgLml0ZW1yZW5kZXJlcjpzZWxlY3RlZCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzQxNTk4MjsNCiAgICBjb2xvcjogd2hpdGU7DQp9DQoNCi5saXN0dmlldyAuaXRlbXJlbmRlcmVyOnNlbGVjdGVkIC5sYWJlbCB7DQogICAgY29sb3I6IHdoaXRlOw0KfQ0KDQoubGlzdHZpZXcgLml0ZW1yZW5kZXJlcjpkaXNhYmxlZCB7DQogICAgY29sb3I6ICM1OTU5NTk7DQp9DQoNCi5saXN0dmlldyAuaXRlbXJlbmRlcmVyOmRpc2FibGVkIC5sYWJlbCB7DQogICAgY29sb3I6ICM1OTU5NTk7DQp9DQo"},{ name : "haxeui-core/styles/default/sliders.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogU0xJREVSUw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5ob3Jpem9udGFsLXNsaWRlciB7DQogICAgcGFkZGluZy1sZWZ0OiA1cHg7DQogICAgcGFkZGluZy1yaWdodDogNXB4Ow0KICAgIHBhZGRpbmctdG9wOiAwcHg7DQogICAgcGFkZGluZy1ib3R0b206IDBweDsNCiAgICBoZWlnaHQ6IGF1dG87DQogICAgaW5pdGlhbC13aWR0aDogMTUwcHg7DQp9DQoNCi5ob3Jpem9udGFsLXNsaWRlciAuc2xpZGVyLXZhbHVlIHsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBoZWlnaHQ6IDhweDsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQp9DQoNCi5ob3Jpem9udGFsLXNsaWRlciAuYnV0dG9uIHsNCiAgICB3aWR0aDogMTBweDsNCiAgICBoZWlnaHQ6IDIwcHg7DQogICAgYm9yZGVyLXJhZGl1czogMnB4Ow0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQogICAgZmlsdGVyOiBub25lOw0KfQ0KICAgIA0KLnZlcnRpY2FsLXNsaWRlciB7DQogICAgcGFkZGluZy10b3A6IDVweDsNCiAgICBwYWRkaW5nLWJvdHRvbTogNXB4Ow0KICAgIHBhZGRpbmctbGVmdDogMHB4Ow0KICAgIHBhZGRpbmctcmlnaHQ6IDBweDsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBpbml0aWFsLWhlaWdodDogMTUwcHg7DQp9DQoNCi52ZXJ0aWNhbC1zbGlkZXIgLnNsaWRlci12YWx1ZSB7DQogICAgaGVpZ2h0OiAxMDAlOw0KICAgIHdpZHRoOiA4cHg7DQogICAgYm9yZGVyLXJhZGl1czogMnB4Ow0KICAgIGhvcml6b250YWwtYWxpZ246IGNlbnRlcjsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQp9DQoNCi52ZXJ0aWNhbC1zbGlkZXIgLmJ1dHRvbiB7DQogICAgd2lkdGg6IDIwcHg7DQogICAgaGVpZ2h0OiAxMHB4Ow0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICBob3Jpem9udGFsLWFsaWduOiBjZW50ZXI7DQogICAgZmlsdGVyOiBub25lOw0KfQ0KDQo"},{ name : "haxeui-core/styles/dark/tabs.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogVEFCQkFSIChUT1ApDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLnRhYmJhciB7DQogICAgcGFkZGluZy1sZWZ0OiAwcHg7DQogICAgcGFkZGluZy1yaWdodDogMHB4Ow0KICAgIGhlaWdodDogYXV0bzsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1jb2xvcjogIzE4MWExYjsNCiAgICBib3JkZXItdG9wLXdpZHRoOiAwcHg7DQogICAgY2xpcDogdHJ1ZTsNCn0NCg0KLnRhYmJhciA+IC50YWJiYXItY29udGVudHMgew0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1jb2xvcjogIzE4MWExYjsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQoudGFiYmFyLWJ1dHRvbiB7DQogICAgYm9yZGVyLXJhZGl1czogMHB4Ow0KICAgIGJhY2tncm91bmQ6ICMzMTMzMzUgIzMxMzMzNSB2ZXJ0aWNhbDsNCiAgICBwYWRkaW5nOiA2cHggOHB4Ow0KICAgIHZlcnRpY2FsLWFsaWduOiBib3R0b207DQogICAgYm9yZGVyLWxlZnQtd2lkdGg6IDBweDsNCiAgICBjb2xvcjogI2I0YjRiNDsNCn0NCg0KLnRhYmJhci1idXR0b24uZmlyc3Qgew0KICAgIGJvcmRlci1sZWZ0LXdpZHRoOiAxcHg7DQp9DQoNCi50YWJiYXItYnV0dG9uOmhvdmVyIHsNCiAgICBiYWNrZ3JvdW5kOiAjMzkzYjNjICMzOTNiM2MgdmVydGljYWw7DQp9DQoNCi50YWJiYXItYnV0dG9uOmRvd24gew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQp9DQoNCi50YWJiYXItYnV0dG9uLXNlbGVjdGVkIHsNCiAgICBib3JkZXItcmFkaXVzOiAwcHg7DQoNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1jb2xvcjogIzNEM0Y0MTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjM0QzRjQxOw0KICAgIGJvcmRlci1sZWZ0LXdpZHRoOiAwcHg7DQogICAgY29sb3I6ICNkNGQ0ZDQ7DQp9DQoNCg0KLnRhYmJhci1idXR0b24tc2VsZWN0ZWQuZmlyc3Qgew0KICAgIGJvcmRlci1sZWZ0LXdpZHRoOiAxcHg7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIFRBQkJBUiAoQk9UVE9NKQ0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi50YWJiYXI6Ym90dG9tIHsNCiAgICBwYWRkaW5nLWxlZnQ6IDBweDsNCiAgICBwYWRkaW5nLXJpZ2h0OiAwcHg7DQogICAgaGVpZ2h0OiBhdXRvOw0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGJvcmRlci1ib3R0b20td2lkdGg6IDBweDsNCiAgICBib3JkZXItdG9wLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLXRvcC1jb2xvcjogIzE4MWExYjsNCiAgICBjbGlwOiB0cnVlOw0KfQ0KDQoudGFiYmFyOmJvdHRvbSAudGFiYmFyLWNvbnRlbnRzIHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYm9yZGVyLWJvdHRvbS13aWR0aDogMHB4Ow0KICAgIGJvcmRlci10b3Atd2lkdGg6IDFweDsNCiAgICBib3JkZXItdG9wLWNvbG9yOiAjMTgxYTFiOw0KICAgIHNwYWNpbmc6IDA7DQp9DQoNCi50YWJiYXItYnV0dG9uOmJvdHRvbSB7DQogICAgdmVydGljYWwtYWxpZ246IHRvcDsNCiAgICBib3JkZXItbGVmdC13aWR0aDogMHB4Ow0KfQ0KDQoudGFiYmFyLWJ1dHRvbi5maXJzdCB7DQogICAgYm9yZGVyLWxlZnQtd2lkdGg6IDFweDsNCn0NCg0KLnRhYmJhci1idXR0b24tc2VsZWN0ZWQ6Ym90dG9tIHsNCiAgICBib3JkZXItcmFkaXVzOiAwcHg7DQoNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjMTgxYTFiOw0KICAgIGJvcmRlci10b3Atd2lkdGg6IDFweDsNCiAgICBib3JkZXItdG9wLWNvbG9yOiAjM0QzRjQxOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICMzRDNGNDE7DQogICAgYm9yZGVyLWxlZnQtd2lkdGg6IDBweDsNCn0NCg0KLnRhYmJhci1idXR0b24tc2VsZWN0ZWQuZmlyc3Qgew0KICAgIGJvcmRlci1sZWZ0LXdpZHRoOiAxcHg7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIFRBQlZJRVcNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoNCi50YWJ2aWV3ID4gLnRhYnZpZXctY29udGVudCB7DQogICAgYm9yZGVyOiAxcHggc29saWQgIzE4MWExYjsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjM0QzRjQxOw0KfQ0KDQoNCi50YWJiYXItc2Nyb2xsLWxlZnQgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGFyay9sZWZ0X2Fycm93LnBuZyI7DQogICAgYm9yZGVyLXJhZGl1czogMDsNCiAgICBwYWRkaW5nOiA1cHg7DQp9DQoNCi50YWJiYXItc2Nyb2xsLXJpZ2h0IHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RhcmsvcmlnaHRfYXJyb3cucG5nIjsNCiAgICBib3JkZXItcmFkaXVzOiAwOw0KICAgIHBhZGRpbmc6IDVweDsNCn0NCg0KLnRhYmJhci1idXR0b24gLnRhYi1jbG9zZS1idXR0b24gew0KICAgIHJlc291cmNlOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RhcmsvdGlueS1jbG9zZS1idXR0b24ucG5nIjsNCn0NCg"},{ name : "haxeui-core/styles/default/accordion.css", data : "LmFjY29yZGlvbiB7DQogICAgYm9yZGVyOiAxcHggc29saWQgI2FiYWJhYjsNCiAgICBzcGFjaW5nOiAwOw0KICAgIHBhZGRpbmc6IDFweDsNCiAgICBwYWRkaW5nLWJvdHRvbTogMHB4Ow0KICAgIGNsaXA6IHRydWU7DQp9DQoNCi5hY2NvcmRpb24tYnV0dG9uIHsNCiAgICBib3JkZXItcmFkaXVzOiAwOw0KICAgIGJvcmRlcjogMHB4IHNvbGlkICNhYmFiYWI7DQogICAgd2lkdGg6IDEwMCU7DQogICAgdGV4dC1hbGlnbjogbGVmdDsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvcmlnaHRfYXJyb3dfc3F1YXJlLnBuZyI7DQogICAgaWNvbi1wb3NpdGlvbjogbGVmdDsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYm9yZGVyLWNvbG9yOiAjYWJhYmFiOw0KICAgIGJvcmRlci1ib3R0b20td2lkdGg6IDFweDsNCn0NCg0KLmFjY29yZGlvbi1idXR0b246ZG93biB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kZWZhdWx0L2Rvd25fYXJyb3dfc3F1YXJlLnBuZyI7DQp9DQoNCi5hY2NvcmRpb24tcGFnZSB7DQogICAgd2lkdGg6IDEwMCU7DQogICAgY2xpcDogdHJ1ZTsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBib3JkZXItY29sb3I6ICNhYmFiYWI7DQogICAgYm9yZGVyLWJvdHRvbS13aWR0aDogMXB4Ow0KICAgIG9wYWNpdHk6IDE7DQogICAgcGFkZGluZzogNXB4Ow0KfQ0KDQouYWNjb3JkaW9uLXBhZ2U6ZXhwYW5kZWQgew0KICAgIGFuaW1hdGlvbjogYWNjb3JkaW9uQW5pbWF0ZUV4cGFuZCAwLjNzIGVhc2UgMHMgMTsNCn0NCg0KLmFjY29yZGlvbi1wYWdlOmNvbGxhcHNlZCB7DQogICAgYW5pbWF0aW9uOiBhY2NvcmRpb25BbmltYXRlQ29sbHBhc2UgMC4zcyBlYXNlIDBzIDE7DQp9DQoNCkBrZXlmcmFtZXMgYWNjb3JkaW9uQW5pbWF0ZUV4cGFuZCB7DQogICAgMCUgew0KICAgICAgICBvcGFjaXR5OiAwOw0KICAgICAgICBoZWlnaHQ6IDAlOw0KICAgIH0NCiAgICAxMDAlIHsNCiAgICAgICAgb3BhY2l0eTogMTsNCiAgICAgICAgaGVpZ2h0OiAxMDAlOw0KICAgIH0NCn0NCg0KQGtleWZyYW1lcyBhY2NvcmRpb25BbmltYXRlQ29sbHBhc2Ugew0KICAgIDAlIHsNCiAgICAgICAgb3BhY2l0eTogMTsNCiAgICAgICAgaGVpZ2h0OiAxMDAlOw0KICAgIH0NCiAgICAxMDAlIHsNCiAgICAgICAgb3BhY2l0eTogMDsNCiAgICAgICAgaGVpZ2h0OiAwJTsNCiAgICB9DQp9DQoNCi5hY2NvcmRpb24tcGFnZSAuc2Nyb2xsdmlldyB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIHBhZGRpbmctdG9wOiAwOw0KICAgIHBhZGRpbmctcmlnaHQ6IDA7DQogICAgcGFkZGluZy1sZWZ0OiAwOw0KICAgIHBhZGRpbmctYm90dG9tOiAwOw0KfQ0K"},{ name : "haxeui-core/styles/dark/checkboxes.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogQ0hFQ0tCT1gNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQouY2hlY2tib3ggew0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGhlaWdodDogYXV0bzsNCiAgICBob3Jpem9udGFsLXNwYWNpbmc6IDRweDsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQogICAgY29sb3I6ICNiNGI0YjQ7DQp9DQoNCi5jaGVja2JveDpob3ZlciB7DQp9DQoNCi5jaGVja2JveDpkaXNhYmxlZCB7DQogICAgY3Vyc29yOiBkZWZhdWx0Ow0KICAgIGNvbG9yOiAjNTk1OTU5Ow0KfQ0KDQouY2hlY2tib3gtdmFsdWUgew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzI1MjcyODsNCiAgICB3aWR0aDogMTZweDsNCiAgICBoZWlnaHQ6IDE2cHg7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQogICAgaWNvbjogbm9uZTsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjMDAwMDAwLCAwLjIsIDIsIDIsIDEsIDMsIHRydWUpOw0KICAgIGN1cnNvcjogcG9pbnRlcjsNCn0NCg0KLmNoZWNrYm94LXZhbHVlOmhvdmVyIHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjNDE1OTgyOw0KfQ0KDQouY2hlY2tib3gtdmFsdWU6c2VsZWN0ZWQgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGFyay9jaGVjay5wbmciOw0KfQ0KDQouY2hlY2tib3gtdmFsdWU6ZGlzYWJsZWQgew0KICAgIGJhY2tncm91bmQ6ICMyYzJmMzAgIzJjMmYzMCB2ZXJ0aWNhbDsNCiAgICBjdXJzb3I6IGRlZmF1bHQ7DQp9DQoNCi5jaGVja2JveC1sYWJlbCB7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCn0NCg0KLmNoZWNrYm94LWljb24gew0KICAgIGhvcml6b250YWwtYWxpZ246IGNlbnRlcjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGN1cnNvcjogcG9pbnRlcjsNCiAgICBvcGFjaXR5OiAxOw0KfQ0KDQouY2hlY2tib3gtaWNvbjpkaXNhYmxlZCB7DQogICAgY3Vyc29yOiBkZWZhdWx0Ow0KICAgIG9wYWNpdHk6IDAuNTsNCn0NCg"},{ name : "haxeui-core/styles/default/tableview.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogSEVBREVSDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmhlYWRlciB7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KICAgIHNwYWNpbmc6IDA7DQp9DQoNCi5oZWFkZXIgLmNvbHVtbiB7DQogICAgYm9yZGVyLXJhZGl1czogMDsNCiAgICBpY29uLXBvc2l0aW9uOiBmYXItcmlnaHQ7DQogICAgYm9yZGVyLWxlZnQtd2lkdGg6IDA7DQogICAgdGV4dC1hbGlnbjogbGVmdDsNCn0NCg0KLmhlYWRlciAuY29sdW1uLmxhc3Qgew0KICAgIGJvcmRlci1yaWdodC13aWR0aDogMDsNCn0NCg0KLmhlYWRlci5zY3JvbGxpbmcgLmNvbHVtbi5sYXN0IHsNCiAgICBib3JkZXItcmlnaHQtd2lkdGg6IDFweDsNCn0NCg0KLmhlYWRlciAuc29ydGFibGUgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC91cF9kb3duX2Fycm93cy5wbmciOw0KICAgIGljb24tcG9zaXRpb246IGZhci1yaWdodDsNCn0NCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogVEFCTEVWSUVXDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLnRhYmxldmlldyB7DQogICAgYm9yZGVyOiAxcHggc29saWQgI0FCQUJBQjsNCiAgICBib3JkZXItcmFkaXVzOiAxcHg7DQogICAgcGFkZGluZzogMXB4Ow0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGhlaWdodDogYXV0bzsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRkZGRkZGOw0KICAgIHNwYWNpbmc6IDA7DQp9DQoNCi50YWJsZXZpZXcgLnRhYmxldmlldy1jb250ZW50cyB7DQogICAgc3BhY2luZzogMDsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBwYWRkaW5nOiAwcHg7DQp9DQoNCi50YWJsZXZpZXcgLmV2ZW4gew0KICAgIGJhY2tncm91bmQtY29sb3I6IHdoaXRlOw0KICAgIGN1cnNvcjogcG9pbnRlcjsNCn0NCg0KLnRhYmxldmlldyAub2RkIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjZjhmOGY4Ow0KICAgIGN1cnNvcjogcG9pbnRlcjsNCn0NCg0KLnRhYmxldmlldyAuY29tcG91bmRpdGVtcmVuZGVyZXIgLml0ZW1yZW5kZXJlciB7DQogICAgaGVpZ2h0OiBhdXRvOw0KICAgIHBhZGRpbmc6IDVweDsNCn0NCg0KLnRhYmxldmlldyAuZXZlbjpob3ZlciB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI2Q5ZTVmMjsNCn0NCg0KLnRhYmxldmlldyAub2RkOmhvdmVyIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjZDllNWYyOw0KfQ0KDQoudGFibGV2aWV3IC5jb21wb3VuZGl0ZW1yZW5kZXJlciAubGFiZWwgew0KICAgIGNvbG9yOiBibGFjazsNCn0NCg0KLnRhYmxldmlldyAuY29tcG91bmRpdGVtcmVuZGVyZXI6c2VsZWN0ZWQgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNhN2M0ZTI7DQogICAgY29sb3I6IHdoaXRlOw0KfQ0KDQoudGFibGV2aWV3IC5jb21wb3VuZGl0ZW1yZW5kZXJlcjpzZWxlY3RlZCAubGFiZWwgew0KICAgIGNvbG9yOiB3aGl0ZTsNCn0NCg"},{ name : "haxeui-core/styles/default/progressbars.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogUFJPR1JFU1MNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQpAa2V5ZnJhbWVzIGluZGV0ZXJtaW5hdGUgew0KICAgIDAlIHsNCiAgICAgICAgc3RhcnQ6IDA7DQogICAgICAgIGVuZDogMjU7DQogICAgfQ0KICAgIDUwJSB7DQogICAgICAgIHN0YXJ0OiA3NTsNCiAgICAgICAgZW5kOiAxMDA7DQogICAgfQ0KICAgIDEwMCUgew0KICAgICAgICBzdGFydDogMDsNCiAgICAgICAgZW5kOiAyNTsNCiAgICB9DQp9DQoNCi5wcm9ncmVzczppbmRldGVybWluYXRlIHsNCiAgICBhbmltYXRpb246IGluZGV0ZXJtaW5hdGUgMXMgZWFzZSAwcyBpbmZpbml0ZTsNCn0NCg0KLnByb2dyZXNzLXZhbHVlIHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgYm9yZGVyLXJhZGl1czogMnB4Ow0KfQ0KDQouaG9yaXpvbnRhbC1wcm9ncmVzcyB7DQogICAgYmFja2dyb3VuZDogI0YxRjFGMSAjRkZGRkZGIHZlcnRpY2FsOw0KICAgIGluaXRpYWwtd2lkdGg6IDE1MHB4Ow0KICAgIGluaXRpYWwtaGVpZ2h0OiAyMHB4Ow0KfQ0KDQouaG9yaXpvbnRhbC1wcm9ncmVzcyAucHJvZ3Jlc3MtdmFsdWUgew0KICAgIGJhY2tncm91bmQ6ICM2Q0FBREIgIzIxNkFBRSB2ZXJ0aWNhbDsNCiAgICBoZWlnaHQ6IDEwMCU7DQp9DQoNCi52ZXJ0aWNhbC1wcm9ncmVzcyB7DQogICAgYmFja2dyb3VuZDogI0YxRjFGMSAjRkZGRkZGIGhvcml6b250YWw7DQogICAgaW5pdGlhbC13aWR0aDogMjBweDsNCiAgICBpbml0aWFsLWhlaWdodDogMTUwcHg7DQp9DQoNCi52ZXJ0aWNhbC1wcm9ncmVzcyAucHJvZ3Jlc3MtdmFsdWUgew0KICAgIGJhY2tncm91bmQ6ICM2Q0FBREIgIzIxNkFBRSBob3Jpem9udGFsOw0KICAgIHdpZHRoOiAxMDAlOw0KfQ0KDQo"},{ name : "haxeui-core/styles/default/tiny-close-button.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAkElEQVQImWMsKi3X1NAIqm9lgIF1jdXXb9xgMjI0PHL02LrGarjokaPHjAwNGd/KqKxtqDp67LiNtRUDA8ORo8esrSyDG9oY38qoMDAwQOQYGBggogwMDEwQExgZGdEYTHBzra0sra0s4fYxLlm2YveevXATIGa6ujgzKygpGxkaQEQZGBi0Dhz+Eht1+coVAAbMPkrhHcSZAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/textinputs.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogVEVYVCBGSUVMRA0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi50ZXh0ZmllbGQgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNGRkZGRkY7DQogICAgY29sb3I6ICM0NDQ0NDQ7DQogICAgYm9yZGVyOiAxcHggc29saWQgI0FCQUJBQjsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQogICAgcGFkZGluZzogNXB4IDVweDsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjODg4ODg4LCAwLjIsIDEsIDEsIDEsIDMsIHRydWUpOw0KICAgIGluaXRpYWwtd2lkdGg6IDE1MHB4Ow0KICAgIGhlaWdodDogYXV0bzsNCiAgICBzcGFjaW5nOiA1cHg7DQogICAgaWNvbi1wb3NpdGlvbjogcmlnaHQ7DQp9DQoNCi50ZXh0ZmllbGQ6YWN0aXZlIHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjMjE2QUFFOw0KfQ0KDQoudGV4dGZpZWxkOmVtcHR5IHsNCiAgICBjb2xvcjogI0EwQTBBMDsNCn0NCg0KLnRleHRmaWVsZDpkaXNhYmxlZCB7DQogICAgY29sb3I6ICM5MDkwOTA7DQogICAgYmFja2dyb3VuZDogI0Q0RDRENCAjQ0NDQ0NDIHZlcnRpY2FsOw0KfQ0KDQovKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqDQoqKiBURVhUIEFSRUENCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoudGV4dGFyZWEgew0KICAgIGNvbG9yOiAjNDQ0NDQ0Ow0KICAgIGJvcmRlcjogMXB4IHNvbGlkICNBQkFCQUI7DQogICAgYm9yZGVyLXJhZGl1czogMnB4Ow0KICAgIHBhZGRpbmc6IDFweDsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjODg4ODg4LCAwLjIsIDEsIDEsIDEsIDMsIHRydWUpOw0KICAgIGJhY2tncm91bmQtY29sb3I6IHdoaXRlOw0KICAgIGluaXRpYWwtd2lkdGg6IDE1MHB4Ow0KICAgIGluaXRpYWwtaGVpZ2h0OiAxMDBweDsNCn0NCg0KLnRleHRhcmVhOmFjdGl2ZSB7DQogICAgYm9yZGVyOiAxcHggc29saWQgIzIxNkFBRTsNCn0NCg0KLnRleHRhcmVhOmVtcHR5IHsNCiAgICBjb2xvcjogI0EwQTBBMDsNCn0NCg0KLnRleHRhcmVhOmRpc2FibGVkIHsNCiAgICBjb2xvcjogIzkwOTA5MDsNCiAgICBiYWNrZ3JvdW5kOiAjRDRENEQ0ICNDQ0NDQ0MgdmVydGljYWw7DQp9"},{ name : "haxeui-core/styles/default/dialogs/cross-circle-small.png", data : "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABFFBMVEUAAABSUlJ7e4CdnZ1AQEAREREzMzM/Pz8lJSVRUVGmprI6Oj0LCwtqampycnILCwtVVVU6OjpFRUUmJiZVVVVRUVFISEgNDQ1UVFSqqqyfn6K/v76zs7LIyMjHx8dRUVNQUFH////c3NzQ0NHm5uba2uvq6urW1tbeVlbNRUWiExPu7u7i4uLf39/Nzc3XUFCuISGwEhKsERHW1uTQ0NvAwMHTqKi9l6DEmpm5kZXGc3Pyamq2ZGTBYWHpYGCuXl+8Xl2iV12pTlCjSk3RSUm9QkKtNTWpMzOIGRrUERHQERHFERG4ERG2ERGdERGUEBD39/fY2NjJydDDw8PDPT3JOzu4Li62Li7BKiqrGhqxGRm0FxcilCapAAAAIXRSTlMAPq6ibVFHGAkH3JKHfHh0Y2FcXFVNQh0V19fU1NLShoYJuWjGAAAA5UlEQVQY0yXI1XbDMBBF0ZExzFSuZNWt7RjDzEzl0P//R6zkPMyafYFVQJlEIoMKcCuIYk8qpepzDAWvzvK02pxMmtUin2UL4s3OuNtqdbUO4RGAHDX7Nv7ww3b/KypD7qGuYYw1dn7rjzlIkbbt4E9qErLdt60UCMp0/K9byjvZ6s70RwDBmv25nu+i551mFQGSSu+wZqbq+tyrJEG6azi+XVc1jGPjXgL5RRnqZLNcbgx9+P0qA0hcebRbLRar3ajMSQAQSHOl2mA+H9RKXDoAbBHDoTe/UFhkZuXFeCQSF/PsvwDvMCJpV4jhMQAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/default/steppers.css", data : "Lm51bWJlcnN0ZXBwZXIgew0KICAgIHBhZGRpbmc6IDFweDsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQouc3RlcHBlciB7DQogICAgc3BhY2luZzogMDsNCn0NCg0KLnN0ZXBwZXItYnV0dG9uIHsNCiAgICBwYWRkaW5nOiAzcHg7DQogICAgcGFkZGluZy10b3A6IDRweDsNCiAgICBwYWRkaW5nLWJvdHRvbTogNHB4Ow0KICAgIGJvcmRlci1yYWRpdXM6IDA7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICNFNkU2RTY7DQogICAgb3BhY2l0eTogMTsNCn0NCg0KLnN0ZXBwZXItYnV0dG9uOmhvdmVyIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRjFGMUYxOw0KfQ0KDQouc3RlcHBlci1idXR0b246ZG93biB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0MyQzJDMjsNCn0NCg0KLnN0ZXBwZXItYnV0dG9uOmRpc2FibGVkIHsNCiAgICBvcGFjaXR5OiAwLjU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0NDQ0NDQzsNCn0NCg0KLnN0ZXBwZXItaW5jIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvdXBfYXJyb3cucG5nIjsNCn0NCg0KLnN0ZXBwZXItZGVpbmMgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9kb3duX2Fycm93LnBuZyI7DQp9DQoNCi5zdGVwcGVyLWluYzpkb3duIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvdXBfYXJyb3dfd2hpdGUucG5nIjsNCn0NCg0KLnN0ZXBwZXItZGVpbmM6ZG93biB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kZWZhdWx0L2Rvd25fYXJyb3dfd2hpdGUucG5nIjsNCn0NCg0KLnN0ZXBwZXItdGV4dGZpZWxkLCAuc3RlcHBlci10ZXh0ZmllbGQ6YWN0aXZlIHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgd2lkdGg6IDEwMCU7DQogICAgcGFkZGluZzogNHB4Ow0KICAgIHBhZGRpbmctdG9wOiA1cHg7DQogICAgcGFkZGluZy1ib3R0b206IDNweDsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGZpbHRlcjogZHJvcC1zaGFkb3coMSwgNDUsICM4ODg4ODgsIDAuMiwgMSwgMSwgMSwgMywgdHJ1ZSk7DQogICAgYmFja2dyb3VuZC1jb2xvcjogbm9uZTsNCn0NCg0KLnN0ZXBwZXItc3RlcCB7DQogICAgaGVpZ2h0OiAxMDAlOw0KfQ0KDQouc3RlcHBlci1zdGVwIC5zdGVwcGVyLWluYywgLnN0ZXBwZXItc3RlcCAuc3RlcHBlci1kZWluYyB7DQogICAgaGVpZ2h0OiA1MCU7DQp9DQoNCi5udW1iZXItc3RlcHBlciB7DQogICAgaW5pdGlhbC13aWR0aDogNjBweDsNCn0"},{ name : "haxeui-core/styles/default/up_down_arrows.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAJCAIAAABxOqH0AAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAeklEQVQImWN8K6PCwMDAwMDQHhFQuWIDhM0EF2JgYOiMCkKIQoQgoDcujIGBgZkhI+X///9MTEyMjIwMDAxMTEynjPQY4eYiAxaIFjhgZmZmYGBg3nD/+XF9bQifiYmJgYGhYP5yJgYGhuJFqyBKIEIIl0E4EJKBgQEAK1sc1cc2psYAAAAASUVORK5CYII"},{ name : "haxeui-core/styles/dark/option.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH5QEaCgw0CA+AtQAAAINJREFUGNN9zDEKwlAQRdE781egfdYQV6FgM0WWYpNNSPYRm2ktsgfb9LYSsE7+WAQE4ccDr7rwBMDdqyB1CEcAgkElt2Y2irtXoelBsOfXJLHUGqSuEAF2SLrq97Yg4KT8F0owbHe5q0pugalQX3nWi5rZKLHUAjfgvU76PKdD05yfH881KnTRsBd3AAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/dark/up_arrow_white.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAECAIAAADNpLIqAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAK0lEQVQImWN8K6PCwMDAwMAg9Pj2O1lVCJsJLgQnoaJwDpzN+P//fwYMAADCtw5xBtAKnQAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/default/dialogs/information.png", data : "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAC5VBMVEUAAABQUFDk5OTOztwoKChxcXaWlpZ4eHg9PT5VVVVeXl5VVVVRUVFPT09QUFBOTk5QUFAhISFRUVEiIiLZ2djV1dWfn5/a2urKysq7u7vg4ODExNK8vMjPz8+6usi3t7uxsbKNjZhxcXlPT1VHR0toaGpWVlmKiooHBwcHBwcWFhcgICEHBwc8PDxBQUE9PT1DQ0M7OztFRUUiIiIHBwcaGhpVVVUrKysNDQ1RUVE5OTlGRkYzMzNVVVUUFBQvLy8ICAg3NzcQEBDb29vKytPHx9Hc3NzU1NPJycnExMS+vsK3t7zFxcTa2trZ2dm6usHV1dXIyMfCwsGampuQkJKpqamenp25ubm4uLiBgYR8fICTk5N+fn54eHju7u44ZeEzXdP///8wWMw1Ydo9be8tVMU7aegpTro/cPTc3NxTddzX19dJa9HMzMxEZsxOcNZGaM4qUL8lR69Cc/rb2+rb29vQ0NBIas8oS7UoSrJafN1Nb9QyXNJHac0/YskxWMgvVsbCwsI2WL0wUrji4u9vku7p6elihOTBxt83Y91PctjJyc/Nzc7FxcXCwsUsUsEvVMC+vr0uUrw0Vbd8nvh4mvV1l/Ntj+xgguc+a+c5Z+VegOJZe+FYeuBcft9RdNozX9YxWs1CZMmDk8ZCY8YxVsK/v78zVr4sTrYlSbHu8v2Epv3s7/qqvPNrje/f3+xmiOiesefY2ObX1+RgguLX1+Hg4OCVqOBAat4zYN52kNvCx9fOztZxitbBxtTU1NOUpNNLbtO3vNCcqdBshdBNbdB2jM9WdM7Ozs2Vos1Pb82YpcuSn8o2XMosVclKasjIyMezuMdtg8Z+j8OBkcFhecFedr4hSr1XcLxBX7ktULkpTbdWbLMiRa4jRaxCW6gkRaYWOZ8fPZgKK47U1N3S0tw+Z9i8wdXS0tFBZ9CNns2Nnc3Gxsq3vMqwtck7X8mHl8Y3W8U3WsSus8JGZL8sUb9FY70Fqja2AAAAXnRSTlMAB/73CamahHJpZWNFPC4lDAwBAfbepP398fDs5uTk4d/NuKmamZKNjYaFhHd2cG1qYl5dXFdWUlBMTEhFQjw2MioQ+PX19PTx8enp5+bm4+Dg3sLCv7+8vK6uppKSuUcb3gAAAv9JREFUOMuVz1VYU2Ecx/HBaAlJu7tb6bK7WwGBwcbYEDZZsRYp6e7u7u7u7ga7+9r/GYiiXujn6n2e3/d5z3tQ/0FITuvgAnBQS07oL/NCGalN15WXCgsvVb6xSUpm4W+zgqyUytk83AMBXN45FSlZhXm3S4tfwOGLK2rqmcz6mopiPE5ZXFrol11N7Bi+rK42zN4nOdnHPqy2rgyvJKY2VyhIix0ur25y8PFNswBpfr7BTdXlSmLSP74iK65k+5ri5xcQ4JyalJTqHBxg70959eK4uOzs+yVXNDQzfTNCQkKK7oGi0NDQHH9mc8NFyZl/kVGx7Wy3d7AA+UiQHx4e7kx3aH9LuC0jeKHkCtcueoYVohQJSq0YDEYl3aqr44wk8k65O4TPMf4MSwQrMyUlk2VpSaFQLOkxnR135SDQuMrtYYTdn8GnjY3RbGxoCXweM+oD95oGBHsvxfXRK4kgipdgg0ikUROG+LyoXu7qvRDsPuH5LYdCJLLiqbREAoHwOJE6PDzk5RUf84W7ZDcEOxd78hyIxE/mgAq7LRUOXl4e8Syea9xOCCQWe3oHs2KtEeaw482/urt7eMTGvvd29ZSAYNfJuEFnNkbAGnacNQbD4XDY7NZB1yW7INizijvw0s5YwB12YXfkFBkZyR5wW70HAvXLbj0fnxkJYGB/hDGa4RHtdkUdAr0Nb97xC5xMEBzYDTgmAhH8KrcNehCISJxy6WsNNEQYw25gbCjA7nU5LSGCApo3Xaq8CwLNQATsBhFmCCfv5y63NFEI+R3nS1qogabAyQA4IacgWmPJqh3yKAGdjUeeRo8GYbFYQyQwhEPQaPSToxt1UDMUD4mic1sm2rAkkh0gkbBtE425aNFDiqhZIvtE0dmOI5P9haYkkmlh/+SIYzZadB+8cK44sH55Ftmxe3xqenpqvNuRnLV8/QHYf1LU3rZ2GZmc/hCkk8nL1m7Thvvn0Vfdum7NSvSiReiVa9ZtVdVH/Uled//2LZs3b9m+X1ce9e++A05MTe+3ZKqgAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/dark/dialogs.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogRElBTE9HUw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5kaWFsb2cgew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQogICAgZmlsdGVyOiBkcm9wLXNoYWRvdygxLCA0NSwgIzAwMDAwMCwgMC4yLCAzMCwgMiwgMSwgMywgZmFsc2UpOw0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBoZWlnaHQ6IGF1dG87DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzJjMmYzMDsNCiAgICBwYWRkaW5nOiAxcHg7DQp9DQoNCi5kaWFsb2ctY29udGFpbmVyIHsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQouZGlhbG9nLXRpdGxlIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjM2QzZjQxOw0KICAgIHBhZGRpbmc6IDVweDsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1jb2xvcjogIzE4MWExYjsNCn0NCg0KLmRpYWxvZy10aXRsZS1sYWJlbCB7DQogICAgd2lkdGg6IDEwMCU7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCiAgICBjb2xvcjogI2Q0ZDRkNDsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogImNlbnRlciI7DQp9DQoNCi5kaWFsb2ctY29udGVudCB7DQogICAgcGFkZGluZzogNXB4Ow0KfQ0KDQouZGlhbG9nLWZvb3Rlci1jb250YWluZXIgew0KICAgIGJvcmRlci10b3Atd2lkdGg6IDFweDsNCiAgICBib3JkZXItdG9wLWNvbG9yOiAjMTgxYTFiOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICMzZDNmNDE7DQp9DQoNCi5kaWFsb2ctZm9vdGVyIHsNCiAgICBwYWRkaW5nOiA1cHg7DQogICAgaG9yaXpvbnRhbC1hbGlnbjogcmlnaHQ7DQp9DQoNCi5kaWFsb2ctY2xvc2UtYnV0dG9uIHsNCiAgICByZXNvdXJjZTogImhheGV1aS1jb3JlL3N0eWxlcy9kZWZhdWx0L3NtYWxsLWNsb3NlLWJ1dHRvbi5wbmciOw0KICAgIHZlcnRpY2FsLWFsaWduOiAiY2VudGVyIjsNCiAgICBjdXJzb3I6ICJwb2ludGVyIjsNCn0NCg0KLmRpYWxvZyAjaWNvbkltYWdlLmluZm8gew0KICAgIHJlc291cmNlOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvZGlhbG9ncy9pbmZvcm1hdGlvbi5wbmciOw0KfQ0KDQouZGlhbG9nICNpY29uSW1hZ2UucXVlc3Rpb24gew0KICAgIHJlc291cmNlOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvZGlhbG9ncy9xdWVzdGlvbi5wbmciOw0KfQ0KDQouZGlhbG9nICNpY29uSW1hZ2Uud2FybmluZyB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9kaWFsb2dzL2V4Y2xhbWF0aW9uLnBuZyI7DQp9DQoNCi5kaWFsb2cgI2ljb25JbWFnZS5lcnJvciB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9kaWFsb2dzL2Nyb3NzLWNpcmNsZS5wbmciOw0KfQ0KDQoubWVzc2FnZWJveCB7DQogICAgaW5pdGlhbC13aWR0aDogMzAwcHg7DQp9"},{ name : "haxeui-core/styles/default/switches.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogU1dJVENIIChERUZBVUxUKQ0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5zd2l0Y2ggew0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGhlaWdodDogYXV0bzsNCiAgICBob3Jpem9udGFsLXNwYWNpbmc6IDVweDsNCn0NCg0KLnN3aXRjaC1sYWJlbCB7DQogICAgY29sb3I6IGJsYWNrOw0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQp9DQoNCi5zd2l0Y2gtYnV0dG9uLXN1YiB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGZpbHRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiBub25lOw0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQogICAgcGFkZGluZzogMHB4Ow0KICAgIGluaXRpYWwtaGVpZ2h0OiAyMHB4Ow0KICAgIGluaXRpYWwtd2lkdGg6IDQwcHg7DQp9DQoNCi5zd2l0Y2gtYnV0dG9uLXN1Yi1leHRyYSB7DQogICAgaGVpZ2h0OiAxNHB4Ow0KICAgIHdpZHRoOiAxMDAlOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICNGRkZGRkY7DQogICAgYm9yZGVyOiAxcHggc29saWQgI0FCQUJBQjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGJvcmRlci1yYWRpdXM6IDEwcHg7DQogICAgZmlsdGVyOiBkcm9wLXNoYWRvdygxLCA0NSwgIzg4ODg4OCwgMC4zLCAxLCAxLCAxLCAzLCB0cnVlKTsNCn0NCg0KLnN3aXRjaC1idXR0b24tc3ViIC5idXR0b24gew0KICAgIHdpZHRoOiAyMHB4Ow0KICAgIGhlaWdodDogMjBweDsNCiAgICBib3JkZXItcmFkaXVzOiA1MHB4Ow0KICAgIGZpbHRlcjogZHJvcC1zaGFkb3coMSwgNDUsICMwMDAwMDAsIDAuMiwgMCwgMCwgMCwgMywgZmFsc2UpOw0KfQ0KDQpAa2V5ZnJhbWVzIHN3aXRjaEFuaW1hdGVTZWxlY3RlZCB7DQogICAgMCUgew0KICAgICAgICBwb3M6IDA7DQogICAgfQ0KICAgIDEwMCUgew0KICAgICAgICBwb3M6IDEwMDsNCiAgICB9DQp9DQoNCi5zd2l0Y2gtYnV0dG9uLXN1YjpzZWxlY3RlZCB7DQogICAgYW5pbWF0aW9uOiBzd2l0Y2hBbmltYXRlU2VsZWN0ZWQgMC4ycyBlYXNlIDBzIDE7DQp9DQogDQouc3dpdGNoLWJ1dHRvbi1zdWI6dW5zZWxlY3RlZCB7DQogICAgYW5pbWF0aW9uOiBzd2l0Y2hBbmltYXRlU2VsZWN0ZWQgMC4ycyBlYXNlIDBzIDEgcmV2ZXJzZSBiYWNrd2FyZHM7DQp9DQoNCg0KQGtleWZyYW1lcyBzd2l0Y2hBbmltYXRlRXh0cmFTZWxlY3RlZCB7DQogICAgMCUgew0KICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRkZGRkZGOw0KICAgIH0NCiAgICAxMDAlIHsNCiAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogIzk4YzRlNjsNCiAgICB9DQp9DQoNCi5zd2l0Y2gtYnV0dG9uLXN1Yi1leHRyYTpzZWxlY3RlZCB7DQogICAgYW5pbWF0aW9uOiBzd2l0Y2hBbmltYXRlRXh0cmFTZWxlY3RlZCAwLjJzIGVhc2UgMHMgMTsNCn0NCg0KLnN3aXRjaC1idXR0b24tc3ViLWV4dHJhOnVuc2VsZWN0ZWQgew0KICAgIGFuaW1hdGlvbjogc3dpdGNoQW5pbWF0ZUV4dHJhU2VsZWN0ZWQgMC4ycyBlYXNlIDBzIDEgcmV2ZXJzZSBiYWNrd2FyZHM7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIFNXSVRDSCAoU1FVQVJFKQ0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5zcXVhcmUtc3dpdGNoIC5zd2l0Y2gtYnV0dG9uLXN1YiB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0ZGRkZGRjsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjQUJBQkFCOw0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQogICAgcGFkZGluZzogMHB4Ow0KICAgIGluaXRpYWwtd2lkdGg6IDQwcHg7DQogICAgaW5pdGlhbC1oZWlnaHQ6IDIwcHg7DQogICAgZmlsdGVyOiBkcm9wLXNoYWRvdygxLCA0NSwgIzg4ODg4OCwgMC4zLCAxLCAxLCAxLCAzLCB0cnVlKTsNCn0NCg0KLnNxdWFyZS1zd2l0Y2ggLnN3aXRjaC1idXR0b24tc3ViIC5idXR0b24gew0KICAgIGhlaWdodDogMTAwJTsNCiAgICB3aWR0aDogNTAlOw0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCiAgICBmaWx0ZXI6IG5vbmU7DQp9DQoNCi5zcXVhcmUtc3dpdGNoIC5zd2l0Y2gtYnV0dG9uLXN1Yi1leHRyYSB7DQogICAgaGVpZ2h0OiAwOw0KICAgIHdpZHRoOiAwOw0KICAgIGJhY2tncm91bmQtY29sb3I6IG5vbmU7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGZpbHRlcjogbm9uZTsNCn0NCg0KQGtleWZyYW1lcyBzd2l0Y2hBbmltYXRlU2VsZWN0ZWRTcXVhcmUgew0KICAgIDAlIHsNCiAgICAgICAgcG9zOiAwOw0KICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRkZGRkZGOw0KICAgIH0NCiAgICAxMDAlIHsNCiAgICAgICAgcG9zOiAxMDA7DQogICAgICAgIGJhY2tncm91bmQtY29sb3I6ICM5OGM0ZTY7DQogICAgfQ0KfQ0KDQouc3F1YXJlLXN3aXRjaCAuc3dpdGNoLWJ1dHRvbi1zdWI6c2VsZWN0ZWQgew0KICAgIGFuaW1hdGlvbjogc3dpdGNoQW5pbWF0ZVNlbGVjdGVkU3F1YXJlIDAuMnMgZWFzZSAwcyAxOw0KfQ0KDQouc3F1YXJlLXN3aXRjaCAuc3dpdGNoLWJ1dHRvbi1zdWI6dW5zZWxlY3RlZCB7DQogICAgYW5pbWF0aW9uOiBzd2l0Y2hBbmltYXRlU2VsZWN0ZWRTcXVhcmUgMC4ycyBlYXNlIDBzIDEgcmV2ZXJzZSBiYWNrd2FyZHM7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIFNXSVRDSCAoUElMTCkNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQoucGlsbC1zd2l0Y2ggLnN3aXRjaC1idXR0b24tc3ViIHsNCiAgICBib3JkZXItcmFkaXVzOiA1MHB4Ow0KICAgIGluaXRpYWwtd2lkdGg6IDQwcHg7DQogICAgaW5pdGlhbC1oZWlnaHQ6IDIwcHg7DQogICAgcGFkZGluZzogMHB4Ow0KICAgIGJhY2tncm91bmQtY29sb3I6ICNGRkZGRkY7DQogICAgYm9yZGVyOiAxcHggc29saWQgI0FCQUJBQjsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQogICAgZmlsdGVyOiBkcm9wLXNoYWRvdygxLCA0NSwgIzg4ODg4OCwgMC4zLCAxLCAxLCAxLCAzLCB0cnVlKTsNCn0NCg0KLnBpbGwtc3dpdGNoIC5zd2l0Y2gtYnV0dG9uLXN1YiAuYnV0dG9uIHsNCiAgICBib3JkZXItcmFkaXVzOiA1MHB4Ow0KICAgIHdpZHRoOiAyMHB4Ow0KICAgIGhlaWdodDogMjBweDsNCiAgICBmaWx0ZXI6IG5vbmU7DQp9DQoNCi5waWxsLXN3aXRjaCAuc3dpdGNoLWJ1dHRvbi1zdWItZXh0cmEgew0KICAgIGhlaWdodDogMDsNCiAgICB3aWR0aDogMDsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiBub25lOw0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBmaWx0ZXI6IG5vbmU7DQp9DQoNCkBrZXlmcmFtZXMgc3dpdGNoQW5pbWF0ZVNlbGVjdGVkUGlsbCB7DQogICAgMCUgew0KICAgICAgICBwb3M6IDA7DQogICAgICAgIGJhY2tncm91bmQtY29sb3I6ICNGRkZGRkY7DQogICAgfQ0KICAgIDEwMCUgew0KICAgICAgICBwb3M6IDEwMDsNCiAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogIzk4YzRlNjsNCiAgICB9DQp9DQoNCi5waWxsLXN3aXRjaCAuc3dpdGNoLWJ1dHRvbi1zdWI6c2VsZWN0ZWQgew0KICAgIGFuaW1hdGlvbjogc3dpdGNoQW5pbWF0ZVNlbGVjdGVkUGlsbCAwLjJzIGVhc2UgMHMgMTsNCn0NCg0KLnBpbGwtc3dpdGNoIC5zd2l0Y2gtYnV0dG9uLXN1Yjp1bnNlbGVjdGVkIHsNCiAgICBhbmltYXRpb246IHN3aXRjaEFuaW1hdGVTZWxlY3RlZFBpbGwgMC4ycyBlYXNlIDBzIDEgcmV2ZXJzZSBiYWNrd2FyZHM7DQp9DQo"},{ name : "haxeui-core/styles/dark/right_arrow.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAIAAACgB3uHAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAOElEQVQImWPYsmXLWxkVCGJiYGA4PmMCAwMDAwMDE4SC8Bm3bNnCAANMcJZlRgETnAWVgbAYGBgAg4cO3PCuD3sAAAAASUVORK5CYII"},{ name : "styles/main.css", data : ""},{ name : "haxeui-core/styles/default/down_arrow_white.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAECAIAAADNpLIqAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAJElEQVQImWP8//8/AwZgeieriib0TlaVCUIhCzEwMDAhc+DSAPKbCiUI9YmvAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/transparent_px.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAADElEQVQImWN4K6MCAAMnAS7qrFRjAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/dark/down_arrow.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAECAIAAADNpLIqAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAJElEQVQImWPcsmULAwZgsswoQBOyzChgglDIQgwMDEzIHLg0AIkLCIq+gFfgAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/sizer_gripper_vertical.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAKCAIAAAAcmWhZAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAH0lEQVQImWN8K6PCAANMDAwMk5KjJyVHQzlwwEg7ZQCDgwyl+MMKdgAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/dark/menus.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogTUVOVUJBUg0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5tZW51YmFyIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjM0QzRjQxOw0KICAgIHBhZGRpbmc6IDVweDsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1jb2xvcjogIzE4MWExYjsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDIsIDQ1LCAjMDAwMDAwLCAwLjE1LCA2LCAxLCAzMCwgMzUsIGZhbHNlKTsNCn0NCg0KLm1lbnViYXItYnV0dG9uIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjM0QzRjQxOw0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBjb2xvcjogI2I0YjRiNDsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KfQ0KDQoubWVudWJhci1idXR0b246aG92ZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICM0MTU5ODI7DQogICAgY29sb3I6IHdoaXRlOw0KfQ0KDQoubWVudWJhci1idXR0b246ZG93biB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzM5M2IzYzsNCiAgICBjb2xvcjogI2Q0ZDRkNDsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjMTgxYTFiOw0KICAgIGJvcmRlci1ib3R0b20td2lkdGg6IDBweDsNCiAgICBib3JkZXItYm90dG9tLXNpemU6IDBweDsNCn0NCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogTUVOVQ0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5tZW51IHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMzkzYjNjOw0KICAgIHBhZGRpbmc6IDFweDsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjMTgxYTFiOw0KICAgIGZpbHRlcjogZHJvcC1zaGFkb3coMiwgNDUsICMwMDAwMDAsIDAuMTUsIDYsIDEsIDMwLCAzNSwgZmFsc2UpOw0KICAgIHNwYWNpbmc6IDA7DQogICAgd2lkdGg6IDIwMHB4Ow0KfQ0KDQoubWVudS5leHBhbmRlZCB7DQogICAgYm9yZGVyLXRvcC13aWR0aDogMHB4Ow0KICAgIGJvcmRlci10b3Atc2l6ZTogMHB4Ow0KfQ0KDQoubWVudS1maWxsZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICMxODFhMWI7DQogICAgaGVpZ2h0OiAxcHg7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIE1FTlVJVEVNUw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5tZW51aXRlbSB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzM5M2IzYzsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBwYWRkaW5nOiA1cHg7DQogICAgY3Vyc29yOiBwb2ludGVyOw0KfQ0KDQoubWVudWl0ZW0tbGFiZWwsIC5tZW51aXRlbS1jaGVja2JveCwgLm1lbnVpdGVtLW9wdGlvbmJveCwgLm1lbnVpdGVtLXNob3J0Y3V0LWxhYmVsIHsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KfQ0KDQoubWVudWl0ZW0tc2hvcnRjdXQtbGFiZWwgew0KICAgIHRleHQtYWxpZ246IHJpZ2h0Ow0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQogICAgaG9yaXpvbnRhbC1hbGlnbjogcmlnaHQ7DQp9DQoNCi5tZW51aXRlbS1pY29uIHsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KfQ0KDQoubWVudWl0ZW06aG92ZXIsIC5tZW51aXRlbTpzZWxlY3RlZCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzQxNTk4MjsNCn0NCg0KLm1lbnVpdGVtIC5sYWJlbDpob3ZlciwgLm1lbnVpdGVtIC5sYWJlbDpzZWxlY3RlZCB7DQogICAgY29sb3I6IHdoaXRlOw0KfQ0KDQoubWVudWl0ZW0tZXhwYW5kYWJsZSB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGFyay9yaWdodF9hcnJvdy5wbmciOw0KICAgIHZlcnRpY2FsLWFsaWduOiAiY2VudGVyIjsNCn0NCg0KLm1lbnVzZXBhcmF0b3Igew0KICAgIGhlaWdodDogMXB4Ow0KICAgIHdpZHRoOiAxMDAlOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyNTI3Mjg7DQogICAgaG9yaXpvbnRhbC1hbGlnbjogImNlbnRlciI7DQp9DQo"},{ name : "haxeui-core/styles/default/left_arrow_white.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAIAAACgB3uHAAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAANklEQVQImWN8K6PCwMDAwMAg9Pg2E5zFwMDABGcxMDAw/v//nwEGmN7JqiI4DAwMcD7UAAgfAMkKDTd2MVgoAAAAAElFTkSuQmCC"},{ name : "haxeui-core/styles/default/rules.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogUlVMRQ0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5ydWxlIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjREREREREOw0KfQ0KDQouaG9yaXpvbnRhbC1ydWxlIHsNCiAgICBoZWlnaHQ6IDFweDsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBob3Jpem9udGFsLWFsaWduOiAiY2VudGVyIjsNCn0NCg0KLnZlcnRpY2FsLXJ1bGUgew0KICAgIGhlaWdodDogMTAwJTsNCiAgICB3aWR0aDogMXB4Ow0KICAgIHZlcnRpY2FsLWFsaWduOiAiY2VudGVyIjsNCn0"},{ name : "haxeui-core/styles/native/main.css", data : "KiB7CiAgICBuYXRpdmU6IHRydWU7Cn0KCi5oc2xpZGVyOm5hdGl2ZSwgLnZzbGlkZXI6bmF0aXZlLCAuaHByb2dyZXNzOm5hdGl2ZSwgLnZwcm9ncmVzczpuYXRpdmUgewogICAgd2lkdGg6IGF1dG87CiAgICBoZWlnaHQ6IGF1dG87CiAgICBiYWNrZ3JvdW5kOiBub25lOwogICAgYm9yZGVyOiBub25lOwogICAgYm9yZGVyLXJhZGl1czogbm9uZTsKfQoKLmJ1dHRvbjpuYXRpdmUsIC5kcm9wZG93bjpuYXRpdmUgewogICAgYmFja2dyb3VuZDogbm9uZTsKICAgIGJvcmRlcjogbm9uZTsKICAgIGJvcmRlci1yYWRpdXM6IG5vbmU7CiAgICBjb2xvcjogbm9uZTsKfQoKLnRleHRmaWVsZDpuYXRpdmUsIC50ZXh0YXJlYTpuYXRpdmUgewogICAgYmFja2dyb3VuZDogbm9uZTsKICAgIGJvcmRlcjogbm9uZTsKICAgIGJvcmRlci1yYWRpdXM6IG5vbmU7CiAgICBjb2xvcjogbm9uZTsKICAgIGZpbHRlcjogbm9uZTsKfQoKLmRpYWxvZzpuYXRpdmUgewogICAgcGFkZGluZy10b3A6IDBweDsKfQ"},{ name : "haxeui-core/styles/dark/tableview.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogSEVBREVSDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLmhlYWRlciB7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KICAgIHNwYWNpbmc6IDA7DQp9DQoNCi5oZWFkZXIgLmNvbHVtbiB7DQogICAgYm9yZGVyLXJhZGl1czogMDsNCiAgICBpY29uLXBvc2l0aW9uOiBmYXItcmlnaHQ7DQp9DQoNCi5oZWFkZXIgLnNvcnRhYmxlIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvdXBfZG93bl9hcnJvd3MucG5nIjsNCiAgICBpY29uLXBvc2l0aW9uOiBmYXItcmlnaHQ7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIFRBQkxFVklFVw0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi50YWJsZXZpZXcgew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICMxODFhMWI7DQogICAgYm9yZGVyLXJhZGl1czogMXB4Ow0KICAgIHBhZGRpbmc6IDFweDsNCiAgICB3aWR0aDogYXV0bzsNCiAgICBoZWlnaHQ6IGF1dG87DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzI1MjcyODsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQoudGFibGV2aWV3IC50YWJsZXZpZXctY29udGVudHMgew0KICAgIHNwYWNpbmc6IDA7DQogICAgd2lkdGg6IDEwMCU7DQogICAgcGFkZGluZzogMHB4Ow0KfQ0KDQoudGFibGV2aWV3IC5ldmVuIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjUyNzI4Ow0KICAgIGN1cnNvcjogcG9pbnRlcjsNCn0NCg0KLnRhYmxldmlldyAub2RkIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMmEyYzJkOw0KICAgIGN1cnNvcjogcG9pbnRlcjsNCn0NCg0KLnRhYmxldmlldyAuY29tcG91bmRpdGVtcmVuZGVyZXIgLml0ZW1yZW5kZXJlciB7DQogICAgaGVpZ2h0OiBhdXRvOw0KICAgIHBhZGRpbmc6IDVweDsNCn0NCg0KLnRhYmxldmlldyAuZXZlbjpob3ZlciB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzJmMzc0NjsNCn0NCg0KLnRhYmxldmlldyAub2RkOmhvdmVyIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMmYzNzQ2Ow0KfQ0KDQoudGFibGV2aWV3IC5jb21wb3VuZGl0ZW1yZW5kZXJlciAubGFiZWwgew0KICAgIGNvbG9yOiAjZDRkNGQ0Ow0KfQ0KDQoudGFibGV2aWV3IC5jb21wb3VuZGl0ZW1yZW5kZXJlcjpzZWxlY3RlZCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzQxNTk4MjsNCiAgICBjb2xvcjogd2hpdGU7DQp9DQoNCi50YWJsZXZpZXcgLmNvbXBvdW5kaXRlbXJlbmRlcmVyOnNlbGVjdGVkIC5sYWJlbCB7DQogICAgY29sb3I6IHdoaXRlOw0KfQ0KDQoudGFibGV2aWV3IC5jb21wb3VuZGl0ZW1yZW5kZXJlcjpkaXNhYmxlZCB7DQogICAgY29sb3I6ICM1OTU5NTk7DQp9DQoNCi50YWJsZXZpZXcgLmNvbXBvdW5kaXRlbXJlbmRlcmVyOmRpc2FibGVkIC5sYWJlbCB7DQogICAgY29sb3I6ICM1OTU5NTk7DQp9DQo"},{ name : "haxeui-core/styles/default/haxeui_small.png", data : "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAC91BMVEUAAABgbY0+U25ga4QwSGe/wMy2ucI8SWC1t8OGj6Sana+zuMd3gppicY1ibYm0ucUzZZvH0ODExdZ8hZw/TGQ+TGPFxth/hp+vtMJNXHLExNI/TmVlhq5hbYi6vc2pr75veZI0ZpyrvdTK0+Q7WoC0t8d/iZ/Gx9ezuMaorb3Gx9dmc49OWm+DiaOpw+CVqMJUe6uwtcGprr5gbIdteZRaZn11gJpgbIhiborM1+g/XoM4WH2zusw8S2RhaYFCUGVuepdyfJVLWG9UYHjDxdZhbYg8SmGeprfKytmSmKw6bqZnjryTqseXq8RQd6mmrb58iaF4g5m2uMd4gZiorrx3gZeKkqZmco5smMg0Y5fP3e5ol8rS3+4+drUzZZs0ZJhPe67AzN7J0+RTeKc5X4o3WoNCYog6WoKuv9ZihK7M1ea+ydyht9JBX4U2V35ieZzAxtd7h59ldZPIzt9je6BBVHBYZoDBwtNMWHCco7Rea4KYqsRWcJZxeI6/wtJSXXTEw9O6vc08RVicpLU5SV7Ly904Rl19h55KVm43RFpLf7lFerOZuNqcudpIeK48bqWftdGftdGZsc6OqsuswdlLd62qv9l2lrxjh7NlibRJbpumudBcga6svtWnutJdg7GKoL6svdZylL1uj7ZSeahJbJREZZCGlKyOm7OZorNgboyxtcNwfJmKkqWhprSHjaB5fJBmc4yor7ylp7Vomc08drVRiMSUttt+p9OStdt9p9M9d7bQ3+9nmMypxOGBqdQ6dbRtnc9gk8qsxuN6pdJ1odFwntBtnM1pms1SicVQh8RHfrs8draqxeKhvuCaut5yoNBilctajsZYjMSXuNxOhcBBerg0aJ8zZ52nwuGdvN6Vt9yOstlklcpckMZNhcM5b6o3a6TR4PDL2+7K2u23zuejwOBekchSisZZjcRVicI6c7EyZZvT4fHF2OzC1eu+0umkweGJr9dfkspik8hWi8VMg75Lgr1Bdq85cq+yyuWEq9VFe7VNUsNiAAAAtHRSTlMABQIDBAYDEgUFAhYWChcK/ac7OzYuFxQTDQwJpjsgDw/9p6aXOjQyMisTExIL+KenPDc0MiciGxXQlpVyXUdCPDk1MSIiHhwVD/7Tx6SkcG1dR0dGLCsq+/r5+Pb29vDMxL28vLerqKOhoKCXj454dnV1cXBpaGdiXldVTUlIQkE8OzYzKiYgHhz9/fz48fHW087OzMzKysjCwLu7t6Cgn5eXlJSFhXl4bm1jY11FRUM4IQf95cbSAAAEV0lEQVRIx32WZZwSQRjGF1ZQMMAEG+zE7u7u7u7u7u7u7m4WdlkQFEwEFOG48+70zu5u/eAE7C6s+nzgA7/3P888O/PODAEkTwclk4EfuZKIllQpV2BJJCRJoHKFKr82PZY2vyqaIRWlm2k0GZBK6jJKpOA/Rf4mxReULwdUuHCx4vm0KlkEUYJyzZLORbJC1atXsUuVnICQq5rMGLm7ANLQoTXLFeMQWF65yNmjrVqVgWq198DMKhkBkL/4vkCiz3vRcxHIsPFEe4woLsDyDm3XGsDfHqfXnvzFdKhSTpJIpy0/ImA2M0zg3tOEBI/n4q6aHYud1zbTZahccdaRlhedzqe+pNv+Bw9umoKjGpRKQ8jSF878lDEjJQZ83gSnYXOb0ws6d6o3a9w6g9Nntz37cvOmCejGiur1w8ATBGAxifc+JOw4dqrduJbepKs3wMARPW9evX5aAOSYl/lREg9Axuxb1bJF1zuCauSgL5QNAVkyW++ZY8RcvWOKlVsdAQpanUxM/RWj8VNM/Y3veh54z8SMbwSK9WiurwGBdE0B8DYQMz7S5aj6YKq+xkIIlCg63PpIGIK5bTOGCWHobyH96OxpwcLlWjShu/WDsB7Wij1+x/eutRistFKVb24160+Gnw8cX0zcSIkfNH9ZbikB5zTF+pbh8/ISJn8e6lYrO4gA+iFXw9n93yRG5xV7fH09pE5jaEAoZU2Lju3pwRYgr4i4iVehzyRgAABk0b7ae0aYV+zxPHUgNAAAtChRrOYjOD6XV0wE9VOxAbbI17GfNyqvKLl78JylKAG2SF++jYHPK9Yn0+rJoHkiAGzTaeuF44s9BkyH7SkENlz6H3B/OwKEU1pJ/8fiLrUGT0kQOommr/2r3k9RP/jQ+LM+pmna8vdZXb9LUZRDjT8rt3BPXP8kXrAAYENo4fit4bPQUNfE4/sdFARS8NbgNp8dVCMPcV6sV9zmQ9v7nYv+O3GfCouNx9sbN9BDj4UWEThvRLdScQPhFn1opjlZBDn8LMUp5TVqUXwIPP5IC3QpOm8kRLwaHgL4mHmHMvOz4r8nL0dIDY8ZfJA9wRH4WfF5eaWqa3AnnxcBQg8uL5+6uZo7jB9+xIDQA48v1A8I4OP+sUtYbLdbrnXd0ne5m3I4oggI4AvFKQDsruRg3M627dqN35rs/8YKEDYELhQMmC3h2tvX77odvfq2PVOkU6dztce36HH92Ut3HBsOkQKvLHQp/oLzuPI56I67dYsdMLFDkSUanS5Towq1x2yzGW3Jz158jYOzewUvRdieI2nXtZewlmV7bTrZoWJlTWkJmUaSsSpAjrfoYQMyfn7pZqnDoE3Rxb5/T1mo1q1bT6xbsXLJjBLUvSRGxgzLgzXsILrYCUWzJuh1ULduXfg6gOXhVpQipEuFvFgVKqGnAyGH748MQJkyVS2pQ6PzAoiuZNVMSJHHiRQgCgkWSSqlMc8fKUlKsPDz5w9agXK/G5FNrAAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/dark/frames.css", data : "LmZyYW1lIHsNCiAgICBwYWRkaW5nLWxlZnQ6IDEwcHg7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KfQ0KDQouZnJhbWUtY29udGVudHMgew0KICAgIGJvcmRlci1yaWdodDogMXB4IHNvbGlkICMyNTI3Mjg7DQogICAgYm9yZGVyLWxlZnQ6IDFweCBzb2xpZCAjMjUyNzI4Ow0KICAgIGJvcmRlci1ib3R0b206IDFweCBzb2xpZCAjMjUyNzI4Ow0KICAgIHBhZGRpbmc6IDEwcHg7DQogICAgcGFkZGluZy10b3A6IDE1cHg7DQp9DQoNCi5mcmFtZS10aXRsZSB7DQogICAgY29sb3I6ICNiNGI0YjQ7DQp9DQoNCi5mcmFtZS1sZWZ0LWxpbmUsIC5mcmFtZS1yaWdodC1saW5lIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjUyNzI4Ow0KICAgIGhlaWdodDogMXB4Ow0KfQ0K"},{ name : "haxeui-core/styles/default/dialogs/exclamation.png", data : "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAB3VBMVEUAAACVfwD9+7zFrAHGrQGeiAC6owDUxDzr5oDd213v5oft44HZzE/Qwzbr4Ha6pxTo3Gy8qBTk11+WgAC+qhPVwjW+qRHTwCu/qQ7SvSHRuxehiwHQuA/MswHCqgaulwDDqwPGrQG0nAHIrwG3oAHKsQG7owHMswGVfwC+pgGahADMswHBqQGmjwDErAGymgHHrgG2ngHJsAG5oQHLsgHp5XD065Xe22rm1znk0iDz6pTi23Ph1EHdzSHx6JHe0kfYyynu44PZz0vUxzDZyUzBqQy/qAjt3SXn2irp2yfa1Dbk2S3S0D/h1y/d1jLu3WbX0znV0Tvt3ST15Xb043Lw32vv3mjOzkPw4z/v4Tnu3ioiIhoAAADv4TTv3y7++rj8+LX89q379av48aL58Z737JP38o787o716Yr46YLs6YLz5oD453p2dnaXknR4d3BwcHCopWt6eGhoaGh+e2FgYGDi3l6GgVxXV1ff2k3c1k3u40nVz0nT0ULi2j3Bvjbk2TOenC+GhSqVkSNtbSNfXhpIRxUuLg4eHQcdHAcWFgf37pjt4XPf33Dk4Wbr5GLZ0lzh11fl4FXt41OIglHV1FDo30fSyUbX1ETRyETd10A4ODZkYSzp2yglJSNztjb6AAAAR3RSTlMAzPoVDQgF0P7+7eTe3tzc1tPPzMnGw7+8ubKyq6uqoaCVkoiCenNtZmRgX1VORz05LishH/75+fj49fX09PDu7uro6NS0tIfvrv4AAAGdSURBVDjLrZFFWwJhFEZ1DOzu7u7ubtFPRRAkLLq7u8Hu9rc6MIAIDBs9q3ufc3Zvwn+TXF2dHDfoLCjojOeTqiCoKilO0Jp3dJTXiu6HKiAWC6oYQg2ac074/NOcZjQ/UA5xcDjOcfkAStCYSd+HoWc2xvZ9pcc4oUAgxJ2U9sXyqfUZDLxILBbh2fP1qTGCnuJTPEEqk0kJ+LPinmifUjfDBkCuUMgB4GXUpUQFXZgzAgAqtVoFAIGB6YpaqWaCBwB4eP/60D+/3kzWRG7WvnQOwK3e7vXaD2AuMe0RKy2PXGgNWKzV5bJiYR5HV35v1pKVZvAJi9NpwfpIz24J94NladpdHyaHw+Q/XtLLBsOCpqyrHT9KLleJXJrsph/fXzL8thGJpqQ/FDQs3G0j2DweW+A0LjYEfW/RtXkLwU2huLcCGIt6AyvVzj5tBiBTKOTgbZ6rRTbrzr9fCyIhkyVrIfK7/StVTpHWg+iYTF3o+Zyu9G3WkUtcRSO3Aw4Kx4hEIolEolKpNBrtEAY2ewjjhXDQlhiHtoS/8w0/HYkkEMHbQgAAAABJRU5ErkJggg"},{ name : "haxeui-core/styles/dark/up_down_arrows.png", data : "iVBORw0KGgoAAAANSUhEUgAAAAcAAAAJCAIAAABxOqH0AAAABnRSTlMA7QAcACSX3bo6AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAARElEQVQImWN8K6PCwMDAwMBwfMYEy4wCCJsJLgQnoaJwDpzNuGXLFgYMwAg3F0UUq1omuL1wYJlRwAShkIUQLoNw4NIA3UcXw9uo6KsAAAAASUVORK5CYII"},{ name : "haxeui-core/locale/es/dialog.properties", data : "ZGlhbG9nLnNhdmU9R3VhcmRhcg0KZGlhbG9nLnllcz1TaQ0KZGlhbG9nLm5vPU5vDQpkaWFsb2cuY2xvc2U9Q2VycmFyDQpkaWFsb2cub2s9T0sNCmRpYWxvZy5jYW5jZWw9Q2FuY2VsYXINCmRpYWxvZy5hcHBseT1BcGxpY2FyDQoNCg"},{ name : "haxeui-core/styles/default/frames.css", data : "LmZyYW1lIHsNCiAgICBwYWRkaW5nLWxlZnQ6IDEwcHg7DQogICAgd2lkdGg6IGF1dG87DQogICAgaGVpZ2h0OiBhdXRvOw0KfQ0KDQouZnJhbWUtY29udGVudHMgew0KICAgIGJvcmRlci1yaWdodDogMXB4IHNvbGlkICNEREREREQ7DQogICAgYm9yZGVyLWxlZnQ6IDFweCBzb2xpZCAjREREREREOw0KICAgIGJvcmRlci1ib3R0b206IDFweCBzb2xpZCAjREREREREOw0KICAgIHBhZGRpbmc6IDEwcHg7DQogICAgcGFkZGluZy10b3A6IDE1cHg7DQp9DQoNCi5mcmFtZS10aXRsZSB7DQogICAgY29sb3I6ICMyMjIyMjI7DQp9DQoNCi5mcmFtZS1sZWZ0LWxpbmUsIC5mcmFtZS1yaWdodC1saW5lIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjREREREREOw0KICAgIGhlaWdodDogMXB4Ow0KfQ0K"},{ name : "haxeui-core/styles/default/propertygrids.css", data : "LnByb3BlcnR5LWdyaWQgew0KfQ0KDQoucHJvcGVydHktZ3JpZCAuc2Nyb2xsdmlldy1jb250ZW50cyB7DQogICAgcGFkZGluZzogMDsNCiAgICB3aWR0aDogMTAwJTsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQoucHJvcGVydHktZ3JvdXAgew0KICAgIHdpZHRoOiAxMDAlOw0KICAgIHNwYWNpbmc6IDA7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cC1oZWFkZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNFREVERUQ7DQogICAgcG9pbnRlci1ldmVudHM6IHRydWU7DQogICAgd2lkdGg6IDEwMCU7DQogICAgcGFkZGluZzogNXB4Ow0KICAgIGJvcmRlci1jb2xvcjogI0FCQUJBQjsNCiAgICBib3JkZXItYm90dG9tLXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLWJvdHRvbS1zaXplOiAxcHg7DQogICAgY3Vyc29yOiBwb2ludGVyOw0KfQ0KDQoucHJvcGVydHktZ3JvdXAtaGVhZGVyLnNjcm9sbGluZyB7DQogICAgYm9yZGVyLXJpZ2h0LXdpZHRoOiAxcHg7DQogICAgYm9yZGVyLXJpZ2h0LXNpemU6IDFweDsNCn0NCg0KLnByb3BlcnR5LWdyb3VwLWhlYWRlcjpob3ZlciB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0Y1RjVGNTsNCn0NCg0KLnByb3BlcnR5LWdyb3VwLWhlYWRlci1pY29uIHsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KfQ0KDQoucHJvcGVydHktZ3JvdXAtaGVhZGVyOmV4cGFuZGVkIC5wcm9wZXJ0eS1ncm91cC1oZWFkZXItaWNvbiB7DQogICAgcmVzb3VyY2U6ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9kb3duX2Fycm93X3NxdWFyZS5wbmciOw0KfQ0KDQoucHJvcGVydHktZ3JvdXAtaGVhZGVyOmNvbGxhcHNlZCAucHJvcGVydHktZ3JvdXAtaGVhZGVyLWljb24gew0KICAgIHJlc291cmNlOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvcmlnaHRfYXJyb3dfc3F1YXJlLnBuZyI7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cC1oZWFkZXItbGFiZWwgew0KfQ0KDQoucHJvcGVydHktZ3JvdXAtY29udGVudHMgew0KICAgIHdpZHRoOiAxMDAlOw0KICAgIHNwYWNpbmc6IDE7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0FCQUJBQjsNCiAgICBwYWRkaW5nLWJvdHRvbTogMXB4Ow0KfQ0KDQoucHJvcGVydHktZ3JvdXAubGFzdCAucHJvcGVydHktZ3JvdXAtY29udGVudHMuc2Nyb2xsaW5nIHsNCiAgICBwYWRkaW5nLWJvdHRvbTogMHB4Ow0KfQ0KDQoucHJvcGVydHktZ3JvdXAtY29udGVudHMuc2Nyb2xsaW5nIHsNCiAgICBwYWRkaW5nLXJpZ2h0OiAxcHg7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cC1pdGVtLWxhYmVsLWNvbnRhaW5lciB7DQogICAgd2lkdGg6IDUwJTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiB3aGl0ZTsNCiAgICBoZWlnaHQ6IDEwMCU7DQogICAgcGFkZGluZy1sZWZ0OiA1cHg7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cC1pdGVtLWVkaXRvci1jb250YWluZXIgew0KICAgIHdpZHRoOiA1MCU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7DQp9ICAgICAgICANCg0KLnByb3BlcnR5LWdyb3VwLWl0ZW0tbGFiZWwgew0KICAgIHZlcnRpY2FsLWFsaWduOiBjZW50ZXI7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cC1pdGVtLWVkaXRvciB7DQogICAgd2lkdGg6IDEwMCU7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cCAudGV4dGZpZWxkIHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgZmlsdGVyOiBub25lOw0KICAgIGJvcmRlci1yYWRpdXM6IDA7DQp9DQoNCi5wcm9wZXJ0eS1ncm91cCAuY2hlY2tib3ggew0KICAgIHBhZGRpbmc6IDVweDsNCiAgICBwYWRkaW5nLWxlZnQ6IDRweDsNCn0NCg0KLnByb3BlcnR5LWdyb3VwIC5udW1iZXItc3RlcHBlciB7DQogICAgcGFkZGluZzogMDsNCn0NCg0KLnByb3BlcnR5LWdyb3VwIC5kcm9wZG93biB7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGJvcmRlci1yYWRpdXM6IG5vbmU7DQp9DQo"},{ name : "haxeui-core/styles/dark/rules.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogUlVMRQ0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5ydWxlIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjUyNzI4Ow0KfQ0K"},{ name : "haxeui-core/styles/dark/steppers.css", data : "Lm51bWJlcnN0ZXBwZXIgew0KICAgIHBhZGRpbmc6IDFweDsNCiAgICBzcGFjaW5nOiAwOw0KfQ0KDQouc3RlcHBlciB7DQogICAgc3BhY2luZzogMDsNCn0NCg0KLnN0ZXBwZXItYnV0dG9uIHsNCiAgICBwYWRkaW5nOiAzcHg7DQogICAgcGFkZGluZy10b3A6IDRweDsNCiAgICBwYWRkaW5nLWJvdHRvbTogNHB4Ow0KICAgIGJvcmRlci1yYWRpdXM6IDA7DQogICAgYm9yZGVyOiBub25lOw0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyYzJmMzA7DQogICAgb3BhY2l0eTogMTsNCn0NCg0KLnN0ZXBwZXItYnV0dG9uOmhvdmVyIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjNDU0ODRhOw0KfQ0KDQouc3RlcHBlci1idXR0b246ZG93biB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzQ1NDg0YTsNCn0NCg0KLnN0ZXBwZXItYnV0dG9uOmRpc2FibGVkIHsNCiAgICBvcGFjaXR5OiAwLjU7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzMzMzczODsNCn0NCg0KLnN0ZXBwZXItaW5jIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RhcmsvdXBfYXJyb3cucG5nIjsNCn0NCg0KLnN0ZXBwZXItZGVpbmMgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGFyay9kb3duX2Fycm93LnBuZyI7DQp9DQoNCi5zdGVwcGVyLWluYzpkb3duIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RhcmsvdXBfYXJyb3dfd2hpdGUucG5nIjsNCn0NCg0KLnN0ZXBwZXItZGVpbmM6ZG93biB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kYXJrL2Rvd25fYXJyb3dfd2hpdGUucG5nIjsNCn0NCg0KLnN0ZXBwZXItdGV4dGZpZWxkLCAuc3RlcHBlci10ZXh0ZmllbGQ6YWN0aXZlIHsNCiAgICBib3JkZXI6IG5vbmU7DQogICAgd2lkdGg6IDEwMCU7DQogICAgcGFkZGluZzogNHB4Ow0KICAgIHBhZGRpbmctdG9wOiA1cHg7DQogICAgcGFkZGluZy1ib3R0b206IDNweDsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGZpbHRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjUyNzI4Ow0KfQ0KDQouc3RlcHBlci10ZXh0ZmllbGQ6ZGlzYWJsZWQgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICMyYzJmMzA7DQp9DQoNCi5zdGVwcGVyLXN0ZXAgew0KICAgIGhlaWdodDogMTAwJTsNCn0NCg0KLnN0ZXBwZXItc3RlcCAuc3RlcHBlci1pbmMsIC5zdGVwcGVyLXN0ZXAgLnN0ZXBwZXItZGVpbmMgew0KICAgIGhlaWdodDogNTAlOw0KfQ0KDQoubnVtYmVyLXN0ZXBwZXIgew0KICAgIGluaXRpYWwtd2lkdGg6IDYwcHg7DQp9"},{ name : "haxeui-core/styles/default/checkboxes.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogQ0hFQ0tCT1gNCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQouY2hlY2tib3ggew0KICAgIHdpZHRoOiBhdXRvOw0KICAgIGhlaWdodDogYXV0bzsNCiAgICBob3Jpem9udGFsLXNwYWNpbmc6IDRweDsNCiAgICBjdXJzb3I6IHBvaW50ZXI7DQogICAgY29sb3I6ICMwMDAwMDA7DQp9DQoNCi5jaGVja2JveDpob3ZlciB7DQp9DQoNCi5jaGVja2JveDpkaXNhYmxlZCB7DQogICAgY3Vyc29yOiBkZWZhdWx0Ow0KICAgIGNvbG9yOiAjOTA5MDkwOw0KfQ0KDQouY2hlY2tib3gtdmFsdWUgew0KICAgIGJvcmRlcjogMXB4IHNvbGlkICNBQkFCQUI7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0ZGRkZGRjsNCiAgICB3aWR0aDogMTZweDsNCiAgICBoZWlnaHQ6IDE2cHg7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCiAgICBib3JkZXItcmFkaXVzOiAycHg7DQogICAgaWNvbjogbm9uZTsNCiAgICBmaWx0ZXI6IGRyb3Atc2hhZG93KDEsIDQ1LCAjODg4ODg4LCAwLjIsIDIsIDIsIDEsIDMsIHRydWUpOw0KICAgIGN1cnNvcjogcG9pbnRlcjsNCn0NCg0KLmNoZWNrYm94LXZhbHVlOmhvdmVyIHsNCiAgICBib3JkZXI6IDFweCBzb2xpZCAjMjE2QUFFOw0KfQ0KDQouY2hlY2tib3gtdmFsdWU6c2VsZWN0ZWQgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9jaGVjay5wbmciOw0KfQ0KDQouY2hlY2tib3gtdmFsdWU6ZGlzYWJsZWQgew0KICAgIGJhY2tncm91bmQ6ICNENEQ0RDQgI0NDQ0NDQyB2ZXJ0aWNhbDsNCiAgICBjdXJzb3I6IGRlZmF1bHQ7DQp9DQoNCi5jaGVja2JveC1sYWJlbCB7DQogICAgdmVydGljYWwtYWxpZ246IGNlbnRlcjsNCn0NCg0KLmNoZWNrYm94LWljb24gew0KICAgIGhvcml6b250YWwtYWxpZ246IGNlbnRlcjsNCiAgICB2ZXJ0aWNhbC1hbGlnbjogY2VudGVyOw0KICAgIGN1cnNvcjogcG9pbnRlcjsNCiAgICBvcGFjaXR5OiAxOw0KfQ0KDQouY2hlY2tib3gtaWNvbjpkaXNhYmxlZCB7DQogICAgY3Vyc29yOiBkZWZhdWx0Ow0KICAgIG9wYWNpdHk6IDAuNTsNCn0NCg"},{ name : "haxeui-core/styles/default/scrollbars.css", data : "LyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogU0NST0xMDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLnNjcm9sbCB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0U5RTlFOTsNCn0NCg0KLnNjcm9sbCAuYnV0dG9uIHsNCiAgICBib3JkZXItcmFkaXVzOiAwOw0KICAgIGJvcmRlcjogbm9uZTsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRTlFOUU5Ow0KICAgIHBhZGRpbmc6IDA7DQogICAgZmlsdGVyOiBub25lOw0KfQ0KDQouc2Nyb2xsIC5idXR0b246aG92ZXIgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNEN0Q3RDc7DQp9DQoNCi5zY3JvbGwgLmJ1dHRvbjpkb3duIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjNTI1MjUyOw0KICAgIGZpbHRlcjogbm9uZTsNCn0NCg0KLnNjcm9sbCAuZGVpbmMgew0KICAgIGhlaWdodDogMTdweDsNCiAgICB3aWR0aDogMTdweDsNCiAgICBvcGFjaXR5OiAxOw0KfQ0KDQouc2Nyb2xsIGRlaW5jOmRpc2FibGVkIHsNCiAgICBvcGFjaXR5OiAwLjU7DQp9DQoNCi5zY3JvbGwgZGVpbmM6ZG93biB7DQp9DQoNCi5zY3JvbGwgLmluYyB7DQogICAgaGVpZ2h0OiAxN3B4Ow0KICAgIHdpZHRoOiAxN3B4Ow0KICAgIG9wYWNpdHk6IDE7DQp9DQoNCi5zY3JvbGwgLmluYzpkaXNhYmxlZCB7DQogICAgb3BhY2l0eTogMC41Ow0KfQ0KDQouc2Nyb2xsIC5pbmM6ZG93biB7DQp9DQoNCi5zY3JvbGwgLnRodW1iIHsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjQzZDNkM2Ow0KfQ0KDQouc2Nyb2xsIC50aHVtYjpob3ZlciB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogI0FBQUFBQTsNCn0NCg0KLnNjcm9sbCAudGh1bWI6ZG93biB7DQogICAgYmFja2dyb3VuZC1jb2xvcjogIzUyNTI1MjsNCn0NCg0KLnNjcm9sbCAudGh1bWI6ZGlzYWJsZWQgew0KICAgIGJhY2tncm91bmQtY29sb3I6ICNEREREREQ7DQp9DQoNCi8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioNCioqIFZFUlRJQ0FMIFNDUk9MTA0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi52ZXJ0aWNhbC1zY3JvbGwgew0KICAgIHdpZHRoOiAxN3B4Ow0KfQ0KDQoudmVydGljYWwtc2Nyb2xsIC50aHVtYiB7DQogICAgd2lkdGg6IDE3cHg7DQogICAgaGVpZ2h0OiAxN3B4Ow0KfQ0KDQoudmVydGljYWwtc2Nyb2xsIC5kZWluYyB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kZWZhdWx0L3VwX2Fycm93LnBuZyI7DQp9DQoNCi52ZXJ0aWNhbC1zY3JvbGwgLmRlaW5jOmRvd24gew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC91cF9hcnJvd193aGl0ZS5wbmciOw0KfQ0KDQoudmVydGljYWwtc2Nyb2xsIC5pbmMgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9kb3duX2Fycm93LnBuZyI7DQp9DQoNCi52ZXJ0aWNhbC1zY3JvbGwgLmluYzpkb3duIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvZG93bl9hcnJvd193aGl0ZS5wbmciOw0KfQ0KDQovKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqDQoqKiBIT1JJWk9OVEFMIFNDUk9MTA0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKi8NCi5ob3Jpem9udGFsLXNjcm9sbCB7DQogICAgaGVpZ2h0OiAxN3B4Ow0KfQ0KDQouaG9yaXpvbnRhbC1zY3JvbGwgLnRodW1iIHsNCiAgICB3aWR0aDogMTdweDsNCiAgICBoZWlnaHQ6IDE3cHg7DQp9DQoNCi5ob3Jpem9udGFsLXNjcm9sbCAuZGVpbmMgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9sZWZ0X2Fycm93LnBuZyI7DQp9DQoNCi5ob3Jpem9udGFsLXNjcm9sbCAuZGVpbmM6ZG93biB7DQogICAgaWNvbjogImhheGV1aS1jb3JlL3N0eWxlcy9kZWZhdWx0L2xlZnRfYXJyb3dfd2hpdGUucG5nIjsNCn0NCg0KLmhvcml6b250YWwtc2Nyb2xsIC5pbmMgew0KICAgIGljb246ICJoYXhldWktY29yZS9zdHlsZXMvZGVmYXVsdC9yaWdodF9hcnJvdy5wbmciOw0KfQ0KDQouaG9yaXpvbnRhbC1zY3JvbGwgLmluYzpkb3duIHsNCiAgICBpY29uOiAiaGF4ZXVpLWNvcmUvc3R5bGVzL2RlZmF1bHQvcmlnaHRfYXJyb3dfd2hpdGUucG5nIjsNCn0NCg0KLyoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0KKiogTU9CSUxFIFZBUklBTlRTDQoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqLw0KLnNjcm9sbDptb2JpbGUgLmluYywgLnNjcm9sbDptb2JpbGUgLmRlaW5jIHsNCiAgICBoaWRkZW46IHRydWU7DQp9DQoNCi5ob3Jpem9udGFsLXNjcm9sbDptb2JpbGUgew0KICAgIG9wYWNpdHk6IC41Ow0KICAgIGhlaWdodDogOHB4Ow0KICAgIHBhZGRpbmc6IDJweDsNCiAgICBiYWNrZ3JvdW5kLWNvbG9yOiBub25lOw0KfQ0KDQouaG9yaXpvbnRhbC1zY3JvbGw6bW9iaWxlIC50aHVtYiB7DQogICAgaGVpZ2h0OiA0cHg7DQogICAgYm9yZGVyLXJhZGl1czogMnB4Ow0KfQ0KDQoudmVydGljYWwtc2Nyb2xsOm1vYmlsZSB7DQogICAgb3BhY2l0eTogLjU7DQogICAgd2lkdGg6IDhweDsNCiAgICBwYWRkaW5nOiAycHg7DQogICAgYmFja2dyb3VuZC1jb2xvcjogbm9uZTsNCn0NCg0KLnZlcnRpY2FsLXNjcm9sbDptb2JpbGUgLnRodW1iIHsNCiAgICB3aWR0aDogNHB4Ow0KICAgIGJvcmRlci1yYWRpdXM6IDJweDsNCn0NCg"}];
 haxe_ds_ObjectMap.count = 0;
 haxe_ui_validation_ValidationManager.get_instance().registerEvent("ValidationStop",haxe_ui_backend_html5_HtmlUtils.onValidationStop);
 js_Boot.__toStr = ({ }).toString;
+DateTools.DAY_SHORT_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+DateTools.DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 Main.maxDelta = 0.5;
 Xml.Element = 0;
 Xml.PCData = 1;
@@ -33821,15 +41715,6 @@ haxe_ui_backend_html5_util_FontDetect._initialized = false;
 haxe_ui_backend_html5_util_FontDetect._aFallbackFonts = ["serif","sans-serif","monospace","cursive","fantasy"];
 haxe_ui_binding_BindingManager.bindingInfo = new haxe_ds_ObjectMap();
 haxe_ui_binding_BindingManager.targets = new haxe_ds_StringMap();
-haxe_ui_containers_ScrollViewEvents.INERTIAL_TIME_CONSTANT = 325;
-haxe_ui_core_ItemRenderer.__meta__ = { fields : { allowHover : { clonable : null}}};
-haxe_ui_containers_dialogs_DialogButton.SAVE = "{{dialog.save}}";
-haxe_ui_containers_dialogs_DialogButton.YES = "{{dialog.yes}}";
-haxe_ui_containers_dialogs_DialogButton.NO = "{{dialog.no}}";
-haxe_ui_containers_dialogs_DialogButton.CLOSE = "{{dialog.close}}";
-haxe_ui_containers_dialogs_DialogButton.OK = "{{dialog.ok}}";
-haxe_ui_containers_dialogs_DialogButton.CANCEL = "{{dialog.cancel}}";
-haxe_ui_containers_dialogs_DialogButton.APPLY = "{{dialog.apply}}";
 haxe_ui_events_UIEvent.READY = "ready";
 haxe_ui_events_UIEvent.DESTROY = "destroy";
 haxe_ui_events_UIEvent.RESIZE = "resize";
@@ -33850,11 +41735,27 @@ haxe_ui_events_UIEvent.COMPONENT_ADDED = "componentAdded";
 haxe_ui_events_UIEvent.COMPONENT_REMOVED = "componentRemoved";
 haxe_ui_events_UIEvent.DRAG_START = "dragStart";
 haxe_ui_events_UIEvent.DRAG_END = "dragEnd";
+haxe_ui_components_CalendarEvent.DATE_CHANGE = "datechange";
+haxe_ui_components_CalendarDropDownHandler.DATE_FORMAT = "%d/%m/%Y";
+haxe_ui_components_DropDownBuilder.HANDLER_MAP = new haxe_ds_StringMap();
+haxe_ui_components__$TabBar_Builder.SCROLL_INCREMENT = 20;
+haxe_ui_containers_CalendarView.MONTH_NAMES = ["January","Febuary","March","April","May","June","July","August","September","October","November","December"];
+haxe_ui_containers_CalendarView.DATE_FORMAT = "%Y-%m-%d";
+haxe_ui_containers_ScrollViewEvents.INERTIAL_TIME_CONSTANT = 325;
+haxe_ui_core_ItemRenderer.__meta__ = { fields : { allowHover : { clonable : null}}};
+haxe_ui_containers_dialogs_DialogButton.SAVE = "{{dialog.save}}";
+haxe_ui_containers_dialogs_DialogButton.YES = "{{dialog.yes}}";
+haxe_ui_containers_dialogs_DialogButton.NO = "{{dialog.no}}";
+haxe_ui_containers_dialogs_DialogButton.CLOSE = "{{dialog.close}}";
+haxe_ui_containers_dialogs_DialogButton.OK = "{{dialog.ok}}";
+haxe_ui_containers_dialogs_DialogButton.CANCEL = "{{dialog.cancel}}";
+haxe_ui_containers_dialogs_DialogButton.APPLY = "{{dialog.apply}}";
 haxe_ui_containers_dialogs_DialogEvent.DIALOG_CLOSED = "dialogClosed";
 haxe_ui_containers_dialogs_MessageBoxType.TYPE_INFO = "info";
 haxe_ui_containers_dialogs_MessageBoxType.TYPE_QUESTION = "question";
 haxe_ui_containers_dialogs_MessageBoxType.TYPE_WARNING = "warning";
 haxe_ui_containers_dialogs_MessageBoxType.TYPE_ERROR = "error";
+haxe_ui_containers_menus_MenuEvent.MENU_SELECTED = "menuselected";
 haxe_ui_core_ComponentFieldMap.MAP = (function($this) {
 	var $r;
 	var _g = new haxe_ds_StringMap();
