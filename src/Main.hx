@@ -50,7 +50,7 @@ class Main {
 
 		view.AddButton("reset","Reset", function(e) {
 			bm = new BattleManager();
-		});
+		}, "You will lose all your progress");
 
 
 		main.percentWidth = 100;

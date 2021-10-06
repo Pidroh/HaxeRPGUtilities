@@ -506,7 +506,7 @@ Main.main = function() {
 	});
 	view.AddButton("reset","Reset",function(e) {
 		bm = new BattleManager();
-	});
+	},"You will lose all your progress");
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
@@ -1083,10 +1083,24 @@ View.prototype = {
 		}
 		this.logText.set_text(text + "\n\n" + this.logText.get_text());
 	}
-	,AddButton: function(id,label,onClick) {
+	,AddButton: function(id,label,onClick,warningMessage) {
 		var button = new haxe_ui_components_Button();
 		button.set_text(label);
-		button.set_onClick(onClick);
+		if(warningMessage == null) {
+			button.set_onClick(onClick);
+		} else {
+			var whatever = function(e) {
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 68, className : "View", methodName : "AddButton"});
+				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 70, className : "View", methodName : "AddButton"});
+					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
+						onClick(null);
+					}
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 74, className : "View", methodName : "AddButton"});
+				});
+			};
+			button.set_onClick(whatever);
+		}
 		this.buttonMap.h[id] = button;
 		this.buttonBox.addComponent(button);
 	}
