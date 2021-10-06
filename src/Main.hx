@@ -99,6 +99,11 @@ class Main {
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea+1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea );
 
+			var levelUpSystem = bm.wdata.hero.level > 1;
+			view.UpdateVisibilityOfValueView(view.level, levelUpSystem);
+			view.UpdateVisibilityOfValueView(view.xpBar, levelUpSystem);
+
+
 			while(bm.events.length > eventShown)
 			{
 				var e = bm.events[eventShown];

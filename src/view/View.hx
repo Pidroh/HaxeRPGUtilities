@@ -95,6 +95,9 @@ class View {
 	public function UpdateVisibility(actorView:ActorView, visibility) {
 		actorView.parent.hidden = !visibility;
 	}
+	public function UpdateVisibilityOfValueView(valueView:ValueView, visibility) {
+		valueView.parent.hidden = !visibility;
+	}
 
 	public function UpdateValues(res:ValueView, current:Int, max:Int) {
 		if (max > 0) {
@@ -160,7 +163,7 @@ class View {
 			vertical-align: middle; width:100%;";
 		l.verticalAlign = "middle";
 		progress.addComponent(l);
-		return {centeredText: l, bar: progress};
+		return {centeredText: l, bar: progress, parent: boxh};
 	}
 }
 
@@ -170,6 +173,7 @@ typedef AreaView = {};
 typedef ValueView = {
 	var centeredText:Label;
 	var bar:HorizontalProgress;
+	var parent:Component;
 };
 
 typedef ActorView = {

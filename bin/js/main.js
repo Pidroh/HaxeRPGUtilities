@@ -537,6 +537,9 @@ Main.main = function() {
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
 		view.UpdateValues(view.areaLabel,bm.wdata.battleArea + 1,-1);
 		view.UpdateValues(view.enemyToAdvance,bm.wdata.killedInArea[bm.wdata.battleArea],bm.wdata.necessaryToKillInArea);
+		var levelUpSystem = bm.wdata.hero.level > 1;
+		view.UpdateVisibilityOfValueView(view.level,levelUpSystem);
+		view.UpdateVisibilityOfValueView(view.xpBar,levelUpSystem);
 		while(bm.events.length > eventShown) {
 			var e = bm.events[eventShown];
 			var data = e.data;
@@ -1115,6 +1118,9 @@ View.prototype = {
 	,UpdateVisibility: function(actorView,visibility) {
 		actorView.parent.set_hidden(!visibility);
 	}
+	,UpdateVisibilityOfValueView: function(valueView,visibility) {
+		valueView.parent.set_hidden(!visibility);
+	}
 	,UpdateValues: function(res,current,max) {
 		if(max > 0) {
 			res.bar.set_pos(current * 100 / max);
@@ -1163,7 +1169,7 @@ View.prototype = {
 		l.set_styleString("font-size:14px; text-align: center;\r\n\t\t\tvertical-align: middle; width:100%;");
 		l.set_verticalAlign("middle");
 		progress.addComponent(l);
-		return { centeredText : l, bar : progress};
+		return { centeredText : l, bar : progress, parent : boxh};
 	}
 	,__class__: View
 };
