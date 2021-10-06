@@ -1,3 +1,4 @@
+import haxe.ui.styles.animation.util.ColorPropertyDetails;
 import haxe.ui.containers.dialogs.MessageBox.MessageBoxType;
 import RPGData.AttributeLogic;
 import haxe.ui.components.Button;
@@ -20,7 +21,7 @@ class View {
 	public var mainComponent:Component;
 	public var logText:Label;
 
-	var buttonBox = new VBox();
+	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
 
 	public function new() {
@@ -28,24 +29,64 @@ class View {
 		mainComponent = boxParent;
 		boxParent.horizontalAlign = "center";
 		boxParent.paddingTop = 20;
+		boxParent.width = 100;
+		boxParent.height = 800;
+		boxParent.percentHeight = 100;
+		//boxParent.percentHeight = 100;
 
 		var box:VBox = new VBox();
 		boxParent.addComponent(box);
+		box.width = 200;
 
-		boxParent.addComponent(buttonBox);
+		buttonBox = CreateContainer(boxParent, true);
+		buttonBox.width = 100;
+		buttonBox.height = 100;
+		buttonBox.percentHeight = 100;
+		// boxParent.addComponent(buttonBox);
 
+		var logContainer = CreateContainer(boxParent, true, false);
 		var log = new Label();
-		boxParent.addComponent(log);
+		log.width = 200;
+		logContainer.percentHeight = 100;
+		logContainer.width = 200;
+		// boxParent.addComponent(log);
 		logText = log;
+		logContainer.addComponent(log);
 
-		areaLabel = CreateValueView(box, false, "Area: ");
-		enemyToAdvance = CreateValueView(box, true, "Progress: ");
+		var areaContainer = CreateContainer(box, true);
+		areaLabel = CreateValueView(areaContainer, false, "Area: ");
+		enemyToAdvance = CreateValueView(areaContainer, true, "Progress: ");
+		areaContainer.width = 200;
 
-		level = CreateValueView(box, false, "Level: ");
-		xpBar = CreateValueView(box, true, "XP: ");
+		var levelContainer = CreateContainer(box, true);
+		level = CreateValueView(levelContainer, false, "Level: ");
+		xpBar = CreateValueView(levelContainer, true, "XP: ");
 
-		heroView = GetActorView("You", box);
-		enemyView = GetActorView("Enemy", box);
+		var battleView = CreateContainer(box, false);
+		heroView = GetActorView("You", battleView);
+		enemyView = GetActorView("Enemy", battleView);
+	}
+
+	public function CreateContainer(parent:Component, vertical, extendHeight = false) {
+		var container:Component;
+		if(false){
+		//if (extendHeight == true) {
+			container = new Box();
+			container.percentHeight = 100;
+			
+		} else {
+			if (vertical == false)
+				container = new HBox();
+			else
+				container = new VBox();
+		}
+
+		// container.borderRadius = 1;
+		container.borderColor = "#333333";
+		container.borderSize = 1;
+		container.padding = 15;
+		parent.addComponent(container);
+		return container;
 	}
 
 	public function AddEventText(text:String) {
@@ -60,6 +101,8 @@ class View {
 	public function AddButton(id:String, label:String, onClick, warningMessage = null) {
 		var button = new Button();
 		button.text = label;
+		button.percentWidth = 100;
+		button.height = 30;
 		// button.onClick = onClick;
 		if (warningMessage == null)
 			button.onClick = onClick;
@@ -95,6 +138,7 @@ class View {
 	public function UpdateVisibility(actorView:ActorView, visibility) {
 		actorView.parent.hidden = !visibility;
 	}
+
 	public function UpdateVisibilityOfValueView(valueView:ValueView, visibility) {
 		valueView.parent.hidden = !visibility;
 	}
@@ -128,12 +172,14 @@ class View {
 	function CreateValueView(parent:Component, withBar:Bool, label:String):ValueView {
 		var boxh = new Box();
 		boxh.width = 180;
+		boxh.height = 100;
 		parent.addComponent(boxh);
 
 		var addLabel = label != null && label != "";
 		if (addLabel) {
 			var l:Label = new Label();
 			l.text = label;
+			l.width = 50;
 			// l.percentHeight = 100;
 
 			l.verticalAlign = "center";

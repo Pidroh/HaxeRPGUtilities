@@ -28,11 +28,6 @@ class Main {
 
 		var main = new VBox();
 		main.addComponent(view.mainComponent);
-		
-
-		
-
-		
 
 		view.AddButton("retreat","Retreat", function(e) {
 			bm.RetreatArea();
@@ -57,6 +52,13 @@ class Main {
 		//main.horizontalAlign = "center";
 		
 		Screen.instance.addComponent(main);
+		
+		var box = new VBox();
+		var label = new Label();
+		label.text = "sss";
+		label.width = 100;
+		box.addComponent(label);
+		Screen.instance.addComponent(box);
 
 		var time:Float = 0;
 
@@ -102,7 +104,6 @@ class Main {
 			var levelUpSystem = bm.wdata.hero.level > 1;
 			view.UpdateVisibilityOfValueView(view.level, levelUpSystem);
 			view.UpdateVisibilityOfValueView(view.xpBar, levelUpSystem);
-
 
 			while(bm.events.length > eventShown)
 			{
