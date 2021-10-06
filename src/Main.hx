@@ -26,61 +26,10 @@ class Main {
 		var view:View = new View();
 		Toolkit.init();
 
-		
-		
-		
 		var main = new VBox();
 		main.addComponent(view.mainComponent);
 		
 
-		var buttonAdvance : Button = new Button();
-		buttonAdvance.text = "Advance area";
-		main.addComponent(buttonAdvance);
-		var buttonRetreat : Button = new Button();
-		buttonRetreat.text = "Retreat Area";
-		main.addComponent(buttonRetreat);
-		var buttonLevelUp : Button = new Button();
-		buttonLevelUp.text = "Level up";
-		main.addComponent(buttonLevelUp);
-		var label:Label = new Label();
-		label.text = "";		
-		main.addComponent(label);
-		{
-			
-			var progress = new Progress();
-			progress.pos = 80;
-			progress.width = 120;
-			progress.height = 25;
-			//progress.styleString = "";
-			main.addComponent(progress);
-			var l = new Label();
-			l.text = "sss";
-			//progress.addComponent(l);
-		}
-		{
-			var progress = new Progress();
-			progress.pos = 30;
-			progress.value = 30;
-			progress.max = 100;
-			progress.min = 0;
-			progress.precision =20;
-			progress.width = 120;
-			progress.height = 20;
-			progress.getComponentAt(0).backgroundColor = "#999999";
-			progress.getComponentAt(0).value = 30;
-			progress.getComponentAt(0).width = 40;
-			progress.getComponentAt(0).height = progress.height - 4;
-			
-			
-			main.addComponent(progress);
-			var l = new Label();
-			l.text = "32/32";
-			l.textAlign = "center";
-			l.styleString = "font-size:14px; text-align: center;
-			vertical-align: middle; width:100%;";
-			l.verticalAlign = "middle";
-			progress.addComponent(l);
-		}
 		
 
 		
@@ -103,16 +52,7 @@ class Main {
 			bm = new BattleManager();
 		});
 
-		buttonLevelUp.onClick = function(e){
-			bm.LevelUp();
-		}
-		buttonRetreat.onClick = function(e) {
-			bm.RetreatArea();
-		};
 
-		buttonAdvance.onClick = function(e) {
-			bm.AdvanceArea();
-		};
 		main.percentWidth = 100;
 		//main.horizontalAlign = "center";
 		
@@ -200,9 +140,7 @@ class Main {
 			buttonToAction("retreat", "retreat");
 			buttonToAction("levelup", "levelup");
 			
-			buttonAdvance.disabled = !bm.canAdvance;
-			buttonRetreat.disabled = !bm.canRetreat;
-			buttonLevelUp.hidden = !bm.canLevelUp;
+			
 			
 
 			delta = delta * 0.001;
@@ -218,7 +156,7 @@ class Main {
 			//var json = Json.stringify(bm);
 			localStorage.setItem(key, json);
 			if (text != null) {
-				label.text = text;
+				//label.text = text;
 			}
 
 			js.Browser.window.requestAnimationFrame(update);

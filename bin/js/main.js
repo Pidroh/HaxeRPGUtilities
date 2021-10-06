@@ -495,44 +495,6 @@ Main.main = function() {
 	haxe_ui_Toolkit.init();
 	var main = new haxe_ui_containers_VBox();
 	main.addComponent(view.mainComponent);
-	var buttonAdvance = new haxe_ui_components_Button();
-	buttonAdvance.set_text("Advance area");
-	main.addComponent(buttonAdvance);
-	var buttonRetreat = new haxe_ui_components_Button();
-	buttonRetreat.set_text("Retreat Area");
-	main.addComponent(buttonRetreat);
-	var buttonLevelUp = new haxe_ui_components_Button();
-	buttonLevelUp.set_text("Level up");
-	main.addComponent(buttonLevelUp);
-	var label = new haxe_ui_components_Label();
-	label.set_text("");
-	main.addComponent(label);
-	var progress = new haxe_ui_components_Progress();
-	progress.set_pos(80);
-	progress.set_width(120);
-	progress.set_height(25);
-	main.addComponent(progress);
-	var l = new haxe_ui_components_Label();
-	l.set_text("sss");
-	var progress = new haxe_ui_components_Progress();
-	progress.set_pos(30);
-	progress.set_value(30);
-	progress.set_max(100);
-	progress.set_min(0);
-	progress.set_precision(20);
-	progress.set_width(120);
-	progress.set_height(20);
-	progress.getComponentAt(0).set_backgroundColor(haxe_ui_util_Color.fromString("#999999"));
-	progress.getComponentAt(0).set_value(30);
-	progress.getComponentAt(0).set_width(40);
-	progress.getComponentAt(0).set_height(progress.get_height() - 4);
-	main.addComponent(progress);
-	var l = new haxe_ui_components_Label();
-	l.set_text("32/32");
-	l.set_textAlign("center");
-	l.set_styleString("font-size:14px; text-align: center;\r\n\t\t\tvertical-align: middle; width:100%;");
-	l.set_verticalAlign("middle");
-	progress.addComponent(l);
 	view.AddButton("retreat","Retreat",function(e) {
 		bm.RetreatArea();
 	});
@@ -544,15 +506,6 @@ Main.main = function() {
 	});
 	view.AddButton("reset","Reset",function(e) {
 		bm = new BattleManager();
-	});
-	buttonLevelUp.set_onClick(function(e) {
-		bm.LevelUp();
-	});
-	buttonRetreat.set_onClick(function(e) {
-		bm.RetreatArea();
-	});
-	buttonAdvance.set_onClick(function(e) {
-		bm.AdvanceArea();
 	});
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
@@ -618,9 +571,6 @@ Main.main = function() {
 		buttonToAction("advance","advance");
 		buttonToAction("retreat","retreat");
 		buttonToAction("levelup","levelup");
-		buttonAdvance.set_disabled(!bm.canAdvance);
-		buttonRetreat.set_disabled(!bm.canRetreat);
-		buttonLevelUp.set_hidden(!bm.canLevelUp);
 		delta *= 0.001;
 		while(delta > Main.maxDelta) {
 			delta -= Main.maxDelta;
@@ -630,9 +580,7 @@ Main.main = function() {
 		var localStorage = js_Browser.getLocalStorage();
 		var json = bm.GetJsonPersistentData();
 		localStorage.setItem(key,json);
-		if(text != null) {
-			label.set_text(text);
-		}
+		var update1 = text != null;
 		window.requestAnimationFrame(update);
 		return true;
 	};
