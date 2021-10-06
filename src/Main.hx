@@ -87,6 +87,18 @@ class Main {
 			bm = new BattleManager();
 		});
 
+		view.AddButton("Advance", function(e) {
+			bm.AdvanceArea();
+		});
+
+		view.AddButton("Retreat", function(e) {
+			bm.RetreatArea();
+		});
+
+		view.AddButton("Level Up", function(e) {
+			bm.LevelUp();
+		});
+
 		buttonLevelUp.onClick = function(e){
 			bm.LevelUp();
 		}

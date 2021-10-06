@@ -516,6 +516,15 @@ Main.main = function() {
 	view.AddButton("Reset",function(e) {
 		bm = new BattleManager();
 	});
+	view.AddButton("Advance",function(e) {
+		bm.AdvanceArea();
+	});
+	view.AddButton("Retreat",function(e) {
+		bm.RetreatArea();
+	});
+	view.AddButton("Level Up",function(e) {
+		bm.LevelUp();
+	});
 	buttonLevelUp.set_onClick(function(e) {
 		bm.LevelUp();
 	});
