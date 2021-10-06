@@ -19,6 +19,7 @@ class View {
 	public var mainComponent:Component;
 	public var logText : Label;
 	var buttonBox = new VBox();
+	var buttonMap = new Map<String,Button>();
 
 	public function new() {
 		var boxParent = new HBox();
@@ -44,8 +45,6 @@ class View {
         level = CreateValueView(box, false, "Level: ");
         xpBar = CreateValueView(box, true, "XP: ");
 
-		
-
 		heroView = GetActorView("You", box);
 		enemyView = GetActorView("Enemy", box);
 
@@ -61,11 +60,29 @@ class View {
 		logText.text = text +"\n\n" + logText.text ;
 	}
 
-	public function AddButton(label:String, onClick){
+	public function AddButton(id:String, label:String, onClick){
 		var button = new Button();
 		button.text = label;
 		button.onClick = onClick;
+		buttonMap[id] = button;
+		//button.hidden = true;
 		buttonBox.addComponent(button);
+	}
+
+	public function ButtonVisibility(id:String, visible:Bool){
+		var b = buttonMap[id];
+		//b.allowInteraction = visible;
+		b.hidden = !visible;
+	}
+
+	public function ButtonEnabled(id:String, enabled:Bool){
+		var b = buttonMap[id];
+		//b.allowInteraction = visible;
+		b.disabled = !enabled;
+	}
+
+	public function UpdateVisibility(actorView : ActorView, visibility){
+		actorView.parent.hidden = !visibility;
 	}
 
 	public function UpdateValues(res : ValueView, current:Int, max: Int){
@@ -82,16 +99,13 @@ class View {
 	function GetActorView(name:String, parent:Component):ActorView {
 		var box:VBox = new VBox();
 		parent.addComponent(box);
-
 		var label:Label = new Label();
 		var lifeView:ValueView = null;
 		box.addComponent(label);
-		label.text = name;
-		
+		label.text = name;		
 		lifeView = CreateValueView(box, true, "Life: ");
-		
 
-		return {name: label, life: lifeView, attack: CreateValueView(box, false, "Attack: ")};
+		return {name: label, life: lifeView, attack: CreateValueView(box, false, "Attack: "), parent: box};
 	}
 
 	function CreateValueView(parent:Component, withBar:Bool, label : String) : ValueView {
@@ -151,4 +165,5 @@ typedef ActorView = {
 	var name:Label;
 	var life:ValueView;
 	var attack:ValueView;
+	var parent:Component;
 };

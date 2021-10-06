@@ -80,6 +80,12 @@ typedef Equipment = {
 	var attributes:Map<String, Int>;
 }
 
+typedef PlayerAction = {
+	public var visible : Bool;
+	public var enabled : Bool;
+}
+
+
 typedef WorldData = {
 	var hero:Actor;
 	var enemy:Actor;
@@ -91,7 +97,7 @@ typedef WorldData = {
 	var killedInArea:Array<Int>;
 	var necessaryToKillInArea:Int;
 	var maxArea:Int;
-
+	var playerActions : Map < String, PlayerAction >;
 }
 
 enum EventTypes{
@@ -113,6 +119,7 @@ class ActorReference{
 		this.pos = pos;
 	}
 }
+
 
 class GameEvent {
 	public var type:EventTypes;

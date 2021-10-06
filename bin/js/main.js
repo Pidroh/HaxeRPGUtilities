@@ -17,13 +17,16 @@ var BattleManager = function() {
 	_g.h["Life"] = 20;
 	_g.h["LifeMax"] = 20;
 	var stats = _g;
-	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 2;
-	_g.h["Life"] = 6;
-	_g.h["LifeMax"] = 6;
-	var stats2 = _g;
-	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : { level : 1, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)}, maxArea : 0, necessaryToKillInArea : 5, killedInArea : [0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false};
+	var stats2_h = Object.create(null);
+	stats2_h["Attack"] = 2;
+	stats2_h["Life"] = 6;
+	stats2_h["LifeMax"] = 6;
+	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap()};
+	w.playerActions.h["advance"] = { visible : true, enabled : false};
+	w.playerActions.h["retreat"] = { visible : false, enabled : false};
+	w.playerActions.h["levelup"] = { visible : false, enabled : false};
 	this.wdata = w;
+	this.ChangeBattleArea(0);
 };
 $hxClasses["BattleManager"] = BattleManager;
 BattleManager.__name__ = "BattleManager";
@@ -43,15 +46,20 @@ BattleManager.prototype = {
 	}
 	,ChangeBattleArea: function(area) {
 		this.wdata.battleArea = area;
-		this.wdata.necessaryToKillInArea = 5 + area;
-		var enemyLife = 6 + area * 3;
-		var _g = new haxe_ds_StringMap();
-		_g.h["Attack"] = 2 + area * 3;
-		_g.h["Life"] = enemyLife;
-		_g.h["LifeMax"] = enemyLife;
-		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
-		haxe_Log.trace(Std.string(this.wdata.enemy.reference) + " REFERENCE?",{ fileName : "src/logic/BattleManager.hx", lineNumber : 38, className : "BattleManager", methodName : "ChangeBattleArea"});
+		this.wdata.necessaryToKillInArea = 0;
+		this.wdata.killedInArea[area] = 0;
+		if(area > 0) {
+			this.wdata.necessaryToKillInArea = 5 + area;
+			var enemyLife = 6 + area * 3;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Attack"] = 2 + area * 3;
+			_g.h["Life"] = enemyLife;
+			_g.h["LifeMax"] = enemyLife;
+			var stats2 = _g;
+			this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+		} else {
+			this.wdata.enemy = null;
+		}
 		this.dirty = true;
 	}
 	,advance: function() {
@@ -69,16 +77,18 @@ BattleManager.prototype = {
 			enemy.attributesCalculated.h["Life"] = v;
 			attackHappen = false;
 		}
-		if(enemy.attributesCalculated.h["Life"] <= 0) {
-			attackHappen = false;
-			event += "New enemy";
-			event += "\n\n\n";
-			var v = enemy.attributesCalculated.h["LifeMax"];
-			enemy.attributesCalculated.h["Life"] = v;
+		if(this.wdata.battleArea > 0) {
+			if(enemy.attributesCalculated.h["Life"] <= 0) {
+				attackHappen = false;
+				event += "New enemy";
+				event += "\n\n\n";
+				var v = enemy.attributesCalculated.h["LifeMax"];
+				enemy.attributesCalculated.h["Life"] = v;
+			}
 		}
-		var output = this.BaseInformationFormattedString();
-		output += "\n\n";
-		output += event;
+		if(enemy == null) {
+			attackHappen = false;
+		}
 		if(attackHappen) {
 			var gEvent = this.AddEvent(EventTypes.ActorAttack);
 			var attacker = hero;
@@ -112,9 +122,6 @@ BattleManager.prototype = {
 				hero.xp.value += enemy.level;
 				var e = this.AddEvent(EventTypes.ActorDead);
 				e.origin = enemy.reference;
-				haxe_Log.trace(e.origin,{ fileName : "src/logic/BattleManager.hx", lineNumber : 148, className : "BattleManager", methodName : "advance"});
-				haxe_Log.trace(enemy.reference,{ fileName : "src/logic/BattleManager.hx", lineNumber : 149, className : "BattleManager", methodName : "advance"});
-				haxe_Log.trace(this.events[this.events.length - 1].origin,{ fileName : "src/logic/BattleManager.hx", lineNumber : 150, className : "BattleManager", methodName : "advance"});
 			}
 			if(hero.attributesCalculated.h["Life"] <= 0) {
 				var e = this.AddEvent(EventTypes.ActorDead);
@@ -123,7 +130,7 @@ BattleManager.prototype = {
 			}
 		}
 		this.wdata.turn = !this.wdata.turn;
-		return output;
+		return "";
 	}
 	,AddEvent: function(eventType) {
 		var e = new GameEvent(eventType);
@@ -162,13 +169,21 @@ BattleManager.prototype = {
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
 		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
+		var lu = this.wdata.playerActions.h["levelup"];
+		lu.visible = this.canLevelUp;
+		lu.enabled = this.canLevelUp;
+		var lu = this.wdata.playerActions.h["advance"];
+		lu.visible = this.canAdvance || lu.visible;
+		lu.enabled = this.canAdvance;
+		var lu = this.wdata.playerActions.h["retreat"];
+		lu.visible = this.canRetreat || lu.visible;
+		lu.enabled = this.canRetreat;
 		if(this.wdata.timeCount >= this.wdata.timePeriod) {
 			this.wdata.timeCount = 0;
 			return this.advance();
 		}
 		if(this.dirty) {
 			this.dirty = false;
-			return this.BaseInformationFormattedString();
 		}
 		return null;
 	}
@@ -204,6 +219,12 @@ BattleManager.prototype = {
 	}
 	,SendJsonPersistentData: function(jsonString) {
 		this.wdata = JSON.parse(jsonString);
+		if(this.wdata.battleArea >= this.wdata.killedInArea.length) {
+			this.wdata.battleArea = this.wdata.killedInArea.length - 1;
+		}
+		if(this.wdata.maxArea >= this.wdata.killedInArea.length) {
+			this.wdata.maxArea = this.wdata.killedInArea.length - 1;
+		}
 	}
 	,__class__: BattleManager
 };
@@ -505,7 +526,6 @@ Main.main = function() {
 	progress.getComponentAt(0).set_value(30);
 	progress.getComponentAt(0).set_width(40);
 	progress.getComponentAt(0).set_height(progress.get_height() - 4);
-	haxe_Log.trace((progress._children == null ? [] : progress._children).length,{ fileName : "src/Main.hx", lineNumber : 73, className : "Main", methodName : "main"});
 	main.addComponent(progress);
 	var l = new haxe_ui_components_Label();
 	l.set_text("32/32");
@@ -513,17 +533,17 @@ Main.main = function() {
 	l.set_styleString("font-size:14px; text-align: center;\r\n\t\t\tvertical-align: middle; width:100%;");
 	l.set_verticalAlign("middle");
 	progress.addComponent(l);
-	view.AddButton("Reset",function(e) {
-		bm = new BattleManager();
-	});
-	view.AddButton("Advance",function(e) {
-		bm.AdvanceArea();
-	});
-	view.AddButton("Retreat",function(e) {
+	view.AddButton("retreat","Retreat",function(e) {
 		bm.RetreatArea();
 	});
-	view.AddButton("Level Up",function(e) {
+	view.AddButton("advance","Advance",function(e) {
+		bm.AdvanceArea();
+	});
+	view.AddButton("levelup","Level Up",function(e) {
 		bm.LevelUp();
+	});
+	view.AddButton("reset","Reset",function(e) {
+		bm = new BattleManager();
 	});
 	buttonLevelUp.set_onClick(function(e) {
 		bm.LevelUp();
@@ -546,8 +566,16 @@ Main.main = function() {
 	var update = null;
 	var eventShown = 0;
 	var ActorToView = function(actor,actorView) {
-		view.UpdateValues(actorView.life,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
-		view.UpdateValues(actorView.attack,bm.GetAttribute(actor,"Attack"),-1);
+		if(actor != null) {
+			view.UpdateValues(actorView.life,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
+			view.UpdateValues(actorView.attack,bm.GetAttribute(actor,"Attack"),-1);
+		}
+		view.UpdateVisibility(actorView,actor != null);
+	};
+	var buttonToAction = function(actionId,buttonId) {
+		var action = bm.wdata.playerActions.h[actionId];
+		view.ButtonVisibility(buttonId,action.visible);
+		view.ButtonEnabled(buttonId,action.enabled);
 	};
 	update = function(timeStamp) {
 		ActorToView(bm.wdata.hero,view.heroView);
@@ -587,6 +615,9 @@ Main.main = function() {
 		}
 		var delta = timeStamp - time;
 		time = timeStamp;
+		buttonToAction("advance","advance");
+		buttonToAction("retreat","retreat");
+		buttonToAction("levelup","levelup");
 		buttonAdvance.set_disabled(!bm.canAdvance);
 		buttonRetreat.set_disabled(!bm.canRetreat);
 		buttonLevelUp.set_hidden(!bm.canLevelUp);
@@ -1065,6 +1096,7 @@ Type.enumParameters = function(e) {
 	}
 };
 var View = function() {
+	this.buttonMap = new haxe_ds_StringMap();
 	this.buttonBox = new haxe_ui_containers_VBox();
 	var boxParent = new haxe_ui_containers_HBox();
 	this.mainComponent = boxParent;
@@ -1095,6 +1127,7 @@ View.prototype = {
 	,mainComponent: null
 	,logText: null
 	,buttonBox: null
+	,buttonMap: null
 	,AddEventText: function(text) {
 		if(this.logText.get_text() == null) {
 			this.logText.set_text(text);
@@ -1102,11 +1135,23 @@ View.prototype = {
 		}
 		this.logText.set_text(text + "\n\n" + this.logText.get_text());
 	}
-	,AddButton: function(label,onClick) {
+	,AddButton: function(id,label,onClick) {
 		var button = new haxe_ui_components_Button();
 		button.set_text(label);
 		button.set_onClick(onClick);
+		this.buttonMap.h[id] = button;
 		this.buttonBox.addComponent(button);
+	}
+	,ButtonVisibility: function(id,visible) {
+		var b = this.buttonMap.h[id];
+		b.set_hidden(!visible);
+	}
+	,ButtonEnabled: function(id,enabled) {
+		var b = this.buttonMap.h[id];
+		b.set_disabled(!enabled);
+	}
+	,UpdateVisibility: function(actorView,visibility) {
+		actorView.parent.set_hidden(!visibility);
 	}
 	,UpdateValues: function(res,current,max) {
 		if(max > 0) {
@@ -1124,7 +1169,7 @@ View.prototype = {
 		box.addComponent(label);
 		label.set_text(name);
 		lifeView = this.CreateValueView(box,true,"Life: ");
-		return { name : label, life : lifeView, attack : this.CreateValueView(box,false,"Attack: ")};
+		return { name : label, life : lifeView, attack : this.CreateValueView(box,false,"Attack: "), parent : box};
 	}
 	,CreateValueView: function(parent,withBar,label) {
 		var boxh = new haxe_ui_containers_Box();

@@ -70,7 +70,7 @@ class Main {
 			progress.getComponentAt(0).value = 30;
 			progress.getComponentAt(0).width = 40;
 			progress.getComponentAt(0).height = progress.height - 4;
-			trace(progress.childComponents.length);
+			
 			
 			main.addComponent(progress);
 			var l = new Label();
@@ -83,20 +83,24 @@ class Main {
 		}
 		
 
-		view.AddButton("Reset", function(e) {
-			bm = new BattleManager();
-		});
+		
 
-		view.AddButton("Advance", function(e) {
-			bm.AdvanceArea();
-		});
-
-		view.AddButton("Retreat", function(e) {
+		view.AddButton("retreat","Retreat", function(e) {
 			bm.RetreatArea();
 		});
 
-		view.AddButton("Level Up", function(e) {
+		view.AddButton("advance","Advance", function(e) {
+			bm.AdvanceArea();
+		});
+
+		
+
+		view.AddButton("levelup","Level Up", function(e) {
 			bm.LevelUp();
+		});
+
+		view.AddButton("reset","Reset", function(e) {
+			bm = new BattleManager();
 		});
 
 		buttonLevelUp.onClick = function(e){
@@ -128,16 +132,24 @@ class Main {
 		var update = null;
 		var eventShown = 0;
 		var ActorToView = function(actor: Actor, actorView:ActorView){
+			if(actor != null){
+				view.UpdateValues(
+					actorView.life,
+					bm.GetAttribute(actor, "Life"), 
+					bm.GetAttribute(actor, "LifeMax"));
+				view.UpdateValues(
+						actorView.attack,
+						bm.GetAttribute(actor, "Attack"), 
+						-1);
+			}
+			view.UpdateVisibility(actorView, actor != null);
 			
-			view.UpdateValues(
-				actorView.life,
-				bm.GetAttribute(actor, "Life"), 
-				bm.GetAttribute(actor, "LifeMax"));
-			view.UpdateValues(
-					actorView.attack,
-					bm.GetAttribute(actor, "Attack"), 
-					-1);
 		};
+		var buttonToAction = function(actionId:String, buttonId:String){
+			var action = bm.wdata.playerActions[actionId];
+			view.ButtonVisibility(buttonId, action.visible);
+			view.ButtonEnabled(buttonId, action.enabled);
+		}
 		update = function(timeStamp:Float):Bool {
 			
 			ActorToView(bm.wdata.hero, view.heroView);
@@ -184,6 +196,10 @@ class Main {
 			var delta = timeStamp - time;
 
 			time = timeStamp;
+			buttonToAction("advance", "advance");
+			buttonToAction("retreat", "retreat");
+			buttonToAction("levelup", "levelup");
+			
 			buttonAdvance.disabled = !bm.canAdvance;
 			buttonRetreat.disabled = !bm.canRetreat;
 			buttonLevelUp.hidden = !bm.canLevelUp;

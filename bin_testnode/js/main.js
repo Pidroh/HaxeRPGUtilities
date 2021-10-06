@@ -17,13 +17,16 @@ var BattleManager = function() {
 	_g.h["Life"] = 20;
 	_g.h["LifeMax"] = 20;
 	var stats = _g;
-	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 2;
-	_g.h["Life"] = 6;
-	_g.h["LifeMax"] = 6;
-	var stats2 = _g;
-	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : { level : 1, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)}, maxArea : 0, necessaryToKillInArea : 5, killedInArea : [0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false};
+	var stats2_h = Object.create(null);
+	stats2_h["Attack"] = 2;
+	stats2_h["Life"] = 6;
+	stats2_h["LifeMax"] = 6;
+	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap()};
+	w.playerActions.h["advance"] = { visible : true, enabled : false};
+	w.playerActions.h["retreat"] = { visible : false, enabled : false};
+	w.playerActions.h["levelup"] = { visible : false, enabled : false};
 	this.wdata = w;
+	this.ChangeBattleArea(0);
 };
 BattleManager.__name__ = true;
 BattleManager.prototype = {
@@ -36,15 +39,20 @@ BattleManager.prototype = {
 	}
 	,ChangeBattleArea: function(area) {
 		this.wdata.battleArea = area;
-		this.wdata.necessaryToKillInArea = 5 + area;
-		var enemyLife = 6 + area * 3;
-		var _g = new haxe_ds_StringMap();
-		_g.h["Attack"] = 2 + area * 3;
-		_g.h["Life"] = enemyLife;
-		_g.h["LifeMax"] = enemyLife;
-		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
-		console.log("src/logic/BattleManager.hx:38:",Std.string(this.wdata.enemy.reference) + " REFERENCE?");
+		this.wdata.necessaryToKillInArea = 0;
+		this.wdata.killedInArea[area] = 0;
+		if(area > 0) {
+			this.wdata.necessaryToKillInArea = 5 + area;
+			var enemyLife = 6 + area * 3;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Attack"] = 2 + area * 3;
+			_g.h["Life"] = enemyLife;
+			_g.h["LifeMax"] = enemyLife;
+			var stats2 = _g;
+			this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+		} else {
+			this.wdata.enemy = null;
+		}
 		this.dirty = true;
 	}
 	,advance: function() {
@@ -62,16 +70,18 @@ BattleManager.prototype = {
 			enemy.attributesCalculated.h["Life"] = v;
 			attackHappen = false;
 		}
-		if(enemy.attributesCalculated.h["Life"] <= 0) {
-			attackHappen = false;
-			event += "New enemy";
-			event += "\n\n\n";
-			var v = enemy.attributesCalculated.h["LifeMax"];
-			enemy.attributesCalculated.h["Life"] = v;
+		if(this.wdata.battleArea > 0) {
+			if(enemy.attributesCalculated.h["Life"] <= 0) {
+				attackHappen = false;
+				event += "New enemy";
+				event += "\n\n\n";
+				var v = enemy.attributesCalculated.h["LifeMax"];
+				enemy.attributesCalculated.h["Life"] = v;
+			}
 		}
-		var output = this.BaseInformationFormattedString();
-		output += "\n\n";
-		output += event;
+		if(enemy == null) {
+			attackHappen = false;
+		}
 		if(attackHappen) {
 			var gEvent = this.AddEvent(EventTypes.ActorAttack);
 			var attacker = hero;
@@ -105,9 +115,6 @@ BattleManager.prototype = {
 				hero.xp.value += enemy.level;
 				var e = this.AddEvent(EventTypes.ActorDead);
 				e.origin = enemy.reference;
-				console.log("src/logic/BattleManager.hx:148:",e.origin);
-				console.log("src/logic/BattleManager.hx:149:",enemy.reference);
-				console.log("src/logic/BattleManager.hx:150:",this.events[this.events.length - 1].origin);
 			}
 			if(hero.attributesCalculated.h["Life"] <= 0) {
 				var e = this.AddEvent(EventTypes.ActorDead);
@@ -116,7 +123,7 @@ BattleManager.prototype = {
 			}
 		}
 		this.wdata.turn = !this.wdata.turn;
-		return output;
+		return "";
 	}
 	,AddEvent: function(eventType) {
 		var e = new GameEvent(eventType);
@@ -155,13 +162,21 @@ BattleManager.prototype = {
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
 		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
+		var lu = this.wdata.playerActions.h["levelup"];
+		lu.visible = this.canLevelUp;
+		lu.enabled = this.canLevelUp;
+		var lu = this.wdata.playerActions.h["advance"];
+		lu.visible = this.canAdvance || lu.visible;
+		lu.enabled = this.canAdvance;
+		var lu = this.wdata.playerActions.h["retreat"];
+		lu.visible = this.canRetreat || lu.visible;
+		lu.enabled = this.canRetreat;
 		if(this.wdata.timeCount >= this.wdata.timePeriod) {
 			this.wdata.timeCount = 0;
 			return this.advance();
 		}
 		if(this.dirty) {
 			this.dirty = false;
-			return this.BaseInformationFormattedString();
 		}
 		return null;
 	}
@@ -197,6 +212,12 @@ BattleManager.prototype = {
 	}
 	,SendJsonPersistentData: function(jsonString) {
 		this.wdata = JSON.parse(jsonString);
+		if(this.wdata.battleArea >= this.wdata.killedInArea.length) {
+			this.wdata.battleArea = this.wdata.killedInArea.length - 1;
+		}
+		if(this.wdata.maxArea >= this.wdata.killedInArea.length) {
+			this.wdata.maxArea = this.wdata.killedInArea.length - 1;
+		}
 	}
 };
 var IntIterator = function(min,max) {
@@ -347,8 +368,18 @@ MainTest.main = function() {
 	bm.update(5);
 	bm.update(5);
 	var json = bm.GetJsonPersistentData();
+	var battleArea = bm.wdata.battleArea;
 	bm.SendJsonPersistentData(json);
 	var json2 = bm.GetJsonPersistentData();
+	if(bm.wdata.battleArea != battleArea) {
+		process.stdout.write("ERROR: Battle Area corrupted when loading");
+		process.stdout.write("\n");
+		process.stdout.write(Std.string("ERROR: Battle Area before " + battleArea));
+		process.stdout.write("\n");
+		var v = "ERROR: Battle Area after " + bm.wdata.battleArea;
+		process.stdout.write(Std.string(v));
+		process.stdout.write("\n");
+	}
 	if(json0 == json2) {
 		process.stdout.write("ERROR: Data not changed on game progress");
 		process.stdout.write("\n");
@@ -356,6 +387,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
+		console.log("test/MainTest.hx:94:","  _____ ");
+		console.log("test/MainTest.hx:95:","  _____ ");
+		console.log("test/MainTest.hx:96:","  _____ ");
+		console.log("test/MainTest.hx:97:",json);
+		console.log("test/MainTest.hx:98:","  _____ ");
+		console.log("test/MainTest.hx:99:","  _____ ");
+		console.log("test/MainTest.hx:100:","  _____ ");
+		console.log("test/MainTest.hx:101:",json2);
 	}
 };
 Math.__name__ = true;

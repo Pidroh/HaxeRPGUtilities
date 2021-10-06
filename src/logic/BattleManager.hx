@@ -23,19 +23,24 @@ class BattleManager {
 
 	public function ChangeBattleArea(area:Int) {
 		wdata.battleArea = area;
-		wdata.necessaryToKillInArea = 5 + area;
-		var enemyLife = 6 + area * 3;
-		var stats2 = ["Attack" => 2 + area * 3, "Life" => enemyLife, "LifeMax" => enemyLife];
-		wdata.enemy = {
-			level: 1 + area,
-			attributesBase: stats2,
-			equipmentSlots: null,
-			equipment: null,
-			xp: null,
-			attributesCalculated: stats2,
-			reference: new ActorReference(1, 0)
-		};
-		trace(wdata.enemy.reference + " REFERENCE?");
+		wdata.necessaryToKillInArea = 0;
+		wdata.killedInArea[area] = 0;
+		if(area > 0){
+			wdata.necessaryToKillInArea = 5 + area;
+			var enemyLife = 6 + area * 3;
+			var stats2 = ["Attack" => 2 + area * 3, "Life" => enemyLife, "LifeMax" => enemyLife];
+			wdata.enemy = {
+				level: 1 + area,
+				attributesBase: stats2,
+				equipmentSlots: null,
+				equipment: null,
+				xp: null,
+				attributesCalculated: stats2,
+				reference: new ActorReference(1, 0)
+			};
+		} else{
+			wdata.enemy = null;
+		}
 		dirty = true;
 	}
 
@@ -53,28 +58,30 @@ class BattleManager {
 				attributesCalculated: stats.copy(),
 				reference: new ActorReference(0, 0)
 			},
-			enemy: {
-				level: 1,
-				attributesBase: stats2,
-				equipmentSlots: null,
-				equipment: null,
-				xp: null,
-				attributesCalculated: stats2,
-				reference: new ActorReference(1, 0)
-			},
+			enemy: null,
 
-			maxArea: 0,
-			necessaryToKillInArea: 5,
-			killedInArea: [0],
+			maxArea: 1,
+			necessaryToKillInArea: 0,
+			killedInArea: [0, 0],
 
 			timePeriod: 1,
 			timeCount: 0,
 			playerTimesKilled: 0,
 			battleArea: 0,
-			turn: false
+			turn: false,
+			playerActions: new Map<String, PlayerAction>()
 		};
-
+		w.playerActions.set("advance",{
+			visible: true, enabled: false
+		});
+		w.playerActions.set("retreat",{
+			visible: false, enabled: false
+		});
+		w.playerActions.set("levelup",{
+			visible: false, enabled: false
+		});
 		wdata = w;
+		ChangeBattleArea(0);
 	}
 
 	public function advance() {
@@ -94,18 +101,19 @@ class BattleManager {
 			// c = Sys.getChar(true);
 		}
 
-		if (enemy.attributesCalculated["Life"] <= 0) {
-			
-
-			attackHappen = false;
-			event += "New enemy";
-			event += "\n\n\n";
-			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
-			// c = Sys.getChar(true);
+		if(wdata.battleArea > 0){
+			if (enemy.attributesCalculated["Life"] <= 0) {
+				attackHappen = false;
+				event += "New enemy";
+				event += "\n\n\n";
+				enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
+				// c = Sys.getChar(true);
+			}
 		}
-		var output = BaseInformationFormattedString();
-		output += "\n\n";
-		output += event;
+		if(enemy == null){
+			attackHappen = false;
+		}
+	
 		// c = Sys.getChar(true);
 		if (attackHappen) {
 			var gEvent = AddEvent(ActorAttack);
@@ -145,9 +153,6 @@ class BattleManager {
 				hero.xp.value += enemy.level;
 				var e = AddEvent(ActorDead);
 				e.origin = enemy.reference;
-				trace(e.origin);
-				trace(enemy.reference);
-				trace(events[events.length-1].origin);
 			}
 			if (hero.attributesCalculated["Life"] <= 0) {
 				var e = AddEvent(ActorDead);
@@ -157,7 +162,7 @@ class BattleManager {
 		}
 
 		wdata.turn = !wdata.turn;
-		return output;
+		return "";
 	}
 
 	function AddEvent(eventType): GameEvent{
@@ -211,6 +216,21 @@ $baseInfo';
 		canAdvance = wdata.battleArea < wdata.maxArea;
 		canRetreat = wdata.battleArea > 0;
 		canLevelUp = wdata.hero.xp.value >= wdata.hero.xp.calculatedMax;
+		{
+			var lu = wdata.playerActions["levelup"];
+			lu.visible = canLevelUp;
+			lu.enabled = canLevelUp;
+		}
+		{
+			var lu = wdata.playerActions["advance"];
+			lu.visible = canAdvance || lu.visible;
+			lu.enabled = canAdvance;
+		}
+		{
+			var lu = wdata.playerActions["retreat"];
+			lu.visible = canRetreat || lu.visible;
+			lu.enabled = canRetreat;
+		}
 
 		if (wdata.timeCount >= wdata.timePeriod) {
 			wdata.timeCount = 0;
@@ -218,7 +238,6 @@ $baseInfo';
 		}
 		if (dirty) {
 			dirty = false;
-			return BaseInformationFormattedString();
 		}
 		return null;
 	}
@@ -249,6 +268,7 @@ $baseInfo';
 		ChangeBattleArea(wdata.battleArea + 1);
 	}
 
+
 	public function GetJsonPersistentData():String {
 		// var data = {maxArea: maxArea, currentArea: battleArea, enemiesKilledInAreas: killedInArea};
 
@@ -257,6 +277,12 @@ $baseInfo';
 
 	public function SendJsonPersistentData(jsonString) {
 		wdata = Json.parse(jsonString);
+		if(wdata.battleArea >= wdata.killedInArea.length){
+			wdata.battleArea = wdata.killedInArea.length-1;
+		}
+		if(wdata.maxArea >= wdata.killedInArea.length){
+			wdata.maxArea = wdata.killedInArea.length-1;
+		}
 		/*
 			var data = Json.parse(jsonString);
 			wdata.maxArea = data.maxArea;
