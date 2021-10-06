@@ -7,6 +7,7 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
+	this.events = [];
 	this.canLevelUp = false;
 	this.canAdvance = false;
 	this.canRetreat = false;
@@ -21,7 +22,7 @@ var BattleManager = function() {
 	_g.h["Life"] = 6;
 	_g.h["LifeMax"] = 6;
 	var stats2 = _g;
-	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h)}, enemy : { level : 1, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2}, maxArea : 0, necessaryToKillInArea : 5, killedInArea : [0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false};
+	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : { level : 1, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)}, maxArea : 0, necessaryToKillInArea : 5, killedInArea : [0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false};
 	this.wdata = w;
 };
 BattleManager.__name__ = true;
@@ -42,7 +43,8 @@ BattleManager.prototype = {
 		_g.h["Life"] = enemyLife;
 		_g.h["LifeMax"] = enemyLife;
 		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2};
+		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+		console.log("src/logic/BattleManager.hx:38:",Std.string(this.wdata.enemy.reference) + " REFERENCE?");
 		this.dirty = true;
 	}
 	,advance: function() {
@@ -53,7 +55,6 @@ BattleManager.prototype = {
 		var battleArea = this.wdata.battleArea;
 		var attackHappen = true;
 		if(hero.attributesCalculated.h["Life"] <= 0) {
-			this.wdata.playerTimesKilled++;
 			event += "You died\n\n\n";
 			var v = hero.attributesCalculated.h["LifeMax"];
 			hero.attributesCalculated.h["Life"] = v;
@@ -72,18 +73,24 @@ BattleManager.prototype = {
 		output += "\n\n";
 		output += event;
 		if(attackHappen) {
+			var gEvent = this.AddEvent(EventTypes.ActorAttack);
 			var attacker = hero;
 			var defender = enemy;
+			var which = 0;
 			if(this.wdata.turn) {
 				attacker = enemy;
 				defender = hero;
 			}
+			var damage = attacker.attributesCalculated.h["Attack"];
 			var _g = defender.attributesCalculated;
-			var v = _g.h["Life"] - attacker.attributesCalculated.h["Attack"];
+			var v = _g.h["Life"] - damage;
 			_g.h["Life"] = v;
 			if(defender.attributesCalculated.h["Life"] < 0) {
 				defender.attributesCalculated.h["Life"] = 0;
 			}
+			gEvent.origin = attacker.reference;
+			gEvent.target = defender.reference;
+			gEvent.data = damage;
 			if(enemy.attributesCalculated.h["Life"] <= 0) {
 				if(killedInArea[battleArea] == null) {
 					killedInArea[battleArea] = 0;
@@ -96,10 +103,25 @@ BattleManager.prototype = {
 					}
 				}
 				hero.xp.value += enemy.level;
+				var e = this.AddEvent(EventTypes.ActorDead);
+				e.origin = enemy.reference;
+				console.log("src/logic/BattleManager.hx:148:",e.origin);
+				console.log("src/logic/BattleManager.hx:149:",enemy.reference);
+				console.log("src/logic/BattleManager.hx:150:",this.events[this.events.length - 1].origin);
+			}
+			if(hero.attributesCalculated.h["Life"] <= 0) {
+				var e = this.AddEvent(EventTypes.ActorDead);
+				e.origin = hero.reference;
+				this.wdata.playerTimesKilled++;
 			}
 		}
 		this.wdata.turn = !this.wdata.turn;
 		return output;
+	}
+	,AddEvent: function(eventType) {
+		var e = new GameEvent(eventType);
+		this.events.push(e);
+		return e;
 	}
 	,BaseInformationFormattedString: function() {
 		var hero = this.wdata.hero;
@@ -232,6 +254,7 @@ MainTest.main = function() {
 	var hero_equipment = null;
 	var hero_xp = ResourceLogic.getExponentialResource(1.5,1,5);
 	var hero_attributesCalculated = haxe_ds_StringMap.createCopy(stats.h);
+	var hero_reference = new ActorReference(0,0);
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["LifeMax"] = 1;
@@ -392,6 +415,30 @@ var ScalingType = $hxEnums["ScalingType"] = { __ename__:true,__constructs__:null
 	,exponential: {_hx_name:"exponential",_hx_index:0,__enum__:"ScalingType",toString:$estr}
 };
 ScalingType.__constructs__ = [ScalingType.exponential];
+var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
+	,GameStart: {_hx_name:"GameStart",_hx_index:0,__enum__:"EventTypes",toString:$estr}
+	,ActorDead: {_hx_name:"ActorDead",_hx_index:1,__enum__:"EventTypes",toString:$estr}
+	,ActorAppear: {_hx_name:"ActorAppear",_hx_index:2,__enum__:"EventTypes",toString:$estr}
+	,ActorAttack: {_hx_name:"ActorAttack",_hx_index:3,__enum__:"EventTypes",toString:$estr}
+	,LevelUp: {_hx_name:"LevelUp",_hx_index:4,__enum__:"EventTypes",toString:$estr}
+	,AreaUnlock: {_hx_name:"AreaUnlock",_hx_index:5,__enum__:"EventTypes",toString:$estr}
+	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:6,__enum__:"EventTypes",toString:$estr}
+};
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.LevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime];
+var ActorReference = function(type,pos) {
+	this.type = type;
+	this.pos = pos;
+};
+ActorReference.__name__ = true;
+var GameEvent = function(eType) {
+	this.type = eType;
+};
+GameEvent.__name__ = true;
+var Std = function() { };
+Std.__name__ = true;
+Std.string = function(s) {
+	return js_Boot.__string_rec(s,"");
+};
 var haxe_io_Output = function() { };
 haxe_io_Output.__name__ = true;
 var _$Sys_FileOutput = function(fd) {

@@ -1,3 +1,4 @@
+import js.html.webgl.extension.WEBGLCompressedTexturePvrtc;
 import haxe.ui.components.Progress;
 import haxe.Json;
 import js.Browser;
@@ -24,6 +25,8 @@ class Main {
 		var bm:BattleManager = new BattleManager();
 		var view:View = new View();
 		Toolkit.init();
+
+		
 		
 		
 		var main = new VBox();
@@ -111,6 +114,7 @@ class Main {
 		}
 
 		var update = null;
+		var eventShown = 0;
 		var ActorToView = function(actor: Actor, actorView:ActorView){
 			
 			view.UpdateValues(
@@ -130,6 +134,40 @@ class Main {
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea+1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea );
+
+			while(bm.events.length > eventShown)
+			{
+				var e = bm.events[eventShown];
+				var data = e.data;
+				var originText = "XX";
+				if(e.origin != null){
+					if(e.origin.type == 1){
+						originText = "Enemy";
+					} else{
+						originText = "You";
+					}
+				}
+				var targetText = "YY";
+				if(e.target != null){
+					if(e.target.type == 0){
+						targetText = "Hero";
+					} else{
+						targetText = "Enemy";
+					}
+				}
+
+				var ev = "";
+				if(e.type == ActorAttack){
+					ev = '$targetText took $data damage';
+				}
+				if(e.type == ActorDead){
+					ev = '$originText died!';
+				}
+
+
+				view.AddEventText(ev);
+				eventShown++;
+			}
 
 			var delta = timeStamp - time;
 

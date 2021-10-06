@@ -1,3 +1,4 @@
+import js.html.AbortController;
 import RPGData;
 
 class MainTest {
@@ -35,7 +36,7 @@ class MainTest {
 			Sys.println("Level up Stat Test");
 			var stats = ["Attack"=> 5, "Life" => 20, "LifeMax" => 20];
         	var hero : Actor = {level:1, attributesBase:stats, equipmentSlots: null, equipment: null, 
-			xp:ResourceLogic.getExponentialResource(1.5, 1, 5), attributesCalculated: stats.copy()};
+			xp:ResourceLogic.getExponentialResource(1.5, 1, 5), attributesCalculated: stats.copy(), reference: new ActorReference(0,0)};
 			AttributeLogic.Add(hero.attributesBase, ["Attack"=> 1, "LifeMax" => 1, "Life"=>1], 1, hero.attributesCalculated);
 			if (hero.attributesCalculated["Attack"] != 6) {
 				Sys.println("ERROR: Calculated Attack Value Wrong");

@@ -1,4 +1,5 @@
 // package logic;
+import js.html.GamepadEvent;
 import haxe.Json;
 import haxe.ds.Vector;
 import RPGData;
@@ -10,6 +11,8 @@ class BattleManager {
 	public var canRetreat = false;
 	public var canAdvance = false;
 	public var canLevelUp = false;
+
+	public var events = new Array<GameEvent>();
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -29,8 +32,10 @@ class BattleManager {
 			equipmentSlots: null,
 			equipment: null,
 			xp: null,
-			attributesCalculated: stats2
+			attributesCalculated: stats2,
+			reference: new ActorReference(1, 0)
 		};
+		trace(wdata.enemy.reference + " REFERENCE?");
 		dirty = true;
 	}
 
@@ -45,7 +50,8 @@ class BattleManager {
 				equipmentSlots: null,
 				equipment: null,
 				xp: ResourceLogic.getExponentialResource(1.5, 1, 5),
-				attributesCalculated: stats.copy()
+				attributesCalculated: stats.copy(),
+				reference: new ActorReference(0, 0)
 			},
 			enemy: {
 				level: 1,
@@ -53,7 +59,8 @@ class BattleManager {
 				equipmentSlots: null,
 				equipment: null,
 				xp: null,
-				attributesCalculated: stats2
+				attributesCalculated: stats2,
+				reference: new ActorReference(1, 0)
 			},
 
 			maxArea: 0,
@@ -79,7 +86,7 @@ class BattleManager {
 		var attackHappen = true;
 
 		if (hero.attributesCalculated["Life"] <= 0) {
-			wdata.playerTimesKilled++;
+			
 			event += "You died\n\n\n";
 			hero.attributesCalculated["Life"] = hero.attributesCalculated["LifeMax"];
 			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
@@ -88,8 +95,9 @@ class BattleManager {
 		}
 
 		if (enemy.attributesCalculated["Life"] <= 0) {
-			attackHappen = false;
+			
 
+			attackHappen = false;
 			event += "New enemy";
 			event += "\n\n\n";
 			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
@@ -100,16 +108,26 @@ class BattleManager {
 		output += event;
 		// c = Sys.getChar(true);
 		if (attackHappen) {
+			var gEvent = AddEvent(ActorAttack);
 			var attacker = hero;
 			var defender = enemy;
+			var which = 0;
+			
+
 			if (wdata.turn) {
 				attacker = enemy;
 				defender = hero;
 			}
-			defender.attributesCalculated["Life"] -= attacker.attributesCalculated["Attack"];
+			
+			var damage = attacker.attributesCalculated["Attack"];
+
+			defender.attributesCalculated["Life"] -= damage;
 			if (defender.attributesCalculated["Life"] < 0) {
 				defender.attributesCalculated["Life"] = 0;
 			}
+			gEvent.origin = attacker.reference;
+			gEvent.target = defender.reference;
+			gEvent.data = damage;
 
 			if (enemy.attributesCalculated["Life"] <= 0) {
 				#if !target.static
@@ -125,11 +143,27 @@ class BattleManager {
 					}
 				}
 				hero.xp.value += enemy.level;
+				var e = AddEvent(ActorDead);
+				e.origin = enemy.reference;
+				trace(e.origin);
+				trace(enemy.reference);
+				trace(events[events.length-1].origin);
+			}
+			if (hero.attributesCalculated["Life"] <= 0) {
+				var e = AddEvent(ActorDead);
+				e.origin = hero.reference;
+				wdata.playerTimesKilled++;
 			}
 		}
 
 		wdata.turn = !wdata.turn;
 		return output;
+	}
+
+	function AddEvent(eventType): GameEvent{
+		var e = new GameEvent(eventType);
+		this.events.push(e);
+		return e;
 	}
 
 	function BaseInformationFormattedString():String {

@@ -1,3 +1,4 @@
+import RPGData.AttributeLogic;
 import haxe.ui.components.Button;
 import haxe.ui.containers.Box;
 import haxe.ui.core.Screen;
@@ -15,11 +16,26 @@ class View {
     public var xpBar : ValueView;
 	public var enemyToAdvance : ValueView;
 	public var areaLabel : ValueView;
-
 	public var mainComponent:Component;
+	public var logText : Label;
+	var buttonBox = new VBox();
 
 	public function new() {
+		var boxParent = new HBox();
+		mainComponent = boxParent;
+		boxParent.horizontalAlign = "center";
+		boxParent.paddingTop = 20;
+
 		var box:VBox = new VBox();
+		boxParent.addComponent(box);
+
+		boxParent.addComponent(buttonBox);
+
+		var log = new Label();
+		boxParent.addComponent(log);
+		logText = log;
+
+		
         
 		areaLabel = CreateValueView(box, false, "Area: ");
 		enemyToAdvance = CreateValueView(box, true, "Progress: ");
@@ -32,16 +48,24 @@ class View {
 
 		heroView = GetActorView("You", box);
 		enemyView = GetActorView("Enemy", box);
-		mainComponent = box;
-		box.horizontalAlign = "center";
-		box.paddingTop = 20;
+
+		
+	}
+
+	public function AddEventText(text:String){
+		if(logText.text == null) {
+			logText.text = text;
+			return;
+		}
+			
+		logText.text = text +"\n\n" + logText.text ;
 	}
 
 	public function AddButton(label:String, onClick){
 		var button = new Button();
 		button.text = label;
 		button.onClick = onClick;
-		mainComponent.addComponent(button);
+		buttonBox.addComponent(button);
 	}
 
 	public function UpdateValues(res : ValueView, current:Int, max: Int){

@@ -47,6 +47,7 @@ typedef Actor = {
 	var attributesCalculated:Map<String, Int>;
 	var equipment:Array<Equipment>;
 	var equipmentSlots:Array<Int>;
+	var reference : ActorReference;
 }
 
 typedef LevelGrowth = {
@@ -90,6 +91,36 @@ typedef WorldData = {
 	var killedInArea:Array<Int>;
 	var necessaryToKillInArea:Int;
 	var maxArea:Int;
-	
+
+}
+
+enum EventTypes{
+	GameStart;
+	ActorDead; 
+	ActorAppear;
+	ActorAttack;
+	LevelUp;
+	AreaUnlock;
+	AreaEnterFirstTime;
+}
+
+class ActorReference{
+	public var type:Int;
+	public var pos:Int;
+
+	public function new (type, pos){
+		this.type = type;
+		this.pos = pos;
+	}
+}
+
+class GameEvent {
+	public var type:EventTypes;
+	public var origin : ActorReference;
+	public var target : ActorReference;
+	public var data : Int;
+	public function new (eType){
+		type = eType;
+	}
 }
 
