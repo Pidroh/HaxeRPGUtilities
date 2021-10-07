@@ -98,6 +98,7 @@ typedef WorldData = {
 	var necessaryToKillInArea:Int;
 	var maxArea:Int;
 	var playerActions : Map < String, PlayerAction >;
+	var recovering : Bool;
 }
 
 enum EventTypes{

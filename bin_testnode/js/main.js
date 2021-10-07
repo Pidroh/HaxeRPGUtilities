@@ -21,7 +21,7 @@ var BattleManager = function() {
 	stats2_h["Attack"] = 2;
 	stats2_h["Life"] = 6;
 	stats2_h["LifeMax"] = 6;
-	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap()};
+	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
 	w.playerActions.h["advance"] = { visible : true, enabled : false};
 	w.playerActions.h["retreat"] = { visible : false, enabled : false};
 	w.playerActions.h["levelup"] = { visible : false, enabled : false};
@@ -43,43 +43,46 @@ BattleManager.prototype = {
 		this.wdata.killedInArea[area] = 0;
 		if(area > 0) {
 			this.wdata.necessaryToKillInArea = 5 + area;
-			var enemyLife = 6 + area * 3;
-			var _g = new haxe_ds_StringMap();
-			_g.h["Attack"] = 2 + area * 3;
-			_g.h["Life"] = enemyLife;
-			_g.h["LifeMax"] = enemyLife;
-			var stats2 = _g;
-			this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+			if(this.wdata.recovering == false) {
+				this.CreateAreaEnemy();
+			}
 		} else {
 			this.wdata.enemy = null;
 		}
 		this.dirty = true;
 	}
+	,CreateAreaEnemy: function() {
+		var area = this.wdata.battleArea;
+		var enemyLife = 6 + area * 3;
+		var _g = new haxe_ds_StringMap();
+		_g.h["Attack"] = 2 + area * 3;
+		_g.h["Life"] = enemyLife;
+		_g.h["LifeMax"] = enemyLife;
+		var stats2 = _g;
+		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+	}
 	,advance: function() {
 		var hero = this.wdata.hero;
 		var enemy = this.wdata.enemy;
-		var event = "";
 		var killedInArea = this.wdata.killedInArea;
 		var battleArea = this.wdata.battleArea;
 		var attackHappen = true;
-		if(hero.attributesCalculated.h["Life"] <= 0) {
-			event += "You died\n\n\n";
-			var v = hero.attributesCalculated.h["LifeMax"];
-			hero.attributesCalculated.h["Life"] = v;
-			var v = enemy.attributesCalculated.h["LifeMax"];
-			enemy.attributesCalculated.h["Life"] = v;
-			attackHappen = false;
-		}
-		if(this.wdata.battleArea > 0) {
+		if(this.wdata.battleArea > 0 && this.wdata.recovering == false) {
+			if(enemy == null) {
+				this.CreateAreaEnemy();
+				enemy = this.wdata.enemy;
+				attackHappen = false;
+			}
 			if(enemy.attributesCalculated.h["Life"] <= 0) {
 				attackHappen = false;
-				event += "New enemy";
-				event += "\n\n\n";
 				var v = enemy.attributesCalculated.h["LifeMax"];
 				enemy.attributesCalculated.h["Life"] = v;
 			}
 		}
 		if(enemy == null) {
+			attackHappen = false;
+		}
+		if(this.wdata.recovering) {
 			attackHappen = false;
 		}
 		if(attackHappen) {
@@ -117,6 +120,8 @@ BattleManager.prototype = {
 				e.origin = enemy.reference;
 			}
 			if(hero.attributesCalculated.h["Life"] <= 0) {
+				this.wdata.recovering = true;
+				this.wdata.enemy = null;
 				var e = this.AddEvent(EventTypes.ActorDead);
 				e.origin = hero.reference;
 				this.wdata.playerTimesKilled++;
@@ -171,8 +176,18 @@ BattleManager.prototype = {
 		var lu = this.wdata.playerActions.h["retreat"];
 		lu.visible = this.canRetreat || lu.visible;
 		lu.enabled = this.canRetreat;
+		if(this.wdata.recovering && this.wdata.hero.attributesCalculated.h["Life"] >= this.wdata.hero.attributesCalculated.h["LifeMax"]) {
+			var v = this.wdata.hero.attributesCalculated.h["LifeMax"];
+			this.wdata.hero.attributesCalculated.h["Life"] = v;
+			this.wdata.recovering = false;
+		}
 		if(this.wdata.timeCount >= this.wdata.timePeriod) {
 			this.wdata.timeCount = 0;
+			if(this.wdata.recovering) {
+				var life = this.wdata.hero.attributesCalculated.h["Life"];
+				life += 2;
+				this.wdata.hero.attributesCalculated.h["Life"] = life;
+			}
 			return this.advance();
 		}
 		if(this.dirty) {
@@ -243,12 +258,13 @@ MainTest.main = function() {
 	bm.DefaultConfiguration();
 	bm.ChangeBattleArea(100);
 	var _g = 1;
-	while(_g < 99) {
+	while(_g < 400) {
 		var i = _g++;
 		bm.update(0.9);
 	}
 	if(bm.getPlayerTimesKilled() < 5) {
-		process.stdout.write("ERROR: Did not die!");
+		var v = "ERROR: Did not die! " + bm.getPlayerTimesKilled();
+		process.stdout.write(Std.string(v));
 		process.stdout.write("\n");
 	}
 	process.stdout.write("Easy area no death");

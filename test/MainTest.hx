@@ -8,11 +8,11 @@ class MainTest {
 			var bm:BattleManager = new BattleManager();
 			bm.DefaultConfiguration();
 			bm.ChangeBattleArea(100);
-			for (i in 1...99) {
+			for (i in 1...400) {
 				bm.update(0.9);
 			}
 			if (bm.getPlayerTimesKilled() < 5) {
-				Sys.println("ERROR: Did not die!");
+				Sys.println("ERROR: Did not die! "+bm.getPlayerTimesKilled());
 				//Sys.getChar(false);
 			}
 			

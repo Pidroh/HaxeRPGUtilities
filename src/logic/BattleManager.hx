@@ -25,23 +25,31 @@ class BattleManager {
 		wdata.battleArea = area;
 		wdata.necessaryToKillInArea = 0;
 		wdata.killedInArea[area] = 0;
-		if(area > 0){
+		if (area > 0) {
 			wdata.necessaryToKillInArea = 5 + area;
-			var enemyLife = 6 + area * 3;
-			var stats2 = ["Attack" => 2 + area * 3, "Life" => enemyLife, "LifeMax" => enemyLife];
-			wdata.enemy = {
-				level: 1 + area,
-				attributesBase: stats2,
-				equipmentSlots: null,
-				equipment: null,
-				xp: null,
-				attributesCalculated: stats2,
-				reference: new ActorReference(1, 0)
-			};
-		} else{
+			
+			if (wdata.recovering == false) {
+				CreateAreaEnemy();
+			}
+		} else {
 			wdata.enemy = null;
 		}
 		dirty = true;
+	}
+
+	function CreateAreaEnemy() {
+		var area = wdata.battleArea;
+		var enemyLife = 6 + area * 3;
+			var stats2 = ["Attack" => 2 + area * 3, "Life" => enemyLife, "LifeMax" => enemyLife];
+		wdata.enemy = {
+			level: 1 + area,
+			attributesBase: stats2,
+			equipmentSlots: null,
+			equipment: null,
+			xp: null,
+			attributesCalculated: stats2,
+			reference: new ActorReference(1, 0)
+		};
 	}
 
 	public function new() {
@@ -56,7 +64,7 @@ class BattleManager {
 				equipment: null,
 				xp: ResourceLogic.getExponentialResource(1.5, 1, 5),
 				attributesCalculated: stats.copy(),
-				reference: new ActorReference(0, 0)
+				reference: new ActorReference(0, 0),
 			},
 			enemy: null,
 
@@ -69,16 +77,20 @@ class BattleManager {
 			playerTimesKilled: 0,
 			battleArea: 0,
 			turn: false,
-			playerActions: new Map<String, PlayerAction>()
+			playerActions: new Map<String, PlayerAction>(),
+			recovering: false
 		};
-		w.playerActions.set("advance",{
-			visible: true, enabled: false
+		w.playerActions.set("advance", {
+			visible: true,
+			enabled: false
 		});
-		w.playerActions.set("retreat",{
-			visible: false, enabled: false
+		w.playerActions.set("retreat", {
+			visible: false,
+			enabled: false
 		});
-		w.playerActions.set("levelup",{
-			visible: false, enabled: false
+		w.playerActions.set("levelup", {
+			visible: false,
+			enabled: false
 		});
 		wdata = w;
 		ChangeBattleArea(0);
@@ -87,46 +99,42 @@ class BattleManager {
 	public function advance() {
 		var hero = wdata.hero;
 		var enemy = wdata.enemy;
-		var event:String = "";
 		var killedInArea = wdata.killedInArea;
 		var battleArea = wdata.battleArea;
 		var attackHappen = true;
 
-		if (hero.attributesCalculated["Life"] <= 0) {
-			
-			event += "You died\n\n\n";
-			hero.attributesCalculated["Life"] = hero.attributesCalculated["LifeMax"];
-			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
-			attackHappen = false;
-			// c = Sys.getChar(true);
-		}
-
-		if(wdata.battleArea > 0){
+		if (wdata.battleArea > 0 && wdata.recovering == false) {
+			if (enemy == null) {
+				CreateAreaEnemy();
+				enemy = wdata.enemy;
+				attackHappen = false;
+			}
 			if (enemy.attributesCalculated["Life"] <= 0) {
 				attackHappen = false;
-				event += "New enemy";
-				event += "\n\n\n";
+
 				enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
 				// c = Sys.getChar(true);
 			}
 		}
-		if(enemy == null){
+		if (enemy == null) {
 			attackHappen = false;
 		}
-	
+		if (wdata.recovering) {
+			attackHappen = false;
+		}
+
 		// c = Sys.getChar(true);
 		if (attackHappen) {
 			var gEvent = AddEvent(ActorAttack);
 			var attacker = hero;
 			var defender = enemy;
 			var which = 0;
-			
 
 			if (wdata.turn) {
 				attacker = enemy;
 				defender = hero;
 			}
-			
+
 			var damage = attacker.attributesCalculated["Attack"];
 
 			defender.attributesCalculated["Life"] -= damage;
@@ -155,6 +163,8 @@ class BattleManager {
 				e.origin = enemy.reference;
 			}
 			if (hero.attributesCalculated["Life"] <= 0) {
+				wdata.recovering = true;
+				wdata.enemy = null;
 				var e = AddEvent(ActorDead);
 				e.origin = hero.reference;
 				wdata.playerTimesKilled++;
@@ -165,7 +175,7 @@ class BattleManager {
 		return "";
 	}
 
-	function AddEvent(eventType): GameEvent{
+	function AddEvent(eventType):GameEvent {
 		var e = new GameEvent(eventType);
 		this.events.push(e);
 		return e;
@@ -232,8 +242,18 @@ $baseInfo';
 			lu.enabled = canRetreat;
 		}
 
+		if (wdata.recovering && wdata.hero.attributesCalculated["Life"] >= wdata.hero.attributesCalculated["LifeMax"]) {
+			wdata.hero.attributesCalculated["Life"] = wdata.hero.attributesCalculated["LifeMax"];
+			wdata.recovering = false;
+		}
+
 		if (wdata.timeCount >= wdata.timePeriod) {
 			wdata.timeCount = 0;
+			if (wdata.recovering) {
+				var life = wdata.hero.attributesCalculated["Life"];
+				life += 2;
+				wdata.hero.attributesCalculated["Life"] = life;
+			}
 			return advance();
 		}
 		if (dirty) {
@@ -269,7 +289,6 @@ $baseInfo';
 		ChangeBattleArea(wdata.battleArea + 1);
 	}
 
-
 	public function GetJsonPersistentData():String {
 		// var data = {maxArea: maxArea, currentArea: battleArea, enemiesKilledInAreas: killedInArea};
 
@@ -278,11 +297,11 @@ $baseInfo';
 
 	public function SendJsonPersistentData(jsonString) {
 		wdata = Json.parse(jsonString);
-		if(wdata.battleArea >= wdata.killedInArea.length){
-			wdata.battleArea = wdata.killedInArea.length-1;
+		if (wdata.battleArea >= wdata.killedInArea.length) {
+			wdata.battleArea = wdata.killedInArea.length - 1;
 		}
-		if(wdata.maxArea >= wdata.killedInArea.length){
-			wdata.maxArea = wdata.killedInArea.length-1;
+		if (wdata.maxArea >= wdata.killedInArea.length) {
+			wdata.maxArea = wdata.killedInArea.length - 1;
 		}
 		/*
 			var data = Json.parse(jsonString);

@@ -32,7 +32,9 @@ class View {
 		var box:VBox = new VBox();
 		boxParent.addComponent(box);
 
+
 		buttonBox = CreateContainer(boxParent, true);
+		//buttonBox.percentHeight = 100;
 		//boxParent.addComponent(buttonBox);
 
 		
@@ -87,10 +89,19 @@ class View {
 	public function AddButton(id:String, label:String, onClick, warningMessage = null) {
 		var button = new Button();
 		button.text = label;
+		button.repeater = true;
+		button.repeatInterval = 300;
+		
+		
 		// button.onClick = onClick;
-		if (warningMessage == null)
+		if (warningMessage == null){
+			buttonBox.addComponent(button);
 			button.onClick = onClick;
+		}
+			
 		else {
+			
+			mainComponent.addComponent(button);
 			button.onClick = function whatever(e) {
 				trace("lol");
 				Screen.instance.messageBox(warningMessage, label, MessageBoxType.TYPE_QUESTION, true, function(button) {
@@ -104,7 +115,7 @@ class View {
 		}
 		buttonMap[id] = button;
 		// button.hidden = true;
-		buttonBox.addComponent(button);
+		
 	}
 
 	public function ButtonVisibility(id:String, visible:Bool) {
