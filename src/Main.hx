@@ -20,6 +20,7 @@ class Main {
 	static var hero:Actor;
 	static var enemy:Actor;
 	static var maxDelta:Float = 0.5;
+	
 
 	static function main() {
 		var bm:BattleManager = new BattleManager();
@@ -28,9 +29,6 @@ class Main {
 
 		var main = new VBox();
 		main.addComponent(view.mainComponent);
-		
-
-		
 
 		
 

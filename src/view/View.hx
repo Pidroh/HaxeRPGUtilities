@@ -19,6 +19,9 @@ class View {
 	public var areaLabel:ValueView;
 	public var mainComponent:Component;
 	public var logText:Label;
+	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
+	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
+	public var enemy1 = 'slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog'.split('@');
 
 	var buttonBox : Component;
 	var buttonMap = new Map<String, Button>();
@@ -28,6 +31,9 @@ class View {
 		mainComponent = boxParent;
 		//boxParent.horizontalAlign = "center";
 		boxParent.padding = 40;
+
+
+		
 
 		var box:VBox = new VBox();
 		boxParent.addComponent(box);

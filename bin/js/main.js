@@ -1067,6 +1067,9 @@ Type.enumParameters = function(e) {
 };
 var View = function() {
 	this.buttonMap = new haxe_ds_StringMap();
+	this.enemy1 = "slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog".split("@");
+	this.prefix = "normal@fire@ice@water@thunder@wind@earth@poison@grass".split("@");
+	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
 	var boxParent = new haxe_ui_containers_HBox();
 	this.mainComponent = boxParent;
 	boxParent.set_padding(40);
@@ -1098,6 +1101,9 @@ View.prototype = {
 	,areaLabel: null
 	,mainComponent: null
 	,logText: null
+	,areaNouns: null
+	,prefix: null
+	,enemy1: null
 	,buttonBox: null
 	,buttonMap: null
 	,CreateContainer: function(parent,vertical) {
@@ -1132,13 +1138,13 @@ View.prototype = {
 		} else {
 			this.mainComponent.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 106, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 112, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 108, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 114, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 112, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 118, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

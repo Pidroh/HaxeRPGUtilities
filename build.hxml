@@ -1,7 +1,9 @@
 -cp src
 -cp src/logic
 -cp src/view
+-cp src/procedural
 -main Main
+--library seedyrng
 
 -lib haxeui-core
 -lib haxeui-html5
