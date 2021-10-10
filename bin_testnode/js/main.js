@@ -53,6 +53,8 @@ BattleManager.prototype = {
 	}
 	,AwardXP: function(xpPlus) {
 		this.wdata.hero.xp.value += xpPlus;
+		var e = this.AddEvent(EventTypes.GetXP);
+		e.data = xpPlus;
 	}
 	,CreateAreaEnemy: function() {
 		var area = this.wdata.battleArea;
@@ -485,8 +487,9 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,ActorLevelUp: {_hx_name:"ActorLevelUp",_hx_index:4,__enum__:"EventTypes",toString:$estr}
 	,AreaUnlock: {_hx_name:"AreaUnlock",_hx_index:5,__enum__:"EventTypes",toString:$estr}
 	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:6,__enum__:"EventTypes",toString:$estr}
+	,GetXP: {_hx_name:"GetXP",_hx_index:7,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime,EventTypes.GetXP];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;

@@ -30,7 +30,7 @@ class Main {
 		var main = new VBox();
 		main.addComponent(view.mainComponent);
 
-		
+
 
 		view.AddButton("retreat","Retreat", function(e) {
 			bm.RetreatArea();
@@ -127,11 +127,18 @@ class Main {
 				if(e.type == ActorAttack){
 					ev = '$targetText took $data damage';
 				}
+
+				if(e.type == GetXP){
+					ev = '<span style="color:#005555; font-weight: normal;";>You received $data XP</span>';
+				}
 				if(e.type == ActorDead){
-					ev = '$originText died!';
+					ev = '$originText died';
 				}
 				if(e.type == ActorLevelUp){
 					ev = '<b>You leveled up!</b>';
+				}
+				if(e.type == AreaUnlock){
+					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>>';
 				}
 
 

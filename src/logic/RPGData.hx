@@ -109,6 +109,8 @@ enum EventTypes{
 	ActorLevelUp;
 	AreaUnlock;
 	AreaEnterFirstTime;
+	GetXP;
+	
 }
 
 class ActorReference{

@@ -39,6 +39,8 @@ class BattleManager {
 
 	function AwardXP(xpPlus){
 		wdata.hero.xp.value += xpPlus;
+		var e = AddEvent(GetXP);
+		e.data = xpPlus;
 	}
 
 	function CreateAreaEnemy() {

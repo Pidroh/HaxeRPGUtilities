@@ -60,6 +60,8 @@ BattleManager.prototype = {
 	}
 	,AwardXP: function(xpPlus) {
 		this.wdata.hero.xp.value += xpPlus;
+		var e = this.AddEvent(EventTypes.GetXP);
+		e.data = xpPlus;
 	}
 	,CreateAreaEnemy: function() {
 		var area = this.wdata.battleArea;
@@ -585,11 +587,17 @@ Main.main = function() {
 			if(e.type == EventTypes.ActorAttack) {
 				ev = "" + targetText + " took " + data + " damage";
 			}
+			if(e.type == EventTypes.GetXP) {
+				ev = "<span style=\"color:#005555; font-weight: normal;\";>You received " + data + " XP</span>";
+			}
 			if(e.type == EventTypes.ActorDead) {
-				ev = "" + originText + " died!";
+				ev = "" + originText + " died";
 			}
 			if(e.type == EventTypes.ActorLevelUp) {
 				ev = "<b>You leveled up!</b>";
+			}
+			if(e.type == EventTypes.AreaUnlock) {
+				ev = "<spawn style=\"color:#005555; font-weight: normal;\";>You found a new area!</span>>";
 			}
 			view.AddEventText(ev);
 			eventShown += 1;
@@ -681,8 +689,9 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,ActorLevelUp: {_hx_name:"ActorLevelUp",_hx_index:4,__enum__:"EventTypes",toString:$estr}
 	,AreaUnlock: {_hx_name:"AreaUnlock",_hx_index:5,__enum__:"EventTypes",toString:$estr}
 	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:6,__enum__:"EventTypes",toString:$estr}
+	,GetXP: {_hx_name:"GetXP",_hx_index:7,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime,EventTypes.GetXP];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;
