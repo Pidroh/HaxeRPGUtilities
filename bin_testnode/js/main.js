@@ -13,7 +13,7 @@ var BattleManager = function() {
 	this.canRetreat = false;
 	this.dirty = false;
 	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 5;
+	_g.h["Attack"] = 1;
 	_g.h["Life"] = 20;
 	_g.h["LifeMax"] = 20;
 	var stats = _g;
@@ -51,11 +51,14 @@ BattleManager.prototype = {
 		}
 		this.dirty = true;
 	}
+	,AwardXP: function(xpPlus) {
+		this.wdata.hero.xp.value += xpPlus;
+	}
 	,CreateAreaEnemy: function() {
 		var area = this.wdata.battleArea;
-		var enemyLife = 6 + area * 3;
+		var enemyLife = 5 + (area - 1) * 4;
 		var _g = new haxe_ds_StringMap();
-		_g.h["Attack"] = 2 + area * 3;
+		_g.h["Attack"] = 1 + (area - 1);
 		_g.h["Life"] = enemyLife;
 		_g.h["LifeMax"] = enemyLife;
 		var stats2 = _g;
@@ -111,11 +114,14 @@ BattleManager.prototype = {
 				killedInArea[battleArea]++;
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
 					if(this.wdata.maxArea == this.wdata.battleArea) {
+						var xpPlus = Math.pow((hero.xp.scaling.data1 - 1) * 0.5 + 1,this.wdata.battleArea) * 50 | 0;
+						this.AwardXP(xpPlus);
 						this.wdata.maxArea++;
 						killedInArea[this.wdata.maxArea] = 0;
 					}
 				}
-				hero.xp.value += enemy.level;
+				var xpGain = enemy.level;
+				this.AwardXP(enemy.level);
 				var e = this.AddEvent(EventTypes.ActorDead);
 				e.origin = enemy.reference;
 			}
@@ -214,8 +220,8 @@ BattleManager.prototype = {
 			var hero1 = hero.attributesBase;
 			var _g = new haxe_ds_StringMap();
 			_g.h["Attack"] = 1;
-			_g.h["LifeMax"] = 1;
-			_g.h["Life"] = 1;
+			_g.h["LifeMax"] = 5;
+			_g.h["Life"] = 5;
 			AttributeLogic.Add(hero1,_g,hero.level,hero.attributesCalculated);
 			ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
 		}

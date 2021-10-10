@@ -37,10 +37,14 @@ class BattleManager {
 		dirty = true;
 	}
 
+	function AwardXP(xpPlus){
+		wdata.hero.xp.value += xpPlus;
+	}
+
 	function CreateAreaEnemy() {
 		var area = wdata.battleArea;
-		var enemyLife = 6 + area * 3;
-			var stats2 = ["Attack" => 2 + area * 3, "Life" => enemyLife, "LifeMax" => enemyLife];
+		var enemyLife = 5 + (area-1) * 4;
+			var stats2 = ["Attack" => 1 + (area-1) * 1, "Life" => enemyLife, "LifeMax" => enemyLife];
 		wdata.enemy = {
 			level: 1 + area,
 			attributesBase: stats2,
@@ -53,7 +57,7 @@ class BattleManager {
 	}
 
 	public function new() {
-		var stats = ["Attack" => 5, "Life" => 20, "LifeMax" => 20];
+		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20];
 		var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
 		var w:WorldData = {
@@ -154,11 +158,14 @@ class BattleManager {
 				killedInArea[battleArea]++;
 				if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
 					if (wdata.maxArea == wdata.battleArea) {
+						var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
+						AwardXP(xpPlus);
 						wdata.maxArea++;
 						killedInArea[wdata.maxArea] = 0;
 					}
 				}
-				hero.xp.value += enemy.level;
+				var xpGain = enemy.level;
+				AwardXP(enemy.level);
 				var e = AddEvent(ActorDead);
 				e.origin = enemy.reference;
 			}
@@ -280,7 +287,7 @@ $baseInfo';
 			hero.xp.value -= hero.xp.calculatedMax;
 			hero.level++;
 			AddEvent(ActorLevelUp);
-			AttributeLogic.Add(hero.attributesBase, ["Attack" => 1, "LifeMax" => 1, "Life" => 1], hero.level, hero.attributesCalculated);
+			AttributeLogic.Add(hero.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5], hero.level, hero.attributesCalculated);
 			ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
 		}
 	}
