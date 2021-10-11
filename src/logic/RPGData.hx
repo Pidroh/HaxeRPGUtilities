@@ -3,8 +3,18 @@
 class ResourceLogic {
 	public static function recalculateScalingResource(base:Int, res:ScalingResource) {
 		if (res.lastUsedBaseAttribute != base) {
+
 			var data1 = res.scaling.data1;
-			var calculated = Std.int(Math.pow(data1, base) + res.scaling.initial);
+			var baseValue = res.scaling.initial;
+			if(res.scaling.initialMultiplication){
+				baseValue *= base;
+			}
+			var expBonus : Float = 0;
+			if(res.scaling.exponential){
+				expBonus = Math.pow(data1, base);
+			}
+
+			var calculated = Std.int(expBonus + baseValue);
 
 			// uses only the minimum increment
 			calculated = calculated - calculated % res.scaling.minimumIncrement;
@@ -16,7 +26,9 @@ class ResourceLogic {
 
 	public static function getExponentialResource(expBase:Float, minimumIncrement:Int, initial:Int):ScalingResource {
 		var res : ScalingResource = {
-			scaling: {data1: expBase, initial: initial, minimumIncrement: minimumIncrement, type: exponential},
+			scaling: {data1: expBase, initial: initial, 
+				minimumIncrement: minimumIncrement, 
+				initialMultiplication: true, exponential: true},
 			value: 0,
 			lastUsedBaseAttribute: 0,
 			calculatedMax: 0
@@ -67,12 +79,10 @@ typedef Scaling = {
 	var initial:Int;
 	var data1:Float;
 	var minimumIncrement:Int;
-	var type:ScalingType;
+	var exponential : Bool;
+	var initialMultiplication : Bool;
 }
 
-enum ScalingType {
-	exponential;
-}
 
 typedef Equipment = {
 	var type:Int;
@@ -85,13 +95,20 @@ typedef PlayerAction = {
 	public var enabled : Bool;
 }
 
+typedef Balancing = {
+	public var timeToKillFirstEnemy : Float;
+	public var timeForFirstLevelUpGrind : Float;
+	public var timeForFirstAreaProgress : Float;
+	public var areaBonusXPPercentOfFirstLevelUp : Int;
+
+}
+
 
 typedef WorldData = {
 	var hero:Actor;
 	var enemy:Actor;
 	var turn:Bool;
 	var timeCount:Float;
-	var timePeriod:Float;
 	var battleArea:Int;
 	var playerTimesKilled:Int;
 	var killedInArea:Array<Int>;

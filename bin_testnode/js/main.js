@@ -8,10 +8,12 @@ function $extend(from, fields) {
 }
 var BattleManager = function() {
 	this.events = [];
+	this.timePeriod = 0.6;
 	this.canLevelUp = false;
 	this.canAdvance = false;
 	this.canRetreat = false;
 	this.dirty = false;
+	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 90};
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Life"] = 20;
@@ -21,11 +23,12 @@ var BattleManager = function() {
 	stats2_h["Attack"] = 2;
 	stats2_h["Life"] = 6;
 	stats2_h["LifeMax"] = 6;
-	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : ResourceLogic.getExponentialResource(1.5,1,5), attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timePeriod : 1, timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
+	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
 	w.playerActions.h["advance"] = { visible : true, enabled : false};
 	w.playerActions.h["retreat"] = { visible : false, enabled : false};
 	w.playerActions.h["levelup"] = { visible : false, enabled : false};
 	this.wdata = w;
+	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
 };
 BattleManager.__name__ = true;
@@ -41,14 +44,16 @@ BattleManager.prototype = {
 		this.wdata.battleArea = area;
 		this.wdata.necessaryToKillInArea = 0;
 		this.wdata.killedInArea[area] = 0;
+		var initialEnemyToKill = this.balancing.timeForFirstAreaProgress / this.balancing.timeToKillFirstEnemy | 0;
 		if(area > 0) {
-			this.wdata.necessaryToKillInArea = 5 + area;
+			this.wdata.necessaryToKillInArea = initialEnemyToKill * area;
 			if(this.wdata.recovering == false) {
 				this.CreateAreaEnemy();
 			}
 		} else {
 			this.wdata.enemy = null;
 		}
+		ResourceLogic.recalculateScalingResource(this.wdata.battleArea,this.areaBonus);
 		this.dirty = true;
 	}
 	,AwardXP: function(xpPlus) {
@@ -58,13 +63,31 @@ BattleManager.prototype = {
 	}
 	,CreateAreaEnemy: function() {
 		var area = this.wdata.battleArea;
-		var enemyLife = 5 + (area - 1) * 4;
+		var timeToKillEnemy = this.balancing.timeToKillFirstEnemy;
+		var initialAttackHero = 1;
+		var heroAttackTime = this.timePeriod * 2;
+		var heroDPS = initialAttackHero / heroAttackTime;
+		var initialLifeEnemy = heroDPS * timeToKillEnemy | 0;
+		var enemyLife = initialLifeEnemy + (area - 1) * initialLifeEnemy;
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 1 + (area - 1);
 		_g.h["Life"] = enemyLife;
 		_g.h["LifeMax"] = enemyLife;
 		var stats2 = _g;
 		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+	}
+	,ReinitGameValues: function() {
+		var valueXP = 0;
+		if(this.wdata.hero.xp != null) {
+			valueXP = this.wdata.hero.xp.value;
+		}
+		var timeLevelUpGrind = this.balancing.timeForFirstLevelUpGrind;
+		var initialEnemyXP = 2;
+		var initialXPToLevelUp = this.balancing.timeForFirstLevelUpGrind * initialEnemyXP / this.balancing.timeToKillFirstEnemy | 0;
+		this.wdata.hero.xp = ResourceLogic.getExponentialResource(1.5,1,initialXPToLevelUp);
+		this.wdata.hero.xp.value = valueXP;
+		ResourceLogic.recalculateScalingResource(this.wdata.hero.level,this.wdata.hero.xp);
+		this.areaBonus = ResourceLogic.getExponentialResource(1.5,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
 	}
 	,advance: function() {
 		var hero = this.wdata.hero;
@@ -116,7 +139,7 @@ BattleManager.prototype = {
 				killedInArea[battleArea]++;
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
 					if(this.wdata.maxArea == this.wdata.battleArea) {
-						var xpPlus = Math.pow((hero.xp.scaling.data1 - 1) * 0.5 + 1,this.wdata.battleArea) * 50 | 0;
+						var xpPlus = this.areaBonus.calculatedMax;
 						this.AwardXP(xpPlus);
 						this.wdata.maxArea++;
 						killedInArea[this.wdata.maxArea] = 0;
@@ -189,7 +212,7 @@ BattleManager.prototype = {
 			this.wdata.hero.attributesCalculated.h["Life"] = v;
 			this.wdata.recovering = false;
 		}
-		if(this.wdata.timeCount >= this.wdata.timePeriod) {
+		if(this.wdata.timeCount >= this.timePeriod) {
 			this.wdata.timeCount = 0;
 			if(this.wdata.recovering) {
 				var life = this.wdata.hero.attributesCalculated.h["Life"];
@@ -428,14 +451,22 @@ ResourceLogic.__name__ = true;
 ResourceLogic.recalculateScalingResource = function(base,res) {
 	if(res.lastUsedBaseAttribute != base) {
 		var data1 = res.scaling.data1;
-		var calculated = Math.pow(data1,base) + res.scaling.initial | 0;
+		var baseValue = res.scaling.initial;
+		if(res.scaling.initialMultiplication) {
+			baseValue *= base;
+		}
+		var expBonus = 0;
+		if(res.scaling.exponential) {
+			expBonus = Math.pow(data1,base);
+		}
+		var calculated = expBonus + baseValue | 0;
 		calculated -= calculated % res.scaling.minimumIncrement;
 		res.calculatedMax = calculated;
 		res.lastUsedBaseAttribute = base;
 	}
 };
 ResourceLogic.getExponentialResource = function(expBase,minimumIncrement,initial) {
-	var res = { scaling : { data1 : expBase, initial : initial, minimumIncrement : minimumIncrement, type : ScalingType.exponential}, value : 0, lastUsedBaseAttribute : 0, calculatedMax : 0};
+	var res = { scaling : { data1 : expBase, initial : initial, minimumIncrement : minimumIncrement, initialMultiplication : true, exponential : true}, value : 0, lastUsedBaseAttribute : 0, calculatedMax : 0};
 	ResourceLogic.recalculateScalingResource(1,res);
 	return res;
 };
@@ -475,10 +506,6 @@ AttributeLogic.Add = function(attributes,attributeAddition,quantityOfAddition,re
 		result.h[key1] = v;
 	}
 };
-var ScalingType = $hxEnums["ScalingType"] = { __ename__:true,__constructs__:null
-	,exponential: {_hx_name:"exponential",_hx_index:0,__enum__:"ScalingType",toString:$estr}
-};
-ScalingType.__constructs__ = [ScalingType.exponential];
 var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,GameStart: {_hx_name:"GameStart",_hx_index:0,__enum__:"EventTypes",toString:$estr}
 	,ActorDead: {_hx_name:"ActorDead",_hx_index:1,__enum__:"EventTypes",toString:$estr}

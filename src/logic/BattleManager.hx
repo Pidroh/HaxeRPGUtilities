@@ -1,4 +1,5 @@
 // package logic;
+import RPGData.Balancing;
 import js.html.GamepadEvent;
 import haxe.Json;
 import haxe.ds.Vector;
@@ -11,6 +12,10 @@ class BattleManager {
 	public var canRetreat = false;
 	public var canAdvance = false;
 	public var canLevelUp = false;
+	public var areaBonus : ScalingResource;
+
+	var balancing : Balancing;
+	var timePeriod  = 0.6;
 
 	public var events = new Array<GameEvent>();
 
@@ -25,8 +30,11 @@ class BattleManager {
 		wdata.battleArea = area;
 		wdata.necessaryToKillInArea = 0;
 		wdata.killedInArea[area] = 0;
+
+		var initialEnemyToKill = Std.int(balancing.timeForFirstAreaProgress / balancing.timeToKillFirstEnemy);
+		
 		if (area > 0) {
-			wdata.necessaryToKillInArea = 5 + area;
+			wdata.necessaryToKillInArea = initialEnemyToKill * area;
 			
 			if (wdata.recovering == false) {
 				CreateAreaEnemy();
@@ -34,6 +42,10 @@ class BattleManager {
 		} else {
 			wdata.enemy = null;
 		}
+
+
+		ResourceLogic.recalculateScalingResource(wdata.battleArea, areaBonus);
+
 		dirty = true;
 	}
 
@@ -45,8 +57,17 @@ class BattleManager {
 
 	function CreateAreaEnemy() {
 		var area = wdata.battleArea;
-		var enemyLife = 5 + (area-1) * 4;
-			var stats2 = ["Attack" => 1 + (area-1) * 1, "Life" => enemyLife, "LifeMax" => enemyLife];
+		var timeToKillEnemy = balancing.timeToKillFirstEnemy;
+
+		var initialAttackHero = 1; //may have to put this somewhere...
+		var heroAttackTime = timePeriod*2;
+		var heroDPS = initialAttackHero / heroAttackTime;
+
+		var initialLifeEnemy = Std.int( heroDPS * timeToKillEnemy);
+
+		var enemyLife = initialLifeEnemy + (area-1) * (initialLifeEnemy);
+
+		var stats2 = ["Attack" => 1 + (area-1) * 1, "Life" => enemyLife, "LifeMax" => enemyLife];
 		wdata.enemy = {
 			level: 1 + area,
 			attributesBase: stats2,
@@ -59,6 +80,13 @@ class BattleManager {
 	}
 
 	public function new() {
+		balancing = {
+			timeToKillFirstEnemy: 5, 
+			timeForFirstAreaProgress: 20,
+			timeForFirstLevelUpGrind: 90, 
+			areaBonusXPPercentOfFirstLevelUp: 90
+		};
+		
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20];
 		var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
@@ -68,7 +96,7 @@ class BattleManager {
 				attributesBase: stats,
 				equipmentSlots: null,
 				equipment: null,
-				xp: ResourceLogic.getExponentialResource(1.5, 1, 5),
+				xp: null,
 				attributesCalculated: stats.copy(),
 				reference: new ActorReference(0, 0),
 			},
@@ -78,7 +106,6 @@ class BattleManager {
 			necessaryToKillInArea: 0,
 			killedInArea: [0, 0],
 
-			timePeriod: 1,
 			timeCount: 0,
 			playerTimesKilled: 0,
 			battleArea: 0,
@@ -99,7 +126,29 @@ class BattleManager {
 			enabled: false
 		});
 		wdata = w;
+		ReinitGameValues();
 		ChangeBattleArea(0);
+	}
+
+	//currently everything gets saved, even stuff that shouldn't
+	//This method will reinit some of those values when loading or creating a new game
+	public function ReinitGameValues(){
+		var valueXP = 0;
+		if(wdata.hero.xp != null){
+			valueXP = wdata.hero.xp.value;
+		}
+
+		var timeLevelUpGrind = balancing.timeForFirstLevelUpGrind;
+		var initialEnemyXP = 2; //this might need to be in balancing
+		var initialXPToLevelUp = Std.int(balancing.timeForFirstLevelUpGrind*initialEnemyXP / balancing.timeToKillFirstEnemy);
+
+		wdata.hero.xp = ResourceLogic.getExponentialResource(1.5, 1, initialXPToLevelUp);
+		wdata.hero.xp.value = valueXP;
+
+		ResourceLogic.recalculateScalingResource(wdata.hero.level, wdata.hero.xp);
+
+		areaBonus = ResourceLogic.getExponentialResource(1.5, 1, 
+			Std.int(initialXPToLevelUp*balancing.areaBonusXPPercentOfFirstLevelUp/100));
 	}
 
 	public function advance() {
@@ -160,7 +209,8 @@ class BattleManager {
 				killedInArea[battleArea]++;
 				if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
 					if (wdata.maxArea == wdata.battleArea) {
-						var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
+						//var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
+						var xpPlus = areaBonus.calculatedMax;
 						AwardXP(xpPlus);
 						wdata.maxArea++;
 						killedInArea[wdata.maxArea] = 0;
@@ -256,7 +306,7 @@ $baseInfo';
 			wdata.recovering = false;
 		}
 
-		if (wdata.timeCount >= wdata.timePeriod) {
+		if (wdata.timeCount >= timePeriod) {
 			wdata.timeCount = 0;
 			if (wdata.recovering) {
 				var life = wdata.hero.attributesCalculated["Life"];
