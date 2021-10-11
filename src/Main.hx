@@ -26,6 +26,7 @@ class Main {
 		var bm:BattleManager = new BattleManager();
 		var view:View = new View();
 		Toolkit.init();
+		var eventShown = 0;
 
 		var main = new VBox();
 		main.addComponent(view.mainComponent);
@@ -47,7 +48,10 @@ class Main {
 		});
 
 		view.AddButton("reset","Reset", function(e) {
+			view.logText.text = "";
+			view.logText.htmlText = "";
 			bm = new BattleManager();
+			eventShown = 0;
 		}, "You will lose all your progress");
 
 
@@ -68,7 +72,7 @@ class Main {
 		}
 
 		var update = null;
-		var eventShown = 0;
+		
 		var ActorToView = function(actor: Actor, actorView:ActorView){
 			if(actor != null){
 				view.UpdateValues(
@@ -96,6 +100,10 @@ class Main {
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea+1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea );
+
+			var levelUpSystem = bm.wdata.hero.level > 1;
+			view.UpdateVisibilityOfValueView(view.level, levelUpSystem);
+			view.UpdateVisibilityOfValueView(view.xpBar, levelUpSystem);
 
 			var levelUpSystem = bm.wdata.hero.level > 1;
 			view.UpdateVisibilityOfValueView(view.level, levelUpSystem);
@@ -140,7 +148,6 @@ class Main {
 				if(e.type == AreaUnlock){
 					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>>';
 				}
-
 
 				view.AddEventText(ev);
 				eventShown++;

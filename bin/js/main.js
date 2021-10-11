@@ -13,7 +13,7 @@ var BattleManager = function() {
 	this.canAdvance = false;
 	this.canRetreat = false;
 	this.dirty = false;
-	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 90};
+	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 60};
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Life"] = 20;
@@ -127,11 +127,15 @@ BattleManager.prototype = {
 				enemy.attributesCalculated.h["Life"] = v;
 			}
 		}
-		if(enemy == null) {
+		if(this.wdata.recovering || enemy == null) {
 			attackHappen = false;
-		}
-		if(this.wdata.recovering) {
-			attackHappen = false;
+			var life = this.wdata.hero.attributesCalculated.h["Life"];
+			var lifeMax = this.wdata.hero.attributesCalculated.h["LifeMax"];
+			life += 2;
+			if(life > lifeMax) {
+				life = lifeMax;
+			}
+			this.wdata.hero.attributesCalculated.h["Life"] = life;
 		}
 		if(attackHappen) {
 			var gEvent = this.AddEvent(EventTypes.ActorAttack);
@@ -163,6 +167,7 @@ BattleManager.prototype = {
 				this.AwardXP(enemy.level);
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
 					if(this.wdata.maxArea == this.wdata.battleArea) {
+						ResourceLogic.recalculateScalingResource(this.wdata.battleArea,this.areaBonus);
 						var xpPlus = this.areaBonus.calculatedMax;
 						this.AwardXP(xpPlus);
 						this.wdata.maxArea++;
@@ -234,11 +239,6 @@ BattleManager.prototype = {
 		}
 		if(this.wdata.timeCount >= this.timePeriod) {
 			this.wdata.timeCount = 0;
-			if(this.wdata.recovering) {
-				var life = this.wdata.hero.attributesCalculated.h["Life"];
-				life += 2;
-				this.wdata.hero.attributesCalculated.h["Life"] = life;
-			}
 			return this.advance();
 		}
 		if(this.dirty) {
@@ -553,6 +553,7 @@ Main.main = function() {
 	var bm = new BattleManager();
 	var view = new View();
 	haxe_ui_Toolkit.init();
+	var eventShown = 0;
 	var main = new haxe_ui_containers_VBox();
 	main.addComponent(view.mainComponent);
 	view.AddButton("retreat","Retreat",function(e) {
@@ -565,7 +566,10 @@ Main.main = function() {
 		bm.LevelUp();
 	});
 	view.AddButton("reset","Reset",function(e) {
+		view.logText.set_text("");
+		view.logText.set_htmlText("");
 		bm = new BattleManager();
+		eventShown = 0;
 	},"You will lose all your progress");
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
@@ -577,7 +581,6 @@ Main.main = function() {
 		bm.SendJsonPersistentData(jsonData);
 	}
 	var update = null;
-	var eventShown = 0;
 	var ActorToView = function(actor,actorView) {
 		if(actor != null) {
 			view.UpdateValues(actorView.life,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
@@ -597,6 +600,9 @@ Main.main = function() {
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
 		view.UpdateValues(view.areaLabel,bm.wdata.battleArea + 1,-1);
 		view.UpdateValues(view.enemyToAdvance,bm.wdata.killedInArea[bm.wdata.battleArea],bm.wdata.necessaryToKillInArea);
+		var levelUpSystem = bm.wdata.hero.level > 1;
+		view.UpdateVisibilityOfValueView(view.level,levelUpSystem);
+		view.UpdateVisibilityOfValueView(view.xpBar,levelUpSystem);
 		var levelUpSystem = bm.wdata.hero.level > 1;
 		view.UpdateVisibilityOfValueView(view.level,levelUpSystem);
 		view.UpdateVisibilityOfValueView(view.xpBar,levelUpSystem);

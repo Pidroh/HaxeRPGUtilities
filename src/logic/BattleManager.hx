@@ -95,7 +95,7 @@ class BattleManager {
 			timeToKillFirstEnemy: 5, 
 			timeForFirstAreaProgress: 20,
 			timeForFirstLevelUpGrind: 90, 
-			areaBonusXPPercentOfFirstLevelUp: 90
+			areaBonusXPPercentOfFirstLevelUp: 60
 		};
 		
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20];
@@ -188,11 +188,14 @@ class BattleManager {
 				// c = Sys.getChar(true);
 			}
 		}
-		if (enemy == null) {
+
+		if (wdata.recovering || enemy == null) {
 			attackHappen = false;
-		}
-		if (wdata.recovering) {
-			attackHappen = false;
+			var life    = wdata.hero.attributesCalculated["Life"];
+			var lifeMax = wdata.hero.attributesCalculated["LifeMax"];
+			life += 2;
+			if(life > lifeMax) life = lifeMax;
+			wdata.hero.attributesCalculated["Life"] = life;
 		}
 
 		// c = Sys.getChar(true);
@@ -234,6 +237,7 @@ class BattleManager {
 				if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
 					if (wdata.maxArea == wdata.battleArea) {
 						//var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
+						ResourceLogic.recalculateScalingResource(wdata.battleArea, areaBonus);
 						var xpPlus = areaBonus.calculatedMax;
 						AwardXP(xpPlus);
 						wdata.maxArea++;
@@ -330,11 +334,7 @@ $baseInfo';
 
 		if (wdata.timeCount >= timePeriod) {
 			wdata.timeCount = 0;
-			if (wdata.recovering) {
-				var life = wdata.hero.attributesCalculated["Life"];
-				life += 2;
-				wdata.hero.attributesCalculated["Life"] = life;
-			}
+			
 			return advance();
 		}
 		if (dirty) {

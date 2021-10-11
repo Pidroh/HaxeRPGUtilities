@@ -13,7 +13,7 @@ var BattleManager = function() {
 	this.canAdvance = false;
 	this.canRetreat = false;
 	this.dirty = false;
-	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 90};
+	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 60};
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Life"] = 20;
@@ -117,11 +117,15 @@ BattleManager.prototype = {
 				enemy.attributesCalculated.h["Life"] = v;
 			}
 		}
-		if(enemy == null) {
+		if(this.wdata.recovering || enemy == null) {
 			attackHappen = false;
-		}
-		if(this.wdata.recovering) {
-			attackHappen = false;
+			var life = this.wdata.hero.attributesCalculated.h["Life"];
+			var lifeMax = this.wdata.hero.attributesCalculated.h["LifeMax"];
+			life += 2;
+			if(life > lifeMax) {
+				life = lifeMax;
+			}
+			this.wdata.hero.attributesCalculated.h["Life"] = life;
 		}
 		if(attackHappen) {
 			var gEvent = this.AddEvent(EventTypes.ActorAttack);
@@ -153,6 +157,7 @@ BattleManager.prototype = {
 				this.AwardXP(enemy.level);
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
 					if(this.wdata.maxArea == this.wdata.battleArea) {
+						ResourceLogic.recalculateScalingResource(this.wdata.battleArea,this.areaBonus);
 						var xpPlus = this.areaBonus.calculatedMax;
 						this.AwardXP(xpPlus);
 						this.wdata.maxArea++;
@@ -224,11 +229,6 @@ BattleManager.prototype = {
 		}
 		if(this.wdata.timeCount >= this.timePeriod) {
 			this.wdata.timeCount = 0;
-			if(this.wdata.recovering) {
-				var life = this.wdata.hero.attributesCalculated.h["Life"];
-				life += 2;
-				this.wdata.hero.attributesCalculated.h["Life"] = life;
-			}
 			return this.advance();
 		}
 		if(this.dirty) {
