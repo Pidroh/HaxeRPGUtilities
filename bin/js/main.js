@@ -51,9 +51,14 @@ BattleManager.prototype = {
 		return i;
 	}
 	,ChangeBattleArea: function(area) {
+		if(this.wdata.killedInArea[this.wdata.battleArea] >= this.wdata.necessaryToKillInArea) {
+			this.wdata.killedInArea[this.wdata.battleArea] = 0;
+		}
 		this.wdata.battleArea = area;
 		this.wdata.necessaryToKillInArea = 0;
-		this.wdata.killedInArea[area] = 0;
+		if(this.wdata.killedInArea.length <= area) {
+			this.wdata.killedInArea[area] = 0;
+		}
 		var initialEnemyToKill = this.balancing.timeForFirstAreaProgress / this.balancing.timeToKillFirstEnemy | 0;
 		if(area > 0) {
 			this.wdata.necessaryToKillInArea = initialEnemyToKill * area;
@@ -104,8 +109,13 @@ BattleManager.prototype = {
 		var enemy = this.wdata.enemy;
 		var killedInArea = this.wdata.killedInArea;
 		var battleArea = this.wdata.battleArea;
+		var areaComplete = killedInArea[battleArea] >= this.wdata.necessaryToKillInArea;
 		var attackHappen = true;
-		if(this.wdata.battleArea > 0 && this.wdata.recovering == false) {
+		if(areaComplete) {
+			this.wdata.enemy = null;
+			attackHappen = false;
+		}
+		if(this.wdata.battleArea > 0 && this.wdata.recovering == false && areaComplete == false) {
 			if(enemy == null) {
 				this.CreateAreaEnemy();
 				enemy = this.wdata.enemy;
@@ -147,6 +157,10 @@ BattleManager.prototype = {
 					killedInArea[battleArea] = 0;
 				}
 				killedInArea[battleArea]++;
+				var e = this.AddEvent(EventTypes.ActorDead);
+				e.origin = enemy.reference;
+				var xpGain = enemy.level;
+				this.AwardXP(enemy.level);
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
 					if(this.wdata.maxArea == this.wdata.battleArea) {
 						var xpPlus = this.areaBonus.calculatedMax;
@@ -155,10 +169,6 @@ BattleManager.prototype = {
 						killedInArea[this.wdata.maxArea] = 0;
 					}
 				}
-				var xpGain = enemy.level;
-				this.AwardXP(enemy.level);
-				var e = this.AddEvent(EventTypes.ActorDead);
-				e.origin = enemy.reference;
 			}
 			if(hero.attributesCalculated.h["Life"] <= 0) {
 				this.wdata.recovering = true;

@@ -41,9 +41,14 @@ BattleManager.prototype = {
 		return i;
 	}
 	,ChangeBattleArea: function(area) {
+		if(this.wdata.killedInArea[this.wdata.battleArea] >= this.wdata.necessaryToKillInArea) {
+			this.wdata.killedInArea[this.wdata.battleArea] = 0;
+		}
 		this.wdata.battleArea = area;
 		this.wdata.necessaryToKillInArea = 0;
-		this.wdata.killedInArea[area] = 0;
+		if(this.wdata.killedInArea.length <= area) {
+			this.wdata.killedInArea[area] = 0;
+		}
 		var initialEnemyToKill = this.balancing.timeForFirstAreaProgress / this.balancing.timeToKillFirstEnemy | 0;
 		if(area > 0) {
 			this.wdata.necessaryToKillInArea = initialEnemyToKill * area;
@@ -94,8 +99,13 @@ BattleManager.prototype = {
 		var enemy = this.wdata.enemy;
 		var killedInArea = this.wdata.killedInArea;
 		var battleArea = this.wdata.battleArea;
+		var areaComplete = killedInArea[battleArea] >= this.wdata.necessaryToKillInArea;
 		var attackHappen = true;
-		if(this.wdata.battleArea > 0 && this.wdata.recovering == false) {
+		if(areaComplete) {
+			this.wdata.enemy = null;
+			attackHappen = false;
+		}
+		if(this.wdata.battleArea > 0 && this.wdata.recovering == false && areaComplete == false) {
 			if(enemy == null) {
 				this.CreateAreaEnemy();
 				enemy = this.wdata.enemy;
@@ -137,6 +147,10 @@ BattleManager.prototype = {
 					killedInArea[battleArea] = 0;
 				}
 				killedInArea[battleArea]++;
+				var e = this.AddEvent(EventTypes.ActorDead);
+				e.origin = enemy.reference;
+				var xpGain = enemy.level;
+				this.AwardXP(enemy.level);
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
 					if(this.wdata.maxArea == this.wdata.battleArea) {
 						var xpPlus = this.areaBonus.calculatedMax;
@@ -145,10 +159,6 @@ BattleManager.prototype = {
 						killedInArea[this.wdata.maxArea] = 0;
 					}
 				}
-				var xpGain = enemy.level;
-				this.AwardXP(enemy.level);
-				var e = this.AddEvent(EventTypes.ActorDead);
-				e.origin = enemy.reference;
 			}
 			if(hero.attributesCalculated.h["Life"] <= 0) {
 				this.wdata.recovering = true;
@@ -415,10 +425,9 @@ MainTest.main = function() {
 	bm.update(5);
 	bm.update(5);
 	bm.update(5);
-	var json = bm.GetJsonPersistentData();
 	var battleArea = bm.wdata.battleArea;
+	var json = bm.GetJsonPersistentData();
 	bm.SendJsonPersistentData(json);
-	var json2 = bm.GetJsonPersistentData();
 	if(bm.wdata.battleArea != battleArea) {
 		process.stdout.write("ERROR: Battle Area corrupted when loading");
 		process.stdout.write("\n");
@@ -428,6 +437,7 @@ MainTest.main = function() {
 		process.stdout.write(Std.string(v));
 		process.stdout.write("\n");
 	}
+	var json2 = bm.GetJsonPersistentData();
 	if(json0 == json2) {
 		process.stdout.write("ERROR: Data not changed on game progress");
 		process.stdout.write("\n");
@@ -435,14 +445,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:94:","  _____ ");
-		console.log("test/MainTest.hx:95:","  _____ ");
-		console.log("test/MainTest.hx:96:","  _____ ");
-		console.log("test/MainTest.hx:97:",json);
 		console.log("test/MainTest.hx:98:","  _____ ");
 		console.log("test/MainTest.hx:99:","  _____ ");
 		console.log("test/MainTest.hx:100:","  _____ ");
-		console.log("test/MainTest.hx:101:",json2);
+		console.log("test/MainTest.hx:101:",json);
+		console.log("test/MainTest.hx:102:","  _____ ");
+		console.log("test/MainTest.hx:103:","  _____ ");
+		console.log("test/MainTest.hx:104:","  _____ ");
+		console.log("test/MainTest.hx:105:",json2);
 	}
 };
 Math.__name__ = true;

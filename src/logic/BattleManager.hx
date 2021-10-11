@@ -27,9 +27,20 @@ class BattleManager {
 	}
 
 	public function ChangeBattleArea(area:Int) {
+
+		//previous area code
+		//reset kill count of complete areas when leaving them
+		if(wdata.killedInArea[wdata.battleArea] >= wdata.necessaryToKillInArea){
+			wdata.killedInArea[wdata.battleArea] = 0;
+		}
+
+
+		
+		//actual change to area
 		wdata.battleArea = area;
 		wdata.necessaryToKillInArea = 0;
-		wdata.killedInArea[area] = 0;
+		if(wdata.killedInArea.length <= area)
+			wdata.killedInArea[area] = 0;
 
 		var initialEnemyToKill = Std.int(balancing.timeForFirstAreaProgress / balancing.timeToKillFirstEnemy);
 		
@@ -156,9 +167,15 @@ class BattleManager {
 		var enemy = wdata.enemy;
 		var killedInArea = wdata.killedInArea;
 		var battleArea = wdata.battleArea;
+		var areaComplete = killedInArea[battleArea] >= wdata.necessaryToKillInArea;
 		var attackHappen = true;
 
-		if (wdata.battleArea > 0 && wdata.recovering == false) {
+		if(areaComplete){
+			wdata.enemy = null;
+			attackHappen = false;
+		}
+
+		if (wdata.battleArea > 0 && wdata.recovering == false && areaComplete == false) {
 			if (enemy == null) {
 				CreateAreaEnemy();
 				enemy = wdata.enemy;
@@ -207,6 +224,13 @@ class BattleManager {
 				}
 				#end
 				killedInArea[battleArea]++;
+				
+				var e = AddEvent(ActorDead);
+				e.origin = enemy.reference;
+				
+				var xpGain = enemy.level;
+				AwardXP(enemy.level);
+
 				if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
 					if (wdata.maxArea == wdata.battleArea) {
 						//var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
@@ -216,10 +240,8 @@ class BattleManager {
 						killedInArea[wdata.maxArea] = 0;
 					}
 				}
-				var xpGain = enemy.level;
-				AwardXP(enemy.level);
-				var e = AddEvent(ActorDead);
-				e.origin = enemy.reference;
+				
+				
 			}
 			if (hero.attributesCalculated["Life"] <= 0) {
 				wdata.recovering = true;

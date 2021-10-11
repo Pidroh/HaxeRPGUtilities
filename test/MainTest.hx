@@ -74,17 +74,21 @@ class MainTest {
 			for (i in 1...20) {
 				bm.update(5);
 			}
-			var json = bm.GetJsonPersistentData();
+			
+			//20
 			var battleArea = bm.wdata.battleArea;
-			bm.SendJsonPersistentData(json);
-			var json2 = bm.GetJsonPersistentData();
 
+			// force load
+			var json = bm.GetJsonPersistentData();
+			bm.SendJsonPersistentData(json);
 
 			if(bm.wdata.battleArea != battleArea){
 				Sys.println("ERROR: Battle Area corrupted when loading");
 				Sys.println("ERROR: Battle Area before "+battleArea);
 				Sys.println("ERROR: Battle Area after "+ bm.wdata.battleArea);
 			}
+
+			var json2 = bm.GetJsonPersistentData();
 
 			if(json0 == json2){
 				Sys.println("ERROR: Data not changed on game progress");
