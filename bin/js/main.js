@@ -555,6 +555,7 @@ Main.main = function() {
 	haxe_ui_Toolkit.init();
 	var eventShown = 0;
 	var main = new haxe_ui_containers_VBox();
+	main.set_percentWidth(100);
 	main.addComponent(view.mainComponent);
 	view.AddButton("retreat","Retreat",function(e) {
 		bm.RetreatArea();
@@ -1131,9 +1132,25 @@ var View = function() {
 	this.enemy1 = "slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog".split("@");
 	this.prefix = "normal@fire@ice@water@thunder@wind@earth@poison@grass".split("@");
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
+	var boxParentP = new haxe_ui_containers_VBox();
+	this.mainComponent = boxParentP;
+	boxParentP.set_paddingTop(5);
+	boxParentP.set_paddingLeft(20);
+	boxParentP.set_percentWidth(100);
+	var title = new haxe_ui_components_Label();
+	title.set_htmlText("<h1>Generic RPG I</h1>");
+	boxParentP.addComponent(title);
+	var title = new haxe_ui_components_Label();
+	title.set_htmlText("Alpha 0.02E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>");
+	title.set_percentWidth(100);
+	title.set_textAlign("right");
+	title.set_paddingRight(20);
+	boxParentP.addComponent(title);
 	var boxParent = new haxe_ui_containers_HBox();
-	this.mainComponent = boxParent;
-	boxParent.set_padding(40);
+	this.mainComponent.addComponent(boxParent);
+	this.mainComponentB = boxParent;
+	boxParent.set_paddingLeft(40);
+	boxParent.set_paddingTop(10);
 	var box = new haxe_ui_containers_VBox();
 	boxParent.addComponent(box);
 	this.buttonBox = this.CreateContainer(boxParent,true);
@@ -1161,6 +1178,7 @@ View.prototype = {
 	,enemyToAdvance: null
 	,areaLabel: null
 	,mainComponent: null
+	,mainComponentB: null
 	,logText: null
 	,areaNouns: null
 	,prefix: null
@@ -1197,15 +1215,15 @@ View.prototype = {
 			this.buttonBox.addComponent(button);
 			button.set_onClick(onClick);
 		} else {
-			this.mainComponent.addComponent(button);
+			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 112, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 123, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 114, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 125, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 118, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 129, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

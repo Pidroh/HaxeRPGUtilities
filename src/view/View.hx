@@ -18,38 +18,55 @@ class View {
 	public var enemyToAdvance:ValueView;
 	public var areaLabel:ValueView;
 	public var mainComponent:Component;
+	public var mainComponentB:Component;
 	public var logText:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
 	public var enemy1 = 'slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog'.split('@');
 
-	var buttonBox : Component;
+	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
 
 	public function new() {
+		{
+			var boxParentP = new VBox();
+			mainComponent = boxParentP;
+			boxParentP.paddingTop = 5;
+			boxParentP.paddingLeft = 20;
+			boxParentP.percentWidth = 100;
+			{
+				var title = new Label();
+				title.htmlText = "<h1>Generic RPG I</h1>";
+				boxParentP.addComponent(title);
+			}
+			{
+				var title = new Label();
+				title.htmlText = "Alpha 0.02E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
+				title.percentWidth = 100;
+				title.textAlign = "right";
+				title.paddingRight = 20;
+
+				boxParentP.addComponent(title);
+			}
+		}
+
 		var boxParent = new HBox();
-		mainComponent = boxParent;
-		//boxParent.horizontalAlign = "center";
-		boxParent.padding = 40;
-
-
-		
-
+		mainComponent.addComponent(boxParent);
+		mainComponentB = boxParent;
+		// boxParent.horizontalAlign = "center";
+		boxParent.paddingLeft = 40;
+		boxParent.paddingTop = 10;
 		var box:VBox = new VBox();
 		boxParent.addComponent(box);
 
-
 		buttonBox = CreateContainer(boxParent, true);
-		//buttonBox.percentHeight = 100;
-		//boxParent.addComponent(buttonBox);
-
-		
+		// buttonBox.percentHeight = 100;
+		// boxParent.addComponent(buttonBox);
 
 		var logContainer = CreateContainer(boxParent, true);
 		var log = new Label();
 		logText = log;
 		logContainer.addComponent(log);
-
 
 		var areaContainer = CreateContainer(box, true);
 		areaLabel = CreateValueView(areaContainer, false, "Area: ");
@@ -67,13 +84,11 @@ class View {
 	public function CreateContainer(parent:Component, vertical) {
 		var container:Component;
 
-		
-		
 		if (vertical == false)
 			container = new HBox();
 		else
 			container = new VBox();
-		//container.percentWidth = 100;
+		// container.percentWidth = 100;
 		// container.borderRadius = 1;
 		container.borderColor = "#333333";
 		container.borderSize = 1;
@@ -97,17 +112,13 @@ class View {
 		button.text = label;
 		button.repeater = true;
 		button.repeatInterval = 300;
-		
-		
+
 		// button.onClick = onClick;
-		if (warningMessage == null){
+		if (warningMessage == null) {
 			buttonBox.addComponent(button);
 			button.onClick = onClick;
-		}
-			
-		else {
-			
-			mainComponent.addComponent(button);
+		} else {
+			mainComponentB.addComponent(button);
 			button.onClick = function whatever(e) {
 				trace("lol");
 				Screen.instance.messageBox(warningMessage, label, MessageBoxType.TYPE_QUESTION, true, function(button) {
@@ -121,7 +132,6 @@ class View {
 		}
 		buttonMap[id] = button;
 		// button.hidden = true;
-		
 	}
 
 	public function ButtonVisibility(id:String, visible:Bool) {

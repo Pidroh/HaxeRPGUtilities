@@ -29,6 +29,7 @@ class Main {
 		var eventShown = 0;
 
 		var main = new VBox();
+		main.percentWidth = 100;
 		main.addComponent(view.mainComponent);
 
 

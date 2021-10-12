@@ -1,3 +1,4 @@
 .haxelib
 /out
 /installer
+/bin
