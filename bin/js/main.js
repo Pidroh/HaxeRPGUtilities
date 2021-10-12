@@ -107,10 +107,6 @@ BattleManager.prototype = {
 		this.wdata.hero.xp.value = valueXP;
 		ResourceLogic.recalculateScalingResource(this.wdata.hero.level,this.wdata.hero.xp);
 		this.areaBonus = ResourceLogic.getExponentialResource(1.5,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
-		var e_type = 0;
-		var e_requiredAttributes = null;
-		var e_attributes_h = Object.create(null);
-		e_attributes_h["Attack"] = 1;
 		if(this.wdata.hero.equipment == null) {
 			this.wdata.hero.equipment = [];
 		}
@@ -175,11 +171,15 @@ BattleManager.prototype = {
 					killedInArea[battleArea] = 0;
 				}
 				killedInArea[battleArea]++;
-				if(this.random.randomInt(0,100) > this.equipDropChance) {
+				if(this.random.randomInt(0,100) < this.equipDropChance) {
 					var attackBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
 					var _g = new haxe_ds_StringMap();
 					_g.h["Attack"] = attackBonus;
 					var e = { type : 0, requiredAttributes : null, attributes : _g};
+					if(this.random.randomInt(0,100) < 20) {
+						var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
+						e.attributes.h["LifeMax"] = lifeBonus;
+					}
 					this.wdata.hero.equipment.push(e);
 					var e = this.AddEvent(EventTypes.EquipDrop);
 					e.data = this.wdata.hero.equipment.length - 1;

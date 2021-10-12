@@ -164,9 +164,7 @@ class BattleManager {
 
 		areaBonus = ResourceLogic.getExponentialResource(1.5, 1, 
 			Std.int(initialXPToLevelUp*balancing.areaBonusXPPercentOfFirstLevelUp/100));
-		var e : Equipment = {type: 0, requiredAttributes: null, attributes: [
-			"Attack" => 1
-		]};
+		
 		if(wdata.hero.equipment == null){
 			wdata.hero.equipment = [];
 		}
@@ -241,9 +239,16 @@ class BattleManager {
 				}
 				#end
 				killedInArea[battleArea]++;
-				if(random.randomInt(0, 100) > equipDropChance){
+				if(random.randomInt(0, 100) < equipDropChance){
 					var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"]/2 + 2));
+					
 					var e : Equipment = {type: 0, requiredAttributes: null, attributes: ["Attack"=>attackBonus]};
+
+					if(random.randomInt(0, 100) < 20 ){
+						var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"]/2 + 2));
+						e.attributes["LifeMax"] = lifeBonus;
+					}
+
 					wdata.hero.equipment.push(e);
 					var e = AddEvent(EquipDrop);
 					e.data = wdata.hero.equipment.length-1;
