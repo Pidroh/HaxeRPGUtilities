@@ -1,4 +1,5 @@
 // package logic;
+import seedyrng.Random;
 import RPGData.Balancing;
 import js.html.GamepadEvent;
 import haxe.Json;
@@ -16,6 +17,8 @@ class BattleManager {
 
 	var balancing : Balancing;
 	var timePeriod  = 0.6;
+	var equipDropChance = 30;
+	var random = new Random();
 
 	public var events = new Array<GameEvent>();
 
@@ -164,11 +167,12 @@ class BattleManager {
 		var e : Equipment = {type: 0, requiredAttributes: null, attributes: [
 			"Attack" => 1
 		]};
-		wdata.hero.equipment = [];
-		wdata.hero.equipment[0] = e;
+		if(wdata.hero.equipment == null){
+			wdata.hero.equipment = [];
+		}
 		if(wdata.hero.equipmentSlots == null){
 			wdata.hero.equipmentSlots = [];
-			
+
 		}
 	}
 
@@ -237,6 +241,16 @@ class BattleManager {
 				}
 				#end
 				killedInArea[battleArea]++;
+				if(random.randomInt(0, 100) > equipDropChance){
+					var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"]/2 + 2));
+					var e : Equipment = {type: 0, requiredAttributes: null, attributes: ["Attack"=>attackBonus]};
+					wdata.hero.equipment.push(e);
+					var e = AddEvent(EquipDrop);
+					e.data = wdata.hero.equipment.length-1;
+					e.origin = enemy.reference;
+				}
+
+				
 				
 				var e = AddEvent(ActorDead);
 				e.origin = enemy.reference;

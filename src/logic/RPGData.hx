@@ -121,6 +121,7 @@ typedef WorldData = {
 enum EventTypes{
 	GameStart;
 	ActorDead; 
+	EquipDrop;
 	ActorAppear;
 	ActorAttack;
 	ActorLevelUp;

@@ -4,8 +4,10 @@
 -p src/view
 -p src
 -main MainTest
+--library seedyrng
 
 -lib haxeui-core
 -lib hscript
+
 
 --js bin_testnode/js/main.js

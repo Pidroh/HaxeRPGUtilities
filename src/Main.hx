@@ -32,18 +32,14 @@ class Main {
 		var main = new VBox();
 		main.percentWidth = 100;
 		main.addComponent(view.mainComponent);
-
-
-
-		view.AddButton("retreat","Retreat", function(e) {
-			bm.RetreatArea();
-		});
-
+		
 		view.AddButton("advance","Advance", function(e) {
 			bm.AdvanceArea();
 		});
 
-		
+		view.AddButton("retreat","Retreat", function(e) {
+			bm.RetreatArea();
+		});
 
 		view.AddButton("levelup","Level Up", function(e) {
 			bm.LevelUp();
