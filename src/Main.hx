@@ -1,3 +1,4 @@
+import haxe.ui.macros.helpers.FunctionBuilder;
 import js.html.webgl.extension.WEBGLCompressedTexturePvrtc;
 import haxe.ui.components.Progress;
 import haxe.Json;
@@ -55,6 +56,11 @@ class Main {
 			eventShown = 0;
 		}, "You will lose all your progress");
 
+		view.equipmentMainAction = function (pos){
+			bm.ToggleEquipped(pos);
+			
+		};
+
 
 		main.percentWidth = 100;
 		//main.horizontalAlign = "center";
@@ -101,6 +107,18 @@ class Main {
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea+1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea );
+
+			view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
+			for(i in 0...bm.wdata.hero.equipment.length){
+				var e = bm.wdata.hero.equipment[i];
+				
+				view.FeedEquipmentBase(i, "Sword", bm.IsEquipped(i));
+				var vid = 0;
+				for(v in e.attributes.keyValueIterator()){
+					view.FeedEquipmentValue(i, vid, v.key, v.value);
+				}
+				
+			}
 
 			var levelUpSystem = bm.wdata.hero.level > 1;
 			view.UpdateVisibilityOfValueView(view.level, levelUpSystem);

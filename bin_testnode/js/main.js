@@ -98,6 +98,9 @@ BattleManager.prototype = {
 		var e = { type : 0, requiredAttributes : null, attributes : _g};
 		this.wdata.hero.equipment = [];
 		this.wdata.hero.equipment[0] = e;
+		if(this.wdata.hero.equipmentSlots == null) {
+			this.wdata.hero.equipmentSlots = [];
+		}
 	}
 	,advance: function() {
 		var hero = this.wdata.hero;
@@ -181,6 +184,17 @@ BattleManager.prototype = {
 		this.wdata.turn = !this.wdata.turn;
 		return "";
 	}
+	,ToggleEquipped: function(pos) {
+		if(this.wdata.hero.equipmentSlots.indexOf(pos) != -1) {
+			HxOverrides.remove(this.wdata.hero.equipmentSlots,pos);
+		} else {
+			this.wdata.hero.equipmentSlots.push(pos);
+		}
+		this.RecalculateAttributes(this.wdata.hero);
+	}
+	,IsEquipped: function(pos) {
+		return this.wdata.hero.equipmentSlots.indexOf(pos) != -1;
+	}
 	,AddEvent: function(eventType) {
 		var e = new GameEvent(eventType);
 		this.events.push(e);
@@ -257,13 +271,24 @@ BattleManager.prototype = {
 			hero.xp.value -= hero.xp.calculatedMax;
 			hero.level++;
 			this.AddEvent(EventTypes.ActorLevelUp);
-			var hero1 = hero.attributesBase;
-			var _g = new haxe_ds_StringMap();
-			_g.h["Attack"] = 1;
-			_g.h["LifeMax"] = 5;
-			_g.h["Life"] = 5;
-			AttributeLogic.Add(hero1,_g,hero.level,hero.attributesCalculated);
+			this.RecalculateAttributes(hero);
 			ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
+		}
+	}
+	,RecalculateAttributes: function(actor) {
+		var actor1 = actor.attributesBase;
+		var _g = new haxe_ds_StringMap();
+		_g.h["Attack"] = 1;
+		_g.h["LifeMax"] = 5;
+		_g.h["Life"] = 5;
+		AttributeLogic.Add(actor1,_g,actor.level,actor.attributesCalculated);
+		var _g = 0;
+		var _g1 = actor.equipmentSlots;
+		while(_g < _g1.length) {
+			var es = _g1[_g];
+			++_g;
+			var e = actor.equipment[es];
+			AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
 		}
 	}
 	,AdvanceArea: function() {
@@ -282,6 +307,19 @@ BattleManager.prototype = {
 		}
 		this.ReinitGameValues();
 	}
+};
+var HxOverrides = function() { };
+HxOverrides.__name__ = true;
+HxOverrides.remove = function(a,obj) {
+	var i = a.indexOf(obj);
+	if(i == -1) {
+		return false;
+	}
+	a.splice(i,1);
+	return true;
+};
+HxOverrides.now = function() {
+	return Date.now();
 };
 var IntIterator = function(min,max) {
 	this.min = min;
@@ -831,6 +869,9 @@ js_node_url_URLSearchParamsEntry.get_name = function(this1) {
 js_node_url_URLSearchParamsEntry.get_value = function(this1) {
 	return this1[1];
 };
+if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : false) {
+	HxOverrides.now = performance.now.bind(performance);
+}
 if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c < 0x10000 ? String.fromCharCode(c) : String.fromCharCode((c>>10)+0xD7C0)+String.fromCharCode((c&0x3FF)+0xDC00); }
 String.__name__ = true;
 Array.__name__ = true;

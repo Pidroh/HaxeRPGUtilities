@@ -45,7 +45,7 @@ class AttributeLogic {
 			attributes[key] += Std.int(attributeAddition[key]*quantityOfAddition);
 		}
 	}
-	public static function Add(attributes:Map<String, Int>, attributeAddition:Map<String, Float>, quantityOfAddition:Int, result:Map<String, Int>) {
+	public static function Add(attributes:Map<String, Int>, attributeAddition:Map<String, Int>, quantityOfAddition:Int, result:Map<String, Int>) {
 		for(key => value in attributeAddition){
 			result[key] = attributes[key] + Std.int(value*quantityOfAddition);
 		}

@@ -20,10 +20,13 @@ class View {
 	public var areaLabel:ValueView;
 	public var mainComponent:Component;
 	public var mainComponentB:Component;
+	public var equipTab:Component;
 	public var logText:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
 	public var enemy1 = 'slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog'.split('@');
+
+	public var equipmentMainAction : Int->Void;
 
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
@@ -93,7 +96,7 @@ class View {
 		enemyView = GetActorView("Enemy", battleView);
 
 		{
-			var equipTab = new VBox();
+			equipTab = new VBox();
 			equipTab.text = "Equipment";
 			tabMaster.addComponent(equipTab);
 		}
@@ -127,25 +130,51 @@ class View {
 
 	public function EquipmentAmountToShow(amount : Int){
 		while(amount > equipments.length){
-			
 			var viewParent = new VBox();
 			var name = new Label();
 			name.text = "Sword";
 			viewParent.addComponent(name);
-			var ev : EquipmentView = {name: name, parent: viewParent, values: []};
+			var button = new Button();
+			button.text = "Equip";
+			button.percentWidth = 100;
+			var equipmentPos = equipments.length;
+
+			button.onClick = function(e) { ClickedEquipmentViewMainAction(equipmentPos); };
+			//button.onClick = function(e) => {ClickedEquipmentViewMainAction(equipmentPos;)};
+			//	ClickedEquipmentViewMainAction(equipmentPos);
+			
+			viewParent.addComponent(button);
+			var ev : EquipmentView = {name: name, parent: viewParent, values: [], actionButton: button};
+			equipTab.addComponent(viewParent);
 			equipments.push(ev);
 		}
 	}
 
-	public function FeedEquipmentBase(pos : Int, name:String, numberOfValues: Int){
+	public function ClickedEquipmentViewMainAction(equipmentPos : Int){
+		if(equipmentMainAction != null){
+			this.equipmentMainAction(equipmentPos);
+		}
+			
+	}
+
+	public function FeedEquipmentBase(pos : Int, name:String, equipped : Bool, numberOfValues: Int = -1){
 		equipments[pos].name.text = name;
+		if(equipped){
+			equipments[pos].actionButton.text = "Unequip";
+		} else{
+			equipments[pos].actionButton.text = "Equip";
+		}
 		while(equipments[pos].values.length < numberOfValues){
-			var vv = CreateValueView(equipments[pos].parent, false, "");
+			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
 		}
 	}
 
 	public function FeedEquipmentValue(pos : Int, valuePos: Int, valueName:String, value: Int){
+		while(equipments[pos].values.length <= valuePos){
+			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
+			equipments[pos].values.push(vv);
+		}
 		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName);
 		
 	}
@@ -291,4 +320,5 @@ typedef EquipmentView = {
 	var name:Label;
 	var values : Array<ValueView>;
 	var parent:Component;
+	var actionButton:Button;
 };

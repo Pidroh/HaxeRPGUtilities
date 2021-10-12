@@ -166,6 +166,10 @@ class BattleManager {
 		]};
 		wdata.hero.equipment = [];
 		wdata.hero.equipment[0] = e;
+		if(wdata.hero.equipmentSlots == null){
+			wdata.hero.equipmentSlots = [];
+			
+		}
 	}
 
 	public function advance() {
@@ -264,6 +268,20 @@ class BattleManager {
 
 		wdata.turn = !wdata.turn;
 		return "";
+	}
+
+	public function ToggleEquipped(pos){
+		if(wdata.hero.equipmentSlots.contains(pos)){
+			wdata.hero.equipmentSlots.remove(pos);
+		}
+		else{
+			wdata.hero.equipmentSlots.push(pos);
+		}
+		RecalculateAttributes(wdata.hero);
+	}
+
+	public function IsEquipped(pos) : Bool{
+		return wdata.hero.equipmentSlots.contains(pos);
 	}
 
 	function AddEvent(eventType):GameEvent {
@@ -367,8 +385,17 @@ $baseInfo';
 			hero.xp.value -= hero.xp.calculatedMax;
 			hero.level++;
 			AddEvent(ActorLevelUp);
-			AttributeLogic.Add(hero.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5], hero.level, hero.attributesCalculated);
+			RecalculateAttributes(hero);
 			ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
+		}
+	}
+
+	public function RecalculateAttributes(actor : Actor){
+		AttributeLogic.Add(actor.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5], actor.level, actor.attributesCalculated);
+		for(es in actor.equipmentSlots){
+			var e = actor.equipment[es];
+			AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+
 		}
 	}
 
