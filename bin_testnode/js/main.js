@@ -79,7 +79,7 @@ BattleManager.prototype = {
 		_g.h["Life"] = enemyLife;
 		_g.h["LifeMax"] = enemyLife;
 		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
 	}
 	,ReinitGameValues: function() {
 		var valueXP = 0;
@@ -93,6 +93,11 @@ BattleManager.prototype = {
 		this.wdata.hero.xp.value = valueXP;
 		ResourceLogic.recalculateScalingResource(this.wdata.hero.level,this.wdata.hero.xp);
 		this.areaBonus = ResourceLogic.getExponentialResource(1.5,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
+		var _g = new haxe_ds_StringMap();
+		_g.h["Attack"] = 1;
+		var e = { type : 0, requiredAttributes : null, attributes : _g};
+		this.wdata.hero.equipment = [];
+		this.wdata.hero.equipment[0] = e;
 	}
 	,advance: function() {
 		var hero = this.wdata.hero;
@@ -275,6 +280,7 @@ BattleManager.prototype = {
 		if(this.wdata.maxArea >= this.wdata.killedInArea.length) {
 			this.wdata.maxArea = this.wdata.killedInArea.length - 1;
 		}
+		this.ReinitGameValues();
 	}
 };
 var IntIterator = function(min,max) {

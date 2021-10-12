@@ -83,7 +83,7 @@ class BattleManager {
 			level: 1 + area,
 			attributesBase: stats2,
 			equipmentSlots: null,
-			equipment: null,
+			equipment: [],
 			xp: null,
 			attributesCalculated: stats2,
 			reference: new ActorReference(1, 0)
@@ -136,6 +136,7 @@ class BattleManager {
 			visible: false,
 			enabled: false
 		});
+		
 		wdata = w;
 		ReinitGameValues();
 		ChangeBattleArea(0);
@@ -160,6 +161,11 @@ class BattleManager {
 
 		areaBonus = ResourceLogic.getExponentialResource(1.5, 1, 
 			Std.int(initialXPToLevelUp*balancing.areaBonusXPPercentOfFirstLevelUp/100));
+		var e : Equipment = {type: 0, requiredAttributes: null, attributes: [
+			"Attack" => 1
+		]};
+		wdata.hero.equipment = [];
+		wdata.hero.equipment[0] = e;
 	}
 
 	public function advance() {
@@ -384,6 +390,7 @@ $baseInfo';
 		if (wdata.maxArea >= wdata.killedInArea.length) {
 			wdata.maxArea = wdata.killedInArea.length - 1;
 		}
+		ReinitGameValues();
 		/*
 			var data = Json.parse(jsonString);
 			wdata.maxArea = data.maxArea;

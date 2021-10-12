@@ -1,3 +1,4 @@
+import haxe.ui.containers.TabView;
 import haxe.ui.containers.dialogs.MessageBox.MessageBoxType;
 import RPGData.AttributeLogic;
 import haxe.ui.components.Button;
@@ -26,13 +27,17 @@ class View {
 
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
+	var equipments = new Array<EquipmentView>();
 
 	public function new() {
 		{
+
 			var boxParentP = new VBox();
+			//boxParentP = "Battle Tab";
 			mainComponent = boxParentP;
 			boxParentP.paddingTop = 5;
 			boxParentP.paddingLeft = 20;
+			boxParentP.paddingRight = 20;
 			boxParentP.percentWidth = 100;
 			{
 				var title = new Label();
@@ -45,13 +50,20 @@ class View {
 				title.percentWidth = 100;
 				title.textAlign = "right";
 				title.paddingRight = 20;
+				title.paddingLeft = 20;
 
 				boxParentP.addComponent(title);
 			}
 		}
 
+		var tabMaster = new TabView();
+		tabMaster.percentWidth = 100;
+		mainComponent.addComponent(tabMaster);
+
 		var boxParent = new HBox();
-		mainComponent.addComponent(boxParent);
+		//mainComponent.addComponent(boxParent);
+		tabMaster.addComponent(boxParent);
+		boxParent.text = "Battle";
 		mainComponentB = boxParent;
 		// boxParent.horizontalAlign = "center";
 		boxParent.paddingLeft = 40;
@@ -79,6 +91,12 @@ class View {
 		var battleView = CreateContainer(box, false);
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
+
+		{
+			var equipTab = new VBox();
+			equipTab.text = "Equipment";
+			tabMaster.addComponent(equipTab);
+		}
 	}
 
 	public function CreateContainer(parent:Component, vertical) {
@@ -105,6 +123,31 @@ class View {
 		}
 
 		logText.htmlText = text + "\n\n" + logText.htmlText;
+	}
+
+	public function EquipmentAmountToShow(amount : Int){
+		while(amount > equipments.length){
+			
+			var viewParent = new VBox();
+			var name = new Label();
+			name.text = "Sword";
+			viewParent.addComponent(name);
+			var ev : EquipmentView = {name: name, parent: viewParent, values: []};
+			equipments.push(ev);
+		}
+	}
+
+	public function FeedEquipmentBase(pos : Int, name:String, numberOfValues: Int){
+		equipments[pos].name.text = name;
+		while(equipments[pos].values.length < numberOfValues){
+			var vv = CreateValueView(equipments[pos].parent, false, "");
+			equipments[pos].values.push(vv);
+		}
+	}
+
+	public function FeedEquipmentValue(pos : Int, valuePos: Int, valueName:String, value: Int){
+		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName);
+		
 	}
 
 	public function AddButton(id:String, label:String, onClick, warningMessage = null) {
@@ -154,7 +197,10 @@ class View {
 		valueView.parent.hidden = !visibility;
 	}
 
-	public function UpdateValues(res:ValueView, current:Int, max:Int) {
+	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null) {
+		if(label != null){
+			res.labelText.text = label;
+		}
 		if (max > 0) {
 			res.bar.pos = current * 100 / max;
 			res.centeredText.text = current + " / " + max;
@@ -186,13 +232,16 @@ class View {
 		parent.addComponent(boxh);
 
 		var addLabel = label != null && label != "";
+		var nameLabel = null;
 		if (addLabel) {
-			var l:Label = new Label();
+			var l = new Label();
 			l.text = label;
 			// l.percentHeight = 100;
 
 			l.verticalAlign = "center";
 			boxh.addComponent(l);
+
+			nameLabel = l;
 		}
 
 		var progress:HorizontalProgress = new HorizontalProgress();
@@ -218,7 +267,7 @@ class View {
 			vertical-align: middle; width:100%;";
 		l.verticalAlign = "middle";
 		progress.addComponent(l);
-		return {centeredText: l, bar: progress, parent: boxh};
+		return {centeredText: l, bar: progress, parent: boxh, labelText: nameLabel};
 	}
 }
 
@@ -227,6 +276,7 @@ typedef AreaView = {};
 
 typedef ValueView = {
 	var centeredText:Label;
+	var labelText:Label;
 	var bar:HorizontalProgress;
 	var parent:Component;
 };
@@ -235,5 +285,10 @@ typedef ActorView = {
 	var name:Label;
 	var life:ValueView;
 	var attack:ValueView;
+	var parent:Component;
+};
+typedef EquipmentView = {
+	var name:Label;
+	var values : Array<ValueView>;
 	var parent:Component;
 };

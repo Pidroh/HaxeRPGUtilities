@@ -89,7 +89,7 @@ BattleManager.prototype = {
 		_g.h["Life"] = enemyLife;
 		_g.h["LifeMax"] = enemyLife;
 		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
 	}
 	,ReinitGameValues: function() {
 		var valueXP = 0;
@@ -103,6 +103,11 @@ BattleManager.prototype = {
 		this.wdata.hero.xp.value = valueXP;
 		ResourceLogic.recalculateScalingResource(this.wdata.hero.level,this.wdata.hero.xp);
 		this.areaBonus = ResourceLogic.getExponentialResource(1.5,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
+		var _g = new haxe_ds_StringMap();
+		_g.h["Attack"] = 1;
+		var e = { type : 0, requiredAttributes : null, attributes : _g};
+		this.wdata.hero.equipment = [];
+		this.wdata.hero.equipment[0] = e;
 	}
 	,advance: function() {
 		var hero = this.wdata.hero;
@@ -285,6 +290,7 @@ BattleManager.prototype = {
 		if(this.wdata.maxArea >= this.wdata.killedInArea.length) {
 			this.wdata.maxArea = this.wdata.killedInArea.length - 1;
 		}
+		this.ReinitGameValues();
 	}
 	,__class__: BattleManager
 };
@@ -1128,6 +1134,7 @@ Type.enumParameters = function(e) {
 	}
 };
 var View = function() {
+	this.equipments = [];
 	this.buttonMap = new haxe_ds_StringMap();
 	this.enemy1 = "slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog".split("@");
 	this.prefix = "normal@fire@ice@water@thunder@wind@earth@poison@grass".split("@");
@@ -1136,6 +1143,7 @@ var View = function() {
 	this.mainComponent = boxParentP;
 	boxParentP.set_paddingTop(5);
 	boxParentP.set_paddingLeft(20);
+	boxParentP.set_paddingRight(20);
 	boxParentP.set_percentWidth(100);
 	var title = new haxe_ui_components_Label();
 	title.set_htmlText("<h1>Generic RPG I</h1>");
@@ -1145,9 +1153,14 @@ var View = function() {
 	title.set_percentWidth(100);
 	title.set_textAlign("right");
 	title.set_paddingRight(20);
+	title.set_paddingLeft(20);
 	boxParentP.addComponent(title);
+	var tabMaster = new haxe_ui_containers_TabView();
+	tabMaster.set_percentWidth(100);
+	this.mainComponent.addComponent(tabMaster);
 	var boxParent = new haxe_ui_containers_HBox();
-	this.mainComponent.addComponent(boxParent);
+	tabMaster.addComponent(boxParent);
+	boxParent.set_text("Battle");
 	this.mainComponentB = boxParent;
 	boxParent.set_paddingLeft(40);
 	boxParent.set_paddingTop(10);
@@ -1167,6 +1180,9 @@ var View = function() {
 	var battleView = this.CreateContainer(box,false);
 	this.heroView = this.GetActorView("You",battleView);
 	this.enemyView = this.GetActorView("Enemy",battleView);
+	var equipTab = new haxe_ui_containers_VBox();
+	equipTab.set_text("Equipment");
+	tabMaster.addComponent(equipTab);
 };
 $hxClasses["View"] = View;
 View.__name__ = "View";
@@ -1185,6 +1201,7 @@ View.prototype = {
 	,enemy1: null
 	,buttonBox: null
 	,buttonMap: null
+	,equipments: null
 	,CreateContainer: function(parent,vertical) {
 		var container;
 		if(vertical == false) {
@@ -1206,6 +1223,26 @@ View.prototype = {
 		}
 		this.logText.set_htmlText(text + "\n\n" + this.logText.get_htmlText());
 	}
+	,EquipmentAmountToShow: function(amount) {
+		while(amount > this.equipments.length) {
+			var viewParent = new haxe_ui_containers_VBox();
+			var name = new haxe_ui_components_Label();
+			name.set_text("Sword");
+			viewParent.addComponent(name);
+			var ev = { name : name, parent : viewParent, values : []};
+			this.equipments.push(ev);
+		}
+	}
+	,FeedEquipmentBase: function(pos,name,numberOfValues) {
+		this.equipments[pos].name.set_text(name);
+		while(this.equipments[pos].values.length < numberOfValues) {
+			var vv = this.CreateValueView(this.equipments[pos].parent,false,"");
+			this.equipments[pos].values.push(vv);
+		}
+	}
+	,FeedEquipmentValue: function(pos,valuePos,valueName,value) {
+		this.UpdateValues(this.equipments[pos].values[valuePos],value,-1,valueName);
+	}
 	,AddButton: function(id,label,onClick,warningMessage) {
 		var button = new haxe_ui_components_Button();
 		button.set_text(label);
@@ -1217,13 +1254,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 123, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 166, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 125, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 168, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 129, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 172, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);
@@ -1244,7 +1281,10 @@ View.prototype = {
 	,UpdateVisibilityOfValueView: function(valueView,visibility) {
 		valueView.parent.set_hidden(!visibility);
 	}
-	,UpdateValues: function(res,current,max) {
+	,UpdateValues: function(res,current,max,label) {
+		if(label != null) {
+			res.labelText.set_text(label);
+		}
 		if(max > 0) {
 			res.bar.set_pos(current * 100 / max);
 			res.centeredText.set_text(current + " / " + max);
@@ -1267,11 +1307,13 @@ View.prototype = {
 		boxh.set_width(180);
 		parent.addComponent(boxh);
 		var addLabel = label != null && label != "";
+		var nameLabel = null;
 		if(addLabel) {
 			var l = new haxe_ui_components_Label();
 			l.set_text(label);
 			l.set_verticalAlign("center");
 			boxh.addComponent(l);
+			nameLabel = l;
 		}
 		var progress = new haxe_ui_components_HorizontalProgress();
 		boxh.addComponent(progress);
@@ -1292,7 +1334,7 @@ View.prototype = {
 		l.set_styleString("font-size:14px; text-align: center;\r\n\t\t\tvertical-align: middle; width:100%;");
 		l.set_verticalAlign("middle");
 		progress.addComponent(l);
-		return { centeredText : l, bar : progress, parent : boxh};
+		return { centeredText : l, bar : progress, parent : boxh, labelText : nameLabel};
 	}
 	,__class__: View
 };
