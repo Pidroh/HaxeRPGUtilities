@@ -305,7 +305,9 @@ BattleManager.prototype = {
 			var es = _g1[_g];
 			++_g;
 			var e = actor.equipment[es];
-			AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+			if(e != null) {
+				AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+			}
 		}
 	}
 	,AdvanceArea: function() {

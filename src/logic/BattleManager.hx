@@ -419,7 +419,8 @@ $baseInfo';
 		AttributeLogic.Add(actor.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5], actor.level, actor.attributesCalculated);
 		for(es in actor.equipmentSlots){
 			var e = actor.equipment[es];
-			AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+			if(e != null)
+				AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
 
 		}
 	}
