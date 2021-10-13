@@ -327,6 +327,13 @@ BattleManager.prototype = {
 };
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) {
+		return undefined;
+	}
+	return x;
+};
 HxOverrides.remove = function(a,obj) {
 	var i = a.indexOf(obj);
 	if(i == -1) {
@@ -354,6 +361,18 @@ IntIterator.prototype = {
 var MainTest = function() { };
 MainTest.__name__ = true;
 MainTest.main = function() {
+	process.stdout.write("Save legacy test");
+	process.stdout.write("\n");
+	var _g = 0;
+	var _g1 = js_node_Fs.readdirSync("saves/");
+	while(_g < _g1.length) {
+		var file = _g1[_g];
+		++_g;
+		var path = haxe_io_Path.join(["saves/",file]);
+		var json = js_node_Fs.readFileSync(path,{ encoding : "utf8"});
+		var bm = new BattleManager();
+		bm.SendJsonPersistentData(json);
+	}
 	process.stdout.write("Hard area death test");
 	process.stdout.write("\n");
 	var bm = new BattleManager();
@@ -519,14 +538,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:107:","  _____ ");
-		console.log("test/MainTest.hx:108:","  _____ ");
-		console.log("test/MainTest.hx:109:","  _____ ");
-		console.log("test/MainTest.hx:110:",json);
-		console.log("test/MainTest.hx:111:","  _____ ");
-		console.log("test/MainTest.hx:112:","  _____ ");
-		console.log("test/MainTest.hx:113:","  _____ ");
-		console.log("test/MainTest.hx:114:",json2);
+		console.log("test/MainTest.hx:118:","  _____ ");
+		console.log("test/MainTest.hx:119:","  _____ ");
+		console.log("test/MainTest.hx:120:","  _____ ");
+		console.log("test/MainTest.hx:121:",json);
+		console.log("test/MainTest.hx:122:","  _____ ");
+		console.log("test/MainTest.hx:123:","  _____ ");
+		console.log("test/MainTest.hx:124:","  _____ ");
+		console.log("test/MainTest.hx:125:",json2);
 	}
 };
 Math.__name__ = true;
@@ -1024,6 +1043,121 @@ var haxe_io_Error = $hxEnums["haxe.io.Error"] = { __ename__:true,__constructs__:
 	,Custom: ($_=function(e) { return {_hx_index:3,e:e,__enum__:"haxe.io.Error",toString:$estr}; },$_._hx_name="Custom",$_.__params__ = ["e"],$_)
 };
 haxe_io_Error.__constructs__ = [haxe_io_Error.Blocked,haxe_io_Error.Overflow,haxe_io_Error.OutsideBounds,haxe_io_Error.Custom];
+var haxe_io_Path = function() { };
+haxe_io_Path.__name__ = true;
+haxe_io_Path.join = function(paths) {
+	var _g = [];
+	var _g1 = 0;
+	var _g2 = paths;
+	while(_g1 < _g2.length) {
+		var v = _g2[_g1];
+		++_g1;
+		if(v != null && v != "") {
+			_g.push(v);
+		}
+	}
+	var paths = _g;
+	if(paths.length == 0) {
+		return "";
+	}
+	var path = paths[0];
+	var _g = 1;
+	var _g1 = paths.length;
+	while(_g < _g1) {
+		var i = _g++;
+		path = haxe_io_Path.addTrailingSlash(path);
+		path += paths[i];
+	}
+	return haxe_io_Path.normalize(path);
+};
+haxe_io_Path.normalize = function(path) {
+	var slash = "/";
+	path = path.split("\\").join(slash);
+	if(path == slash) {
+		return slash;
+	}
+	var target = [];
+	var _g = 0;
+	var _g1 = path.split(slash);
+	while(_g < _g1.length) {
+		var token = _g1[_g];
+		++_g;
+		if(token == ".." && target.length > 0 && target[target.length - 1] != "..") {
+			target.pop();
+		} else if(token == "") {
+			if(target.length > 0 || HxOverrides.cca(path,0) == 47) {
+				target.push(token);
+			}
+		} else if(token != ".") {
+			target.push(token);
+		}
+	}
+	var tmp = target.join(slash);
+	var acc_b = "";
+	var colon = false;
+	var slashes = false;
+	var _g2_offset = 0;
+	var _g2_s = tmp;
+	while(_g2_offset < _g2_s.length) {
+		var s = _g2_s;
+		var index = _g2_offset++;
+		var c = s.charCodeAt(index);
+		if(c >= 55296 && c <= 56319) {
+			c = c - 55232 << 10 | s.charCodeAt(index + 1) & 1023;
+		}
+		var c1 = c;
+		if(c1 >= 65536) {
+			++_g2_offset;
+		}
+		var c2 = c1;
+		switch(c2) {
+		case 47:
+			if(!colon) {
+				slashes = true;
+			} else {
+				var i = c2;
+				colon = false;
+				if(slashes) {
+					acc_b += "/";
+					slashes = false;
+				}
+				acc_b += String.fromCodePoint(i);
+			}
+			break;
+		case 58:
+			acc_b += ":";
+			colon = true;
+			break;
+		default:
+			var i1 = c2;
+			colon = false;
+			if(slashes) {
+				acc_b += "/";
+				slashes = false;
+			}
+			acc_b += String.fromCodePoint(i1);
+		}
+	}
+	return acc_b;
+};
+haxe_io_Path.addTrailingSlash = function(path) {
+	if(path.length == 0) {
+		return "/";
+	}
+	var c1 = path.lastIndexOf("/");
+	var c2 = path.lastIndexOf("\\");
+	if(c1 < c2) {
+		if(c2 != path.length - 1) {
+			return path + "\\";
+		} else {
+			return path;
+		}
+	} else if(c1 != path.length - 1) {
+		return path + "/";
+	} else {
+		return path;
+	}
+};
 var haxe_iterators_ArrayIterator = function(array) {
 	this.current = 0;
 	this.array = array;

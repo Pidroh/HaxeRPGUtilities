@@ -1,7 +1,18 @@
+import sys.io.File;
 import RPGData;
 
 class MainTest {
 	static function main() {
+		{
+			Sys.println("Save legacy test");
+			for(file in sys.FileSystem.readDirectory("saves/")){
+				var path = haxe.io.Path.join(["saves/", file]);
+				var json = sys.io.File.getContent(path);
+				var bm = new BattleManager();
+				bm.SendJsonPersistentData(json);
+
+			}
+		}
 		{
 			Sys.println("Hard area death test");
 			var bm:BattleManager = new BattleManager();
