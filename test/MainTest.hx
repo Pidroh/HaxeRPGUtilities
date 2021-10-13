@@ -1,4 +1,3 @@
-import js.html.AbortController;
 import RPGData;
 
 class MainTest {
@@ -15,6 +14,16 @@ class MainTest {
 				Sys.println("ERROR: Did not die! "+bm.getPlayerTimesKilled());
 				//Sys.getChar(false);
 			}
+			for (i in 1...400) {
+				bm.ForceLevelUp();
+			}
+			for (i in 1...400) {
+				bm.update(0.9);
+			}
+			var json = bm.GetJsonPersistentData();
+			//var content:String = sys.io.File.getContent('my_file.txt');
+			var fileName = "saves/basic"+bm.wdata.worldVersion+".json";
+			sys.io.File.saveContent(fileName,json);
 			
 		}
 		{

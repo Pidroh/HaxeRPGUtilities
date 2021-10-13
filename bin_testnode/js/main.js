@@ -25,7 +25,7 @@ var BattleManager = function() {
 	stats2_h["Attack"] = 2;
 	stats2_h["Life"] = 6;
 	stats2_h["LifeMax"] = 6;
-	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
+	var w = { worldVersion : 301, hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
 	w.playerActions.h["advance"] = { visible : true, enabled : false};
 	w.playerActions.h["retreat"] = { visible : false, enabled : false};
 	w.playerActions.h["levelup"] = { visible : false, enabled : false};
@@ -280,14 +280,17 @@ BattleManager.prototype = {
 		}
 	}
 	,LevelUp: function() {
-		var hero = this.wdata.hero;
 		if(this.canLevelUp) {
-			hero.xp.value -= hero.xp.calculatedMax;
-			hero.level++;
-			this.AddEvent(EventTypes.ActorLevelUp);
-			this.RecalculateAttributes(hero);
-			ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
+			this.ForceLevelUp();
 		}
+	}
+	,ForceLevelUp: function() {
+		var hero = this.wdata.hero;
+		hero.xp.value -= hero.xp.calculatedMax;
+		hero.level++;
+		this.AddEvent(EventTypes.ActorLevelUp);
+		this.RecalculateAttributes(hero);
+		ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
 	}
 	,RecalculateAttributes: function(actor) {
 		var actor1 = actor.attributesBase;
@@ -366,6 +369,19 @@ MainTest.main = function() {
 		process.stdout.write(Std.string(v));
 		process.stdout.write("\n");
 	}
+	var _g = 1;
+	while(_g < 400) {
+		var i = _g++;
+		bm.ForceLevelUp();
+	}
+	var _g = 1;
+	while(_g < 400) {
+		var i = _g++;
+		bm.update(0.9);
+	}
+	var json = bm.GetJsonPersistentData();
+	var fileName = "saves/basic" + bm.wdata.worldVersion + ".json";
+	js_node_Fs.writeFileSync(fileName,json);
 	process.stdout.write("Easy area no death");
 	process.stdout.write("\n");
 	var bm = new BattleManager();
@@ -503,14 +519,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:98:","  _____ ");
-		console.log("test/MainTest.hx:99:","  _____ ");
-		console.log("test/MainTest.hx:100:","  _____ ");
-		console.log("test/MainTest.hx:101:",json);
-		console.log("test/MainTest.hx:102:","  _____ ");
-		console.log("test/MainTest.hx:103:","  _____ ");
-		console.log("test/MainTest.hx:104:","  _____ ");
-		console.log("test/MainTest.hx:105:",json2);
+		console.log("test/MainTest.hx:107:","  _____ ");
+		console.log("test/MainTest.hx:108:","  _____ ");
+		console.log("test/MainTest.hx:109:","  _____ ");
+		console.log("test/MainTest.hx:110:",json);
+		console.log("test/MainTest.hx:111:","  _____ ");
+		console.log("test/MainTest.hx:112:","  _____ ");
+		console.log("test/MainTest.hx:113:","  _____ ");
+		console.log("test/MainTest.hx:114:",json2);
 	}
 };
 Math.__name__ = true;
@@ -1348,6 +1364,121 @@ seedyrng_Xorshift128Plus.prototype = {
 		}
 	}
 };
+var sys_io_FileInput = function(fd) {
+	this.fd = fd;
+	this.pos = 0;
+};
+sys_io_FileInput.__name__ = true;
+sys_io_FileInput.__super__ = haxe_io_Input;
+sys_io_FileInput.prototype = $extend(haxe_io_Input.prototype,{
+	readByte: function() {
+		var buf = js_node_buffer_Buffer.alloc(1);
+		var bytesRead;
+		try {
+			bytesRead = js_node_Fs.readSync(this.fd,buf,0,1,this.pos);
+		} catch( _g ) {
+			var e = haxe_Exception.caught(_g).unwrap();
+			if(e.code == "EOF") {
+				throw haxe_Exception.thrown(new haxe_io_Eof());
+			} else {
+				throw haxe_Exception.thrown(haxe_io_Error.Custom(e));
+			}
+		}
+		if(bytesRead == 0) {
+			throw haxe_Exception.thrown(new haxe_io_Eof());
+		}
+		this.pos++;
+		return buf[0];
+	}
+	,readBytes: function(s,pos,len) {
+		var data = s.b;
+		var buf = js_node_buffer_Buffer.from(data.buffer,data.byteOffset,s.length);
+		var bytesRead;
+		try {
+			bytesRead = js_node_Fs.readSync(this.fd,buf,pos,len,this.pos);
+		} catch( _g ) {
+			var e = haxe_Exception.caught(_g).unwrap();
+			if(e.code == "EOF") {
+				throw haxe_Exception.thrown(new haxe_io_Eof());
+			} else {
+				throw haxe_Exception.thrown(haxe_io_Error.Custom(e));
+			}
+		}
+		if(bytesRead == 0) {
+			throw haxe_Exception.thrown(new haxe_io_Eof());
+		}
+		this.pos += bytesRead;
+		return bytesRead;
+	}
+	,close: function() {
+		js_node_Fs.closeSync(this.fd);
+	}
+	,seek: function(p,pos) {
+		switch(pos._hx_index) {
+		case 0:
+			this.pos = p;
+			break;
+		case 1:
+			this.pos += p;
+			break;
+		case 2:
+			this.pos = js_node_Fs.fstatSync(this.fd).size + p;
+			break;
+		}
+	}
+	,tell: function() {
+		return this.pos;
+	}
+	,eof: function() {
+		return this.pos >= js_node_Fs.fstatSync(this.fd).size;
+	}
+});
+var sys_io_FileOutput = function(fd) {
+	this.fd = fd;
+	this.pos = 0;
+};
+sys_io_FileOutput.__name__ = true;
+sys_io_FileOutput.__super__ = haxe_io_Output;
+sys_io_FileOutput.prototype = $extend(haxe_io_Output.prototype,{
+	writeByte: function(b) {
+		var buf = js_node_buffer_Buffer.alloc(1);
+		buf[0] = b;
+		js_node_Fs.writeSync(this.fd,buf,0,1,this.pos);
+		this.pos++;
+	}
+	,writeBytes: function(s,pos,len) {
+		var data = s.b;
+		var buf = js_node_buffer_Buffer.from(data.buffer,data.byteOffset,s.length);
+		var wrote = js_node_Fs.writeSync(this.fd,buf,pos,len,this.pos);
+		this.pos += wrote;
+		return wrote;
+	}
+	,close: function() {
+		js_node_Fs.closeSync(this.fd);
+	}
+	,seek: function(p,pos) {
+		switch(pos._hx_index) {
+		case 0:
+			this.pos = p;
+			break;
+		case 1:
+			this.pos += p;
+			break;
+		case 2:
+			this.pos = js_node_Fs.fstatSync(this.fd).size + p;
+			break;
+		}
+	}
+	,tell: function() {
+		return this.pos;
+	}
+});
+var sys_io_FileSeek = $hxEnums["sys.io.FileSeek"] = { __ename__:true,__constructs__:null
+	,SeekBegin: {_hx_name:"SeekBegin",_hx_index:0,__enum__:"sys.io.FileSeek",toString:$estr}
+	,SeekCur: {_hx_name:"SeekCur",_hx_index:1,__enum__:"sys.io.FileSeek",toString:$estr}
+	,SeekEnd: {_hx_name:"SeekEnd",_hx_index:2,__enum__:"sys.io.FileSeek",toString:$estr}
+};
+sys_io_FileSeek.__constructs__ = [sys_io_FileSeek.SeekBegin,sys_io_FileSeek.SeekCur,sys_io_FileSeek.SeekEnd];
 if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : false) {
 	HxOverrides.now = performance.now.bind(performance);
 }

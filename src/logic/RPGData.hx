@@ -105,6 +105,7 @@ typedef Balancing = {
 
 
 typedef WorldData = {
+	var worldVersion :Int;
 	var hero:Actor;
 	var enemy:Actor;
 	var turn:Bool;

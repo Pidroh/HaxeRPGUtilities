@@ -25,7 +25,7 @@ var BattleManager = function() {
 	stats2_h["Attack"] = 2;
 	stats2_h["Life"] = 6;
 	stats2_h["LifeMax"] = 6;
-	var w = { hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
+	var w = { worldVersion : 301, hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
 	w.playerActions.h["advance"] = { visible : true, enabled : false};
 	w.playerActions.h["retreat"] = { visible : false, enabled : false};
 	w.playerActions.h["levelup"] = { visible : false, enabled : false};
@@ -292,14 +292,17 @@ BattleManager.prototype = {
 		}
 	}
 	,LevelUp: function() {
-		var hero = this.wdata.hero;
 		if(this.canLevelUp) {
-			hero.xp.value -= hero.xp.calculatedMax;
-			hero.level++;
-			this.AddEvent(EventTypes.ActorLevelUp);
-			this.RecalculateAttributes(hero);
-			ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
+			this.ForceLevelUp();
 		}
+	}
+	,ForceLevelUp: function() {
+		var hero = this.wdata.hero;
+		hero.xp.value -= hero.xp.calculatedMax;
+		hero.level++;
+		this.AddEvent(EventTypes.ActorLevelUp);
+		this.RecalculateAttributes(hero);
+		ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
 	}
 	,RecalculateAttributes: function(actor) {
 		var actor1 = actor.attributesBase;

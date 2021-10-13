@@ -105,6 +105,7 @@ class BattleManager {
 		var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
 		var w:WorldData = {
+			worldVersion: 301,
 			hero: {
 				level: 1,
 				attributesBase: stats,
@@ -398,15 +399,20 @@ $baseInfo';
 	}
 
 	public function LevelUp() {
-		var hero = wdata.hero;
+		
 		if (canLevelUp) {
-			// Hero level up
-			hero.xp.value -= hero.xp.calculatedMax;
-			hero.level++;
-			AddEvent(ActorLevelUp);
-			RecalculateAttributes(hero);
-			ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
+			ForceLevelUp();
 		}
+	}
+
+	public function ForceLevelUp(){
+		// Hero level up
+		var hero = wdata.hero;
+		hero.xp.value -= hero.xp.calculatedMax;
+		hero.level++;
+		AddEvent(ActorLevelUp);
+		RecalculateAttributes(hero);
+		ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
 	}
 
 	public function RecalculateAttributes(actor : Actor){
