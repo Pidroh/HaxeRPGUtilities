@@ -207,10 +207,12 @@ class Main {
 					ev = '<b>You leveled up!</b>';
 				}
 				if(e.type == AreaUnlock){
-					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>>';
+					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>';
 					GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
 				}
-				
+				if(e.type == EquipDrop){
+					ev = 'Enemy dropped a sword';
+				}
 
 				view.AddEventText(ev);
 				eventShown++;
