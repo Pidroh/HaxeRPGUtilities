@@ -183,6 +183,7 @@ BattleManager.prototype = {
 						var xpPlus = this.areaBonus.calculatedMax;
 						this.AwardXP(xpPlus);
 						this.wdata.maxArea++;
+						this.AddEvent(EventTypes.AreaUnlock).data = this.wdata.maxArea;
 						killedInArea[this.wdata.maxArea] = 0;
 					}
 				}
