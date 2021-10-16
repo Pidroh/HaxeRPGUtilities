@@ -271,6 +271,7 @@ class BattleManager {
 						var xpPlus = areaBonus.calculatedMax;
 						AwardXP(xpPlus);
 						wdata.maxArea++;
+						this.AddEvent(AreaUnlock).data = wdata.maxArea;
 						killedInArea[wdata.maxArea] = 0;
 					}
 				}

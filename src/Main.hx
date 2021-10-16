@@ -1,3 +1,5 @@
+import haxe.ui.core.Component;
+import haxe.ui.containers.dialogs.MessageBox.MessageBoxType;
 import haxe.ui.macros.helpers.FunctionBuilder;
 import js.html.webgl.extension.WEBGLCompressedTexturePvrtc;
 import haxe.ui.components.Progress;
@@ -15,18 +17,61 @@ import haxe.ui.containers.VBox;
 import haxe.ui.core.Screen;
 import RPGData;
 import View;
+import ConfirmationView;
+import Library;
+import GameAnalyticsIntegration;
 
 
 class Main {
 	static var hero:Actor;
 	static var enemy:Actor;
 	static var maxDelta:Float = 0.5;
-	
+	static var privacyView : Component = null;
 
 	static function main() {
+		Toolkit.init();
+		
+		var key = "privacymemory";
+
+		var privacyAcceptance : String = Browser.getLocalStorage().getItem(key);
+		if(privacyAcceptance ==  null){
+			privacyView = PrivacyConfirmationView.CreateView(function(){
+				privacyAcceptance = "accepted";
+				Browser.getLocalStorage().setItem(key, privacyAcceptance);
+				//Browser.getLocalStorage().
+				gamemain();
+			});
+			privacyView.horizontalAlign = "center";
+			privacyView.percentWidth = 100;
+			Screen.instance.addComponent(privacyView);
+			
+
+		} else{
+			gamemain();
+		}
+
+		
+		//Screen.instance.messageBox("We collect gameplay data to improve the game. <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.", 
+		//"By playing this game, you agree with the terms of use and privacy policy.", 
+		//MessageBoxType.TYPE_INFO, true, function(button) {
+
+			//trace(button);
+			//if (button.toString().indexOf("yes") >= 0) {
+			//	onClick(null);
+			//}
+			//trace("call back!");
+		//});
+
+	}
+
+	static function gamemain(){
+		if(privacyView != null){
+			Screen.instance.removeComponent(privacyView);
+		}
+		Library.TryJavascript();
 		var bm:BattleManager = new BattleManager();
 		var view:View = new View();
-		Toolkit.init();
+		
 		var eventShown = 0;
 
 		var main = new VBox();
@@ -97,6 +142,7 @@ class Main {
 		}
 		update = function(timeStamp:Float):Bool {
 			
+			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
 			ActorToView(bm.wdata.enemy, view.enemyView);
 			view.UpdateValues(view.level, bm.wdata.hero.level, -1);
@@ -162,7 +208,9 @@ class Main {
 				}
 				if(e.type == AreaUnlock){
 					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>>';
+					GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
 				}
+				
 
 				view.AddEventText(ev);
 				eventShown++;
