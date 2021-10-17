@@ -199,6 +199,10 @@ BattleManager.prototype = {
 		this.wdata.turn = !this.wdata.turn;
 		return "";
 	}
+	,DiscardEquipment: function(pos) {
+		HxOverrides.remove(this.wdata.hero.equipment,this.wdata.hero.equipment[pos]);
+		this.RecalculateAttributes(this.wdata.hero);
+	}
 	,ToggleEquipped: function(pos) {
 		if(this.wdata.hero.equipmentSlots[0] == pos) {
 			this.wdata.hero.equipmentSlots[0] = -1;
@@ -336,6 +340,14 @@ HxOverrides.cca = function(s,index) {
 		return undefined;
 	}
 	return x;
+};
+HxOverrides.remove = function(a,obj) {
+	var i = a.indexOf(obj);
+	if(i == -1) {
+		return false;
+	}
+	a.splice(i,1);
+	return true;
 };
 HxOverrides.now = function() {
 	return Date.now();

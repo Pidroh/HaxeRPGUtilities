@@ -211,6 +211,10 @@ BattleManager.prototype = {
 		this.wdata.turn = !this.wdata.turn;
 		return "";
 	}
+	,DiscardEquipment: function(pos) {
+		HxOverrides.remove(this.wdata.hero.equipment,this.wdata.hero.equipment[pos]);
+		this.RecalculateAttributes(this.wdata.hero);
+	}
 	,ToggleEquipped: function(pos) {
 		if(this.wdata.hero.equipmentSlots[0] == pos) {
 			this.wdata.hero.equipmentSlots[0] = -1;
@@ -711,8 +715,13 @@ Main.gamemain = function() {
 		bm = new BattleManager();
 		eventShown = 0;
 	},"You will lose all your progress");
-	view.equipmentMainAction = function(pos) {
-		bm.ToggleEquipped(pos);
+	view.equipmentMainAction = function(pos,action) {
+		if(action == 0) {
+			bm.ToggleEquipped(pos);
+		}
+		if(action == 1) {
+			bm.DiscardEquipment(pos);
+		}
 	};
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
@@ -1410,24 +1419,36 @@ View.prototype = {
 			var name = new haxe_ui_components_Label();
 			name.set_text("Sword");
 			viewParent.addComponent(name);
-			var button = new haxe_ui_components_Button();
-			button.set_text("Equip");
-			button.set_percentWidth(100);
-			var equipmentPos = [this.equipments.length];
-			button.set_onClick((function(equipmentPos) {
-				return function(e) {
-					_gthis.ClickedEquipmentViewMainAction(equipmentPos[0]);
-				};
-			})(equipmentPos));
-			viewParent.addComponent(button);
-			var ev = { name : name, parent : viewParent, values : [], actionButton : button};
+			var this1 = new Array(2);
+			var buttonsAct = this1;
+			var _g = 0;
+			var _g1 = buttonsAct.length;
+			while(_g < _g1) {
+				var i = _g++;
+				var button = new haxe_ui_components_Button();
+				button.set_text("Equip");
+				if(i == 1) {
+					button.set_text("Discard");
+				}
+				button.set_percentWidth(100);
+				var equipmentPos = [this.equipments.length];
+				var buttonId = [i];
+				button.set_onClick((function(buttonId,equipmentPos) {
+					return function(e) {
+						_gthis.ClickedEquipmentViewMainAction(equipmentPos[0],buttonId[0]);
+					};
+				})(buttonId,equipmentPos));
+				buttonsAct[i] = button;
+				viewParent.addComponent(button);
+			}
+			var ev = { name : name, parent : viewParent, values : [], actionButtons : buttonsAct};
 			this.equipTab.addComponent(viewParent);
 			this.equipments.push(ev);
 		}
 	}
-	,ClickedEquipmentViewMainAction: function(equipmentPos) {
+	,ClickedEquipmentViewMainAction: function(equipmentPos,actionId) {
 		if(this.equipmentMainAction != null) {
-			this.equipmentMainAction(equipmentPos);
+			this.equipmentMainAction(equipmentPos,actionId);
 		}
 	}
 	,FeedEquipmentBase: function(pos,name,equipped,numberOfValues) {
@@ -1436,9 +1457,9 @@ View.prototype = {
 		}
 		this.equipments[pos].name.set_text(name);
 		if(equipped) {
-			this.equipments[pos].actionButton.set_text("Unequip");
+			this.equipments[pos].actionButtons[0].set_text("Unequip");
 		} else {
-			this.equipments[pos].actionButton.set_text("Equip");
+			this.equipments[pos].actionButtons[0].set_text("Equip");
 		}
 		while(this.equipments[pos].values.length < numberOfValues) {
 			var vv = this.CreateValueView(this.equipments[pos].parent,false,"Attr");
@@ -1463,13 +1484,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 195, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 206, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 197, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 208, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 201, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 212, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

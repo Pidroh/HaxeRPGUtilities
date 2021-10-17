@@ -291,6 +291,13 @@ class BattleManager {
 		return "";
 	}
 
+
+	public function DiscardEquipment(pos){
+
+		wdata.hero.equipment.remove(wdata.hero.equipment[pos]);
+		RecalculateAttributes(wdata.hero);
+	}
+
 	public function ToggleEquipped(pos){
 
 		if(wdata.hero.equipmentSlots[0] == pos){

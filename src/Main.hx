@@ -97,8 +97,13 @@ class Main {
 			eventShown = 0;
 		}, "You will lose all your progress");
 
-		view.equipmentMainAction = function (pos){
-			bm.ToggleEquipped(pos);
+		view.equipmentMainAction = function (pos, action){
+			if(action == 0){ 
+				bm.ToggleEquipped(pos);
+			}
+			if(action == 1)
+				bm.DiscardEquipment(pos);
+			
 			
 		};
 

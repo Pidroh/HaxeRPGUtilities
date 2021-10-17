@@ -1,3 +1,4 @@
+import haxe.ds.Vector;
 import haxe.ui.containers.TabView;
 import haxe.ui.containers.dialogs.MessageBox.MessageBoxType;
 import RPGData.AttributeLogic;
@@ -26,7 +27,7 @@ class View {
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
 	public var enemy1 = 'slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog'.split('@');
 
-	public var equipmentMainAction : Int->Void;
+	public var equipmentMainAction : (Int,Int)->Void;
 
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
@@ -134,35 +135,45 @@ class View {
 			var name = new Label();
 			name.text = "Sword";
 			viewParent.addComponent(name);
-			var button = new Button();
-			button.text = "Equip";
-			button.percentWidth = 100;
-			var equipmentPos = equipments.length;
 
-			button.onClick = function(e) { ClickedEquipmentViewMainAction(equipmentPos); };
-			//button.onClick = function(e) => {ClickedEquipmentViewMainAction(equipmentPos;)};
-			//	ClickedEquipmentViewMainAction(equipmentPos);
+			var buttonsAct = new Vector<Button>(2);
 			
-			viewParent.addComponent(button);
-			var ev : EquipmentView = {name: name, parent: viewParent, values: [], actionButton: button};
+			for (i in 0...buttonsAct.length){
+				var button = new Button();
+				button.text = "Equip";
+				if(i == 1)
+					button.text = "Discard";
+				button.percentWidth = 100;
+				var equipmentPos = equipments.length;
+				var buttonId = i;
+	
+				button.onClick = function(e) { ClickedEquipmentViewMainAction(equipmentPos,buttonId);};
+				//button.onClick = function(e) => {ClickedEquipmentViewMainAction(equipmentPos;)};
+				//	ClickedEquipmentViewMainAction(equipmentPos);
+				buttonsAct[i] = button;
+
+				viewParent.addComponent(button);
+			}
+			
+			
+			var ev : EquipmentView = {name: name, parent: viewParent, values: [], actionButtons: buttonsAct};
 			equipTab.addComponent(viewParent);
 			equipments.push(ev);
 		}
 	}
 
-	public function ClickedEquipmentViewMainAction(equipmentPos : Int){
+	public function ClickedEquipmentViewMainAction(equipmentPos : Int, actionId:Int){
 		if(equipmentMainAction != null){
-			this.equipmentMainAction(equipmentPos);
+			this.equipmentMainAction(equipmentPos,actionId);
 		}
-			
 	}
 
 	public function FeedEquipmentBase(pos : Int, name:String, equipped : Bool, numberOfValues: Int = -1){
 		equipments[pos].name.text = name;
 		if(equipped){
-			equipments[pos].actionButton.text = "Unequip";
+			equipments[pos].actionButtons[0].text = "Unequip";
 		} else{
-			equipments[pos].actionButton.text = "Equip";
+			equipments[pos].actionButtons[0].text = "Equip";
 		}
 		while(equipments[pos].values.length < numberOfValues){
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
@@ -320,5 +331,7 @@ typedef EquipmentView = {
 	var name:Label;
 	var values : Array<ValueView>;
 	var parent:Component;
-	var actionButton:Button;
+	var actionButtons : Vector<Button>;
+	//var actionButton:Button;
+	//var actionButton2:Button;
 };
