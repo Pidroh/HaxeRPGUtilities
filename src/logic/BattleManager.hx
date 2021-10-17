@@ -170,7 +170,7 @@ class BattleManager {
 			wdata.hero.equipment = [];
 		}
 		if(wdata.hero.equipmentSlots == null){
-			wdata.hero.equipmentSlots = [];
+			wdata.hero.equipmentSlots = [-1,-1,-1];
 
 		}
 	}
@@ -292,11 +292,11 @@ class BattleManager {
 	}
 
 	public function ToggleEquipped(pos){
-		if(wdata.hero.equipmentSlots.contains(pos)){
-			wdata.hero.equipmentSlots.remove(pos);
-		}
-		else{
-			wdata.hero.equipmentSlots.push(pos);
+
+		if(wdata.hero.equipmentSlots[0] == pos){
+			wdata.hero.equipmentSlots[0] = -1;
+		} else{
+			wdata.hero.equipmentSlots[0] = pos;
 		}
 		RecalculateAttributes(wdata.hero);
 	}

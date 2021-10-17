@@ -99,7 +99,7 @@ BattleManager.prototype = {
 			this.wdata.hero.equipment = [];
 		}
 		if(this.wdata.hero.equipmentSlots == null) {
-			this.wdata.hero.equipmentSlots = [];
+			this.wdata.hero.equipmentSlots = [-1,-1,-1];
 		}
 	}
 	,advance: function() {
@@ -200,10 +200,10 @@ BattleManager.prototype = {
 		return "";
 	}
 	,ToggleEquipped: function(pos) {
-		if(this.wdata.hero.equipmentSlots.indexOf(pos) != -1) {
-			HxOverrides.remove(this.wdata.hero.equipmentSlots,pos);
+		if(this.wdata.hero.equipmentSlots[0] == pos) {
+			this.wdata.hero.equipmentSlots[0] = -1;
 		} else {
-			this.wdata.hero.equipmentSlots.push(pos);
+			this.wdata.hero.equipmentSlots[0] = pos;
 		}
 		this.RecalculateAttributes(this.wdata.hero);
 	}
@@ -336,14 +336,6 @@ HxOverrides.cca = function(s,index) {
 		return undefined;
 	}
 	return x;
-};
-HxOverrides.remove = function(a,obj) {
-	var i = a.indexOf(obj);
-	if(i == -1) {
-		return false;
-	}
-	a.splice(i,1);
-	return true;
 };
 HxOverrides.now = function() {
 	return Date.now();
