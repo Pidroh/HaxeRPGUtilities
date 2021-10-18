@@ -1,3 +1,4 @@
+import haxe.ui.containers.Box;
 import haxe.ui.core.Component;
 import haxe.ui.containers.dialogs.MessageBox.MessageBoxType;
 import haxe.ui.macros.helpers.FunctionBuilder;
@@ -73,8 +74,9 @@ class Main {
 		
 		var eventShown = 0;
 
-		var main = new VBox();
+		var main = new Box();
 		main.percentWidth = 100;
+		main.percentHeight = 100;
 		main.addComponent(view.mainComponent);
 		var key = "save data2";
 		

@@ -696,8 +696,9 @@ Main.gamemain = function() {
 	var bm = new BattleManager();
 	var view = new View();
 	var eventShown = 0;
-	var main = new haxe_ui_containers_VBox();
+	var main = new haxe_ui_containers_Box();
 	main.set_percentWidth(100);
+	main.set_percentHeight(100);
 	main.addComponent(view.mainComponent);
 	var key = "save data2";
 	view.AddButton("advance","Advance",function(e) {
@@ -1329,15 +1330,19 @@ var View = function() {
 	this.enemy1 = "slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog".split("@");
 	this.prefix = "normal@fire@ice@water@thunder@wind@earth@poison@grass".split("@");
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
-	var boxParentP = new haxe_ui_containers_VBox();
+	var boxParentP = new haxe_ui_containers_Box();
+	boxParentP.set_percentHeight(100);
+	boxParentP.set_verticalAlign("bottom");
 	this.mainComponent = boxParentP;
 	boxParentP.set_paddingTop(5);
 	boxParentP.set_paddingLeft(20);
 	boxParentP.set_paddingRight(20);
+	boxParentP.set_paddingBottom(5);
 	boxParentP.set_percentWidth(100);
 	var title = new haxe_ui_components_Label();
 	title.set_htmlText("<h1>Generic RPG I</h1>");
 	boxParentP.addComponent(title);
+	title.set_height(40);
 	var title = new haxe_ui_components_Label();
 	title.set_htmlText("Alpha 0.02E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>");
 	title.set_percentWidth(100);
@@ -1348,16 +1353,19 @@ var View = function() {
 	var tabMaster = new haxe_ui_containers_TabView();
 	tabMaster.set_percentWidth(100);
 	this.mainComponent.addComponent(tabMaster);
-	var boxParent = new haxe_ui_containers_HBox();
-	tabMaster.addComponent(boxParent);
-	boxParent.set_text("Battle");
-	this.mainComponentB = boxParent;
-	boxParent.set_paddingLeft(40);
-	boxParent.set_paddingTop(10);
+	tabMaster.set_percentHeight(90);
+	tabMaster.set_verticalAlign("bottom");
+	var battleParent = new haxe_ui_containers_HBox();
+	battleParent.set_percentHeight(100);
+	tabMaster.addComponent(battleParent);
+	battleParent.set_text("Battle");
+	this.mainComponentB = battleParent;
+	battleParent.set_paddingLeft(40);
+	battleParent.set_paddingTop(10);
 	var box = new haxe_ui_containers_VBox();
-	boxParent.addComponent(box);
-	this.buttonBox = this.CreateContainer(boxParent,true);
-	var scroll = this.CreateScrollable(boxParent);
+	battleParent.addComponent(box);
+	this.buttonBox = this.CreateContainer(battleParent,true);
+	var scroll = this.CreateScrollable(battleParent);
 	scroll.set_width(200);
 	scroll.set_percentHeight(100);
 	var logContainer = this.CreateContainer(scroll,true);
@@ -1500,13 +1508,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 232, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 238, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 234, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 240, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 238, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 244, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

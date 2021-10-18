@@ -38,18 +38,21 @@ class View {
 	public function new() {
 		{
 
-			var boxParentP = new VBox();
-			//boxParentP.percentWidth
-			//boxParentP = "Battle Tab";
+			var boxParentP = new Box();
+			boxParentP.percentHeight = 100;
+			boxParentP.verticalAlign = "bottom";
 			mainComponent = boxParentP;
 			boxParentP.paddingTop = 5;
 			boxParentP.paddingLeft = 20;
 			boxParentP.paddingRight = 20;
+			boxParentP.paddingBottom = 5;
 			boxParentP.percentWidth = 100;
+
 			{
 				var title = new Label();
 				title.htmlText = "<h1>Generic RPG I</h1>";
 				boxParentP.addComponent(title);
+				title.height = 40;
 			}
 			{
 				var title = new Label();
@@ -66,23 +69,26 @@ class View {
 		var tabMaster = new TabView();
 		tabMaster.percentWidth = 100;
 		mainComponent.addComponent(tabMaster);
+		tabMaster.percentHeight = 90;
+		tabMaster.verticalAlign = "bottom";
 
-		var boxParent = new HBox();
+		var battleParent = new HBox();
+		battleParent.percentHeight = 100;
 		//mainComponent.addComponent(boxParent);
-		tabMaster.addComponent(boxParent);
-		boxParent.text = "Battle";
-		mainComponentB = boxParent;
+		tabMaster.addComponent(battleParent);
+		battleParent.text = "Battle";
+		mainComponentB = battleParent;
 		// boxParent.horizontalAlign = "center";
-		boxParent.paddingLeft = 40;
-		boxParent.paddingTop = 10;
+		battleParent.paddingLeft = 40;
+		battleParent.paddingTop = 10;
 		var box:VBox = new VBox();
-		boxParent.addComponent(box);
+		battleParent.addComponent(box);
 
-		buttonBox = CreateContainer(boxParent, true);
+		buttonBox = CreateContainer(battleParent, true);
 		// buttonBox.percentHeight = 100;
 		// boxParent.addComponent(buttonBox);
 
-		var scroll = CreateScrollable(boxParent);
+		var scroll = CreateScrollable(battleParent);
 		
 		scroll.width = 200;
 		scroll.percentHeight = 100;
