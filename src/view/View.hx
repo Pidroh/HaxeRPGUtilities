@@ -1,3 +1,5 @@
+import haxe.ui.containers.ContinuousHBox;
+import haxe.ui.containers.ScrollView;
 import haxe.ds.Vector;
 import haxe.ui.containers.TabView;
 import haxe.ui.containers.dialogs.MessageBox.MessageBoxType;
@@ -37,6 +39,7 @@ class View {
 		{
 
 			var boxParentP = new VBox();
+			//boxParentP.percentWidth
 			//boxParentP = "Battle Tab";
 			mainComponent = boxParentP;
 			boxParentP.paddingTop = 5;
@@ -79,7 +82,10 @@ class View {
 		// buttonBox.percentHeight = 100;
 		// boxParent.addComponent(buttonBox);
 
-		var logContainer = CreateContainer(boxParent, true);
+		var scroll = CreateScrollable(boxParent);
+		
+		scroll.width = 200;
+		var logContainer = CreateContainer(scroll, true);
 		var log = new Label();
 		logText = log;
 		logContainer.addComponent(log);
@@ -97,10 +103,29 @@ class View {
 		enemyView = GetActorView("Enemy", battleView);
 
 		{
-			equipTab = new VBox();
+
+			equipTab = new ContinuousHBox();
+			//equipTab.percentWidth = 100;
+			equipTab.width = 600;
+			//equipTab.height = 300;
+		
 			equipTab.text = "Equipment";
-			tabMaster.addComponent(equipTab);
+			var scroll = CreateScrollable(tabMaster);
+			scroll.height = 300;
+			
+			scroll.text = "Equipment";
+			scroll.addComponent(equipTab);
+			//scroll.percentWidth = 100;
+			scroll.width = 640;
+			//tabMaster.addComponent(equipTab);
 		}
+	}
+
+	public function CreateScrollable(parent:Component){
+		var container : Component;
+		container = new ScrollView();
+		parent.addComponent(container);
+		return container;
 	}
 
 	public function CreateContainer(parent:Component, vertical) {

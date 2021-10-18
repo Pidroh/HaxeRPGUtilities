@@ -1354,7 +1354,9 @@ var View = function() {
 	var box = new haxe_ui_containers_VBox();
 	boxParent.addComponent(box);
 	this.buttonBox = this.CreateContainer(boxParent,true);
-	var logContainer = this.CreateContainer(boxParent,true);
+	var scroll = this.CreateScrollable(boxParent);
+	scroll.set_width(200);
+	var logContainer = this.CreateContainer(scroll,true);
 	var log = new haxe_ui_components_Label();
 	this.logText = log;
 	logContainer.addComponent(log);
@@ -1367,9 +1369,14 @@ var View = function() {
 	var battleView = this.CreateContainer(box,false);
 	this.heroView = this.GetActorView("You",battleView);
 	this.enemyView = this.GetActorView("Enemy",battleView);
-	this.equipTab = new haxe_ui_containers_VBox();
+	this.equipTab = new haxe_ui_containers_ContinuousHBox();
+	this.equipTab.set_width(600);
 	this.equipTab.set_text("Equipment");
-	tabMaster.addComponent(this.equipTab);
+	var scroll = this.CreateScrollable(tabMaster);
+	scroll.set_height(300);
+	scroll.set_text("Equipment");
+	scroll.addComponent(this.equipTab);
+	scroll.set_width(640);
 };
 $hxClasses["View"] = View;
 View.__name__ = "View";
@@ -1391,6 +1398,11 @@ View.prototype = {
 	,buttonBox: null
 	,buttonMap: null
 	,equipments: null
+	,CreateScrollable: function(parent) {
+		var container = new haxe_ui_containers_ScrollView();
+		parent.addComponent(container);
+		return container;
+	}
 	,CreateContainer: function(parent,vertical) {
 		var container;
 		if(vertical == false) {
@@ -1484,13 +1496,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 206, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 231, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 208, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 233, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 212, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 237, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);
