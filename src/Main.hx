@@ -68,7 +68,6 @@ class Main {
 		if(privacyView != null){
 			Screen.instance.removeComponent(privacyView);
 		}
-		Library.TryJavascript();
 		var bm:BattleManager = new BattleManager();
 		var view:View = new View();
 		
@@ -77,6 +76,7 @@ class Main {
 		var main = new VBox();
 		main.percentWidth = 100;
 		main.addComponent(view.mainComponent);
+		var key = "save data2";
 		
 		view.AddButton("advance","Advance", function(e) {
 			bm.AdvanceArea();
@@ -94,6 +94,12 @@ class Main {
 			view.logText.text = "";
 			view.logText.htmlText = "";
 			bm = new BattleManager();
+
+			var localStorage = js.Browser.getLocalStorage();
+			localStorage.setItem(key, "");
+			
+			Browser.location.reload();
+			
 			eventShown = 0;
 		}, "You will lose all your progress");
 
@@ -115,7 +121,7 @@ class Main {
 
 		var time:Float = 0;
 
-		var key = "save data2";
+		
 
 		var ls = Browser.getLocalStorage();
 		var jsonData = ls.getItem(key);

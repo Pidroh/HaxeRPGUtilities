@@ -693,13 +693,13 @@ Main.gamemain = function() {
 	if(Main.privacyView != null) {
 		haxe_ui_core_Screen.get_instance().removeComponent(Main.privacyView);
 	}
-	Library.TryJavascript();
 	var bm = new BattleManager();
 	var view = new View();
 	var eventShown = 0;
 	var main = new haxe_ui_containers_VBox();
 	main.set_percentWidth(100);
 	main.addComponent(view.mainComponent);
+	var key = "save data2";
 	view.AddButton("advance","Advance",function(e) {
 		bm.AdvanceArea();
 	});
@@ -713,6 +713,9 @@ Main.gamemain = function() {
 		view.logText.set_text("");
 		view.logText.set_htmlText("");
 		bm = new BattleManager();
+		var localStorage = js_Browser.getLocalStorage();
+		localStorage.setItem(key,"");
+		$global.location.reload();
 		eventShown = 0;
 	},"You will lose all your progress");
 	view.equipmentMainAction = function(pos,action) {
@@ -726,7 +729,6 @@ Main.gamemain = function() {
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
-	var key = "save data2";
 	var ls = js_Browser.getLocalStorage();
 	var jsonData = ls.getItem(key);
 	if(jsonData != null) {
