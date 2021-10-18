@@ -85,6 +85,7 @@ class View {
 		var scroll = CreateScrollable(boxParent);
 		
 		scroll.width = 200;
+		scroll.percentHeight = 100;
 		var logContainer = CreateContainer(scroll, true);
 		var log = new Label();
 		logText = log;

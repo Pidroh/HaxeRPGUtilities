@@ -771,6 +771,7 @@ Main.gamemain = function() {
 				var v_key = key1;
 				var v_value = v_h[key1];
 				view.FeedEquipmentValue(i,vid,v_key,v_value);
+				++vid;
 			}
 		}
 		var levelUpSystem = bm.wdata.hero.level > 1;
@@ -1356,6 +1357,7 @@ var View = function() {
 	this.buttonBox = this.CreateContainer(boxParent,true);
 	var scroll = this.CreateScrollable(boxParent);
 	scroll.set_width(200);
+	scroll.set_percentHeight(100);
 	var logContainer = this.CreateContainer(scroll,true);
 	var log = new haxe_ui_components_Label();
 	this.logText = log;
@@ -1496,13 +1498,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 231, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 232, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 233, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 234, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 237, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 238, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

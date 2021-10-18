@@ -163,6 +163,7 @@ class Main {
 				var vid = 0;
 				for(v in e.attributes.keyValueIterator()){
 					view.FeedEquipmentValue(i, vid, v.key, v.value);
+					vid++;
 				}
 				
 			}
