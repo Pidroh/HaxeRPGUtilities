@@ -136,7 +136,7 @@ class Main {
 
 		var time:Float = 0;
 
-		
+		var saveCount : Float = 0.3;
 
 		var ls = Browser.getLocalStorage();
 		var jsonData = ls.getItem(key);
@@ -276,10 +276,16 @@ class Main {
 			var text:String = bm.update(delta);
 			var localStorage = js.Browser.getLocalStorage();
 			var json = bm.GetJsonPersistentData();
-			//var json = Json.stringify(bm);
+			
 			localStorage.setItem(key, json);
 			if (text != null) {
 				//label.text = text;
+			}
+
+			saveCount -= delta;
+			if(saveCount < 0){
+				view.FeedSave(json);
+				saveCount = 5;
 			}
 
 			js.Browser.window.requestAnimationFrame(update);

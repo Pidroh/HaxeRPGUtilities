@@ -34,6 +34,7 @@ class View {
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
 	var equipments = new Array<EquipmentView>();
+	var saveDataDownload : Label;
 
 	public function new() {
 		{
@@ -61,6 +62,19 @@ class View {
 				title.textAlign = "right";
 				title.paddingRight = 20;
 				title.paddingLeft = 20;
+
+				boxParentP.addComponent(title);
+			}
+			{
+				var title = new Label();
+				title.percentWidth = 100;
+				title.textAlign = "right";
+				title.paddingRight = 20;
+				title.paddingLeft = 20;
+				title.paddingTop = 20;
+				
+				title.text = "Export save data";
+				saveDataDownload = title;
 
 				boxParentP.addComponent(title);
 			}
@@ -127,6 +141,23 @@ class View {
 			scroll.width = 640;
 			//tabMaster.addComponent(equipTab);
 		}
+	}
+
+	public function FeedSave(saveDataContent : String){
+
+		
+		//saveDataContent = StringTools.htmlEscape(saveDataContent);
+		//saveDataContent = "ssssss";
+		saveDataDownload.htmlText = "<a href='data:text/plain;charset=utf-8,";
+		saveDataDownload.htmlText += saveDataContent;
+		saveDataDownload.htmlText += "' download='savedata.json'>Export save data</a>";
+
+		//title.html = "";
+				/**
+<a href="data:text/plain;charset=utf-8,blablabla" download="savedata.json">
+  DSADSADASD
+</a>					
+				**/
 	}
 
 	public function CreateScrollable(parent:Component){

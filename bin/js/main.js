@@ -782,6 +782,7 @@ Main.gamemain = function() {
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
+	var saveCount = 0.3;
 	var ls = js_Browser.getLocalStorage();
 	var jsonData = ls.getItem(key);
 	if(jsonData != null) {
@@ -900,6 +901,11 @@ Main.gamemain = function() {
 		var json = bm.GetJsonPersistentData();
 		localStorage.setItem(key,json);
 		var update1 = text != null;
+		saveCount -= delta;
+		if(saveCount < 0) {
+			view.FeedSave(json);
+			saveCount = 5;
+		}
 		window.requestAnimationFrame(update);
 		return true;
 	};
@@ -1410,6 +1416,15 @@ var View = function() {
 	title.set_paddingRight(20);
 	title.set_paddingLeft(20);
 	boxParentP.addComponent(title);
+	var title = new haxe_ui_components_Label();
+	title.set_percentWidth(100);
+	title.set_textAlign("right");
+	title.set_paddingRight(20);
+	title.set_paddingLeft(20);
+	title.set_paddingTop(20);
+	title.set_text("Export save data");
+	this.saveDataDownload = title;
+	boxParentP.addComponent(title);
 	var tabMaster = new haxe_ui_containers_TabView();
 	tabMaster.set_percentWidth(100);
 	this.mainComponent.addComponent(tabMaster);
@@ -1471,6 +1486,14 @@ View.prototype = {
 	,buttonBox: null
 	,buttonMap: null
 	,equipments: null
+	,saveDataDownload: null
+	,FeedSave: function(saveDataContent) {
+		this.saveDataDownload.set_htmlText("<a href='data:text/plain;charset=utf-8,");
+		var fh = this.saveDataDownload;
+		fh.set_htmlText(fh.get_htmlText() + saveDataContent);
+		var fh = this.saveDataDownload;
+		fh.set_htmlText(fh.get_htmlText() + "' download='savedata.json'>Export save data</a>");
+	}
 	,CreateScrollable: function(parent) {
 		var container = new haxe_ui_containers_ScrollView();
 		parent.addComponent(container);
@@ -1569,13 +1592,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 240, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 271, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 242, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 273, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 246, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 277, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);
