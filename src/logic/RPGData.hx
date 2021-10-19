@@ -93,6 +93,12 @@ typedef Equipment = {
 typedef PlayerAction = {
 	public var visible : Bool;
 	public var enabled : Bool;
+	public var timesUsed : Int;
+}
+
+typedef PlayerActionExecution = {
+	public var actionData : PlayerAction;
+	public var actualAction : Void->Void;
 }
 
 typedef Balancing = {

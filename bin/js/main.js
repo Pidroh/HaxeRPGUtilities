@@ -7,6 +7,7 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
+	this.playerActions = new haxe_ds_StringMap();
 	this.events = [];
 	this.random = new seedyrng_Random();
 	this.equipDropChance = 30;
@@ -15,6 +16,7 @@ var BattleManager = function() {
 	this.canAdvance = false;
 	this.canRetreat = false;
 	this.dirty = false;
+	var _gthis = this;
 	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 60};
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -26,9 +28,17 @@ var BattleManager = function() {
 	stats2_h["Life"] = 6;
 	stats2_h["LifeMax"] = 6;
 	var w = { worldVersion : 301, hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
-	w.playerActions.h["advance"] = { visible : true, enabled : false};
-	w.playerActions.h["retreat"] = { visible : false, enabled : false};
-	w.playerActions.h["levelup"] = { visible : false, enabled : false};
+	w.playerActions.h["advance"] = { visible : true, enabled : false, timesUsed : 0};
+	w.playerActions.h["retreat"] = { visible : false, enabled : false, timesUsed : 0};
+	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0};
+	w.playerActions.h["sleep"] = { visible : false, enabled : false, timesUsed : 0};
+	var callback = function() {
+		_gthis.wdata.enemy = null;
+		_gthis.wdata.recovering = true;
+	};
+	var act = { actionData : w.playerActions.h["sleep"], actualAction : callback};
+	haxe_Log.trace(act,{ fileName : "src/logic/BattleManager.hx", lineNumber : 168, className : "BattleManager", methodName : "new"});
+	this.playerActions.h["sleep"] = act;
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -47,6 +57,7 @@ BattleManager.prototype = {
 	,equipDropChance: null
 	,random: null
 	,events: null
+	,playerActions: null
 	,GetAttribute: function(actor,label) {
 		var i = actor.attributesCalculated.h[label];
 		if(i < 0) {
@@ -272,6 +283,9 @@ BattleManager.prototype = {
 		var lu = this.wdata.playerActions.h["retreat"];
 		lu.visible = this.canRetreat || lu.visible;
 		lu.enabled = this.canRetreat;
+		var lu = this.wdata.playerActions.h["sleep"];
+		lu.enabled = this.wdata.hero.attributesBase.h["Life"] < this.wdata.hero.attributesBase.h["LifeMax"];
+		lu.visible = lu.enabled || lu.visible;
 		if(this.wdata.recovering && this.wdata.hero.attributesCalculated.h["Life"] >= this.wdata.hero.attributesCalculated.h["LifeMax"]) {
 			var v = this.wdata.hero.attributesCalculated.h["LifeMax"];
 			this.wdata.hero.attributesCalculated.h["Life"] = v;
@@ -701,6 +715,12 @@ Main.gamemain = function() {
 	main.set_percentHeight(100);
 	main.addComponent(view.mainComponent);
 	var key = "save data2";
+	var CreateButtonFromAction = function(actionId,buttonLabel) {
+		var action = bm.playerActions.h[actionId];
+		view.AddButton(actionId,buttonLabel,function(e) {
+			action.actualAction();
+		});
+	};
 	view.AddButton("advance","Advance",function(e) {
 		bm.AdvanceArea();
 	});
@@ -719,6 +739,7 @@ Main.gamemain = function() {
 		$global.location.reload();
 		eventShown = 0;
 	},"You will lose all your progress");
+	CreateButtonFromAction("sleep","Sleep");
 	view.equipmentMainAction = function(pos,action) {
 		if(action == 0) {
 			bm.ToggleEquipped(pos);
@@ -830,6 +851,7 @@ Main.gamemain = function() {
 		buttonToAction("advance","advance");
 		buttonToAction("retreat","retreat");
 		buttonToAction("levelup","levelup");
+		buttonToAction("sleep","sleep");
 		delta *= 0.001;
 		while(delta > Main.maxDelta) {
 			delta -= Main.maxDelta;
@@ -1379,6 +1401,7 @@ var View = function() {
 	this.level = this.CreateValueView(levelContainer,false,"Level: ");
 	this.xpBar = this.CreateValueView(levelContainer,true,"XP: ");
 	var battleView = this.CreateContainer(box,false);
+	battleView.set_width(400);
 	this.heroView = this.GetActorView("You",battleView);
 	this.enemyView = this.GetActorView("Enemy",battleView);
 	this.equipTab = new haxe_ui_containers_ContinuousHBox();
@@ -1508,13 +1531,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 238, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 240, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 240, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 242, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 244, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 246, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);
@@ -1548,6 +1571,7 @@ View.prototype = {
 	}
 	,GetActorView: function(name,parent) {
 		var box = new haxe_ui_containers_VBox();
+		box.set_width(180);
 		parent.addComponent(box);
 		var label = new haxe_ui_components_Label();
 		var lifeView = null;

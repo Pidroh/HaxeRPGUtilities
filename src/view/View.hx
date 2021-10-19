@@ -106,6 +106,7 @@ class View {
 		xpBar = CreateValueView(levelContainer, true, "XP: ");
 
 		var battleView = CreateContainer(box, false);
+		battleView.width = 400;
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
 
@@ -223,6 +224,7 @@ class View {
 	}
 
 	public function AddButton(id:String, label:String, onClick, warningMessage = null) {
+		
 		var button = new Button();
 		button.text = label;
 		button.repeater = true;
@@ -283,6 +285,7 @@ class View {
 
 	function GetActorView(name:String, parent:Component):ActorView {
 		var box:VBox = new VBox();
+		box.width = 180;
 		parent.addComponent(box);
 		var label:Label = new Label();
 		var lifeView:ValueView = null;

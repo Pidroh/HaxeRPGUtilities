@@ -79,6 +79,15 @@ class Main {
 		main.percentHeight = 100;
 		main.addComponent(view.mainComponent);
 		var key = "save data2";
+
+		var CreateButtonFromAction = function(actionId:String, buttonLabel:String){
+			
+			//var action = bm.wdata.playerActions[actionId];
+			var action = bm.playerActions[actionId];
+			view.AddButton(actionId, buttonLabel, function(e) {
+				action.actualAction();
+			});
+		}
 		
 		view.AddButton("advance","Advance", function(e) {
 			bm.AdvanceArea();
@@ -104,6 +113,8 @@ class Main {
 			
 			eventShown = 0;
 		}, "You will lose all your progress");
+
+		CreateButtonFromAction("sleep", "Sleep");
 
 		view.equipmentMainAction = function (pos, action){
 			if(action == 0){ 
@@ -149,6 +160,7 @@ class Main {
 			
 		};
 		var buttonToAction = function(actionId:String, buttonId:String){
+
 			var action = bm.wdata.playerActions[actionId];
 			view.ButtonVisibility(buttonId, action.visible);
 			view.ButtonEnabled(buttonId, action.enabled);
@@ -204,7 +216,7 @@ class Main {
 					} else{
 						targetText = "Enemy";
 					}
-				}
+				}	
 
 				var ev = "";
 				if(e.type == ActorAttack){
@@ -238,6 +250,7 @@ class Main {
 			buttonToAction("advance", "advance");
 			buttonToAction("retreat", "retreat");
 			buttonToAction("levelup", "levelup");
+			buttonToAction("sleep", "sleep");
 			
 			
 			

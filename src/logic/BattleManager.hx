@@ -22,6 +22,8 @@ class BattleManager {
 
 	public var events = new Array<GameEvent>();
 
+	public var playerActions : Map <String, PlayerActionExecution> = new Map<String, PlayerActionExecution>();
+
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
 		if (i < 0)
@@ -130,16 +132,42 @@ class BattleManager {
 		};
 		w.playerActions.set("advance", {
 			visible: true,
-			enabled: false
+			enabled: false,
+			timesUsed: 0
 		});
 		w.playerActions.set("retreat", {
 			visible: false,
-			enabled: false
+			enabled: false,
+			timesUsed: 0
 		});
 		w.playerActions.set("levelup", {
 			visible: false,
-			enabled: false
+			enabled: false,
+			timesUsed: 0
 		});
+		w.playerActions.set("sleep", {
+			visible: false,
+			enabled: false,
+			timesUsed: 0
+			/*actualAction: () -> {
+				wdata.enemy = null;
+				wdata.recovering = true;
+			}*/
+		});
+
+	{
+		var act : PlayerActionExecution;
+		var callback : Void -> Void = () -> {
+			wdata.enemy = null;
+			wdata.recovering = true;
+		}
+		act = {
+			actionData: w.playerActions["sleep"],
+			actualAction: callback
+		};
+		trace(act);
+		playerActions.set("sleep", act);
+	}
 		
 		wdata = w;
 		ReinitGameValues();
@@ -377,6 +405,11 @@ $baseInfo';
 			var lu = wdata.playerActions["retreat"];
 			lu.visible = canRetreat || lu.visible;
 			lu.enabled = canRetreat;
+		}
+		{
+			var lu = wdata.playerActions["sleep"];
+			lu.enabled = wdata.hero.attributesBase["Life"] < wdata.hero.attributesBase["LifeMax"];
+			lu.visible = lu.enabled || lu.visible;
 		}
 
 		if (wdata.recovering && wdata.hero.attributesCalculated["Life"] >= wdata.hero.attributesCalculated["LifeMax"]) {

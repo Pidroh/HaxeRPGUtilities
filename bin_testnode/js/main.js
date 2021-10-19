@@ -7,6 +7,7 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
+	this.playerActions = new haxe_ds_StringMap();
 	this.events = [];
 	this.random = new seedyrng_Random();
 	this.equipDropChance = 30;
@@ -15,6 +16,7 @@ var BattleManager = function() {
 	this.canAdvance = false;
 	this.canRetreat = false;
 	this.dirty = false;
+	var _gthis = this;
 	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 60};
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -26,9 +28,17 @@ var BattleManager = function() {
 	stats2_h["Life"] = 6;
 	stats2_h["LifeMax"] = 6;
 	var w = { worldVersion : 301, hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
-	w.playerActions.h["advance"] = { visible : true, enabled : false};
-	w.playerActions.h["retreat"] = { visible : false, enabled : false};
-	w.playerActions.h["levelup"] = { visible : false, enabled : false};
+	w.playerActions.h["advance"] = { visible : true, enabled : false, timesUsed : 0};
+	w.playerActions.h["retreat"] = { visible : false, enabled : false, timesUsed : 0};
+	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0};
+	w.playerActions.h["sleep"] = { visible : false, enabled : false, timesUsed : 0};
+	var callback = function() {
+		_gthis.wdata.enemy = null;
+		_gthis.wdata.recovering = true;
+	};
+	var act = { actionData : w.playerActions.h["sleep"], actualAction : callback};
+	console.log("src/logic/BattleManager.hx:168:",act);
+	this.playerActions.h["sleep"] = act;
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -260,6 +270,9 @@ BattleManager.prototype = {
 		var lu = this.wdata.playerActions.h["retreat"];
 		lu.visible = this.canRetreat || lu.visible;
 		lu.enabled = this.canRetreat;
+		var lu = this.wdata.playerActions.h["sleep"];
+		lu.enabled = this.wdata.hero.attributesBase.h["Life"] < this.wdata.hero.attributesBase.h["LifeMax"];
+		lu.visible = lu.enabled || lu.visible;
 		if(this.wdata.recovering && this.wdata.hero.attributesCalculated.h["Life"] >= this.wdata.hero.attributesCalculated.h["LifeMax"]) {
 			var v = this.wdata.hero.attributesCalculated.h["LifeMax"];
 			this.wdata.hero.attributesCalculated.h["Life"] = v;
