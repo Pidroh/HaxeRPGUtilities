@@ -160,11 +160,17 @@ class BattleManager {
 
 		var addAction = (id :String, action:PlayerAction, callback : PlayerAction->Void) ->{
 			w.playerActions[id] = action;
-			playerActions[id] = {actionData:w.playerActions[id], actualAction:callback}
-			
+			playerActions[id] = {actionData:w.playerActions[id], actualAction:callback}		
 		}
 
-		
+		var createAction = ()->{ 
+			var a : PlayerAction;
+			a = {visible: false, enabled: false, mode: 0, timesUsed: 0};
+			return a;
+		}
+
+		wdata = w;
+
 		addAction("sleep", {
 			visible: false,
 			enabled: false,
@@ -175,9 +181,11 @@ class BattleManager {
 			wdata.sleeping = !wdata.sleeping;
 		});
 
-	
+		addAction("repeat", createAction(), (a) -> {
+			wdata.killedInArea[wdata.battleArea] = 0;
+		});
 
-		wdata = w;
+		
 		ReinitGameValues();
 		ChangeBattleArea(0);
 	}
@@ -406,13 +414,16 @@ $baseInfo';
 		}
 		{
 			var lu = wdata.playerActions["retreat"];
-			lu.visible = canRetreat || lu.visible;
 			lu.enabled = canRetreat;
+			lu.visible = lu.enabled || lu.visible;
+		}
+		{
+			var lu = wdata.playerActions["repeat"];
+			lu.enabled = wdata.maxArea > wdata.battleArea && wdata.killedInArea[wdata.battleArea] > 0;
+			lu.visible = lu.enabled || lu.visible;
 		}
 		{
 			var lu = wdata.playerActions["sleep"];
-			//var lu = playerActions["sleep"]
-			
 			if(wdata.sleeping == true){
 				lu.mode = 1;
 				lu.enabled = true;

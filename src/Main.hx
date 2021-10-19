@@ -116,6 +116,7 @@ class Main {
 		}, "You will lose all your progress");
 
 		CreateButtonFromAction("sleep", "Sleep");
+		CreateButtonFromAction("repeat", "Restart");
 
 		view.equipmentMainAction = function (pos, action){
 			if(action == 0){ 
@@ -252,6 +253,7 @@ class Main {
 			buttonToAction("retreat", "retreat");
 			buttonToAction("levelup", "levelup");
 			buttonToAction("sleep", "sleep");
+			buttonToAction("repeat", "repeat");
 
 			
 			var sleepAct = bm.wdata.playerActions["sleep"];

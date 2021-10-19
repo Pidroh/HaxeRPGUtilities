@@ -37,11 +37,18 @@ var BattleManager = function() {
 		_gthis.playerActions.h[id] = v;
 		return v;
 	};
+	var createAction = function() {
+		var a = { visible : false, enabled : false, mode : 0, timesUsed : 0};
+		return a;
+	};
+	this.wdata = w;
 	addAction("sleep",{ visible : false, enabled : false, timesUsed : 0, mode : 0},function(a) {
 		_gthis.wdata.enemy = null;
 		_gthis.wdata.sleeping = !_gthis.wdata.sleeping;
 	});
-	this.wdata = w;
+	addAction("repeat",createAction(),function(a) {
+		_gthis.wdata.killedInArea[_gthis.wdata.battleArea] = 0;
+	});
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
 };
@@ -280,13 +287,16 @@ BattleManager.prototype = {
 		lu.visible = this.canAdvance || lu.visible;
 		lu.enabled = this.canAdvance;
 		var lu = this.wdata.playerActions.h["retreat"];
-		lu.visible = this.canRetreat || lu.visible;
 		lu.enabled = this.canRetreat;
+		lu.visible = lu.enabled || lu.visible;
+		var lu = this.wdata.playerActions.h["repeat"];
+		lu.enabled = this.wdata.maxArea > this.wdata.battleArea && this.wdata.killedInArea[this.wdata.battleArea] > 0;
+		lu.visible = lu.enabled || lu.visible;
 		var lu = this.wdata.playerActions.h["sleep"];
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			console.log("src/logic/BattleManager.hx:419:",lu.mode);
+			console.log("src/logic/BattleManager.hx:430:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"];
