@@ -13,16 +13,16 @@ class BattleManager {
 	public var canRetreat = false;
 	public var canAdvance = false;
 	public var canLevelUp = false;
-	public var areaBonus : ScalingResource;
+	public var areaBonus:ScalingResource;
 
-	var balancing : Balancing;
-	var timePeriod  = 0.6;
+	var balancing:Balancing;
+	var timePeriod = 0.6;
 	var equipDropChance = 30;
 	var random = new Random();
 
 	public var events = new Array<GameEvent>();
 
-	public var playerActions : Map <String, PlayerActionExecution> = new Map<String, PlayerActionExecution>();
+	public var playerActions:Map<String, PlayerActionExecution> = new Map<String, PlayerActionExecution>();
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -32,40 +32,40 @@ class BattleManager {
 	}
 
 	public function ChangeBattleArea(area:Int) {
-
-		//previous area code
-		//reset kill count of complete areas when leaving them
-		if(wdata.killedInArea[wdata.battleArea] >= wdata.necessaryToKillInArea){
+		// previous area code
+		// reset kill count of complete areas when leaving them
+		if (wdata.killedInArea[wdata.battleArea] >= wdata.necessaryToKillInArea) {
 			wdata.killedInArea[wdata.battleArea] = 0;
 		}
 
-
-		
-		//actual change to area
+		// actual change to area
 		wdata.battleArea = area;
 		wdata.necessaryToKillInArea = 0;
-		if(wdata.killedInArea.length <= area)
+		if (wdata.killedInArea.length <= area)
 			wdata.killedInArea[area] = 0;
 
 		var initialEnemyToKill = Std.int(balancing.timeForFirstAreaProgress / balancing.timeToKillFirstEnemy);
-		
+
 		if (area > 0) {
 			wdata.necessaryToKillInArea = initialEnemyToKill * area;
-			
-			if (wdata.recovering == false) {
+
+			if (PlayerFightMode()) {
 				CreateAreaEnemy();
 			}
 		} else {
 			wdata.enemy = null;
 		}
 
-
 		ResourceLogic.recalculateScalingResource(wdata.battleArea, areaBonus);
 
 		dirty = true;
 	}
 
-	function AwardXP(xpPlus){
+	function PlayerFightMode(){
+		return wdata.recovering == false && wdata.sleeping == false;
+	}
+
+	function AwardXP(xpPlus) {
 		wdata.hero.xp.value += xpPlus;
 		var e = AddEvent(GetXP);
 		e.data = xpPlus;
@@ -75,15 +75,15 @@ class BattleManager {
 		var area = wdata.battleArea;
 		var timeToKillEnemy = balancing.timeToKillFirstEnemy;
 
-		var initialAttackHero = 1; //may have to put this somewhere...
-		var heroAttackTime = timePeriod*2;
+		var initialAttackHero = 1; // may have to put this somewhere...
+		var heroAttackTime = timePeriod * 2;
 		var heroDPS = initialAttackHero / heroAttackTime;
 
-		var initialLifeEnemy = Std.int( heroDPS * timeToKillEnemy);
+		var initialLifeEnemy = Std.int(heroDPS * timeToKillEnemy);
 
-		var enemyLife = initialLifeEnemy + (area-1) * (initialLifeEnemy);
+		var enemyLife = initialLifeEnemy + (area - 1) * (initialLifeEnemy);
 
-		var stats2 = ["Attack" => 1 + (area-1) * 1, "Life" => enemyLife, "LifeMax" => enemyLife];
+		var stats2 = ["Attack" => 1 + (area - 1) * 1, "Life" => enemyLife, "LifeMax" => enemyLife];
 		wdata.enemy = {
 			level: 1 + area,
 			attributesBase: stats2,
@@ -97,12 +97,12 @@ class BattleManager {
 
 	public function new() {
 		balancing = {
-			timeToKillFirstEnemy: 5, 
+			timeToKillFirstEnemy: 5,
 			timeForFirstAreaProgress: 20,
-			timeForFirstLevelUpGrind: 90, 
+			timeForFirstLevelUpGrind: 90,
 			areaBonusXPPercentOfFirstLevelUp: 60
 		};
-		
+
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20];
 		var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
@@ -128,78 +128,77 @@ class BattleManager {
 			battleArea: 0,
 			turn: false,
 			playerActions: new Map<String, PlayerAction>(),
-			recovering: false
+			recovering: false,
+			sleeping: false
 		};
 		w.playerActions.set("advance", {
 			visible: true,
 			enabled: false,
-			timesUsed: 0
+			timesUsed: 0,
+			mode: 0
 		});
 		w.playerActions.set("retreat", {
 			visible: false,
 			enabled: false,
-			timesUsed: 0
+			timesUsed: 0,
+			mode: 0
 		});
 		w.playerActions.set("levelup", {
 			visible: false,
 			enabled: false,
-			timesUsed: 0
+			timesUsed: 0,
+			mode: 0
 		});
-		w.playerActions.set("sleep", {
+		
+
+		var addAction = (id :String, action:PlayerAction, callback : PlayerAction->Void) ->{
+			w.playerActions[id] = action;
+			playerActions[id] = {actionData :action, actualAction:callback}
+			
+		}
+
+		
+		addAction("sleep", {
 			visible: false,
 			enabled: false,
-			timesUsed: 0
-			/*actualAction: () -> {
-				wdata.enemy = null;
-				wdata.recovering = true;
-			}*/
+			timesUsed: 0,
+			mode: 0
+		}, (a) -> {
+			wdata.enemy = null;
+			wdata.sleeping = !wdata.sleeping;
 		});
 
-	{
-		var act : PlayerActionExecution;
-		var callback : Void -> Void = () -> {
-			wdata.enemy = null;
-			wdata.recovering = true;
-		}
-		act = {
-			actionData: w.playerActions["sleep"],
-			actualAction: callback
-		};
-		trace(act);
-		playerActions.set("sleep", act);
-	}
-		
+	
+
 		wdata = w;
 		ReinitGameValues();
 		ChangeBattleArea(0);
 	}
 
-	//currently everything gets saved, even stuff that shouldn't
-	//This method will reinit some of those values when loading or creating a new game
-	public function ReinitGameValues(){
+	// currently everything gets saved, even stuff that shouldn't
+	// This method will reinit some of those values when loading or creating a new game
+	public function ReinitGameValues() {
 		var valueXP = 0;
-		if(wdata.hero.xp != null){
+		if (wdata.hero.xp != null) {
 			valueXP = wdata.hero.xp.value;
 		}
 
 		var timeLevelUpGrind = balancing.timeForFirstLevelUpGrind;
-		var initialEnemyXP = 2; //this might need to be in balancing
-		var initialXPToLevelUp = Std.int(balancing.timeForFirstLevelUpGrind*initialEnemyXP / balancing.timeToKillFirstEnemy);
+		var initialEnemyXP = 2; // this might need to be in balancing
+		var initialXPToLevelUp = Std.int(balancing.timeForFirstLevelUpGrind * initialEnemyXP / balancing.timeToKillFirstEnemy);
 
 		wdata.hero.xp = ResourceLogic.getExponentialResource(1.5, 1, initialXPToLevelUp);
 		wdata.hero.xp.value = valueXP;
 
 		ResourceLogic.recalculateScalingResource(wdata.hero.level, wdata.hero.xp);
 
-		areaBonus = ResourceLogic.getExponentialResource(1.5, 1, 
-			Std.int(initialXPToLevelUp*balancing.areaBonusXPPercentOfFirstLevelUp/100));
-		
-		if(wdata.hero.equipment == null){
+		areaBonus = ResourceLogic.getExponentialResource(1.5, 1, Std.int(initialXPToLevelUp * balancing.areaBonusXPPercentOfFirstLevelUp / 100));
+
+		if (wdata.hero.equipment == null) {
 			wdata.hero.equipment = [];
 		}
-		if(wdata.hero.equipmentSlots == null){
-			wdata.hero.equipmentSlots = [-1,-1,-1];
-
+		if (wdata.hero.equipmentSlots == null) {
+			wdata.hero.equipmentSlots = [-1, -1, -1];
 		}
 	}
 
@@ -211,12 +210,12 @@ class BattleManager {
 		var areaComplete = killedInArea[battleArea] >= wdata.necessaryToKillInArea;
 		var attackHappen = true;
 
-		if(areaComplete){
+		if (areaComplete) {
 			wdata.enemy = null;
 			attackHappen = false;
 		}
 
-		if (wdata.battleArea > 0 && wdata.recovering == false && areaComplete == false) {
+		if (wdata.battleArea > 0 && PlayerFightMode() && areaComplete == false) {
 			if (enemy == null) {
 				CreateAreaEnemy();
 				enemy = wdata.enemy;
@@ -230,12 +229,16 @@ class BattleManager {
 			}
 		}
 
-		if (wdata.recovering || enemy == null) {
+		if (PlayerFightMode() == false || enemy == null) {
 			attackHappen = false;
-			var life    = wdata.hero.attributesCalculated["Life"];
+			var life = wdata.hero.attributesCalculated["Life"];
 			var lifeMax = wdata.hero.attributesCalculated["LifeMax"];
 			life += 2;
-			if(life > lifeMax) life = lifeMax;
+			if(wdata.sleeping){
+				life += 10;
+			}
+			if (life > lifeMax)
+				life = lifeMax;
 			wdata.hero.attributesCalculated["Life"] = life;
 		}
 
@@ -268,33 +271,31 @@ class BattleManager {
 				}
 				#end
 				killedInArea[battleArea]++;
-				if(random.randomInt(0, 100) < equipDropChance){
-					var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"]/2 + 2));
-					
-					var e : Equipment = {type: 0, requiredAttributes: null, attributes: ["Attack"=>attackBonus]};
+				if (random.randomInt(0, 100) < equipDropChance) {
+					var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
 
-					if(random.randomInt(0, 100) < 20 ){
-						var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"]/2 + 2));
+					var e:Equipment = {type: 0, requiredAttributes: null, attributes: ["Attack" => attackBonus]};
+
+					if (random.randomInt(0, 100) < 20) {
+						var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
 						e.attributes["LifeMax"] = lifeBonus;
 					}
 
 					wdata.hero.equipment.push(e);
 					var e = AddEvent(EquipDrop);
-					e.data = wdata.hero.equipment.length-1;
+					e.data = wdata.hero.equipment.length - 1;
 					e.origin = enemy.reference;
 				}
 
-				
-				
 				var e = AddEvent(ActorDead);
 				e.origin = enemy.reference;
-				
+
 				var xpGain = enemy.level;
 				AwardXP(enemy.level);
 
 				if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
 					if (wdata.maxArea == wdata.battleArea) {
-						//var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
+						// var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
 						ResourceLogic.recalculateScalingResource(wdata.battleArea, areaBonus);
 						var xpPlus = areaBonus.calculatedMax;
 						AwardXP(xpPlus);
@@ -303,8 +304,6 @@ class BattleManager {
 						killedInArea[wdata.maxArea] = 0;
 					}
 				}
-				
-				
 			}
 			if (hero.attributesCalculated["Life"] <= 0) {
 				wdata.recovering = true;
@@ -319,24 +318,21 @@ class BattleManager {
 		return "";
 	}
 
-
-	public function DiscardEquipment(pos){
-
+	public function DiscardEquipment(pos) {
 		wdata.hero.equipment.remove(wdata.hero.equipment[pos]);
 		RecalculateAttributes(wdata.hero);
 	}
 
-	public function ToggleEquipped(pos){
-
-		if(wdata.hero.equipmentSlots[0] == pos){
+	public function ToggleEquipped(pos) {
+		if (wdata.hero.equipmentSlots[0] == pos) {
 			wdata.hero.equipmentSlots[0] = -1;
-		} else{
+		} else {
 			wdata.hero.equipmentSlots[0] = pos;
 		}
 		RecalculateAttributes(wdata.hero);
 	}
 
-	public function IsEquipped(pos) : Bool{
+	public function IsEquipped(pos):Bool {
 		return wdata.hero.equipmentSlots.contains(pos);
 	}
 
@@ -408,7 +404,15 @@ $baseInfo';
 		}
 		{
 			var lu = wdata.playerActions["sleep"];
-			lu.enabled = wdata.hero.attributesBase["Life"] < wdata.hero.attributesBase["LifeMax"];
+			
+			if(wdata.sleeping){
+				lu.mode = 1;
+				lu.enabled = true;
+			} else{
+				lu.mode = 0;
+				//sleep is okay even when recovered for faster active play
+				lu.enabled = wdata.hero.attributesCalculated["Life"] < wdata.hero.attributesCalculated["LifeMax"];	
+			}
 			lu.visible = lu.enabled || lu.visible;
 		}
 
@@ -419,7 +423,7 @@ $baseInfo';
 
 		if (wdata.timeCount >= timePeriod) {
 			wdata.timeCount = 0;
-			
+
 			return advance();
 		}
 		if (dirty) {
@@ -440,13 +444,12 @@ $baseInfo';
 	}
 
 	public function LevelUp() {
-		
 		if (canLevelUp) {
 			ForceLevelUp();
 		}
 	}
 
-	public function ForceLevelUp(){
+	public function ForceLevelUp() {
 		// Hero level up
 		var hero = wdata.hero;
 		hero.xp.value -= hero.xp.calculatedMax;
@@ -456,13 +459,12 @@ $baseInfo';
 		ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
 	}
 
-	public function RecalculateAttributes(actor : Actor){
+	public function RecalculateAttributes(actor:Actor) {
 		AttributeLogic.Add(actor.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5], actor.level, actor.attributesCalculated);
-		for(es in actor.equipmentSlots){
+		for (es in actor.equipmentSlots) {
 			var e = actor.equipment[es];
-			if(e != null)
+			if (e != null)
 				AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
-
 		}
 	}
 

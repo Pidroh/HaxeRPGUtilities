@@ -85,7 +85,7 @@ class Main {
 			//var action = bm.wdata.playerActions[actionId];
 			var action = bm.playerActions[actionId];
 			view.AddButton(actionId, buttonLabel, function(e) {
-				action.actualAction();
+				action.actualAction(action.actionData);
 			});
 		}
 		

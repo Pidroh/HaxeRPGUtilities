@@ -27,18 +27,20 @@ var BattleManager = function() {
 	stats2_h["Attack"] = 2;
 	stats2_h["Life"] = 6;
 	stats2_h["LifeMax"] = 6;
-	var w = { worldVersion : 301, hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false};
-	w.playerActions.h["advance"] = { visible : true, enabled : false, timesUsed : 0};
-	w.playerActions.h["retreat"] = { visible : false, enabled : false, timesUsed : 0};
-	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0};
-	w.playerActions.h["sleep"] = { visible : false, enabled : false, timesUsed : 0};
-	var callback = function() {
-		_gthis.wdata.enemy = null;
-		_gthis.wdata.recovering = true;
+	var w = { worldVersion : 301, hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
+	w.playerActions.h["advance"] = { visible : true, enabled : false, timesUsed : 0, mode : 0};
+	w.playerActions.h["retreat"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
+	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
+	var addAction = function(id,action,callback) {
+		w.playerActions.h[id] = action;
+		var v = { actionData : action, actualAction : callback};
+		_gthis.playerActions.h[id] = v;
+		return v;
 	};
-	var act = { actionData : w.playerActions.h["sleep"], actualAction : callback};
-	haxe_Log.trace(act,{ fileName : "src/logic/BattleManager.hx", lineNumber : 168, className : "BattleManager", methodName : "new"});
-	this.playerActions.h["sleep"] = act;
+	addAction("sleep",{ visible : false, enabled : false, timesUsed : 0, mode : 0},function(a) {
+		_gthis.wdata.enemy = null;
+		_gthis.wdata.sleeping = !_gthis.wdata.sleeping;
+	});
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -77,7 +79,7 @@ BattleManager.prototype = {
 		var initialEnemyToKill = this.balancing.timeForFirstAreaProgress / this.balancing.timeToKillFirstEnemy | 0;
 		if(area > 0) {
 			this.wdata.necessaryToKillInArea = initialEnemyToKill * area;
-			if(this.wdata.recovering == false) {
+			if(this.PlayerFightMode()) {
 				this.CreateAreaEnemy();
 			}
 		} else {
@@ -85,6 +87,13 @@ BattleManager.prototype = {
 		}
 		ResourceLogic.recalculateScalingResource(this.wdata.battleArea,this.areaBonus);
 		this.dirty = true;
+	}
+	,PlayerFightMode: function() {
+		if(this.wdata.recovering == false) {
+			return this.wdata.sleeping == false;
+		} else {
+			return false;
+		}
 	}
 	,AwardXP: function(xpPlus) {
 		this.wdata.hero.xp.value += xpPlus;
@@ -136,7 +145,7 @@ BattleManager.prototype = {
 			this.wdata.enemy = null;
 			attackHappen = false;
 		}
-		if(this.wdata.battleArea > 0 && this.wdata.recovering == false && areaComplete == false) {
+		if(this.wdata.battleArea > 0 && this.PlayerFightMode() && areaComplete == false) {
 			if(enemy == null) {
 				this.CreateAreaEnemy();
 				enemy = this.wdata.enemy;
@@ -148,11 +157,14 @@ BattleManager.prototype = {
 				enemy.attributesCalculated.h["Life"] = v;
 			}
 		}
-		if(this.wdata.recovering || enemy == null) {
+		if(this.PlayerFightMode() == false || enemy == null) {
 			attackHappen = false;
 			var life = this.wdata.hero.attributesCalculated.h["Life"];
 			var lifeMax = this.wdata.hero.attributesCalculated.h["LifeMax"];
 			life += 2;
+			if(this.wdata.sleeping) {
+				life += 10;
+			}
 			if(life > lifeMax) {
 				life = lifeMax;
 			}
@@ -284,7 +296,13 @@ BattleManager.prototype = {
 		lu.visible = this.canRetreat || lu.visible;
 		lu.enabled = this.canRetreat;
 		var lu = this.wdata.playerActions.h["sleep"];
-		lu.enabled = this.wdata.hero.attributesBase.h["Life"] < this.wdata.hero.attributesBase.h["LifeMax"];
+		if(this.wdata.sleeping) {
+			lu.mode = 1;
+			lu.enabled = true;
+		} else {
+			lu.mode = 0;
+			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"];
+		}
 		lu.visible = lu.enabled || lu.visible;
 		if(this.wdata.recovering && this.wdata.hero.attributesCalculated.h["Life"] >= this.wdata.hero.attributesCalculated.h["LifeMax"]) {
 			var v = this.wdata.hero.attributesCalculated.h["LifeMax"];
@@ -718,7 +736,7 @@ Main.gamemain = function() {
 	var CreateButtonFromAction = function(actionId,buttonLabel) {
 		var action = bm.playerActions.h[actionId];
 		view.AddButton(actionId,buttonLabel,function(e) {
-			action.actualAction();
+			action.actualAction(action.actionData);
 		});
 	};
 	view.AddButton("advance","Advance",function(e) {

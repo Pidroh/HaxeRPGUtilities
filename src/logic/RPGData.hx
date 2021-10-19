@@ -94,11 +94,12 @@ typedef PlayerAction = {
 	public var visible : Bool;
 	public var enabled : Bool;
 	public var timesUsed : Int;
+	public var mode : Int;
 }
 
 typedef PlayerActionExecution = {
 	public var actionData : PlayerAction;
-	public var actualAction : Void->Void;
+	public var actualAction : PlayerAction->Void;
 }
 
 typedef Balancing = {
@@ -123,6 +124,7 @@ typedef WorldData = {
 	var maxArea:Int;
 	var playerActions : Map < String, PlayerAction >;
 	var recovering : Bool;
+	var sleeping : Bool;
 }
 
 enum EventTypes{
