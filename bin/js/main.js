@@ -33,7 +33,7 @@ var BattleManager = function() {
 	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
 	var addAction = function(id,action,callback) {
 		w.playerActions.h[id] = action;
-		var v = { actionData : action, actualAction : callback};
+		var v = { actionData : w.playerActions.h[id], actualAction : callback};
 		_gthis.playerActions.h[id] = v;
 		return v;
 	};
@@ -296,9 +296,10 @@ BattleManager.prototype = {
 		lu.visible = this.canRetreat || lu.visible;
 		lu.enabled = this.canRetreat;
 		var lu = this.wdata.playerActions.h["sleep"];
-		if(this.wdata.sleeping) {
+		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
+			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 419, className : "BattleManager", methodName : "update"});
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"];
@@ -735,8 +736,9 @@ Main.gamemain = function() {
 	var key = "save data2";
 	var CreateButtonFromAction = function(actionId,buttonLabel) {
 		var action = bm.playerActions.h[actionId];
+		var actionData = bm.wdata.playerActions.h[actionId];
 		view.AddButton(actionId,buttonLabel,function(e) {
-			action.actualAction(action.actionData);
+			action.actualAction(actionData);
 		});
 	};
 	view.AddButton("advance","Advance",function(e) {
@@ -870,6 +872,12 @@ Main.gamemain = function() {
 		buttonToAction("retreat","retreat");
 		buttonToAction("levelup","levelup");
 		buttonToAction("sleep","sleep");
+		var sleepAct = bm.wdata.playerActions.h["sleep"];
+		if(sleepAct.mode == 0) {
+			view.ButtonLabel("sleep","Nap");
+		} else {
+			view.ButtonLabel("sleep","Wake up");
+		}
 		delta *= 0.001;
 		while(delta > Main.maxDelta) {
 			delta -= Main.maxDelta;
@@ -1565,6 +1573,10 @@ View.prototype = {
 	,ButtonVisibility: function(id,visible) {
 		var b = this.buttonMap.h[id];
 		b.set_hidden(!visible);
+	}
+	,ButtonLabel: function(id,label) {
+		var b = this.buttonMap.h[id];
+		b.set_text(label);
 	}
 	,ButtonEnabled: function(id,enabled) {
 		var b = this.buttonMap.h[id];

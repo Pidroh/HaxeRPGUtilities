@@ -257,6 +257,11 @@ class View {
 		b.hidden = !visible;
 	}
 
+	public function ButtonLabel(id:String, label:String) {
+		var b = buttonMap[id];
+		b.text = label;
+	}
+
 	public function ButtonEnabled(id:String, enabled:Bool) {
 		var b = buttonMap[id];
 		// b.allowInteraction = visible;

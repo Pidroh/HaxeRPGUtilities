@@ -84,8 +84,9 @@ class Main {
 			
 			//var action = bm.wdata.playerActions[actionId];
 			var action = bm.playerActions[actionId];
+			var actionData = bm.wdata.playerActions[actionId];
 			view.AddButton(actionId, buttonLabel, function(e) {
-				action.actualAction(action.actionData);
+				action.actualAction(actionData);
 			});
 		}
 		
@@ -251,6 +252,14 @@ class Main {
 			buttonToAction("retreat", "retreat");
 			buttonToAction("levelup", "levelup");
 			buttonToAction("sleep", "sleep");
+
+			
+			var sleepAct = bm.wdata.playerActions["sleep"];
+			if(sleepAct.mode == 0){
+				view.ButtonLabel("sleep", "Nap");
+			} else{
+				view.ButtonLabel("sleep", "Wake up");
+			}
 			
 			
 			

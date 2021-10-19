@@ -33,7 +33,7 @@ var BattleManager = function() {
 	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
 	var addAction = function(id,action,callback) {
 		w.playerActions.h[id] = action;
-		var v = { actionData : action, actualAction : callback};
+		var v = { actionData : w.playerActions.h[id], actualAction : callback};
 		_gthis.playerActions.h[id] = v;
 		return v;
 	};
@@ -283,9 +283,10 @@ BattleManager.prototype = {
 		lu.visible = this.canRetreat || lu.visible;
 		lu.enabled = this.canRetreat;
 		var lu = this.wdata.playerActions.h["sleep"];
-		if(this.wdata.sleeping) {
+		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
+			console.log("src/logic/BattleManager.hx:419:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"];

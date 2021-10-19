@@ -97,10 +97,6 @@ typedef PlayerAction = {
 	public var mode : Int;
 }
 
-typedef PlayerActionExecution = {
-	public var actionData : PlayerAction;
-	public var actualAction : PlayerAction->Void;
-}
 
 typedef Balancing = {
 	public var timeToKillFirstEnemy : Float;

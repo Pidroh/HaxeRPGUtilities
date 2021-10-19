@@ -6,7 +6,14 @@ import haxe.Json;
 import haxe.ds.Vector;
 import RPGData;
 
+typedef PlayerActionExecution = {
+	public var actualAction : PlayerAction->Void;
+}	
+
 class BattleManager {
+
+	
+
 	public var wdata:WorldData;
 
 	public var dirty = false;
@@ -153,7 +160,7 @@ class BattleManager {
 
 		var addAction = (id :String, action:PlayerAction, callback : PlayerAction->Void) ->{
 			w.playerActions[id] = action;
-			playerActions[id] = {actionData :action, actualAction:callback}
+			playerActions[id] = {actionData:w.playerActions[id], actualAction:callback}
 			
 		}
 
@@ -404,10 +411,12 @@ $baseInfo';
 		}
 		{
 			var lu = wdata.playerActions["sleep"];
+			//var lu = playerActions["sleep"]
 			
-			if(wdata.sleeping){
+			if(wdata.sleeping == true){
 				lu.mode = 1;
 				lu.enabled = true;
+				trace(lu.mode);
 			} else{
 				lu.mode = 0;
 				//sleep is okay even when recovered for faster active play
