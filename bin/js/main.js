@@ -594,6 +594,30 @@ EReg.prototype = {
 	}
 	,__class__: EReg
 };
+var FileUtilities = function() { };
+$hxClasses["FileUtilities"] = FileUtilities;
+FileUtilities.__name__ = "FileUtilities";
+FileUtilities.GetFetchTextContent = function() {
+	var fileText = fetchTextContent;
+	if(fileText != "") {
+		fetchTextContent = "";
+	}
+	return fileText;
+};
+FileUtilities.ReadFile = function(file,callback) {
+	var fReader = new FileReader();
+	fReader.readAsDataURL(file);
+	fReader.onloadend = function(event) {
+		haxe_Log.trace(event.target.result,{ fileName : "src/javascript/FileReader.hx", lineNumber : 23, className : "FileUtilities", methodName : "ReadFile"});
+		haxe_Log.trace(event.target.value,{ fileName : "src/javascript/FileReader.hx", lineNumber : 24, className : "FileUtilities", methodName : "ReadFile"});
+		var content = event.target.result;
+		var string = event.target.result;
+		if(string.indexOf("data:application/json;base64,") != -1) {
+			var savedata = haxe_crypto_Base64.decode(HxOverrides.substr(string,"data:application/json;base64,".length,null));
+			callback(savedata.toString());
+		}
+	};
+};
 var GameAnalyticsIntegration = function() { };
 $hxClasses["GameAnalyticsIntegration"] = GameAnalyticsIntegration;
 GameAnalyticsIntegration.__name__ = "GameAnalyticsIntegration";
@@ -743,7 +767,8 @@ Main.gamemain = function() {
 	main.set_percentWidth(100);
 	main.set_percentHeight(100);
 	main.addComponent(view.mainComponent);
-	var key = "save data2";
+	var key = "save data3";
+	var keyBackup = "save backup";
 	var CreateButtonFromAction = function(actionId,buttonLabel) {
 		var action = bm.playerActions.h[actionId];
 		var actionData = bm.wdata.playerActions.h[actionId];
@@ -779,11 +804,11 @@ Main.gamemain = function() {
 			bm.DiscardEquipment(pos);
 		}
 	};
+	var ls = js_Browser.getLocalStorage();
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	var time = 0;
 	var saveCount = 0.3;
-	var ls = js_Browser.getLocalStorage();
 	var jsonData = ls.getItem(key);
 	if(jsonData != null) {
 		bm.SendJsonPersistentData(jsonData);
@@ -801,6 +826,7 @@ Main.gamemain = function() {
 		view.ButtonVisibility(buttonId,action.visible);
 		view.ButtonEnabled(buttonId,action.enabled);
 	};
+	var saveFileImporterSetup = false;
 	update = function(timeStamp) {
 		GameAnalyticsIntegration.InitializeCheck();
 		ActorToView(bm.wdata.hero,view.heroView);
@@ -809,6 +835,21 @@ Main.gamemain = function() {
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
 		view.UpdateValues(view.areaLabel,bm.wdata.battleArea + 1,-1);
 		view.UpdateValues(view.enemyToAdvance,bm.wdata.killedInArea[bm.wdata.battleArea],bm.wdata.necessaryToKillInArea);
+		var imp = window.document.getElementById("import__");
+		if(imp != null && saveFileImporterSetup == false) {
+			if(imp != null) {
+				var input = imp;
+				input.onchange = function(event) {
+					FileUtilities.ReadFile(input.files[0],function(json) {
+						ls.setItem(keyBackup,bm.GetJsonPersistentData());
+						ls.setItem(key,json);
+						$global.location.reload();
+						bm = null;
+					});
+				};
+				saveFileImporterSetup = true;
+			}
+		}
 		view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
 		var _g = 0;
 		var _g1 = bm.wdata.hero.equipment.length;
@@ -1410,18 +1451,29 @@ var View = function() {
 	boxParentP.addComponent(title);
 	title.set_height(40);
 	var title = new haxe_ui_components_Label();
+	title.set_width(400);
+	title.set_horizontalAlign("right");
+	title.set_textAlign("right");
+	title.set_paddingLeft(20);
+	title.set_paddingTop(50);
+	title.set_height(20);
+	title.set_htmlText("Import Save: <input id='import__' type='file'></input>");
+	boxParentP.addComponent(title);
+	var title = new haxe_ui_components_Label();
 	title.set_htmlText("Alpha 0.02E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>");
 	title.set_percentWidth(100);
 	title.set_textAlign("right");
 	title.set_paddingRight(20);
 	title.set_paddingLeft(20);
+	title.set_paddingTop(10);
 	boxParentP.addComponent(title);
 	var title = new haxe_ui_components_Label();
 	title.set_percentWidth(100);
 	title.set_textAlign("right");
 	title.set_paddingRight(20);
 	title.set_paddingLeft(20);
-	title.set_paddingTop(20);
+	title.set_paddingTop(30);
+	title.set_height(10);
 	title.set_text("Export save data");
 	this.saveDataDownload = title;
 	boxParentP.addComponent(title);
@@ -1592,13 +1644,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 271, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 293, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 273, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 295, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 277, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 299, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

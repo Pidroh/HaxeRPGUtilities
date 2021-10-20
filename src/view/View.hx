@@ -55,6 +55,24 @@ class View {
 				boxParentP.addComponent(title);
 				title.height = 40;
 			}
+			
+			{
+				var title = new Label();
+				title.width = 400;
+				title.horizontalAlign = "right";
+				title.textAlign = "right";
+				//title.paddingRight = 20;
+				title.paddingLeft = 20;
+				title.paddingTop = 50;
+				title.height = 20;
+				
+				//title.text = "Import save data";
+				title.htmlText = "Import Save: <input id='import__' type='file'></input>";
+
+				boxParentP.addComponent(title);
+				
+			}
+			
 			{
 				var title = new Label();
 				title.htmlText = "Alpha 0.02E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
@@ -62,22 +80,26 @@ class View {
 				title.textAlign = "right";
 				title.paddingRight = 20;
 				title.paddingLeft = 20;
+				title.paddingTop = 10;
 
 				boxParentP.addComponent(title);
 			}
+			
 			{
 				var title = new Label();
 				title.percentWidth = 100;
 				title.textAlign = "right";
 				title.paddingRight = 20;
 				title.paddingLeft = 20;
-				title.paddingTop = 20;
+				title.paddingTop = 30;
+				title.height = 10;
 				
 				title.text = "Export save data";
 				saveDataDownload = title;
 
 				boxParentP.addComponent(title);
 			}
+			
 		}
 
 		var tabMaster = new TabView();
@@ -145,7 +167,7 @@ class View {
 
 	public function FeedSave(saveDataContent : String){
 
-		
+
 		//saveDataContent = StringTools.htmlEscape(saveDataContent);
 		//saveDataContent = "ssssss";
 		saveDataDownload.htmlText = "<a href='data:text/plain;charset=utf-8,";
