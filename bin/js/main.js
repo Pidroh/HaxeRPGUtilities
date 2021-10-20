@@ -16,7 +16,6 @@ var BattleManager = function() {
 	this.canAdvance = false;
 	this.canRetreat = false;
 	this.dirty = false;
-	var _gthis = this;
 	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 60};
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -31,24 +30,7 @@ var BattleManager = function() {
 	w.playerActions.h["advance"] = { visible : true, enabled : false, timesUsed : 0, mode : 0};
 	w.playerActions.h["retreat"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
 	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
-	var addAction = function(id,action,callback) {
-		w.playerActions.h[id] = action;
-		var v = { actionData : w.playerActions.h[id], actualAction : callback};
-		_gthis.playerActions.h[id] = v;
-		return v;
-	};
-	var createAction = function() {
-		var a = { visible : false, enabled : false, mode : 0, timesUsed : 0};
-		return a;
-	};
 	this.wdata = w;
-	addAction("sleep",{ visible : false, enabled : false, timesUsed : 0, mode : 0},function(a) {
-		_gthis.wdata.enemy = null;
-		_gthis.wdata.sleeping = !_gthis.wdata.sleeping;
-	});
-	addAction("repeat",createAction(),function(a) {
-		_gthis.wdata.killedInArea[_gthis.wdata.battleArea] = 0;
-	});
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
 };
@@ -123,6 +105,26 @@ BattleManager.prototype = {
 		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
 	}
 	,ReinitGameValues: function() {
+		var _gthis = this;
+		var addAction = function(id,action,callback) {
+			var w = _gthis.wdata;
+			if(Object.prototype.hasOwnProperty.call(_gthis.wdata.playerActions.h,id) == false) {
+				_gthis.wdata.playerActions.h[id] = action;
+				var v = { actionData : w.playerActions.h[id], actualAction : callback};
+				_gthis.playerActions.h[id] = v;
+			}
+		};
+		var createAction = function() {
+			var a = { visible : false, enabled : false, mode : 0, timesUsed : 0};
+			return a;
+		};
+		addAction("sleep",{ visible : false, enabled : false, timesUsed : 0, mode : 0},function(a) {
+			_gthis.wdata.enemy = null;
+			_gthis.wdata.sleeping = !_gthis.wdata.sleeping;
+		});
+		addAction("repeat",createAction(),function(a) {
+			_gthis.wdata.killedInArea[_gthis.wdata.battleArea] = 0;
+		});
 		var valueXP = 0;
 		if(this.wdata.hero.xp != null) {
 			valueXP = this.wdata.hero.xp.value;
@@ -309,7 +311,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 430, className : "BattleManager", methodName : "update"});
+			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 441, className : "BattleManager", methodName : "update"});
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;

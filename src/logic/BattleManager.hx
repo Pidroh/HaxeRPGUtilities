@@ -158,9 +158,26 @@ class BattleManager {
 		});
 		
 
+		
+
+		wdata = w;
+
+		
+		ReinitGameValues();
+		ChangeBattleArea(0);
+	}
+
+	// currently everything gets saved, even stuff that shouldn't
+	// This method will reinit some of those values when loading or creating a new game
+	public function ReinitGameValues() {
 		var addAction = (id :String, action:PlayerAction, callback : PlayerAction->Void) ->{
-			w.playerActions[id] = action;
-			playerActions[id] = {actionData:w.playerActions[id], actualAction:callback}		
+			//only if action isn't already defined
+			var w = wdata;
+			if(wdata.playerActions.exists(id) == false){
+				wdata.playerActions[id] = action;
+				playerActions[id] = {actionData:w.playerActions[id], actualAction:callback}		
+			}
+			
 		}
 
 		var createAction = ()->{ 
@@ -168,9 +185,7 @@ class BattleManager {
 			a = {visible: false, enabled: false, mode: 0, timesUsed: 0};
 			return a;
 		}
-
-		wdata = w;
-
+		
 		addAction("sleep", {
 			visible: false,
 			enabled: false,
@@ -185,14 +200,10 @@ class BattleManager {
 			wdata.killedInArea[wdata.battleArea] = 0;
 		});
 
-		
-		ReinitGameValues();
-		ChangeBattleArea(0);
-	}
 
-	// currently everything gets saved, even stuff that shouldn't
-	// This method will reinit some of those values when loading or creating a new game
-	public function ReinitGameValues() {
+		
+
+		
 		var valueXP = 0;
 		if (wdata.hero.xp != null) {
 			valueXP = wdata.hero.xp.value;

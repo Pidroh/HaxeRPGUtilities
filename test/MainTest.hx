@@ -10,7 +10,9 @@ class MainTest {
 				var json = sys.io.File.getContent(path);
 				var bm = new BattleManager();
 				bm.SendJsonPersistentData(json);
-
+				for (i in 1...400) {
+					bm.update(0.9);
+				}
 			}
 		}
 		{

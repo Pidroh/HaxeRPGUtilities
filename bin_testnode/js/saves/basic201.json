@@ -1,0 +1,68 @@
+{
+  "hero": {
+    "level": 2,
+    "attributesBase": {
+      "h": {
+        "Attack": 1,
+        "Life": 20,
+        "LifeMax": 20
+      }
+    },
+    "equipmentSlots": null,
+    "equipment": null,
+    "xp": {
+      "scaling": {
+        "data1": 1.5,
+        "initial": 36,
+        "minimumIncrement": 1,
+        "initialMultiplication": true,
+        "exponential": true
+      },
+      "value": 175,
+      "lastUsedBaseAttribute": 2,
+      "calculatedMax": 74
+    },
+    "attributesCalculated": {
+      "h": {
+        "Attack": 3,
+        "Life": 30,
+        "LifeMax": 30
+      }
+    },
+    "reference": {
+      "type": 0,
+      "pos": 0
+    }
+  },
+  "enemy": null,
+  "maxArea": 4,
+  "necessaryToKillInArea": 12,
+  "killedInArea": [
+    0,
+    0,
+    0,
+    12,
+    0
+  ],
+  "timeCount": 0.4831570000000064,
+  "playerTimesKilled": 7,
+  "battleArea": 3,
+  "turn": true,
+  "playerActions": {
+    "h": {
+      "advance": {
+        "visible": true,
+        "enabled": true
+      },
+      "retreat": {
+        "visible": true,
+        "enabled": true
+      },
+      "levelup": {
+        "visible": true,
+        "enabled": true
+      }
+    }
+  },
+  "recovering": false
+}
