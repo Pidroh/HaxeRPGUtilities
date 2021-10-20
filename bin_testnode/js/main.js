@@ -299,7 +299,7 @@ BattleManager.prototype = {
 			console.log("src/logic/BattleManager.hx:430:",lu.mode);
 		} else {
 			lu.mode = 0;
-			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"];
+			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
 		}
 		lu.visible = lu.enabled || lu.visible;
 		if(this.wdata.recovering && this.wdata.hero.attributesCalculated.h["Life"] >= this.wdata.hero.attributesCalculated.h["LifeMax"]) {

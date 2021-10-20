@@ -76,7 +76,7 @@ class Main {
 		main.percentWidth = 100;
 		main.percentHeight = 100;
 		main.addComponent(view.mainComponent);
-		var key = "save data3";
+		var key = "save data2";
 		var keyBackup = "save backup";
 
 		var CreateButtonFromAction = function(actionId:String, buttonLabel:String) {

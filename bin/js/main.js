@@ -312,7 +312,7 @@ BattleManager.prototype = {
 			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 430, className : "BattleManager", methodName : "update"});
 		} else {
 			lu.mode = 0;
-			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"];
+			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
 		}
 		lu.visible = lu.enabled || lu.visible;
 		if(this.wdata.recovering && this.wdata.hero.attributesCalculated.h["Life"] >= this.wdata.hero.attributesCalculated.h["LifeMax"]) {
@@ -767,7 +767,7 @@ Main.gamemain = function() {
 	main.set_percentWidth(100);
 	main.set_percentHeight(100);
 	main.addComponent(view.mainComponent);
-	var key = "save data3";
+	var key = "save data2";
 	var keyBackup = "save backup";
 	var CreateButtonFromAction = function(actionId,buttonLabel) {
 		var action = bm.playerActions.h[actionId];

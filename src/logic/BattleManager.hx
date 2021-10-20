@@ -431,7 +431,7 @@ $baseInfo';
 			} else{
 				lu.mode = 0;
 				//sleep is okay even when recovered for faster active play
-				lu.enabled = wdata.hero.attributesCalculated["Life"] < wdata.hero.attributesCalculated["LifeMax"];	
+				lu.enabled = wdata.hero.attributesCalculated["Life"] < wdata.hero.attributesCalculated["LifeMax"] && wdata.recovering == false;	
 			}
 			lu.visible = lu.enabled || lu.visible;
 		}
