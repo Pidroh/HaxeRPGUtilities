@@ -246,6 +246,14 @@ class View {
 			equipTab.addComponent(viewParent);
 			equipments.push(ev);
 		}
+		var i = 0;
+		while(equipments.length > i){
+			equipments[i].parent.hidden = i >= amount;
+			i++;
+		}
+		//for (var i in 0...equipments.length){	
+		//}
+
 	}
 
 	public function ClickedEquipmentViewMainAction(equipmentPos : Int, actionId:Int){

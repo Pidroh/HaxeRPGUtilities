@@ -245,7 +245,7 @@ class Main {
 					GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
 				}
 				if (e.type == EquipDrop) {
-					ev = 'Enemy dropped a sword';
+					ev = '<b>Enemy dropped a sword</b>';
 				}
 
 				view.AddEventText(ev);

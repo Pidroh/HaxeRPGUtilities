@@ -65,8 +65,8 @@ BattleManager.prototype = {
 		this.dirty = true;
 	}
 	,PlayerFightMode: function() {
-		if(this.wdata.recovering == false) {
-			return this.wdata.sleeping == false;
+		if(this.wdata.recovering != true) {
+			return this.wdata.sleeping != true;
 		} else {
 			return false;
 		}
@@ -141,7 +141,7 @@ BattleManager.prototype = {
 			this.wdata.enemy = null;
 			attackHappen = false;
 		}
-		if(this.wdata.battleArea > 0 && this.PlayerFightMode() && areaComplete == false) {
+		if(this.wdata.battleArea > 0 && this.PlayerFightMode() && areaComplete != true) {
 			if(enemy == null) {
 				this.CreateAreaEnemy();
 				enemy = this.wdata.enemy;
@@ -366,7 +366,12 @@ BattleManager.prototype = {
 		return JSON.stringify(this.wdata);
 	}
 	,SendJsonPersistentData: function(jsonString) {
-		this.wdata = JSON.parse(jsonString);
+		var loadedWdata = JSON.parse(jsonString);
+		if(loadedWdata.worldVersion < 301) {
+			loadedWdata.worldVersion = 301;
+			loadedWdata.sleeping = loadedWdata.sleeping == true;
+		}
+		this.wdata = loadedWdata;
 		if(this.wdata.battleArea >= this.wdata.killedInArea.length) {
 			this.wdata.battleArea = this.wdata.killedInArea.length - 1;
 		}

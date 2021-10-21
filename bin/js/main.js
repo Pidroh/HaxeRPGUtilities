@@ -78,8 +78,8 @@ BattleManager.prototype = {
 		this.dirty = true;
 	}
 	,PlayerFightMode: function() {
-		if(this.wdata.recovering == false) {
-			return this.wdata.sleeping == false;
+		if(this.wdata.recovering != true) {
+			return this.wdata.sleeping != true;
 		} else {
 			return false;
 		}
@@ -154,7 +154,7 @@ BattleManager.prototype = {
 			this.wdata.enemy = null;
 			attackHappen = false;
 		}
-		if(this.wdata.battleArea > 0 && this.PlayerFightMode() && areaComplete == false) {
+		if(this.wdata.battleArea > 0 && this.PlayerFightMode() && areaComplete != true) {
 			if(enemy == null) {
 				this.CreateAreaEnemy();
 				enemy = this.wdata.enemy;
@@ -379,7 +379,12 @@ BattleManager.prototype = {
 		return JSON.stringify(this.wdata);
 	}
 	,SendJsonPersistentData: function(jsonString) {
-		this.wdata = JSON.parse(jsonString);
+		var loadedWdata = JSON.parse(jsonString);
+		if(loadedWdata.worldVersion < 301) {
+			loadedWdata.worldVersion = 301;
+			loadedWdata.sleeping = loadedWdata.sleeping == true;
+		}
+		this.wdata = loadedWdata;
 		if(this.wdata.battleArea >= this.wdata.killedInArea.length) {
 			this.wdata.battleArea = this.wdata.killedInArea.length - 1;
 		}
@@ -916,7 +921,7 @@ Main.gamemain = function() {
 				GameAnalyticsIntegration.SendDesignEvent("AreaUnlock",e.data);
 			}
 			if(e.type == EventTypes.EquipDrop) {
-				ev = "Enemy dropped a sword";
+				ev = "<b>Enemy dropped a sword</b>";
 			}
 			view.AddEventText(ev);
 			eventShown += 1;
@@ -1607,6 +1612,11 @@ View.prototype = {
 			this.equipTab.addComponent(viewParent);
 			this.equipments.push(ev);
 		}
+		var i = 0;
+		while(this.equipments.length > i) {
+			this.equipments[i].parent.set_hidden(i >= amount);
+			++i;
+		}
 	}
 	,ClickedEquipmentViewMainAction: function(equipmentPos,actionId) {
 		if(this.equipmentMainAction != null) {
@@ -1646,13 +1656,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 293, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 301, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 295, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 303, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 299, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 307, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

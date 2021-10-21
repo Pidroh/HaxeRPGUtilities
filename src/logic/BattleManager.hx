@@ -69,7 +69,7 @@ class BattleManager {
 	}
 
 	function PlayerFightMode(){
-		return wdata.recovering == false && wdata.sleeping == false;
+		return wdata.recovering != true && wdata.sleeping != true;
 	}
 
 	function AwardXP(xpPlus) {
@@ -241,7 +241,7 @@ class BattleManager {
 			attackHappen = false;
 		}
 
-		if (wdata.battleArea > 0 && PlayerFightMode() && areaComplete == false) {
+		if (wdata.battleArea > 0 && PlayerFightMode() && areaComplete != true) {
 			if (enemy == null) {
 				CreateAreaEnemy();
 				enemy = wdata.enemy;
@@ -510,13 +510,20 @@ $baseInfo';
 	}
 
 	public function SendJsonPersistentData(jsonString) {
-		wdata = Json.parse(jsonString);
+		var loadedWdata : WorldData = Json.parse(jsonString);
+		if(loadedWdata.worldVersion < 301){
+			loadedWdata.worldVersion = 301;
+			loadedWdata.sleeping = loadedWdata.sleeping == true;
+		}
+		wdata = loadedWdata;
+
 		if (wdata.battleArea >= wdata.killedInArea.length) {
 			wdata.battleArea = wdata.killedInArea.length - 1;
 		}
 		if (wdata.maxArea >= wdata.killedInArea.length) {
 			wdata.maxArea = wdata.killedInArea.length - 1;
 		}
+		
 		ReinitGameValues();
 		/*
 			var data = Json.parse(jsonString);
