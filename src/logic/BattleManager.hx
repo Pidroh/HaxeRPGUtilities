@@ -41,6 +41,7 @@ class BattleManager {
 	public function ChangeBattleArea(area:Int) {
 		// previous area code
 		// reset kill count of complete areas when leaving them
+
 		if (wdata.killedInArea[wdata.battleArea] >= wdata.necessaryToKillInArea) {
 			wdata.killedInArea[wdata.battleArea] = 0;
 		}
@@ -320,6 +321,9 @@ class BattleManager {
 				AwardXP(enemy.level);
 
 				if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
+					
+					this.AddEvent(AreaComplete).data = wdata.battleArea;
+
 					if (wdata.maxArea == wdata.battleArea) {
 						// var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
 						ResourceLogic.recalculateScalingResource(wdata.battleArea, areaBonus);
@@ -328,7 +332,8 @@ class BattleManager {
 						wdata.maxArea++;
 						this.AddEvent(AreaUnlock).data = wdata.maxArea;
 						killedInArea[wdata.maxArea] = 0;
-					}
+					} 
+					
 				}
 			}
 			if (hero.attributesCalculated["Life"] <= 0) {

@@ -131,6 +131,7 @@ enum EventTypes{
 	ActorAttack;
 	ActorLevelUp;
 	AreaUnlock;
+	AreaComplete;
 	AreaEnterFirstTime;
 	GetXP;
 	

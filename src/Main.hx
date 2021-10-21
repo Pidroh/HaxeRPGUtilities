@@ -90,10 +90,12 @@ class Main {
 
 		view.AddButton("advance", "Advance", function(e) {
 			bm.AdvanceArea();
+			
 		});
 
 		view.AddButton("retreat", "Retreat", function(e) {
 			bm.RetreatArea();
+			
 		});
 
 		view.AddButton("levelup", "Level Up", function(e) {
@@ -249,13 +251,25 @@ class Main {
 				}
 				if (e.type == ActorDead) {
 					ev = '$originText died';
+					if(e.target != null){
+						if (e.target.type == 0) //hero died
+							GameAnalyticsIntegration.SendProgressFailEvent("world0", "stage0", "area"+bm.wdata.battleArea);
+					}
+					
 				}
 				if (e.type == ActorLevelUp) {
 					ev = '<b>You leveled up!</b>';
+					GameAnalyticsIntegration.SendProgressCompleteEvent("LevelUp "+bm.wdata.hero.level, "", "");
 				}
 				if (e.type == AreaUnlock) {
 					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>';
 					GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
+					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage0", "area"+e.data);
+				}
+				if (e.type == AreaComplete) {
+					ev = 'There are no enemies left';
+					GameAnalyticsIntegration.SendProgressCompleteEvent("world0", "stage0", "area"+e.data);
+					//GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
 				}
 				if (e.type == EquipDrop) {
 					ev = '<b>Enemy dropped a sword</b>';

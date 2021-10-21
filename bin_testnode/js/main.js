@@ -209,6 +209,7 @@ BattleManager.prototype = {
 				var xpGain = enemy.level;
 				this.AwardXP(enemy.level);
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
+					this.AddEvent(EventTypes.AreaComplete).data = this.wdata.battleArea;
 					if(this.wdata.maxArea == this.wdata.battleArea) {
 						ResourceLogic.recalculateScalingResource(this.wdata.battleArea,this.areaBonus);
 						var xpPlus = this.areaBonus.calculatedMax;
@@ -298,7 +299,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			console.log("src/logic/BattleManager.hx:442:",lu.mode);
+			console.log("src/logic/BattleManager.hx:447:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
@@ -670,10 +671,11 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,ActorAttack: {_hx_name:"ActorAttack",_hx_index:4,__enum__:"EventTypes",toString:$estr}
 	,ActorLevelUp: {_hx_name:"ActorLevelUp",_hx_index:5,__enum__:"EventTypes",toString:$estr}
 	,AreaUnlock: {_hx_name:"AreaUnlock",_hx_index:6,__enum__:"EventTypes",toString:$estr}
-	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:7,__enum__:"EventTypes",toString:$estr}
-	,GetXP: {_hx_name:"GetXP",_hx_index:8,__enum__:"EventTypes",toString:$estr}
+	,AreaComplete: {_hx_name:"AreaComplete",_hx_index:7,__enum__:"EventTypes",toString:$estr}
+	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:8,__enum__:"EventTypes",toString:$estr}
+	,GetXP: {_hx_name:"GetXP",_hx_index:9,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime,EventTypes.GetXP];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;

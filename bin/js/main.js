@@ -222,6 +222,7 @@ BattleManager.prototype = {
 				var xpGain = enemy.level;
 				this.AwardXP(enemy.level);
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
+					this.AddEvent(EventTypes.AreaComplete).data = this.wdata.battleArea;
 					if(this.wdata.maxArea == this.wdata.battleArea) {
 						ResourceLogic.recalculateScalingResource(this.wdata.battleArea,this.areaBonus);
 						var xpPlus = this.areaBonus.calculatedMax;
@@ -311,7 +312,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 442, className : "BattleManager", methodName : "update"});
+			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 447, className : "BattleManager", methodName : "update"});
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
@@ -634,14 +635,48 @@ GameAnalyticsIntegration.InitializeCheck = function() {
 	
         if(gameanalytics.GameAnalytics != null && gaInited == false){
             gaInited = true;
+            gameanalytics.GameAnalytics.configureBuild("0.3.1");
             gameanalytics.GameAnalytics.initialize(gameKey,secretKey); 
-            gameanalytics.GameAnalytics.configureBuild("0.3.0");
+            
         }
         ;
 };
 GameAnalyticsIntegration.SendDesignEvent = function(eventName,value) {
 	
         gameanalytics.GameAnalytics.addDesignEvent(eventName, value);
+        ;
+};
+GameAnalyticsIntegration.SendProgressStartEvent = function(prog1,prog2,prog3) {
+	if(prog3 == null) {
+		prog3 = "";
+	}
+	if(prog2 == null) {
+		prog2 = "";
+	}
+	
+        gameanalytics.GameAnalytics.addProgressionEvent(gameanalytics.EGAProgressionStatus.Start, prog1, prog2, prog3);
+        ;
+};
+GameAnalyticsIntegration.SendProgressCompleteEvent = function(prog1,prog2,prog3) {
+	if(prog3 == null) {
+		prog3 = "";
+	}
+	if(prog2 == null) {
+		prog2 = "";
+	}
+	
+        gameanalytics.GameAnalytics.addProgressionEvent(gameanalytics.EGAProgressionStatus.Complete, prog1, prog2, prog3);
+        ;
+};
+GameAnalyticsIntegration.SendProgressFailEvent = function(prog1,prog2,prog3) {
+	if(prog3 == null) {
+		prog3 = "";
+	}
+	if(prog2 == null) {
+		prog2 = "";
+	}
+	
+        gameanalytics.GameAnalytics.addProgressionEvent(gameanalytics.EGAProgressionStatus.Fail, prog1, prog2, prog3);
         ;
 };
 var HxOverrides = function() { };
@@ -918,13 +953,24 @@ Main.gamemain = function() {
 			}
 			if(e.type == EventTypes.ActorDead) {
 				ev = "" + originText + " died";
+				if(e.target != null) {
+					if(e.target.type == 0) {
+						GameAnalyticsIntegration.SendProgressFailEvent("world0","stage0","area" + bm.wdata.battleArea);
+					}
+				}
 			}
 			if(e.type == EventTypes.ActorLevelUp) {
 				ev = "<b>You leveled up!</b>";
+				GameAnalyticsIntegration.SendProgressCompleteEvent("LevelUp " + bm.wdata.hero.level,"","");
 			}
 			if(e.type == EventTypes.AreaUnlock) {
 				ev = "<spawn style=\"color:#005555; font-weight: normal;\";>You found a new area!</span>";
 				GameAnalyticsIntegration.SendDesignEvent("AreaUnlock",e.data);
+				GameAnalyticsIntegration.SendProgressStartEvent("world0","stage0","area" + e.data);
+			}
+			if(e.type == EventTypes.AreaComplete) {
+				ev = "There are no enemies left";
+				GameAnalyticsIntegration.SendProgressCompleteEvent("world0","stage0","area" + e.data);
 			}
 			if(e.type == EventTypes.EquipDrop) {
 				ev = "<b>Enemy dropped a sword</b>";
@@ -1036,10 +1082,11 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,ActorAttack: {_hx_name:"ActorAttack",_hx_index:4,__enum__:"EventTypes",toString:$estr}
 	,ActorLevelUp: {_hx_name:"ActorLevelUp",_hx_index:5,__enum__:"EventTypes",toString:$estr}
 	,AreaUnlock: {_hx_name:"AreaUnlock",_hx_index:6,__enum__:"EventTypes",toString:$estr}
-	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:7,__enum__:"EventTypes",toString:$estr}
-	,GetXP: {_hx_name:"GetXP",_hx_index:8,__enum__:"EventTypes",toString:$estr}
+	,AreaComplete: {_hx_name:"AreaComplete",_hx_index:7,__enum__:"EventTypes",toString:$estr}
+	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:8,__enum__:"EventTypes",toString:$estr}
+	,GetXP: {_hx_name:"GetXP",_hx_index:9,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaEnterFirstTime,EventTypes.GetXP];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;
