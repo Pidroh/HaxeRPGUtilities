@@ -1583,6 +1583,8 @@ View.prototype = {
 		var _gthis = this;
 		while(amount > this.equipments.length) {
 			var viewParent = new haxe_ui_containers_VBox();
+			viewParent.set_borderSize(1);
+			viewParent.set_padding(6);
 			var name = new haxe_ui_components_Label();
 			name.set_text("Sword");
 			viewParent.addComponent(name);
@@ -1630,8 +1632,10 @@ View.prototype = {
 		this.equipments[pos].name.set_text(name);
 		if(equipped) {
 			this.equipments[pos].actionButtons[0].set_text("Unequip");
+			this.equipments[pos].parent.set_borderSize(2);
 		} else {
 			this.equipments[pos].actionButtons[0].set_text("Equip");
+			this.equipments[pos].parent.set_borderSize(1);
 		}
 		while(this.equipments[pos].values.length < numberOfValues) {
 			var vv = this.CreateValueView(this.equipments[pos].parent,false,"Attr");
@@ -1656,13 +1660,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 301, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 306, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 303, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 308, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 307, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 312, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

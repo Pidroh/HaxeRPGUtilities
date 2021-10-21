@@ -218,6 +218,9 @@ class View {
 	public function EquipmentAmountToShow(amount : Int){
 		while(amount > equipments.length){
 			var viewParent = new VBox();
+			//viewParent.borderRadius = 10;
+			viewParent.borderSize = 1;
+			viewParent.padding = 6;
 			var name = new Label();
 			name.text = "Sword";
 			viewParent.addComponent(name);
@@ -266,8 +269,10 @@ class View {
 		equipments[pos].name.text = name;
 		if(equipped){
 			equipments[pos].actionButtons[0].text = "Unequip";
+			equipments[pos].parent.borderSize = 2;
 		} else{
 			equipments[pos].actionButtons[0].text = "Equip";
+			equipments[pos].parent.borderSize = 1;
 		}
 		while(equipments[pos].values.length < numberOfValues){
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
