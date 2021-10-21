@@ -90,12 +90,10 @@ class Main {
 
 		view.AddButton("advance", "Advance", function(e) {
 			bm.AdvanceArea();
-			
 		});
 
 		view.AddButton("retreat", "Retreat", function(e) {
 			bm.RetreatArea();
-			
 		});
 
 		view.AddButton("levelup", "Level Up", function(e) {
@@ -170,44 +168,43 @@ class Main {
 
 			var imp = Browser.document.getElementById("import__");
 			if (imp != null && saveFileImporterSetup == false) {
-
-				if(imp != null){
+				if (imp != null) {
 					var input:InputElement = cast imp;
-					
-					input.onchange = (event)->{
-						FileReader.FileUtilities.ReadFile(input.files[0], (json)->{
+
+					input.onchange = (event) -> {
+						FileReader.FileUtilities.ReadFile(input.files[0], (json) -> {
 							ls.setItem(keyBackup, bm.GetJsonPersistentData());
 							ls.setItem(key, json);
 							Browser.location.reload();
 							bm = null;
-							//trace(json);
+							// trace(json);
 						});
-
-					};		
+					};
 					saveFileImporterSetup = true;
 				}
 			}
 
 			/*
-			var amountEquipmentShow = 0;
-			for (i in 0...bm.wdata.hero.equipment.length) {
-				if(bm.wdata.hero.equipment[i] != null)
-					amountEquipmentShow++;
-			}
-			*/
+				var amountEquipmentShow = 0;
+				for (i in 0...bm.wdata.hero.equipment.length) {
+					if(bm.wdata.hero.equipment[i] != null)
+						amountEquipmentShow++;
+				}
+			 */
 
 			view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
 			var equipmentViewPos = 0;
 			for (i in 0...bm.wdata.hero.equipment.length) {
 				var e = bm.wdata.hero.equipment[i];
-				if(e != null){
-					view.FeedEquipmentBase(equipmentViewPos, "Sword", bm.IsEquipped(i));
+				if (e != null) {
+					var equipName = GetEquipName(e);
+					view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i));
 					var vid = 0;
 					for (v in e.attributes.keyValueIterator()) {
 						view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value);
 						vid++;
 					}
-				} else{
+				} else {
 					view.HideEquipmentView(equipmentViewPos);
 				}
 				equipmentViewPos++;
@@ -251,28 +248,28 @@ class Main {
 				}
 				if (e.type == ActorDead) {
 					ev = '$originText died';
-					if(e.target != null){
-						if (e.target.type == 0) //hero died
-							GameAnalyticsIntegration.SendProgressFailEvent("world0", "stage0", "area"+bm.wdata.battleArea);
+					if (e.target != null) {
+						if (e.target.type == 0) // hero died
+							GameAnalyticsIntegration.SendProgressFailEvent("world0", "stage0", "area" + bm.wdata.battleArea);
 					}
-					
 				}
 				if (e.type == ActorLevelUp) {
 					ev = '<b>You leveled up!</b>';
-					GameAnalyticsIntegration.SendProgressCompleteEvent("LevelUp "+bm.wdata.hero.level, "", "");
+					GameAnalyticsIntegration.SendProgressCompleteEvent("LevelUp " + bm.wdata.hero.level, "", "");
 				}
 				if (e.type == AreaUnlock) {
 					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>';
 					GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
-					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage0", "area"+e.data);
+					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage0", "area" + e.data);
 				}
 				if (e.type == AreaComplete) {
 					ev = 'There are no enemies left';
-					GameAnalyticsIntegration.SendProgressCompleteEvent("world0", "stage0", "area"+e.data);
-					//GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
+					GameAnalyticsIntegration.SendProgressCompleteEvent("world0", "stage0", "area" + e.data);
+					// GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
 				}
 				if (e.type == EquipDrop) {
-					ev = '<b>Enemy dropped a sword</b>';
+					var equipName = GetEquipName(bm.wdata.hero.equipment[e.data]);
+					ev = '<b>Enemy dropped $equipName</b>';
 				}
 
 				view.AddEventText(ev);
@@ -321,5 +318,12 @@ class Main {
 			return true;
 		}
 		update(0);
+	}
+
+	static function GetEquipName(e : Equipment):String {
+		var equipName = "Sword";
+		if (e.type == 1)
+			equipName = "Armor";
+		return equipName;
 	}
 }
