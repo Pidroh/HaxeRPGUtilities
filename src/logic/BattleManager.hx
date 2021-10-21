@@ -298,15 +298,27 @@ class BattleManager {
 				#end
 				killedInArea[battleArea]++;
 				if (random.randomInt(0, 100) < equipDropChance) {
-					var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
-
-					var e:Equipment = {type: 0, requiredAttributes: null, attributes: ["Attack" => attackBonus]};
-
-					if (random.randomInt(0, 100) < 20) {
-						var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
-						e.attributes["LifeMax"] = lifeBonus;
+					var equipType = random.randomInt(0, 1);
+					var e:Equipment = null;
+					//sword
+					if(equipType == 0){
+						var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
+						e = {type: 0, requiredAttributes: null, attributes: ["Attack" => attackBonus]};
+						if (random.randomInt(0, 100) < 20) {
+							var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
+							e.attributes["LifeMax"] = lifeBonus;
+						}
+					} 
+					//armor
+					if(equipType == 1){
+						var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2))*3;
+						e = {type: 1, requiredAttributes: null, attributes: ["LifeMax" => lifeBonus]};
+						if (random.randomInt(0, 100) < 20) {
+							var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 4 + 2));
+							e.attributes["Attack"] = attackBonus;
+						}
 					}
-
+					
 					wdata.hero.equipment.push(e);
 					var e = AddEvent(EquipDrop);
 					e.data = wdata.hero.equipment.length - 1;
@@ -351,10 +363,11 @@ class BattleManager {
 	}
 
 	public function ToggleEquipped(pos) {
-		if (wdata.hero.equipmentSlots[0] == pos) {
-			wdata.hero.equipmentSlots[0] = -1;
+		var slot = wdata.hero.equipment[pos].type;
+		if (wdata.hero.equipmentSlots[slot] == pos) {
+			wdata.hero.equipmentSlots[slot] = -1;
 		} else {
-			wdata.hero.equipmentSlots[0] = pos;
+			wdata.hero.equipmentSlots[slot] = pos;
 		}
 		RecalculateAttributes(wdata.hero);
 	}

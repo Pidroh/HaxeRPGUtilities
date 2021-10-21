@@ -204,13 +204,27 @@ BattleManager.prototype = {
 				}
 				killedInArea[battleArea]++;
 				if(this.random.randomInt(0,100) < this.equipDropChance) {
-					var attackBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
-					var _g = new haxe_ds_StringMap();
-					_g.h["Attack"] = attackBonus;
-					var e = { type : 0, requiredAttributes : null, attributes : _g};
-					if(this.random.randomInt(0,100) < 20) {
-						var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
-						e.attributes.h["LifeMax"] = lifeBonus;
+					var equipType = this.random.randomInt(0,1);
+					var e = null;
+					if(equipType == 0) {
+						var attackBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
+						var _g = new haxe_ds_StringMap();
+						_g.h["Attack"] = attackBonus;
+						e = { type : 0, requiredAttributes : null, attributes : _g};
+						if(this.random.randomInt(0,100) < 20) {
+							var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
+							e.attributes.h["LifeMax"] = lifeBonus;
+						}
+					}
+					if(equipType == 1) {
+						var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0) * 3;
+						var _g = new haxe_ds_StringMap();
+						_g.h["LifeMax"] = lifeBonus;
+						e = { type : 1, requiredAttributes : null, attributes : _g};
+						if(this.random.randomInt(0,100) < 20) {
+							var attackBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 4 + 2 | 0);
+							e.attributes.h["Attack"] = attackBonus;
+						}
 					}
 					this.wdata.hero.equipment.push(e);
 					var e = this.AddEvent(EventTypes.EquipDrop);
@@ -248,10 +262,11 @@ BattleManager.prototype = {
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,ToggleEquipped: function(pos) {
-		if(this.wdata.hero.equipmentSlots[0] == pos) {
-			this.wdata.hero.equipmentSlots[0] = -1;
+		var slot = this.wdata.hero.equipment[pos].type;
+		if(this.wdata.hero.equipmentSlots[slot] == pos) {
+			this.wdata.hero.equipmentSlots[slot] = -1;
 		} else {
-			this.wdata.hero.equipmentSlots[0] = pos;
+			this.wdata.hero.equipmentSlots[slot] = pos;
 		}
 		this.RecalculateAttributes(this.wdata.hero);
 	}
@@ -311,7 +326,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 442, className : "BattleManager", methodName : "update"});
+			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 455, className : "BattleManager", methodName : "update"});
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
@@ -1473,7 +1488,7 @@ var View = function() {
 	title.set_htmlText("Import Save: <input id='import__' type='file'></input>");
 	boxParentP.addComponent(title);
 	var title = new haxe_ui_components_Label();
-	title.set_htmlText("Alpha 0.02E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>");
+	title.set_htmlText("Alpha 0.03F. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>");
 	title.set_percentWidth(100);
 	title.set_textAlign("right");
 	title.set_paddingRight(20);
