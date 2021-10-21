@@ -191,13 +191,27 @@ BattleManager.prototype = {
 				}
 				killedInArea[battleArea]++;
 				if(this.random.randomInt(0,100) < this.equipDropChance) {
-					var attackBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
-					var _g = new haxe_ds_StringMap();
-					_g.h["Attack"] = attackBonus;
-					var e = { type : 0, requiredAttributes : null, attributes : _g};
-					if(this.random.randomInt(0,100) < 20) {
-						var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
-						e.attributes.h["LifeMax"] = lifeBonus;
+					var equipType = this.random.randomInt(0,1);
+					var e = null;
+					if(equipType == 0) {
+						var attackBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
+						var _g = new haxe_ds_StringMap();
+						_g.h["Attack"] = attackBonus;
+						e = { type : 0, requiredAttributes : null, attributes : _g};
+						if(this.random.randomInt(0,100) < 20) {
+							var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
+							e.attributes.h["LifeMax"] = lifeBonus;
+						}
+					}
+					if(equipType == 1) {
+						var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0) * 3;
+						var _g = new haxe_ds_StringMap();
+						_g.h["LifeMax"] = lifeBonus;
+						e = { type : 1, requiredAttributes : null, attributes : _g};
+						if(this.random.randomInt(0,100) < 20) {
+							var attackBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 4 + 2 | 0);
+							e.attributes.h["Attack"] = attackBonus;
+						}
 					}
 					this.wdata.hero.equipment.push(e);
 					var e = this.AddEvent(EventTypes.EquipDrop);
@@ -236,10 +250,11 @@ BattleManager.prototype = {
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,ToggleEquipped: function(pos) {
-		if(this.wdata.hero.equipmentSlots[0] == pos) {
-			this.wdata.hero.equipmentSlots[0] = -1;
+		var slot = this.wdata.hero.equipment[pos].type;
+		if(this.wdata.hero.equipmentSlots[slot] == pos) {
+			this.wdata.hero.equipmentSlots[slot] = -1;
 		} else {
-			this.wdata.hero.equipmentSlots[0] = pos;
+			this.wdata.hero.equipmentSlots[slot] = pos;
 		}
 		this.RecalculateAttributes(this.wdata.hero);
 	}
