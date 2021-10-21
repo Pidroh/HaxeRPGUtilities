@@ -266,6 +266,7 @@ class View {
 	}
 
 	public function FeedEquipmentBase(pos : Int, name:String, equipped : Bool, numberOfValues: Int = -1){
+		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
 		if(equipped){
 			equipments[pos].actionButtons[0].text = "Unequip";
@@ -278,6 +279,10 @@ class View {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
 		}
+	}
+
+	public function HideEquipmentView(pos : Int){
+		equipments[pos].parent.hidden = true;
 	}
 
 	public function FeedEquipmentValue(pos : Int, valuePos: Int, valueName:String, value: Int){

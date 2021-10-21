@@ -231,7 +231,7 @@ BattleManager.prototype = {
 		return "";
 	}
 	,DiscardEquipment: function(pos) {
-		HxOverrides.remove(this.wdata.hero.equipment,this.wdata.hero.equipment[pos]);
+		this.wdata.hero.equipment[pos] = null;
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,ToggleEquipped: function(pos) {
@@ -298,7 +298,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			console.log("src/logic/BattleManager.hx:441:",lu.mode);
+			console.log("src/logic/BattleManager.hx:442:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
@@ -389,14 +389,6 @@ HxOverrides.cca = function(s,index) {
 		return undefined;
 	}
 	return x;
-};
-HxOverrides.remove = function(a,obj) {
-	var i = a.indexOf(obj);
-	if(i == -1) {
-		return false;
-	}
-	a.splice(i,1);
-	return true;
 };
 HxOverrides.now = function() {
 	return Date.now();

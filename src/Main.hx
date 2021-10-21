@@ -186,16 +186,29 @@ class Main {
 				}
 			}
 
+			/*
+			var amountEquipmentShow = 0;
+			for (i in 0...bm.wdata.hero.equipment.length) {
+				if(bm.wdata.hero.equipment[i] != null)
+					amountEquipmentShow++;
+			}
+			*/
+
 			view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
+			var equipmentViewPos = 0;
 			for (i in 0...bm.wdata.hero.equipment.length) {
 				var e = bm.wdata.hero.equipment[i];
-
-				view.FeedEquipmentBase(i, "Sword", bm.IsEquipped(i));
-				var vid = 0;
-				for (v in e.attributes.keyValueIterator()) {
-					view.FeedEquipmentValue(i, vid, v.key, v.value);
-					vid++;
+				if(e != null){
+					view.FeedEquipmentBase(equipmentViewPos, "Sword", bm.IsEquipped(i));
+					var vid = 0;
+					for (v in e.attributes.keyValueIterator()) {
+						view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value);
+						vid++;
+					}
+				} else{
+					view.HideEquipmentView(equipmentViewPos);
 				}
+				equipmentViewPos++;
 			}
 
 			var levelUpSystem = bm.wdata.hero.level > 1;

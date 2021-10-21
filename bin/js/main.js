@@ -244,7 +244,7 @@ BattleManager.prototype = {
 		return "";
 	}
 	,DiscardEquipment: function(pos) {
-		HxOverrides.remove(this.wdata.hero.equipment,this.wdata.hero.equipment[pos]);
+		this.wdata.hero.equipment[pos] = null;
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,ToggleEquipped: function(pos) {
@@ -311,7 +311,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 441, className : "BattleManager", methodName : "update"});
+			haxe_Log.trace(lu.mode,{ fileName : "src/logic/BattleManager.hx", lineNumber : 442, className : "BattleManager", methodName : "update"});
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
@@ -858,25 +858,31 @@ Main.gamemain = function() {
 			}
 		}
 		view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
+		var equipmentViewPos = 0;
 		var _g = 0;
 		var _g1 = bm.wdata.hero.equipment.length;
 		while(_g < _g1) {
 			var i = _g++;
 			var e = bm.wdata.hero.equipment[i];
-			view.FeedEquipmentBase(i,"Sword",bm.IsEquipped(i));
-			var vid = 0;
-			var h = e.attributes.h;
-			var v_h = h;
-			var v_keys = Object.keys(h);
-			var v_length = v_keys.length;
-			var v_current = 0;
-			while(v_current < v_length) {
-				var key1 = v_keys[v_current++];
-				var v_key = key1;
-				var v_value = v_h[key1];
-				view.FeedEquipmentValue(i,vid,v_key,v_value);
-				++vid;
+			if(e != null) {
+				view.FeedEquipmentBase(equipmentViewPos,"Sword",bm.IsEquipped(i));
+				var vid = 0;
+				var h = e.attributes.h;
+				var v_h = h;
+				var v_keys = Object.keys(h);
+				var v_length = v_keys.length;
+				var v_current = 0;
+				while(v_current < v_length) {
+					var key1 = v_keys[v_current++];
+					var v_key = key1;
+					var v_value = v_h[key1];
+					view.FeedEquipmentValue(equipmentViewPos,vid,v_key,v_value);
+					++vid;
+				}
+			} else {
+				view.HideEquipmentView(equipmentViewPos);
 			}
+			++equipmentViewPos;
 		}
 		var levelUpSystem = bm.wdata.hero.level > 1;
 		view.UpdateVisibilityOfValueView(view.level,levelUpSystem);
@@ -1629,6 +1635,7 @@ View.prototype = {
 		if(numberOfValues == null) {
 			numberOfValues = -1;
 		}
+		this.equipments[pos].parent.set_hidden(false);
 		this.equipments[pos].name.set_text(name);
 		if(equipped) {
 			this.equipments[pos].actionButtons[0].set_text("Unequip");
@@ -1641,6 +1648,9 @@ View.prototype = {
 			var vv = this.CreateValueView(this.equipments[pos].parent,false,"Attr");
 			this.equipments[pos].values.push(vv);
 		}
+	}
+	,HideEquipmentView: function(pos) {
+		this.equipments[pos].parent.set_hidden(true);
 	}
 	,FeedEquipmentValue: function(pos,valuePos,valueName,value) {
 		while(this.equipments[pos].values.length <= valuePos) {
@@ -1660,13 +1670,13 @@ View.prototype = {
 		} else {
 			this.mainComponentB.addComponent(button);
 			var whatever = function(e) {
-				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 306, className : "View", methodName : "AddButton"});
+				haxe_Log.trace("lol",{ fileName : "src/view/View.hx", lineNumber : 311, className : "View", methodName : "AddButton"});
 				haxe_ui_core_Screen.get_instance().messageBox(warningMessage,label,"question",true,function(button) {
-					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 308, className : "View", methodName : "AddButton"});
+					haxe_Log.trace(button == null ? "null" : haxe_ui_containers_dialogs_DialogButton.toString(button),{ fileName : "src/view/View.hx", lineNumber : 313, className : "View", methodName : "AddButton"});
 					if(haxe_ui_containers_dialogs_DialogButton.toString(button).indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 312, className : "View", methodName : "AddButton"});
+					haxe_Log.trace("call back!",{ fileName : "src/view/View.hx", lineNumber : 317, className : "View", methodName : "AddButton"});
 				});
 			};
 			button.set_onClick(whatever);

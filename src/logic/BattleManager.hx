@@ -345,7 +345,8 @@ class BattleManager {
 	}
 
 	public function DiscardEquipment(pos) {
-		wdata.hero.equipment.remove(wdata.hero.equipment[pos]);
+		wdata.hero.equipment[pos] = null;
+		//wdata.hero.equipment.remove(wdata.hero.equipment[pos]);
 		RecalculateAttributes(wdata.hero);
 	}
 
