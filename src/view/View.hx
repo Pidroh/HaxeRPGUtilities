@@ -19,6 +19,10 @@ class View {
 
 	public var level:ValueView;
 	public var xpBar:ValueView;
+	public var speedView:ValueView;
+	public var defView:ValueView;
+	public var mDefView:ValueView;
+
 	public var enemyToAdvance:ValueView;
 	public var areaLabel:ValueView;
 	public var mainComponent:Component;
@@ -140,6 +144,9 @@ class View {
 		var levelContainer = CreateContainer(box, true);
 		level = CreateValueView(levelContainer, false, "Level: ");
 		xpBar = CreateValueView(levelContainer, true, "XP: ");
+		speedView = CreateValueView(levelContainer, false, "Speed: ");
+		defView = CreateValueView(levelContainer, false, "Def: ");
+		mDefView = CreateValueView(levelContainer, false, "mDef: ");
 
 		var battleView = CreateContainer(box, false);
 		battleView.width = 400;

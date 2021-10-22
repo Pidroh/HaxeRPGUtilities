@@ -163,6 +163,9 @@ class Main {
 			ActorToView(bm.wdata.enemy, view.enemyView);
 			view.UpdateValues(view.level, bm.wdata.hero.level, -1);
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
+			view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
+			view.UpdateValues(view.defView, bm.wdata.hero.attributesCalculated["Defense"], -1);
+			view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 

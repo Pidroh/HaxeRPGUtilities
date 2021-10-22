@@ -302,7 +302,8 @@ class BattleManager {
 					break;
 			}
 
-			var damage = attacker.attributesCalculated["Attack"];
+			var damage = attacker.attributesCalculated["Attack"] - defender.attributesBase["Defense"];
+			if(damage < 0) damage = 0;
 
 			defender.attributesCalculated["Life"] -= damage;
 			if (defender.attributesCalculated["Life"] < 0) {
@@ -534,7 +535,7 @@ $baseInfo';
 		var oldLife = actor.attributesCalculated["Life"];
 		var oldSpeedCount = actor.attributesCalculated["SpeedCount"];
 
-		AttributeLogic.Add(actor.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5, "Speed"=>0, "Defense"=>0, "MagicDefense"=>0, "SpeedCount"=>0], actor.level, actor.attributesCalculated);
+		AttributeLogic.Add(actor.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5, "Speed"=>0, "Defense"=>0, "Magic Defense"=>0, "SpeedCount"=>0], actor.level, actor.attributesCalculated);
 		for (es in actor.equipmentSlots) {
 			var e = actor.equipment[es];
 			if (e != null)

@@ -216,7 +216,10 @@ BattleManager.prototype = {
 					break;
 				}
 			}
-			var damage = attacker.attributesCalculated.h["Attack"];
+			var damage = attacker.attributesCalculated.h["Attack"] - defender.attributesBase.h["Defense"];
+			if(damage < 0) {
+				damage = 0;
+			}
 			var _g = defender.attributesCalculated;
 			var v = _g.h["Life"] - damage;
 			_g.h["Life"] = v;
@@ -354,7 +357,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			console.log("src/logic/BattleManager.hx:478:",lu.mode);
+			console.log("src/logic/BattleManager.hx:479:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
@@ -409,7 +412,7 @@ BattleManager.prototype = {
 		_g.h["Life"] = 5;
 		_g.h["Speed"] = 0;
 		_g.h["Defense"] = 0;
-		_g.h["MagicDefense"] = 0;
+		_g.h["Magic Defense"] = 0;
 		_g.h["SpeedCount"] = 0;
 		AttributeLogic.Add(actor1,_g,actor.level,actor.attributesCalculated);
 		var _g = 0;
