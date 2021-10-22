@@ -21,7 +21,7 @@ var BattleManager = function() {
 	stats_h["Attack"] = 1;
 	stats_h["Life"] = 20;
 	stats_h["LifeMax"] = 20;
-	var w = { worldVersion : 401, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats_h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
+	var w = { worldVersion : 401, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats_h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
 	w.playerActions.h["advance"] = { visible : true, enabled : false, timesUsed : 0, mode : 0};
 	w.playerActions.h["retreat"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
 	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
@@ -83,6 +83,8 @@ BattleManager.prototype = {
 		_g.h["Attack"] = 1 + (area - 1);
 		_g.h["Life"] = enemyLife;
 		_g.h["LifeMax"] = enemyLife;
+		_g.h["Speed"] = 20;
+		_g.h["SpeedCount"] = 0;
 		var stats2 = _g;
 		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
 	}
@@ -157,6 +159,7 @@ BattleManager.prototype = {
 				attackHappen = false;
 				var v = enemy.attributesCalculated.h["LifeMax"];
 				enemy.attributesCalculated.h["Life"] = v;
+				enemy.attributesCalculated.h["SpeedCount"] = 0;
 			}
 		}
 		if(this.PlayerFightMode() == false || enemy == null) {
@@ -176,10 +179,42 @@ BattleManager.prototype = {
 			var gEvent = this.AddEvent(EventTypes.ActorAttack);
 			var attacker = hero;
 			var defender = enemy;
-			var which = 0;
-			if(this.wdata.turn) {
-				attacker = enemy;
-				defender = hero;
+			var decided = false;
+			var _g = 0;
+			while(_g < 100) {
+				var i = _g++;
+				var bActor = hero;
+				var _g1 = bActor.attributesCalculated;
+				var v = _g1.h["SpeedCount"] + bActor.attributesCalculated.h["Speed"];
+				_g1.h["SpeedCount"] = v;
+				var sc = bActor.attributesCalculated.h["SpeedCount"];
+				console.log("src/logic/BattleManager.hx:288:","" + 0 + " speed count " + sc);
+				if(decided == false) {
+					if(bActor.attributesCalculated.h["SpeedCount"] > 100) {
+						var v1 = bActor.attributesCalculated.h["SpeedCount"] - 100;
+						bActor.attributesCalculated.h["SpeedCount"] = v1;
+						decided = true;
+					}
+				}
+				var bActor1 = hero;
+				bActor1 = enemy;
+				var _g2 = bActor1.attributesCalculated;
+				var v2 = _g2.h["SpeedCount"] + bActor1.attributesCalculated.h["Speed"];
+				_g2.h["SpeedCount"] = v2;
+				var sc1 = bActor1.attributesCalculated.h["SpeedCount"];
+				console.log("src/logic/BattleManager.hx:288:","" + 1 + " speed count " + sc1);
+				if(decided == false) {
+					if(bActor1.attributesCalculated.h["SpeedCount"] > 100) {
+						var v3 = bActor1.attributesCalculated.h["SpeedCount"] - 100;
+						bActor1.attributesCalculated.h["SpeedCount"] = v3;
+						attacker = enemy;
+						defender = hero;
+						decided = true;
+					}
+				}
+				if(decided) {
+					break;
+				}
 			}
 			var damage = attacker.attributesCalculated.h["Attack"];
 			var _g = defender.attributesCalculated;
@@ -248,7 +283,6 @@ BattleManager.prototype = {
 				this.wdata.playerTimesKilled++;
 			}
 		}
-		this.wdata.turn = !this.wdata.turn;
 		return "";
 	}
 	,DiscardEquipment: function(pos) {
@@ -320,7 +354,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			console.log("src/logic/BattleManager.hx:465:",lu.mode);
+			console.log("src/logic/BattleManager.hx:478:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
@@ -367,11 +401,16 @@ BattleManager.prototype = {
 	}
 	,RecalculateAttributes: function(actor) {
 		var oldLife = actor.attributesCalculated.h["Life"];
+		var oldSpeedCount = actor.attributesCalculated.h["SpeedCount"];
 		var actor1 = actor.attributesBase;
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 1;
 		_g.h["LifeMax"] = 5;
 		_g.h["Life"] = 5;
+		_g.h["Speed"] = 0;
+		_g.h["Defense"] = 0;
+		_g.h["MagicDefense"] = 0;
+		_g.h["SpeedCount"] = 0;
 		AttributeLogic.Add(actor1,_g,actor.level,actor.attributesCalculated);
 		var _g = 0;
 		var _g1 = actor.equipmentSlots;
@@ -384,6 +423,7 @@ BattleManager.prototype = {
 			}
 		}
 		actor.attributesCalculated.h["Life"] = oldLife;
+		actor.attributesCalculated.h["SpeedCount"] = oldSpeedCount;
 	}
 	,AdvanceArea: function() {
 		this.ChangeBattleArea(this.wdata.battleArea + 1);

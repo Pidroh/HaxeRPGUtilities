@@ -111,7 +111,6 @@ typedef WorldData = {
 	var worldVersion :Int;
 	var hero:Actor;
 	var enemy:Actor;
-	var turn:Bool;
 	var timeCount:Float;
 	var battleArea:Int;
 	var playerTimesKilled:Int;
