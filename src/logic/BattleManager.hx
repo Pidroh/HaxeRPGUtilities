@@ -302,7 +302,7 @@ class BattleManager {
 					break;
 			}
 
-			var damage = attacker.attributesCalculated["Attack"] - defender.attributesBase["Defense"];
+			var damage = attacker.attributesCalculated["Attack"] - defender.attributesCalculated["Defense"];
 			if(damage < 0) damage = 0;
 
 			defender.attributesCalculated["Life"] -= damage;
@@ -327,18 +327,39 @@ class BattleManager {
 					if (equipType == 0) {
 						var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
 						e = {type: 0, requiredAttributes: null, attributes: ["Attack" => attackBonus]};
-						if (random.randomInt(0, 100) < 20) {
-							var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
+						if (random.randomInt(0, 100) < 15) {
+							var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] + 2));
 							e.attributes["LifeMax"] = lifeBonus;
+						}
+						if (random.randomInt(0, 100) < 15) {
+							var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 8 + 2));
+							e.attributes["Speed"] = bonus;
+						}
+						if (random.randomInt(0, 100) < 15) {
+							var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Defense"] / 8 + 2));
+							e.attributes["Defense"] = bonus;
 						}
 					}
 					// armor
 					if (equipType == 1) {
-						var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2)) * 3;
-						e = {type: 1, requiredAttributes: null, attributes: ["LifeMax" => lifeBonus]};
+						var armorType = random.randomInt(0, 1);
+						var mainBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
+						var mainBonusType = "LifeMax";
+						if(armorType == 0){
+							mainBonus *= 3;
+						}
+						if(armorType == 1){
+							mainBonusType = "Defense";
+						}
+						e = {type: 1, requiredAttributes: null, attributes: [mainBonusType => mainBonus]};
+
 						if (random.randomInt(0, 100) < 20) {
-							var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 4 + 2));
-							e.attributes["Attack"] = attackBonus;
+							var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 4 + 2));
+							e.attributes["Attack"] = bonus;
+						}
+						if (random.randomInt(0, 100) < 20) {
+							var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 8 + 2));
+							e.attributes["Speed"] = bonus;
 						}
 					}
 

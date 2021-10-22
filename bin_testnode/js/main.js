@@ -218,7 +218,7 @@ BattleManager.prototype = {
 					break;
 				}
 			}
-			var damage = attacker.attributesCalculated.h["Attack"] - defender.attributesBase.h["Defense"];
+			var damage = attacker.attributesCalculated.h["Attack"] - defender.attributesCalculated.h["Defense"];
 			if(damage < 0) {
 				damage = 0;
 			}
@@ -244,19 +244,39 @@ BattleManager.prototype = {
 						var _g = new haxe_ds_StringMap();
 						_g.h["Attack"] = attackBonus;
 						e = { type : 0, requiredAttributes : null, attributes : _g};
-						if(this.random.randomInt(0,100) < 20) {
-							var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
+						if(this.random.randomInt(0,100) < 15) {
+							var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] + 2 | 0);
 							e.attributes.h["LifeMax"] = lifeBonus;
+						}
+						if(this.random.randomInt(0,100) < 15) {
+							var bonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 8 + 2 | 0);
+							e.attributes.h["Speed"] = bonus;
+						}
+						if(this.random.randomInt(0,100) < 15) {
+							var bonus = this.random.randomInt(1,enemy.attributesCalculated.h["Defense"] / 8 + 2 | 0);
+							e.attributes.h["Defense"] = bonus;
 						}
 					}
 					if(equipType == 1) {
-						var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0) * 3;
+						var armorType = this.random.randomInt(0,1);
+						var mainBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
+						var mainBonusType = "LifeMax";
+						if(armorType == 0) {
+							mainBonus *= 3;
+						}
+						if(armorType == 1) {
+							mainBonusType = "Defense";
+						}
 						var _g = new haxe_ds_StringMap();
-						_g.h["LifeMax"] = lifeBonus;
+						_g.h[mainBonusType] = mainBonus;
 						e = { type : 1, requiredAttributes : null, attributes : _g};
 						if(this.random.randomInt(0,100) < 20) {
-							var attackBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 4 + 2 | 0);
-							e.attributes.h["Attack"] = attackBonus;
+							var bonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 4 + 2 | 0);
+							e.attributes.h["Attack"] = bonus;
+						}
+						if(this.random.randomInt(0,100) < 20) {
+							var bonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 8 + 2 | 0);
+							e.attributes.h["Speed"] = bonus;
 						}
 					}
 					this.wdata.hero.equipment.push(e);
@@ -359,7 +379,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			console.log("src/logic/BattleManager.hx:479:",lu.mode);
+			console.log("src/logic/BattleManager.hx:500:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
