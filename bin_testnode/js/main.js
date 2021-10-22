@@ -85,6 +85,8 @@ BattleManager.prototype = {
 		_g.h["LifeMax"] = enemyLife;
 		_g.h["Speed"] = 20;
 		_g.h["SpeedCount"] = 0;
+		_g.h["Defense"] = 0;
+		_g.h["Magic Defense"] = 0;
 		var stats2 = _g;
 		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
 	}
