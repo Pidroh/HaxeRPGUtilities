@@ -17,16 +17,11 @@ var BattleManager = function() {
 	this.canRetreat = false;
 	this.dirty = false;
 	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 60};
-	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 1;
-	_g.h["Life"] = 20;
-	_g.h["LifeMax"] = 20;
-	var stats = _g;
-	var stats2_h = Object.create(null);
-	stats2_h["Attack"] = 2;
-	stats2_h["Life"] = 6;
-	stats2_h["LifeMax"] = 6;
-	var w = { worldVersion : 301, hero : { level : 1, attributesBase : stats, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats.h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
+	var stats_h = Object.create(null);
+	stats_h["Attack"] = 1;
+	stats_h["Life"] = 20;
+	stats_h["LifeMax"] = 20;
+	var w = { worldVersion : 401, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats_h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, turn : false, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
 	w.playerActions.h["advance"] = { visible : true, enabled : false, timesUsed : 0, mode : 0};
 	w.playerActions.h["retreat"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
 	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
@@ -112,6 +107,16 @@ BattleManager.prototype = {
 		addAction("repeat",createAction(),function(a) {
 			_gthis.wdata.killedInArea[_gthis.wdata.battleArea] = 0;
 		});
+		var _g = new haxe_ds_StringMap();
+		_g.h["Life"] = 20;
+		_g.h["LifeMax"] = 20;
+		_g.h["Speed"] = 20;
+		_g.h["SpeedCount"] = 0;
+		_g.h["Attack"] = 1;
+		_g.h["Defense"] = 0;
+		_g.h["Magic Attack"] = 0;
+		_g.h["Magic Defense"] = 0;
+		this.wdata.hero.attributesBase = _g;
 		var valueXP = 0;
 		if(this.wdata.hero.xp != null) {
 			valueXP = this.wdata.hero.xp.value;
@@ -129,6 +134,7 @@ BattleManager.prototype = {
 		if(this.wdata.hero.equipmentSlots == null) {
 			this.wdata.hero.equipmentSlots = [-1,-1,-1];
 		}
+		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,advance: function() {
 		var hero = this.wdata.hero;
@@ -314,7 +320,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			console.log("src/logic/BattleManager.hx:447:",lu.mode);
+			console.log("src/logic/BattleManager.hx:465:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
@@ -356,8 +362,11 @@ BattleManager.prototype = {
 		this.AddEvent(EventTypes.ActorLevelUp);
 		this.RecalculateAttributes(hero);
 		ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
+		var v = hero.attributesCalculated.h["LifeMax"];
+		hero.attributesCalculated.h["Life"] = v;
 	}
 	,RecalculateAttributes: function(actor) {
+		var oldLife = actor.attributesCalculated.h["Life"];
 		var actor1 = actor.attributesBase;
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 1;
@@ -374,6 +383,7 @@ BattleManager.prototype = {
 				AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
 			}
 		}
+		actor.attributesCalculated.h["Life"] = oldLife;
 	}
 	,AdvanceArea: function() {
 		this.ChangeBattleArea(this.wdata.battleArea + 1);
@@ -607,14 +617,16 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:120:","  _____ ");
 		console.log("test/MainTest.hx:121:","  _____ ");
 		console.log("test/MainTest.hx:122:","  _____ ");
-		console.log("test/MainTest.hx:123:",json);
-		console.log("test/MainTest.hx:124:","  _____ ");
+		console.log("test/MainTest.hx:123:","  _____ ");
+		console.log("test/MainTest.hx:124:",json);
 		console.log("test/MainTest.hx:125:","  _____ ");
 		console.log("test/MainTest.hx:126:","  _____ ");
-		console.log("test/MainTest.hx:127:",json2);
+		console.log("test/MainTest.hx:127:","  _____ ");
+		console.log("test/MainTest.hx:128:",json2);
+		js_node_Fs.writeFileSync("error/json.json",json);
+		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
 };
 Math.__name__ = true;

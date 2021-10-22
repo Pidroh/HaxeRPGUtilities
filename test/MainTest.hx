@@ -117,6 +117,7 @@ class MainTest {
 			}
 			if (json != json2) {
 				Sys.println("ERROR: Data corrupted when loading");
+				
 				trace("  _____ ");
 				trace("  _____ ");
 				trace("  _____ ");
@@ -125,6 +126,9 @@ class MainTest {
 				trace("  _____ ");
 				trace("  _____ ");
 				trace(json2);
+				
+				sys.io.File.saveContent('error/json.json',json);
+				sys.io.File.saveContent('error/json2.json',json2);
 				//Sys.getChar(false);
 			}
 		}

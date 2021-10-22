@@ -112,13 +112,13 @@ class BattleManager {
 		};
 
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20];
-		var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
+		//var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
 		var w:WorldData = {
-			worldVersion: 301,
+			worldVersion: 401,
 			hero: {
 				level: 1,
-				attributesBase: stats,
+				attributesBase: null,
 				equipmentSlots: null,
 				equipment: null,
 				xp: null,
@@ -201,9 +201,13 @@ class BattleManager {
 			wdata.killedInArea[wdata.battleArea] = 0;
 		});
 
-
 		
-
+		
+		wdata.hero.attributesBase = 
+		["Life" => 20, "LifeMax" => 20, 
+		"Speed" => 20, "SpeedCount" => 0, 
+		"Attack" => 1, "Defense"=> 0, 
+		"Magic Attack" => 0, "Magic Defense" => 0];
 		
 		var valueXP = 0;
 		if (wdata.hero.xp != null) {
@@ -227,6 +231,7 @@ class BattleManager {
 		if (wdata.hero.equipmentSlots == null) {
 			wdata.hero.equipmentSlots = [-1, -1, -1];
 		}
+		RecalculateAttributes(wdata.hero);
 	}
 
 	public function advance() {
@@ -507,15 +512,22 @@ $baseInfo';
 		AddEvent(ActorLevelUp);
 		RecalculateAttributes(hero);
 		ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
+
+		hero.attributesCalculated["Life"] = hero.attributesCalculated["LifeMax"];
 	}
 
 	public function RecalculateAttributes(actor:Actor) {
+		var oldLife = actor.attributesCalculated["Life"];
+
 		AttributeLogic.Add(actor.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5], actor.level, actor.attributesCalculated);
 		for (es in actor.equipmentSlots) {
 			var e = actor.equipment[es];
 			if (e != null)
 				AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
 		}
+
+		actor.attributesCalculated["Life"] = oldLife;
+		
 	}
 
 	public function AdvanceArea() {
