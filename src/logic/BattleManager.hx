@@ -88,7 +88,7 @@ class BattleManager {
 
 		var enemyLife = initialLifeEnemy + (area - 1) * (initialLifeEnemy);
 
-		var stats2 = ["Attack" => 1 + (area - 1) * 1, "Life" => enemyLife, "LifeMax" => enemyLife, "Speed" => 20, "SpeedCount" => 0];
+		var stats2 = ["Attack" => 1 + (area - 1) * 1, "Life" => enemyLife, "LifeMax" => enemyLife, "Speed" => 20, "SpeedCount" => 0, "Defense" => 0, "Magic Defense" => 0];
 		wdata.enemy = {
 			level: 1 + area,
 			attributesBase: stats2,
