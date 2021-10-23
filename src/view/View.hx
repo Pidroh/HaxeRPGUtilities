@@ -282,6 +282,7 @@ class View {
 			equipments[pos].actionButtons[0].text = "Equip";
 			equipments[pos].parent.borderSize = 1;
 		}
+		equipments[pos].actionButtons[1].hidden = equipped == true;
 		while(equipments[pos].values.length < numberOfValues){
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
