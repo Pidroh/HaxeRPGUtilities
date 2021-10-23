@@ -19,10 +19,13 @@ class BattleManager {
 	public var canLevelUp = false;
 	public var areaBonus:ScalingResource;
 
+	public var enemySheets = new Array<ActorSheet>();
+
 	var balancing:Balancing;
 	var timePeriod = 0.6;
 	var equipDropChance = 30;
 	var random = new Random();
+	
 
 	public var events = new Array<GameEvent>();
 
@@ -108,7 +111,7 @@ class BattleManager {
 			areaBonusXPPercentOfFirstLevelUp: 60
 		};
 
-		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20];
+		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed"=>20, "SpeedCount"=>0];
 		// var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
 		var w:WorldData = {
@@ -119,7 +122,7 @@ class BattleManager {
 				equipmentSlots: null,
 				equipment: null,
 				xp: null,
-				attributesCalculated: stats.copy(),
+				attributesCalculated: stats,
 				reference: new ActorReference(0, 0),
 			},
 			enemy: null,

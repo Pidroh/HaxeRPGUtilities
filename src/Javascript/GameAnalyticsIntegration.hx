@@ -12,7 +12,7 @@ class GameAnalyticsIntegration{
             gameanalytics.GameAnalytics.initialize({0},{1}); 
             
         }
-        ', gameKey, secretKey, "0.3.1");
+        ', gameKey, secretKey, "0.4.1dev");
     }
 
     public static function SendDesignEvent(eventName:String, value:Int){

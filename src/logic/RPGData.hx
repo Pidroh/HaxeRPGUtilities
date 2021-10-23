@@ -52,6 +52,13 @@ class AttributeLogic {
 	}
 }
 
+typedef ActorSheet = {
+	var speciesMultiplier:LevelGrowth;
+	var speciesAdd:Map<String, Int>;
+	var speciesLevelStats:LevelGrowth;
+
+}
+
 typedef Actor = {
 	var level:Int;
 	var xp:ScalingResource;

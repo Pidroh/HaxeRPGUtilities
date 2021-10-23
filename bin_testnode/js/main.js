@@ -12,16 +12,20 @@ var BattleManager = function() {
 	this.random = new seedyrng_Random();
 	this.equipDropChance = 30;
 	this.timePeriod = 0.6;
+	this.enemySheets = [];
 	this.canLevelUp = false;
 	this.canAdvance = false;
 	this.canRetreat = false;
 	this.dirty = false;
 	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 60};
-	var stats_h = Object.create(null);
-	stats_h["Attack"] = 1;
-	stats_h["Life"] = 20;
-	stats_h["LifeMax"] = 20;
-	var w = { worldVersion : 401, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : haxe_ds_StringMap.createCopy(stats_h), reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1;
+	_g.h["Life"] = 20;
+	_g.h["LifeMax"] = 20;
+	_g.h["Speed"] = 20;
+	_g.h["SpeedCount"] = 0;
+	var stats = _g;
+	var w = { worldVersion : 401, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
 	w.playerActions.h["advance"] = { visible : true, enabled : false, timesUsed : 0, mode : 0};
 	w.playerActions.h["retreat"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
 	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
@@ -190,7 +194,7 @@ BattleManager.prototype = {
 				var v = _g1.h["SpeedCount"] + bActor.attributesCalculated.h["Speed"];
 				_g1.h["SpeedCount"] = v;
 				var sc = bActor.attributesCalculated.h["SpeedCount"];
-				console.log("src/logic/BattleManager.hx:288:","" + 0 + " speed count " + sc);
+				console.log("src/logic/BattleManager.hx:291:","" + 0 + " speed count " + sc);
 				if(decided == false) {
 					if(bActor.attributesCalculated.h["SpeedCount"] > 100) {
 						var v1 = bActor.attributesCalculated.h["SpeedCount"] - 100;
@@ -204,7 +208,7 @@ BattleManager.prototype = {
 				var v2 = _g2.h["SpeedCount"] + bActor1.attributesCalculated.h["Speed"];
 				_g2.h["SpeedCount"] = v2;
 				var sc1 = bActor1.attributesCalculated.h["SpeedCount"];
-				console.log("src/logic/BattleManager.hx:288:","" + 1 + " speed count " + sc1);
+				console.log("src/logic/BattleManager.hx:291:","" + 1 + " speed count " + sc1);
 				if(decided == false) {
 					if(bActor1.attributesCalculated.h["SpeedCount"] > 100) {
 						var v3 = bActor1.attributesCalculated.h["SpeedCount"] - 100;
@@ -379,7 +383,7 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			console.log("src/logic/BattleManager.hx:500:",lu.mode);
+			console.log("src/logic/BattleManager.hx:503:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
