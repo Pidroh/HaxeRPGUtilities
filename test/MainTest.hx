@@ -4,6 +4,10 @@ import RPGData;
 class MainTest {
 	static function main() {
 		{
+			Sys.println("resource load text");
+			Sys.println(haxe.Resource.getString("storyjson"));
+		}
+		{
 			Sys.println("Save legacy test");
 			for(file in sys.FileSystem.readDirectory("saves/")){
 				var path = haxe.io.Path.join(["saves/", file]);

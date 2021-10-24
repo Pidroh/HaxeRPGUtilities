@@ -3,6 +3,7 @@
 -cp src/view
 -cp src/procedural
 -cp src/javascript
+--resource assets/story.json@storyjson
 -main Main
 --library seedyrng
 

@@ -1,5 +1,6 @@
 -lib hxnodejs
 -cp test
+--resource assets/story.json@storyjson
 -p src/logic
 -p src/view
 -p src
