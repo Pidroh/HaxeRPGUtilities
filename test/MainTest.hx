@@ -8,7 +8,7 @@ class MainTest {
 			Sys.println("resource load text");
 			var sj = haxe.Resource.getString("storyjson");
 			Sys.println(sj);
-			Json.parse(sj);
+			Json.parse(sj);	
 		}
 		{
 			Sys.println("Save legacy test");

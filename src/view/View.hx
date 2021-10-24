@@ -152,7 +152,7 @@ class View {
 		battleView.width = 400;
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
-
+		
 		{
 
 			equipTab = new ContinuousHBox();
@@ -169,6 +169,13 @@ class View {
 			//scroll.percentWidth = 100;
 			scroll.width = 640;
 			//tabMaster.addComponent(equipTab);
+		}
+		{
+			var storyTab = new ContinuousHBox();
+			storyTab.width = 600;
+			storyTab.height = 300;
+			storyTab.text = "Story";
+			tabMaster.addComponent(storyTab);
 		}
 	}
 
