@@ -1,11 +1,14 @@
 import sys.io.File;
 import RPGData;
+import haxe.Json;
 
 class MainTest {
 	static function main() {
 		{
 			Sys.println("resource load text");
-			Sys.println(haxe.Resource.getString("storyjson"));
+			var sj = haxe.Resource.getString("storyjson");
+			Sys.println(sj);
+			Json.parse(sj);
 		}
 		{
 			Sys.println("Save legacy test");

@@ -194,7 +194,6 @@ BattleManager.prototype = {
 				var v = _g1.h["SpeedCount"] + bActor.attributesCalculated.h["Speed"];
 				_g1.h["SpeedCount"] = v;
 				var sc = bActor.attributesCalculated.h["SpeedCount"];
-				console.log("src/logic/BattleManager.hx:291:","" + 0 + " speed count " + sc);
 				if(decided == false) {
 					if(bActor.attributesCalculated.h["SpeedCount"] > 100) {
 						var v1 = bActor.attributesCalculated.h["SpeedCount"] - 100;
@@ -208,7 +207,6 @@ BattleManager.prototype = {
 				var v2 = _g2.h["SpeedCount"] + bActor1.attributesCalculated.h["Speed"];
 				_g2.h["SpeedCount"] = v2;
 				var sc1 = bActor1.attributesCalculated.h["SpeedCount"];
-				console.log("src/logic/BattleManager.hx:291:","" + 1 + " speed count " + sc1);
 				if(decided == false) {
 					if(bActor1.attributesCalculated.h["SpeedCount"] > 100) {
 						var v3 = bActor1.attributesCalculated.h["SpeedCount"] - 100;
@@ -383,7 +381,6 @@ BattleManager.prototype = {
 		if(this.wdata.sleeping == true) {
 			lu.mode = 1;
 			lu.enabled = true;
-			console.log("src/logic/BattleManager.hx:503:",lu.mode);
 		} else {
 			lu.mode = 0;
 			lu.enabled = this.wdata.hero.attributesCalculated.h["Life"] < this.wdata.hero.attributesCalculated.h["LifeMax"] && this.wdata.recovering == false;
@@ -518,9 +515,10 @@ MainTest.__name__ = true;
 MainTest.main = function() {
 	process.stdout.write("resource load text");
 	process.stdout.write("\n");
-	var v = haxe_Resource.getString("storyjson");
-	process.stdout.write(Std.string(v));
+	var sj = haxe_Resource.getString("storyjson");
+	process.stdout.write(Std.string(sj));
 	process.stdout.write("\n");
+	JSON.parse(sj);
 	process.stdout.write("Save legacy test");
 	process.stdout.write("\n");
 	var _g = 0;
@@ -703,14 +701,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:125:","  _____ ");
-		console.log("test/MainTest.hx:126:","  _____ ");
-		console.log("test/MainTest.hx:127:","  _____ ");
-		console.log("test/MainTest.hx:128:",json);
+		console.log("test/MainTest.hx:128:","  _____ ");
 		console.log("test/MainTest.hx:129:","  _____ ");
 		console.log("test/MainTest.hx:130:","  _____ ");
-		console.log("test/MainTest.hx:131:","  _____ ");
-		console.log("test/MainTest.hx:132:",json2);
+		console.log("test/MainTest.hx:131:",json);
+		console.log("test/MainTest.hx:132:","  _____ ");
+		console.log("test/MainTest.hx:133:","  _____ ");
+		console.log("test/MainTest.hx:134:","  _____ ");
+		console.log("test/MainTest.hx:135:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}

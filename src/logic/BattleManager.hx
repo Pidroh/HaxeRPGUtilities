@@ -288,7 +288,7 @@ class BattleManager {
 						bActor = enemy;
 					bActor.attributesCalculated["SpeedCount"] += bActor.attributesCalculated["Speed"];
 					var sc = bActor.attributesCalculated["SpeedCount"];
-					trace('$battleActor speed count $sc');
+					//trace('$battleActor speed count $sc');
 					if(decided == false){
 						if (bActor.attributesCalculated["SpeedCount"] > 100) {
 							bActor.attributesCalculated["SpeedCount"] = bActor.attributesCalculated["SpeedCount"] - 100;
@@ -500,7 +500,7 @@ $baseInfo';
 			if (wdata.sleeping == true) {
 				lu.mode = 1;
 				lu.enabled = true;
-				trace(lu.mode);
+				//trace(lu.mode);
 			} else {
 				lu.mode = 0;
 				// sleep is okay even when recovered for faster active play
