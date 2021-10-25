@@ -1,0 +1,6 @@
+-lib hxnodejs
+-cp src
+-cp src/Generator
+-cp src/storydata
+-main Transpiler
+-js bin/js/main.js

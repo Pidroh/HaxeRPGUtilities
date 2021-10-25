@@ -1870,7 +1870,7 @@ if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : 
 if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c < 0x10000 ? String.fromCharCode(c) : String.fromCharCode((c>>10)+0xD7C0)+String.fromCharCode((c&0x3FF)+0xDC00); }
 String.__name__ = true;
 Array.__name__ = true;
-haxe_Resource.content = [{ name : "storyjson", data : "W3siYm9keSI6IiBXaGVyZSBhcmUgeW91IGdvaW5nPyIsInNwZWFrZXIiOiJNb20ifSx7ImJvZHkiOiIgS2lsbCBzb21lIG1vbnN0ZXJzLCBtb20iLCJzcGVha2VyIjoiWW91In0seyJib2R5IjoiIFRoaXMga2lkLi4uIiwic3BlYWtlciI6Ik1vbSJ9XQ"}];
+haxe_Resource.content = [{ name : "storyjson", data : "W1t7ImJvZHkiOiIgV2hlcmUgYXJlIHlvdSBnb2luZz8iLCJzcGVha2VyIjoiTW9tIn0seyJib2R5IjoiIEtpbGwgc29tZSBtb25zdGVycywgbW9tIiwic3BlYWtlciI6IllvdSJ9LHsiYm9keSI6IiBUaGlzIGtpZC4uLiIsInNwZWFrZXIiOiJNb20ifV1d"}];
 js_Boot.__toStr = ({ }).toString;
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);

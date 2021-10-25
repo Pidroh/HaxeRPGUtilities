@@ -1,3 +1,4 @@
+import StoryModel.StoryRuntimeData;
 import js.html.FileReader;
 import js.html.InputElement;
 import haxe.ui.containers.Box;
@@ -24,6 +25,7 @@ import ConfirmationView;
 import Library;
 import GameAnalyticsIntegration;
 import FileReader;
+import StoryControl;
 
 class Main {
 	static var hero:Actor;
@@ -33,7 +35,6 @@ class Main {
 
 	static function main() {
 		Toolkit.init();
-
 		var key = "privacymemory";
 
 		var privacyAcceptance:String = Browser.getLocalStorage().getItem(key);
@@ -67,45 +68,57 @@ class Main {
 		if (privacyView != null) {
 			Screen.instance.removeComponent(privacyView);
 		}
+
 		var bm:BattleManager = new BattleManager();
 		var enemyLife = 20;
 		var view:View = new View();
-		
-		//goblin
-		bm.enemySheets.push(
-			{speciesMultiplier: null, speciesLevelStats: null, speciesAdd: null}
-		);
-		//wolf
+
+		var storyRuntime:StoryRuntimeData = {
+			currentStoryProgression: null,
+			toShow: null,
+			currentCutsceneIndex: -1,
+			cutscene: null,
+			cutscenes: null,
+			persistence: {
+				currentStoryId: null,
+				progressionData: []
+			}
+		}
+		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
+
+		// goblin
+		bm.enemySheets.push({speciesMultiplier: null, speciesLevelStats: null, speciesAdd: null});
+		// wolf
 		bm.enemySheets.push({
-			speciesMultiplier:{
-				attributesBase: ["Attack" => 0.6, "Speed"=>2, "LifeMax"=>0.5]
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 0.6, "Speed" => 2, "LifeMax" => 0.5]
 			},
 			speciesAdd: null,
 			speciesLevelStats: null
 		});
-		//Tonberry
+		// Tonberry
 		bm.enemySheets.push({
-			speciesMultiplier:{
-				attributesBase: ["Attack" => 4, "Speed"=>0.1, "LifeMax"=>1.5]
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 4, "Speed" => 0.1, "LifeMax" => 1.5]
 			},
 			speciesAdd: null,
 			speciesLevelStats: null
 		});
-		//Turtle
+		// Turtle
 		bm.enemySheets.push({
-			speciesMultiplier:{
-				attributesBase: ["Attack" => 1.3, "Speed"=>0.15, "LifeMax"=>2.5]
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 1.3, "Speed" => 0.15, "LifeMax" => 2.5]
 			},
 			speciesAdd: ["Defense" => 4],
-			speciesLevelStats: {attributesBase: ["Defense"=>1]}
+			speciesLevelStats: {attributesBase: ["Defense" => 1]}
 		});
-		//Cactuar
+		// Cactuar
 		bm.enemySheets.push({
-			speciesMultiplier:{
-				attributesBase: ["Attack" => 1.2, "Speed"=>1.1, "LifeMax"=>1.7]
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 1.2, "Speed" => 1.1, "LifeMax" => 1.7]
 			},
 			speciesAdd: ["Piercing" => 1],
-			speciesLevelStats: {attributesBase: ["Defense"=>1]}
+			speciesLevelStats: {attributesBase: ["Defense" => 1]}
 		});
 
 		var eventShown = 0;
@@ -254,8 +267,6 @@ class Main {
 			var levelUpSystem = bm.wdata.hero.level > 1;
 			view.UpdateVisibilityOfValueView(view.level, levelUpSystem);
 			view.UpdateVisibilityOfValueView(view.xpBar, true);
-
-			
 
 			while (bm.events.length > eventShown) {
 				var e = bm.events[eventShown];

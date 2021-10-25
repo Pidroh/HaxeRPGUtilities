@@ -4,6 +4,7 @@
 -p src/logic
 -p src/view
 -p src
+-cp YarnSpinnerUtil/src/storydata
 -main MainTest
 --library seedyrng
 

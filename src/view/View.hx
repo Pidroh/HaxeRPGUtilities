@@ -14,6 +14,10 @@ import haxe.ui.components.Label;
 import haxe.ui.components.HorizontalProgress;
 
 class View {
+	public static final storyAction_Start = 0;
+	public static final storyAction_Continue = 1;
+	public static final storyAction_AdvanceMessage = 2;
+
 	public var heroView:ActorView;
 	public var enemyView:ActorView;
 
@@ -33,16 +37,23 @@ class View {
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
 	public var enemy1 = 'slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog'.split('@');
 
-	public var equipmentMainAction : (Int,Int)->Void;
+	public var equipmentMainAction:(Int, Int) -> Void;
+	public var storyMainAction:(Int, Int) -> Void;
 
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
 	var equipments = new Array<EquipmentView>();
-	var saveDataDownload : Label;
+	var saveDataDownload:Label;
+
+	public function StoryButtonAmount(amount : Int){
+	}
+
+	public function StoryButtonFeed(buttonPos : Int, label : String, cleared : Bool){
+
+	}
 
 	public function new() {
 		{
-
 			var boxParentP = new Box();
 			boxParentP.percentHeight = 100;
 			boxParentP.verticalAlign = "bottom";
@@ -59,24 +70,23 @@ class View {
 				boxParentP.addComponent(title);
 				title.height = 40;
 			}
-			
+
 			{
 				var title = new Label();
 				title.width = 400;
 				title.horizontalAlign = "right";
 				title.textAlign = "right";
-				//title.paddingRight = 20;
+				// title.paddingRight = 20;
 				title.paddingLeft = 20;
 				title.paddingTop = 50;
 				title.height = 20;
-				
-				//title.text = "Import save data";
+
+				// title.text = "Import save data";
 				title.htmlText = "Import Save: <input id='import__' type='file'></input>";
 
 				boxParentP.addComponent(title);
-				
 			}
-			
+
 			{
 				var title = new Label();
 				title.htmlText = "Alpha 0.03F. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
@@ -88,7 +98,7 @@ class View {
 
 				boxParentP.addComponent(title);
 			}
-			
+
 			{
 				var title = new Label();
 				title.percentWidth = 100;
@@ -97,13 +107,12 @@ class View {
 				title.paddingLeft = 20;
 				title.paddingTop = 30;
 				title.height = 10;
-				
+
 				title.text = "Export save data";
 				saveDataDownload = title;
 
 				boxParentP.addComponent(title);
 			}
-			
 		}
 
 		var tabMaster = new TabView();
@@ -114,7 +123,7 @@ class View {
 
 		var battleParent = new HBox();
 		battleParent.percentHeight = 100;
-		//mainComponent.addComponent(boxParent);
+		// mainComponent.addComponent(boxParent);
 		tabMaster.addComponent(battleParent);
 		battleParent.text = "Battle";
 		mainComponentB = battleParent;
@@ -129,7 +138,7 @@ class View {
 		// boxParent.addComponent(buttonBox);
 
 		var scroll = CreateScrollable(battleParent);
-		
+
 		scroll.width = 200;
 		scroll.percentHeight = 100;
 		var logContainer = CreateContainer(scroll, true);
@@ -152,23 +161,22 @@ class View {
 		battleView.width = 400;
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
-		
-		{
 
+		{
 			equipTab = new ContinuousHBox();
-			//equipTab.percentWidth = 100;
+			// equipTab.percentWidth = 100;
 			equipTab.width = 600;
-			//equipTab.height = 300;
-		
+			// equipTab.height = 300;
+
 			equipTab.text = "Equipment";
 			var scroll = CreateScrollable(tabMaster);
 			scroll.height = 300;
-			
+
 			scroll.text = "Equipment";
 			scroll.addComponent(equipTab);
-			//scroll.percentWidth = 100;
+			// scroll.percentWidth = 100;
 			scroll.width = 640;
-			//tabMaster.addComponent(equipTab);
+			// tabMaster.addComponent(equipTab);
 		}
 		{
 			var storyTab = new ContinuousHBox();
@@ -179,25 +187,23 @@ class View {
 		}
 	}
 
-	public function FeedSave(saveDataContent : String){
-
-
-		//saveDataContent = StringTools.htmlEscape(saveDataContent);
-		//saveDataContent = "ssssss";
+	public function FeedSave(saveDataContent:String) {
+		// saveDataContent = StringTools.htmlEscape(saveDataContent);
+		// saveDataContent = "ssssss";
 		saveDataDownload.htmlText = "<a href='data:text/plain;charset=utf-8,";
 		saveDataDownload.htmlText += saveDataContent;
 		saveDataDownload.htmlText += "' download='savedata.json'>Export save data</a>";
 
-		//title.html = "";
-				/**
-<a href="data:text/plain;charset=utf-8,blablabla" download="savedata.json">
-  DSADSADASD
-</a>					
-				**/
+		// title.html = "";
+		/**
+			<a href="data:text/plain;charset=utf-8,blablabla" download="savedata.json">
+			DSADSADASD
+			</a>					
+		**/
 	}
 
-	public function CreateScrollable(parent:Component){
-		var container : Component;
+	public function CreateScrollable(parent:Component) {
+		var container:Component;
 		container = new ScrollView();
 		parent.addComponent(container);
 		return container;
@@ -229,10 +235,10 @@ class View {
 		logText.htmlText = text + "\n\n" + logText.htmlText;
 	}
 
-	public function EquipmentAmountToShow(amount : Int){
-		while(amount > equipments.length){
+	public function EquipmentAmountToShow(amount:Int) {
+		while (amount > equipments.length) {
 			var viewParent = new VBox();
-			//viewParent.borderRadius = 10;
+			// viewParent.borderRadius = 10;
 			viewParent.borderSize = 1;
 			viewParent.padding = 6;
 			var name = new Label();
@@ -240,77 +246,80 @@ class View {
 			viewParent.addComponent(name);
 
 			var buttonsAct = new Vector<Button>(2);
-			
-			for (i in 0...buttonsAct.length){
+
+			for (i in 0...buttonsAct.length) {
 				var button = new Button();
 				button.text = "Equip";
-				if(i == 1)
+				if (i == 1)
 					button.text = "Discard";
 				button.percentWidth = 100;
 				var equipmentPos = equipments.length;
 				var buttonId = i;
-	
-				button.onClick = function(e) { ClickedEquipmentViewMainAction(equipmentPos,buttonId);};
-				//button.onClick = function(e) => {ClickedEquipmentViewMainAction(equipmentPos;)};
+
+				button.onClick = function(e) {
+					ClickedEquipmentViewMainAction(equipmentPos, buttonId);
+				};
+				// button.onClick = function(e) => {ClickedEquipmentViewMainAction(equipmentPos;)};
 				//	ClickedEquipmentViewMainAction(equipmentPos);
 				buttonsAct[i] = button;
 
 				viewParent.addComponent(button);
 			}
-			
-			
-			var ev : EquipmentView = {name: name, parent: viewParent, values: [], actionButtons: buttonsAct};
+
+			var ev:EquipmentView = {
+				name: name,
+				parent: viewParent,
+				values: [],
+				actionButtons: buttonsAct
+			};
 			equipTab.addComponent(viewParent);
 			equipments.push(ev);
 		}
 		var i = 0;
-		while(equipments.length > i){
+		while (equipments.length > i) {
 			equipments[i].parent.hidden = i >= amount;
 			i++;
 		}
-		//for (var i in 0...equipments.length){	
-		//}
-
+		// for (var i in 0...equipments.length){
+		// }
 	}
 
-	public function ClickedEquipmentViewMainAction(equipmentPos : Int, actionId:Int){
-		if(equipmentMainAction != null){
-			this.equipmentMainAction(equipmentPos,actionId);
+	public function ClickedEquipmentViewMainAction(equipmentPos:Int, actionId:Int) {
+		if (equipmentMainAction != null) {
+			this.equipmentMainAction(equipmentPos, actionId);
 		}
 	}
 
-	public function FeedEquipmentBase(pos : Int, name:String, equipped : Bool, numberOfValues: Int = -1){
+	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, numberOfValues:Int = -1) {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
-		if(equipped){
+		if (equipped) {
 			equipments[pos].actionButtons[0].text = "Unequip";
 			equipments[pos].parent.borderSize = 2;
-		} else{
+		} else {
 			equipments[pos].actionButtons[0].text = "Equip";
 			equipments[pos].parent.borderSize = 1;
 		}
 		equipments[pos].actionButtons[1].hidden = equipped == true;
-		while(equipments[pos].values.length < numberOfValues){
+		while (equipments[pos].values.length < numberOfValues) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
 		}
 	}
 
-	public function HideEquipmentView(pos : Int){
+	public function HideEquipmentView(pos:Int) {
 		equipments[pos].parent.hidden = true;
 	}
 
-	public function FeedEquipmentValue(pos : Int, valuePos: Int, valueName:String, value: Int){
-		while(equipments[pos].values.length <= valuePos){
+	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int) {
+		while (equipments[pos].values.length <= valuePos) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
 		}
 		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName);
-		
 	}
 
 	public function AddButton(id:String, label:String, onClick, warningMessage = null) {
-		
 		var button = new Button();
 		button.text = label;
 		button.repeater = true;
@@ -363,7 +372,7 @@ class View {
 	}
 
 	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null) {
-		if(label != null){
+		if (label != null) {
 			res.labelText.text = label;
 		}
 		if (max > 0) {
@@ -433,7 +442,12 @@ class View {
 			vertical-align: middle; width:100%;";
 		l.verticalAlign = "middle";
 		progress.addComponent(l);
-		return {centeredText: l, bar: progress, parent: boxh, labelText: nameLabel};
+		return {
+			centeredText: l,
+			bar: progress,
+			parent: boxh,
+			labelText: nameLabel
+		};
 	}
 }
 
@@ -453,11 +467,12 @@ typedef ActorView = {
 	var attack:ValueView;
 	var parent:Component;
 };
+
 typedef EquipmentView = {
 	var name:Label;
-	var values : Array<ValueView>;
+	var values:Array<ValueView>;
 	var parent:Component;
-	var actionButtons : Vector<Button>;
-	//var actionButton:Button;
-	//var actionButton2:Button;
+	var actionButtons:Vector<Button>;
+	// var actionButton:Button;
+	// var actionButton2:Button;
 };
