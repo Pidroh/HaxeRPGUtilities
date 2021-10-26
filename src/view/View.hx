@@ -34,6 +34,7 @@ class View {
 	public var mainComponent:Component;
 	public var mainComponentB:Component;
 	public var equipTab:Component;
+	public var storyTab:Component;
 	public var logText:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
@@ -45,6 +46,7 @@ class View {
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
 	var equipments = new Array<EquipmentView>();
+	var cutsceneStartViews = new Array<CutsceneStartView>(); 
 	var saveDataDownload:Label;
 	var storyMessageView : Label;
 	var amountOfStoryMessagesShown = 0;
@@ -58,7 +60,20 @@ class View {
 	}
 
 	public function StoryButtonAmount(amount : Int){
-
+		while(cutsceneStartViews.length < amount){
+			var parent = new Box();
+			var startB = new Button(); startB.text = "Watch";
+			var resumeB = new Button(); resumeB.text = "Resume";
+			var title = new Label();
+			var hBox = new HBox();
+			hBox.horizontalAlign = "right";
+			hBox.addComponent(startB);
+			hBox.addComponent(resumeB);
+			parent.addComponent(title);
+			parent.addComponent(hBox);
+			cutsceneStartViews.push({startButton: startB, resumeButton: resumeB, title: title});
+			storyTab.addComponent(parent);
+		}
 	}
 
 	public function StoryButtonFeed(buttonPos : Int, label : String, cleared : Bool){
@@ -202,6 +217,7 @@ class View {
 			storyTab.height = 300;
 			storyTab.text = "Story";
 			tabMaster.addComponent(storyTab);
+			this.storyTab = storyTab;
 
 			var messageLabel = new Label();
 			messageLabel.percentWidth = 100;
@@ -522,6 +538,12 @@ typedef EquipmentView = {
 	// var actionButton:Button;
 	// var actionButton2:Button;
 };
+
+typedef CutsceneStartView = {
+	var startButton : Button;
+	var resumeButton : Button;
+	var title : Label;
+}
 
 class StoryDialog extends Dialog{
 	public var mainText : Label;
