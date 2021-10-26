@@ -22,10 +22,17 @@ class StoryControlLogic {
 	// add all necessary arguments
 	public static function Update(update:Float, runtime : StoryRuntimeData, view : View) {
 		view.StoryButtonAmount(runtime.cutscenes.length);
+		
+		var cutscene = runtime.cutscene;
+		var m = cutscene.messages[runtime.currentStoryProgression.index];
+		view.LatestMessageUpdate(m.speaker, m.body, runtime.currentStoryProgression.index);
+
+
 		for (i in 0...runtime.cutscenes.length){
 
 		}
         StoryLogic.Update(runtime);
+
 
     }
 

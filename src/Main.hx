@@ -219,6 +219,7 @@ class Main {
 			view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
+			StoryControlLogic.Update(timeStamp, storyRuntime, view);
 
 			var imp = Browser.document.getElementById("import__");
 			if (imp != null && saveFileImporterSetup == false) {

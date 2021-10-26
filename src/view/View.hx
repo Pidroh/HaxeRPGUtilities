@@ -1,3 +1,5 @@
+import haxe.ui.components.Scroll;
+import haxe.ui.containers.dialogs.Dialog;
 import haxe.ui.containers.ContinuousHBox;
 import haxe.ui.containers.ScrollView;
 import haxe.ds.Vector;
@@ -44,8 +46,19 @@ class View {
 	var buttonMap = new Map<String, Button>();
 	var equipments = new Array<EquipmentView>();
 	var saveDataDownload:Label;
+	var storyMessageView : Label;
+	var amountOfStoryMessagesShown = 0;
+	var storyDialog : StoryDialog;
+
+	public function LatestMessageUpdate(message : String, speaker: String, messagePos : Int){
+		if(messagePos >= amountOfStoryMessagesShown){
+			amountOfStoryMessagesShown = messagePos + 1;
+			storyDialog.mainText.text += '$speaker: $message\n';
+		}
+	}
 
 	public function StoryButtonAmount(amount : Int){
+
 	}
 
 	public function StoryButtonFeed(buttonPos : Int, label : String, cleared : Bool){
@@ -53,7 +66,10 @@ class View {
 	}
 
 	public function new() {
+		
+
 		{
+			
 			var boxParentP = new Box();
 			boxParentP.percentHeight = 100;
 			boxParentP.verticalAlign = "bottom";
@@ -162,6 +178,8 @@ class View {
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
 
+
+
 		{
 			equipTab = new ContinuousHBox();
 			// equipTab.percentWidth = 100;
@@ -184,7 +202,35 @@ class View {
 			storyTab.height = 300;
 			storyTab.text = "Story";
 			tabMaster.addComponent(storyTab);
+
+			var messageLabel = new Label();
+			messageLabel.percentWidth = 100;
+			messageLabel.textAlign = "left";
+			storyTab.addComponent(messageLabel);
+			messageLabel.text = "Biahdfsauidhsaiudhsa.\nDIOASdjasiodjaso\nFred: I am Fred.";
+
 		}
+		
+		storyDialog = new StoryDialog();
+		storyDialog.advanceButton.onClick = (e)->{
+			storyMainAction(View.storyAction_AdvanceMessage, 0);
+		}
+		
+		var dialog = new StoryDialog();
+        dialog.onDialogClosed = function(e:DialogEvent) {
+            trace(e.button);
+        }
+		var b = new Button();
+		b.onClick = (e)->{
+			storyDialog.showDialog();
+			//dialog2.showDialog();
+		};
+		dialog.addComponent(b);
+		
+        dialog.showDialog();
+		mainComponent.addComponent(dialog);
+		
+		
 	}
 
 	public function FeedSave(saveDataContent:String) {
@@ -476,3 +522,36 @@ typedef EquipmentView = {
 	// var actionButton:Button;
 	// var actionButton2:Button;
 };
+
+class StoryDialog extends Dialog{
+	public var mainText : Label;
+	public var advanceButton : Button;
+	public function new() {
+        super();
+        title = "Entry Form";
+		width = 300;
+		this.percentHeight = 80;
+		var scroll = new Scroll(); 
+
+		//var vbox = new VBox();
+		//vbox.percentWidth = 100;
+
+		mainText = new Label();
+		mainText.text = "Ijdsaiodjsaiodjsaio djsaoidjasoidjsaiodjasiodjasiodja siodjsaiodjasdioasjdoi\ndiasjdoiasjdioasjdasiodjsaiodjsaiodjsaiodjsaiodjasioda";
+		mainText.percentWidth = 100;
+		this.addComponent(mainText);
+		//vbox.addComponent(mainText);
+		
+		advanceButton = new Button();
+		advanceButton.horizontalAlign = "right";
+		advanceButton.percentWidth = 100;
+		advanceButton.text = "=>";
+		advanceButton.verticalAlign = "bottom";
+		//addComponent(vbox);
+		this.addComponent(advanceButton);
+		
+
+		
+        //buttons = DialogButton.CANCEL | "Custom Button";
+    }
+}
