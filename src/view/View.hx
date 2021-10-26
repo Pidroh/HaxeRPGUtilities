@@ -48,15 +48,27 @@ class View {
 	var equipments = new Array<EquipmentView>();
 	var cutsceneStartViews = new Array<CutsceneStartView>(); 
 	var saveDataDownload:Label;
-	var storyMessageView : Label;
 	var amountOfStoryMessagesShown = 0;
 	var storyDialog : StoryDialog;
+	public var storyDialogActive = false;
 
 	public function LatestMessageUpdate(message : String, speaker: String, messagePos : Int){
 		if(messagePos >= amountOfStoryMessagesShown){
 			amountOfStoryMessagesShown = messagePos + 1;
 			storyDialog.mainText.text += '$speaker: $message\n';
 		}
+	}
+
+	public function HideStory(){
+		storyDialog.hide();
+		storyDialogActive = false;
+		this.amountOfStoryMessagesShown = 0;
+	}
+
+	public function StartStory(){
+		storyDialog.showDialog();
+		storyDialogActive = true;
+		storyDialog.mainText.text = "";
 	}
 
 	public function StoryButtonAmount(amount : Int){
@@ -71,7 +83,17 @@ class View {
 			hBox.addComponent(resumeB);
 			parent.addComponent(title);
 			parent.addComponent(hBox);
+			parent.width = 200;
+			parent.height = 50;
 			cutsceneStartViews.push({startButton: startB, resumeButton: resumeB, title: title});
+			var pos = cutsceneStartViews.length-1;
+			startB.onClick = (e) ->{
+				storyMainAction(View.storyAction_Start, pos);
+			}
+			resumeB.onClick = (e) ->{
+				storyMainAction(View.storyAction_Continue, pos);
+			}
+
 			storyTab.addComponent(parent);
 		}
 	}
@@ -230,23 +252,7 @@ class View {
 		storyDialog = new StoryDialog();
 		storyDialog.advanceButton.onClick = (e)->{
 			storyMainAction(View.storyAction_AdvanceMessage, 0);
-		}
-		
-		var dialog = new StoryDialog();
-        dialog.onDialogClosed = function(e:DialogEvent) {
-            trace(e.button);
-        }
-		var b = new Button();
-		b.onClick = (e)->{
-			storyDialog.showDialog();
-			//dialog2.showDialog();
-		};
-		dialog.addComponent(b);
-		
-        dialog.showDialog();
-		mainComponent.addComponent(dialog);
-		
-		
+		}		
 	}
 
 	public function FeedSave(saveDataContent:String) {
@@ -554,20 +560,24 @@ class StoryDialog extends Dialog{
 		width = 300;
 		this.percentHeight = 80;
 		var scroll = new Scroll(); 
+		scroll.percentHeight = 90;
+		scroll.percentWidth = 100;
+		addComponent(scroll);
 
 		//var vbox = new VBox();
 		//vbox.percentWidth = 100;
 
 		mainText = new Label();
-		mainText.text = "Ijdsaiodjsaiodjsaio djsaoidjasoidjsaiodjasiodjasiodja siodjsaiodjasdioasjdoi\ndiasjdoiasjdioasjdasiodjsaiodjsaiodjsaiodjsaiodjasioda";
+		mainText.text = "";
 		mainText.percentWidth = 100;
-		this.addComponent(mainText);
+		scroll.addComponent(mainText);
 		//vbox.addComponent(mainText);
 		
 		advanceButton = new Button();
 		advanceButton.horizontalAlign = "right";
 		advanceButton.percentWidth = 100;
-		advanceButton.text = "=>";
+		advanceButton.percentHeight = 10;
+		advanceButton.text = "=";
 		advanceButton.verticalAlign = "bottom";
 		//addComponent(vbox);
 		this.addComponent(advanceButton);

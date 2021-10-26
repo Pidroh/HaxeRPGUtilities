@@ -9,9 +9,13 @@ class StoryControlLogic {
 		view.storyMainAction = (actionId, argument) -> {
 			if (actionId == View.storyAction_Start) {
 				StoryLogic.StartStory(cutscenes[actionId].title, runtime);
+				view.StartStory();
 			}
 			if (actionId == View.storyAction_AdvanceMessage) {
 				StoryLogic.MessageAdvance(runtime);
+			}
+			if(view.storyDialogActive && runtime.cutscene == null){
+				view.HideStory();
 			}
 		}
 	}
@@ -19,11 +23,15 @@ class StoryControlLogic {
 	// write this possibly stateless, process input inside the function too if possible?
 	// add all necessary arguments
 	public static function Update(update:Float, runtime:StoryRuntimeData, view:View) {
-		//view.StoryButtonAmount(runtime.cutscenes.length);
+		view.StoryButtonAmount(runtime.cutscenes.length);
 		for (i in 0...runtime.cutscenes.length){
+			var completed = false;
+			if(runtime.persistence.progressionData[runtime.cutscenes[i].title] != null){
+				completed = runtime.persistence.progressionData[runtime.cutscenes[i].title].timesCompleted > 0;
+			}
 			view.StoryButtonFeed(i, 
 				runtime.cutscenes[i].title, 
-				runtime.persistence.progressionData[runtime.cutscenes[i].title].timesCompleted > 0);
+				completed);
 		}
 			var cutscene = runtime.cutscene;
 		if (cutscene != null) {

@@ -2,11 +2,13 @@ import StoryData;
 
 class StoryLogic{
     public static function Update(runtime : StoryRuntimeData){
-        runtime.toShow = runtime.cutscene.messages[runtime.currentStoryProgression.index];
+        if(runtime.cutscene != null)
+            runtime.toShow = runtime.cutscene.messages[runtime.currentStoryProgression.index];
     }
 
     	// find story progression and reset it
 	public static function StartStory(sceneId:String, runtime : StoryRuntimeData) {
+
 		var progressionData = runtime.persistence.progressionData;
 		if (progressionData.exists(sceneId) == false) {
 			progressionData.set(sceneId, {index: 0, visible: true, timesCompleted: 0});
@@ -19,6 +21,7 @@ class StoryLogic{
         for(a in runtime.cutscenes){
             if(a.title == sceneId){
                 runtime.currentCutsceneIndex = runtime.cutscenes.indexOf(a);
+                runtime.cutscene = a;
                 break;
             }
         }
