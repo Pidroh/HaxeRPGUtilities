@@ -428,6 +428,12 @@ BattleManager.prototype = {
 	,RecalculateAttributes: function(actor) {
 		var oldLife = actor.attributesCalculated.h["Life"];
 		var oldSpeedCount = actor.attributesCalculated.h["SpeedCount"];
+		if(oldSpeedCount < 0) {
+			oldSpeedCount = 0;
+		}
+		if(oldSpeedCount == null) {
+			oldSpeedCount = 0;
+		}
 		var actor1 = actor.attributesBase;
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 1;
@@ -545,8 +551,11 @@ BattleManager.prototype = {
 	,SendJsonPersistentData: function(jsonString) {
 		var loadedWdata = JSON.parse(jsonString);
 		if(loadedWdata.worldVersion < 301) {
-			loadedWdata.worldVersion = 301;
+			loadedWdata.worldVersion = this.wdata.worldVersion;
 			loadedWdata.sleeping = loadedWdata.sleeping == true;
+		}
+		if(loadedWdata.worldVersion != this.wdata.worldVersion) {
+			loadedWdata.enemy = null;
 		}
 		this.wdata = loadedWdata;
 		if(this.wdata.battleArea >= this.wdata.killedInArea.length) {

@@ -558,6 +558,8 @@ $baseInfo';
 	public function RecalculateAttributes(actor:Actor) {
 		var oldLife = actor.attributesCalculated["Life"];
 		var oldSpeedCount = actor.attributesCalculated["SpeedCount"];
+		if(oldSpeedCount < 0) oldSpeedCount = 0;
+		if(oldSpeedCount == null) oldSpeedCount = 0;
 
 		AttributeLogic.Add(actor.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5, "Speed"=>0, "Defense"=>0, "Magic Defense"=>0, "SpeedCount"=>0], actor.level, actor.attributesCalculated);
 		for (es in actor.equipmentSlots) {
@@ -642,8 +644,11 @@ $baseInfo';
 	public function SendJsonPersistentData(jsonString) {
 		var loadedWdata:WorldData = Json.parse(jsonString);
 		if (loadedWdata.worldVersion < 301) {
-			loadedWdata.worldVersion = 301;
+			loadedWdata.worldVersion = wdata.worldVersion;
 			loadedWdata.sleeping = loadedWdata.sleeping == true;
+		}
+		if(loadedWdata.worldVersion != wdata.worldVersion){
+			loadedWdata.enemy = null;
 		}
 		wdata = loadedWdata;
 
