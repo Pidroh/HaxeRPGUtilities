@@ -241,11 +241,11 @@ class View {
 			tabMaster.addComponent(storyTab);
 			this.storyTab = storyTab;
 
-			var messageLabel = new Label();
-			messageLabel.percentWidth = 100;
-			messageLabel.textAlign = "left";
-			storyTab.addComponent(messageLabel);
-			messageLabel.text = "Biahdfsauidhsaiudhsa.\nDIOASdjasiodjaso\nFred: I am Fred.";
+			//var messageLabel = new Label();
+			//messageLabel.percentWidth = 100;
+			//messageLabel.textAlign = "left";
+			//storyTab.addComponent(messageLabel);
+			//messageLabel.text = "Biahdfsauidhsaiudhsa.\nDIOASdjasiodjaso\nFred: I am Fred.";
 
 		}
 		
