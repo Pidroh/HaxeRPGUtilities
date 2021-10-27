@@ -11,6 +11,68 @@ class MainTest {
 			Json.parse(sj);	
 		}
 		{
+			var bm:BattleManager = new BattleManager();
+			bm.DefaultConfiguration();
+			bm.wdata.hero.equipment.push(
+				{type:0, requiredAttributes: null, attributes: ["Attack" => 2]}
+			);
+			bm.DiscardWorseEquipment();
+			var numberOfNullEquipment = 0;
+			for(e in bm.wdata.hero.equipment){
+				if(e == null) numberOfNullEquipment++;
+			}
+			if(numberOfNullEquipment != 0){
+				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 0');
+			}
+
+			bm.wdata.hero.equipment.push(
+				{type:0, requiredAttributes: null, attributes: ["Attack" => 2]}
+			);
+			bm.wdata.hero.equipment.push(
+				{type:0, requiredAttributes: null, attributes: ["Attack" => 1]}
+			);
+			bm.wdata.hero.equipment.push(
+				{type:0, requiredAttributes: null, attributes: ["Life" => 3]}
+			);
+
+			bm.DiscardWorseEquipment();
+
+			numberOfNullEquipment = 0;
+			for(e in bm.wdata.hero.equipment){
+				if(e == null) numberOfNullEquipment++;
+			}
+			if(numberOfNullEquipment != 2){
+				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 2');
+			}
+
+			if(bm.wdata.hero.equipment[0] == null)
+				Sys.println('ERROR: discard worse equipment problem 0');
+			if(bm.wdata.hero.equipment[1] != null)
+				Sys.println('ERROR: discard worse equipment problem 1');
+			if(bm.wdata.hero.equipment[2] != null)
+				Sys.println('ERROR: discard worse equipment problem 2');
+			if(bm.wdata.hero.equipment[3] == null)
+				Sys.println('ERROR: discard worse equipment problem 3');
+
+			bm.wdata.hero.equipment.push(
+				{type:0, requiredAttributes: null, attributes: ["Attack" => 1, "Life" => 2]}
+			);
+			bm.wdata.hero.equipment.push(
+				{type:0, requiredAttributes: null, attributes: ["Attack" => 1, "Defense" => 1]}
+			);
+
+			bm.DiscardWorseEquipment();
+
+			numberOfNullEquipment = 0;
+			for(e in bm.wdata.hero.equipment){
+				if(e == null) numberOfNullEquipment++;
+			}
+			if(numberOfNullEquipment != 2){
+				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 2 (b)');
+			}
+
+		}
+		{
 			Sys.println("Save legacy test");
 			for(file in sys.FileSystem.readDirectory("saves/")){
 				var path = haxe.io.Path.join(["saves/", file]);

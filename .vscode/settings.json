@@ -1,6 +1,5 @@
 {
     "files.exclude": {
-        "buildtest.hxml": true,
         "YarnSpinnerUtil/build.hxml": true
     }
 }

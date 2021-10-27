@@ -454,7 +454,7 @@ BattleManager.prototype = {
 	,AdvanceArea: function() {
 		this.ChangeBattleArea(this.wdata.battleArea + 1);
 	}
-	,DiscardWorseWeapons: function() {
+	,DiscardWorseEquipment: function() {
 		var _g = 0;
 		var _g1 = this.wdata.hero.equipment.length;
 		while(_g < _g1) {
@@ -471,8 +471,11 @@ BattleManager.prototype = {
 				if(e2 == null) {
 					continue;
 				}
+				if(e.type != e2.type) {
+					continue;
+				}
 				var r = this.CompareEquipmentStrength(e,e2);
-				if(r == 1) {
+				if(r == 1 || r == 0) {
 					this.wdata.hero.equipment[j] = null;
 					continue;
 				}
@@ -504,7 +507,7 @@ BattleManager.prototype = {
 				e1Superior = 1;
 			}
 			if(e1Superior == 1 && e2Superior == 1) {
-				return 0;
+				return -1;
 			}
 		}
 		var h = e2.attributes.h;
@@ -525,7 +528,7 @@ BattleManager.prototype = {
 				e2Superior = 1;
 			}
 			if(e1Superior == 1 && e2Superior == 1) {
-				return 0;
+				return -1;
 			}
 		}
 		if(e1Superior == 1 && e2Superior == 0) {
@@ -601,6 +604,95 @@ MainTest.main = function() {
 	process.stdout.write(Std.string(sj));
 	process.stdout.write("\n");
 	JSON.parse(sj);
+	var bm = new BattleManager();
+	bm.DefaultConfiguration();
+	var bm1 = bm.wdata.hero.equipment;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 2;
+	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	bm.DiscardWorseEquipment();
+	var numberOfNullEquipment = 0;
+	var _g = 0;
+	var _g1 = bm.wdata.hero.equipment;
+	while(_g < _g1.length) {
+		var e = _g1[_g];
+		++_g;
+		if(e == null) {
+			++numberOfNullEquipment;
+		}
+	}
+	if(numberOfNullEquipment != 0) {
+		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0"));
+		process.stdout.write("\n");
+	}
+	var bm1 = bm.wdata.hero.equipment;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 2;
+	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	var bm1 = bm.wdata.hero.equipment;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1;
+	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	var bm1 = bm.wdata.hero.equipment;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Life"] = 3;
+	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	bm.DiscardWorseEquipment();
+	numberOfNullEquipment = 0;
+	var _g = 0;
+	var _g1 = bm.wdata.hero.equipment;
+	while(_g < _g1.length) {
+		var e = _g1[_g];
+		++_g;
+		if(e == null) {
+			++numberOfNullEquipment;
+		}
+	}
+	if(numberOfNullEquipment != 2) {
+		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2"));
+		process.stdout.write("\n");
+	}
+	if(bm.wdata.hero.equipment[0] == null) {
+		process.stdout.write("ERROR: discard worse equipment problem 0");
+		process.stdout.write("\n");
+	}
+	if(bm.wdata.hero.equipment[1] != null) {
+		process.stdout.write("ERROR: discard worse equipment problem 1");
+		process.stdout.write("\n");
+	}
+	if(bm.wdata.hero.equipment[2] != null) {
+		process.stdout.write("ERROR: discard worse equipment problem 2");
+		process.stdout.write("\n");
+	}
+	if(bm.wdata.hero.equipment[3] == null) {
+		process.stdout.write("ERROR: discard worse equipment problem 3");
+		process.stdout.write("\n");
+	}
+	var bm1 = bm.wdata.hero.equipment;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1;
+	_g.h["Life"] = 2;
+	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	var bm1 = bm.wdata.hero.equipment;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1;
+	_g.h["Defense"] = 1;
+	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	bm.DiscardWorseEquipment();
+	numberOfNullEquipment = 0;
+	var _g = 0;
+	var _g1 = bm.wdata.hero.equipment;
+	while(_g < _g1.length) {
+		var e = _g1[_g];
+		++_g;
+		if(e == null) {
+			++numberOfNullEquipment;
+		}
+	}
+	if(numberOfNullEquipment != 2) {
+		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (b)"));
+		process.stdout.write("\n");
+	}
 	process.stdout.write("Save legacy test");
 	process.stdout.write("\n");
 	var _g = 0;
@@ -783,14 +875,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:128:","  _____ ");
-		console.log("test/MainTest.hx:129:","  _____ ");
-		console.log("test/MainTest.hx:130:","  _____ ");
-		console.log("test/MainTest.hx:131:",json);
-		console.log("test/MainTest.hx:132:","  _____ ");
-		console.log("test/MainTest.hx:133:","  _____ ");
-		console.log("test/MainTest.hx:134:","  _____ ");
-		console.log("test/MainTest.hx:135:",json2);
+		console.log("test/MainTest.hx:190:","  _____ ");
+		console.log("test/MainTest.hx:191:","  _____ ");
+		console.log("test/MainTest.hx:192:","  _____ ");
+		console.log("test/MainTest.hx:193:",json);
+		console.log("test/MainTest.hx:194:","  _____ ");
+		console.log("test/MainTest.hx:195:","  _____ ");
+		console.log("test/MainTest.hx:196:","  _____ ");
+		console.log("test/MainTest.hx:197:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}

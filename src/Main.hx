@@ -173,6 +173,8 @@ class Main {
 			}
 			if (action == 1)
 				bm.DiscardEquipment(pos);
+			if (action == View.equipmentAction_DiscardBad)
+				bm.DiscardWorseEquipment();
 		};
 
 		var ls = Browser.getLocalStorage();

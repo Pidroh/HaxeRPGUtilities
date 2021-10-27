@@ -19,6 +19,8 @@ class View {
 	public static final storyAction_Start = 0;
 	public static final storyAction_Continue = 1;
 	public static final storyAction_AdvanceMessage = 2;
+	
+	public static final equipmentAction_DiscardBad = 2;
 
 	public var heroView:ActorView;
 	public var enemyView:ActorView;
@@ -51,6 +53,7 @@ class View {
 	var amountOfStoryMessagesShown = 0;
 	var storyDialog : StoryDialog;
 	public var storyDialogActive = false;
+
 
 	public function LatestMessageUpdate(message : String, speaker: String, messagePos : Int){
 		if(messagePos >= amountOfStoryMessagesShown){
@@ -229,6 +232,13 @@ class View {
 			// equipTab.percentWidth = 100;
 			equipTab.width = 600;
 			// equipTab.height = 300;
+			var buttonDiscardBad = new Button();
+			buttonDiscardBad.text = "Discard worse equipment";
+			buttonDiscardBad.onClick = event -> {
+				equipmentMainAction(-1, View.equipmentAction_DiscardBad);
+			}
+			equipTab.addComponent(buttonDiscardBad);
+
 
 			equipTab.text = "Equipment";
 			var scroll = CreateScrollable(tabMaster);

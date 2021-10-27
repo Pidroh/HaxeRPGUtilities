@@ -16,19 +16,18 @@
 			},
 			"label": "haxe: build.hxml"
 		},
+
 		{
-			"type": "hxml",
-			"file": "buildtest.hxml",
+			"type": "haxe",
+			"args": "active configuration",
 			"problemMatcher": [
 				"$haxe-absolute",
 				"$haxe",
 				"$haxe-error",
 				"$haxe-trace"
 			],
-			"group": {
-				"kind": "build",
-			},
-			"label": "haxe: buildtest.hxml"
+			"group": "build",
+			"label": "haxe: active configuration"
 		}
 	]
 }

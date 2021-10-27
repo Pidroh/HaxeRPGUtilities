@@ -3,6 +3,7 @@
 -cp src/view
 -cp src/procedural
 -cp src/javascript
+-cp test
 -cp YarnSpinnerUtil/src/storydata
 --resource assets/story.json@storyjson
 -main Main

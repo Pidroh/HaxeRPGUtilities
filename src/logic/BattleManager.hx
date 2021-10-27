@@ -574,19 +574,20 @@ $baseInfo';
 		ChangeBattleArea(wdata.battleArea + 1);
 	}
 
-	public function DiscardWorseWeapons(){
+	public function DiscardWorseEquipment(){
 		for(i in 0...wdata.hero.equipment.length){
 			var e = wdata.hero.equipment[i];
 			if(e == null) continue;
 			for(j in (i+1)...wdata.hero.equipment.length){
 				var e2 = wdata.hero.equipment[j];
 				if(e2 == null) continue;
+				if(e.type != e2.type) continue;
 				var r = CompareEquipmentStrength(e, e2);
-				if(r == 1){
+				if(r == 1 || r == 0){//if they are exactly the same or r1 is better
 					wdata.hero.equipment[j] = null;
 					continue;
 				}
-				if(r == 2){
+				if(r == 2 ){ 
 					wdata.hero.equipment[i] = null;
 					break;
 				}
@@ -608,8 +609,8 @@ $baseInfo';
 			} else{
 				e1Superior = 1; //e1 has attribute not in e2, thus superior
 			}
-			//if it any time both items are superior, give up
-			if(e1Superior == 1 && e2Superior == 1) return 0;
+			//if it any time both items are superior, they are **different**
+			if(e1Superior == 1 && e2Superior == 1) return -1;
 		}
 
 		for(attrKey in e2.attributes.keys()){
@@ -621,12 +622,12 @@ $baseInfo';
 			} else{
 				e2Superior = 1; //e2 has attribute not in e1, thus superior
 			}
-			//if it any time both items are superior, give up
-			if(e1Superior == 1 && e2Superior == 1) return 0;
+			//if it any time both items are superior, they are **different**
+			if(e1Superior == 1 && e2Superior == 1) return -1;
 		}
 		if(e1Superior == 1 && e2Superior == 0) return 1;
 		if(e1Superior == 0 && e2Superior == 1) return 2;
-		return 0;
+		return 0; //this means they are the same
 	}
 
 	public function GetJsonPersistentData():String {
