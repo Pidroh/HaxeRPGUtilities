@@ -454,6 +454,88 @@ BattleManager.prototype = {
 	,AdvanceArea: function() {
 		this.ChangeBattleArea(this.wdata.battleArea + 1);
 	}
+	,DiscardWorseWeapons: function() {
+		var _g = 0;
+		var _g1 = this.wdata.hero.equipment.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var e = this.wdata.hero.equipment[i];
+			if(e == null) {
+				continue;
+			}
+			var _g2 = i + 1;
+			var _g3 = this.wdata.hero.equipment.length;
+			while(_g2 < _g3) {
+				var j = _g2++;
+				var e2 = this.wdata.hero.equipment[j];
+				if(e2 == null) {
+					continue;
+				}
+				var r = this.CompareEquipmentStrength(e,e2);
+				if(r == 1) {
+					this.wdata.hero.equipment[j] = null;
+					continue;
+				}
+				if(r == 2) {
+					this.wdata.hero.equipment[i] = null;
+					break;
+				}
+			}
+		}
+	}
+	,CompareEquipmentStrength: function(e1,e2) {
+		var e1Superior = 0;
+		var e2Superior = 0;
+		var h = e1.attributes.h;
+		var attrKey_h = h;
+		var attrKey_keys = Object.keys(h);
+		var attrKey_length = attrKey_keys.length;
+		var attrKey_current = 0;
+		while(attrKey_current < attrKey_length) {
+			var attrKey = attrKey_keys[attrKey_current++];
+			if(Object.prototype.hasOwnProperty.call(e2.attributes.h,attrKey)) {
+				if(e1.attributes.h[attrKey] > e2.attributes.h[attrKey]) {
+					e1Superior = 1;
+				}
+				if(e1.attributes.h[attrKey] < e2.attributes.h[attrKey]) {
+					e2Superior = 1;
+				}
+			} else {
+				e1Superior = 1;
+			}
+			if(e1Superior == 1 && e2Superior == 1) {
+				return 0;
+			}
+		}
+		var h = e2.attributes.h;
+		var attrKey_h = h;
+		var attrKey_keys = Object.keys(h);
+		var attrKey_length = attrKey_keys.length;
+		var attrKey_current = 0;
+		while(attrKey_current < attrKey_length) {
+			var attrKey = attrKey_keys[attrKey_current++];
+			if(Object.prototype.hasOwnProperty.call(e1.attributes.h,attrKey)) {
+				if(e1.attributes.h[attrKey] > e2.attributes.h[attrKey]) {
+					e1Superior = 1;
+				}
+				if(e1.attributes.h[attrKey] < e2.attributes.h[attrKey]) {
+					e2Superior = 1;
+				}
+			} else {
+				e2Superior = 1;
+			}
+			if(e1Superior == 1 && e2Superior == 1) {
+				return 0;
+			}
+		}
+		if(e1Superior == 1 && e2Superior == 0) {
+			return 1;
+		}
+		if(e1Superior == 0 && e2Superior == 1) {
+			return 2;
+		}
+		return 0;
+	}
 	,GetJsonPersistentData: function() {
 		return JSON.stringify(this.wdata);
 	}

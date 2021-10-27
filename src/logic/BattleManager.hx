@@ -574,6 +574,61 @@ $baseInfo';
 		ChangeBattleArea(wdata.battleArea + 1);
 	}
 
+	public function DiscardWorseWeapons(){
+		for(i in 0...wdata.hero.equipment.length){
+			var e = wdata.hero.equipment[i];
+			if(e == null) continue;
+			for(j in (i+1)...wdata.hero.equipment.length){
+				var e2 = wdata.hero.equipment[j];
+				if(e2 == null) continue;
+				var r = CompareEquipmentStrength(e, e2);
+				if(r == 1){
+					wdata.hero.equipment[j] = null;
+					continue;
+				}
+				if(r == 2){
+					wdata.hero.equipment[i] = null;
+					break;
+				}
+
+			}
+		}
+	}
+
+	public function CompareEquipmentStrength(e1 : Equipment, e2: Equipment) : Int{
+		var e1Superior = 0;
+		var e2Superior = 0;
+
+		for(attrKey in e1.attributes.keys()){
+			if(e2.attributes.exists(attrKey)){
+				if(e1.attributes[attrKey] > e2.attributes[attrKey])
+					e1Superior = 1;
+				if(e1.attributes[attrKey] < e2.attributes[attrKey])
+					e2Superior = 1;
+			} else{
+				e1Superior = 1; //e1 has attribute not in e2, thus superior
+			}
+			//if it any time both items are superior, give up
+			if(e1Superior == 1 && e2Superior == 1) return 0;
+		}
+
+		for(attrKey in e2.attributes.keys()){
+			if(e1.attributes.exists(attrKey)){
+				if(e1.attributes[attrKey] > e2.attributes[attrKey])
+					e1Superior = 1;
+				if(e1.attributes[attrKey] < e2.attributes[attrKey])
+					e2Superior = 1;
+			} else{
+				e2Superior = 1; //e2 has attribute not in e1, thus superior
+			}
+			//if it any time both items are superior, give up
+			if(e1Superior == 1 && e2Superior == 1) return 0;
+		}
+		if(e1Superior == 1 && e2Superior == 0) return 1;
+		if(e1Superior == 0 && e2Superior == 1) return 2;
+		return 0;
+	}
+
 	public function GetJsonPersistentData():String {
 		// var data = {maxArea: maxArea, currentArea: battleArea, enemiesKilledInAreas: killedInArea};
 
