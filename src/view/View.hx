@@ -76,15 +76,22 @@ class View {
 			var parent = new Box();
 			var startB = new Button(); startB.text = "Watch";
 			var resumeB = new Button(); resumeB.text = "Resume";
+			resumeB.hidden = true;
 			var title = new Label();
+			title.text = "dummy";
+			title.verticalAlign = "center";
 			var hBox = new HBox();
 			hBox.horizontalAlign = "right";
+			hBox.percentHeight = 100;
 			hBox.addComponent(startB);
 			hBox.addComponent(resumeB);
 			parent.addComponent(title);
 			parent.addComponent(hBox);
 			parent.width = 200;
 			parent.height = 50;
+			startB.verticalAlign = "center";
+			resumeB.verticalAlign = "center";
+			
 			cutsceneStartViews.push({startButton: startB, resumeButton: resumeB, title: title});
 			var pos = cutsceneStartViews.length-1;
 			startB.onClick = (e) ->{
@@ -99,7 +106,7 @@ class View {
 	}
 
 	public function StoryButtonFeed(buttonPos : Int, label : String, cleared : Bool){
-
+		cutsceneStartViews[buttonPos].title.text = label;
 	}
 
 	public function new() {
