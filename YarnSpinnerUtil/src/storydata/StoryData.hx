@@ -6,4 +6,5 @@ typedef Message = {
   typedef Cutscene = {
     var messages : Array<Message>;
     var title : String;
+    var visibilityScript : String;
   }

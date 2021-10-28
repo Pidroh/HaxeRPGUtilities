@@ -1,3 +1,4 @@
+import hscript.Expr;
 import haxe.Json;
 import StoryModel;
 import StoryData;
@@ -6,6 +7,13 @@ class StoryControlLogic {
 	public static function Init(jsonStory:String, view:View, runtime:StoryRuntimeData) {
 		var cutscenes = Json.parse(jsonStory);
 		runtime.cutscenes = cutscenes;
+		var parser = new hscript.Parser();
+		for(i in 0...cutscenes.length){
+			var vs = cutscenes[i].visibilityScript;
+			var script : Expr = parser.parseString(vs);
+			runtime.visibilityConditionScripts.push(script);
+
+		}
 		view.storyMainAction = (actionId, argument) -> {
 			if (actionId == View.storyAction_Start) {
 				StoryLogic.StartStory(cutscenes[actionId].title, runtime);

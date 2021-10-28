@@ -1,9 +1,24 @@
+import hscript.Interp;
+import hscript.Expr;
 import StoryData;
 
 class StoryLogic{
+
+
+
     public static function Update(runtime : StoryRuntimeData){
         if(runtime.cutscene != null)
             runtime.toShow = runtime.cutscene.messages[runtime.currentStoryProgression.index];
+    }
+
+    public static function VisibilityUpdate(storyButtonsVisible : Bool, runtime : StoryRuntimeData, executer : Interp){
+        for(i in 0...runtime.cutscenes.length){
+            var prog = runtime.persistence.progressionData[runtime.cutscenes[i].title];
+            var visible = prog.visible;
+            if(visible == false){
+                
+            }
+        }
     }
 
     	// find story progression and reset it
@@ -52,6 +67,7 @@ typedef StoryProgress = {
 typedef StoryRuntimeData = {
     var currentStoryProgression: StoryProgress;
 	var cutscenes :Array<Cutscene>;
+    var visibilityConditionScripts : Array<Expr>;
     var cutscene : Cutscene;
 	var persistence: StoryPersistence;
 	var currentCutsceneIndex : Int;
