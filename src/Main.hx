@@ -79,6 +79,7 @@ class Main {
 			currentCutsceneIndex: -1,
 			cutscene: null,
 			cutscenes: null,
+			visibilityConditionScripts: [],
 			persistence: {
 				currentStoryId: null,
 				progressionData: []

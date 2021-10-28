@@ -16,7 +16,16 @@ class StoryLogic{
             var prog = runtime.persistence.progressionData[runtime.cutscenes[i].title];
             var visible = prog.visible;
             if(visible == false){
-                
+                var wantVisible = true;
+                if(runtime.visibilityConditionScripts[i] != null)
+                     wantVisible = executer.execute(runtime.visibilityConditionScripts[i]);
+                if(wantVisible){
+                    prog.visible = true;
+                }
+            }
+            if(storyButtonsVisible){
+                if(prog.visible)
+                    prog.visibleSeen = true;
             }
         }
     }
@@ -26,7 +35,7 @@ class StoryLogic{
 
 		var progressionData = runtime.persistence.progressionData;
 		if (progressionData.exists(sceneId) == false) {
-			progressionData.set(sceneId, {index: 0, visible: true, timesCompleted: 0});
+			progressionData.set(sceneId, {index: 0, visible: true, timesCompleted: 0, visibleSeen: false});
 		}
 		progressionData[sceneId].index = 0;
 		runtime.toShow = null;
@@ -62,6 +71,7 @@ typedef StoryProgress = {
     var index : Int;
     var timesCompleted : Int;
     var visible : Bool;
+    var visibleSeen : Bool;
 }
 
 typedef StoryRuntimeData = {
