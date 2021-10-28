@@ -1,3 +1,4 @@
+import hscript.Interp;
 import hscript.Expr;
 import haxe.Json;
 import StoryModel;
@@ -33,7 +34,7 @@ class StoryControlLogic {
 
 	// write this possibly stateless, process input inside the function too if possible?
 	// add all necessary arguments
-	public static function Update(update:Float, runtime:StoryRuntimeData, view:View) {
+	public static function Update(update:Float, runtime:StoryRuntimeData, view:View, executer : Interp) {
 		view.StoryButtonAmount(runtime.cutscenes.length);
 		for (i in 0...runtime.cutscenes.length) {
 			var completed = false;
@@ -53,5 +54,6 @@ class StoryControlLogic {
 			
 		}
 		StoryLogic.Update(runtime);
+		StoryLogic.VisibilityUpdate(view.IsTabSelected(view.equipTab), runtime, executer);
 	}
 }

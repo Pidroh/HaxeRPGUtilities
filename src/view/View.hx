@@ -37,6 +37,7 @@ class View {
 	public var mainComponentB:Component;
 	public var equipTab:Component;
 	public var storyTab:Component;
+	public var tabMaster:TabView;
 	public var logText:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
@@ -113,8 +114,6 @@ class View {
 	}
 
 	public function new() {
-		
-
 		{
 			
 			var boxParentP = new Box();
@@ -178,7 +177,7 @@ class View {
 			}
 		}
 
-		var tabMaster = new TabView();
+		tabMaster = new TabView();
 		tabMaster.percentWidth = 100;
 		mainComponent.addComponent(tabMaster);
 		tabMaster.percentHeight = 90;
@@ -466,6 +465,10 @@ class View {
 		} else {
 			res.centeredText.text = current + "";
 		}
+	}
+
+	public function IsTabSelected(tab : Component):Bool{
+		return tabMaster.selectedPage == tab;
 	}
 
 	function GetActorView(name:String, parent:Component):ActorView {

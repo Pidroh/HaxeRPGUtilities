@@ -1,3 +1,4 @@
+import hscript.Interp;
 import StoryModel.StoryRuntimeData;
 import js.html.FileReader;
 import js.html.InputElement;
@@ -86,6 +87,8 @@ class Main {
 			}
 		}
 		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
+		var scriptExecuter = new Interp();
+
 
 		// goblin
 		bm.enemySheets.push({speciesMultiplier: null, speciesLevelStats: null, speciesAdd: null});
@@ -222,7 +225,7 @@ class Main {
 			view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
-			StoryControlLogic.Update(timeStamp, storyRuntime, view);
+			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
 
 			var imp = Browser.document.getElementById("import__");
 			if (imp != null && saveFileImporterSetup == false) {
