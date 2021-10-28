@@ -11,8 +11,15 @@ class StoryControlLogic {
 		var parser = new hscript.Parser();
 		for(i in 0...cutscenes.length){
 			var vs = cutscenes[i].visibilityScript;
-			var script : Expr = parser.parseString(vs);
-			runtime.visibilityConditionScripts.push(script);
+			trace(vs);
+			if(vs != null){
+				var script : Expr = parser.parseString(vs);
+			
+				runtime.visibilityConditionScripts.push(script);
+			} else{
+				runtime.visibilityConditionScripts.push(null);
+			}
+			
 
 		}
 		view.storyMainAction = (actionId, argument) -> {
@@ -54,6 +61,7 @@ class StoryControlLogic {
 			
 		}
 		StoryLogic.Update(runtime);
-		StoryLogic.VisibilityUpdate(view.IsTabSelected(view.equipTab), runtime, executer);
+		StoryLogic.VisibilityUpdate(view.IsTabSelected(view.storyTab), runtime, executer);
+
 	}
 }

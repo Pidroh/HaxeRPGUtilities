@@ -7,6 +7,11 @@ function $extend(from, fields) {
 	return proto;
 }
 Math.__name__ = true;
+var StringTools = function() { };
+StringTools.__name__ = true;
+StringTools.replace = function(s,sub,by) {
+	return s.split(sub).join(by);
+};
 var Transpiler = function() { };
 Transpiler.__name__ = true;
 Transpiler.main = function() {
@@ -22,7 +27,7 @@ Transpiler.main = function() {
 		var tags = a.tags;
 		var body = a.body;
 		var lines = body.split("\n");
-		var cutscene = { messages : [], title : title};
+		var cutscene = { messages : [], title : title, visibilityScript : null};
 		masterOutput.push(cutscene);
 		var _g1 = 0;
 		while(_g1 < lines.length) {
@@ -31,7 +36,9 @@ Transpiler.main = function() {
 			if(l.indexOf("<H") != -1) {
 				var haxeScriptStart = l.indexOf("<H");
 				var script = l.substring(haxeScriptStart + 2,l.indexOf("H>"));
-				console.log("src/Generator/Transpiler.hx:26:",script);
+				if(script.indexOf("CONDITION") != -1) {
+					cutscene.visibilityScript = StringTools.replace(script,"CONDITION","");
+				}
 				l = l.split(l.substring(haxeScriptStart,l.indexOf("H>") - 2))[0];
 			}
 			var parts = l.split(":");
@@ -46,7 +53,7 @@ Transpiler.main = function() {
 		}
 	}
 	js_node_Fs.writeFileSync(directoryPath + "\\story.json",JSON.stringify(masterOutput));
-	console.log("src/Generator/Transpiler.hx:43:",JSON.stringify(masterOutput));
+	console.log("src/Generator/Transpiler.hx:44:",JSON.stringify(masterOutput));
 };
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);
