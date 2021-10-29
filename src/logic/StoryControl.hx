@@ -49,9 +49,14 @@ class StoryControlLogic {
 	// add all necessary arguments
 	public static function Update(update:Float, runtime:StoryRuntimeData, view:View, executer:Interp) {
 		view.StoryButtonAmount(runtime.cutscenes.length);
+		var amountVisible = 0;
+		var amountVisibleRecognized = 0;
 		for (i in 0...runtime.cutscenes.length) {
 			var prog = runtime.persistence.progressionData[runtime.cutscenes[i].title];
 			if(prog.visible){
+				amountVisible++;
+				if(prog.visibleSeen)
+					amountVisibleRecognized++;
 				var completed = false;
 			
 				// if (prog != null) {
