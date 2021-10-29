@@ -24,6 +24,7 @@ class Transpiler {
 					var script = l.substring(haxeScriptStart + 2, l.indexOf("H>"));
 					if (StringTools.contains(script, "CONDITION")) {
             cutscene.visibilityScript = StringTools.replace(script, "CONDITION", "");
+            continue;
           }
 					l = l.split(l.substring(haxeScriptStart, l.indexOf("H>") - 2))[0];
 				}

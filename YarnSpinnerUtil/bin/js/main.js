@@ -38,6 +38,7 @@ Transpiler.main = function() {
 				var script = l.substring(haxeScriptStart + 2,l.indexOf("H>"));
 				if(script.indexOf("CONDITION") != -1) {
 					cutscene.visibilityScript = StringTools.replace(script,"CONDITION","");
+					continue;
 				}
 				l = l.split(l.substring(haxeScriptStart,l.indexOf("H>") - 2))[0];
 			}
@@ -53,7 +54,7 @@ Transpiler.main = function() {
 		}
 	}
 	js_node_Fs.writeFileSync(directoryPath + "\\story.json",JSON.stringify(masterOutput));
-	console.log("src/Generator/Transpiler.hx:44:",JSON.stringify(masterOutput));
+	console.log("src/Generator/Transpiler.hx:45:",JSON.stringify(masterOutput));
 };
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);

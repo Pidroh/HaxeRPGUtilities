@@ -31,7 +31,7 @@ class StoryControlLogic {
 		}
 		view.storyMainAction = (actionId, argument) -> {
 			if (actionId == View.storyAction_Start) {
-				StoryLogic.StartStory(cutscenes[actionId].title, runtime);
+				StoryLogic.StartStory(cutscenes[argument].title, runtime);
 				view.StartStory();
 			}
 
