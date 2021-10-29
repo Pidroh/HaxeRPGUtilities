@@ -67,8 +67,8 @@ class StoryControlLogic {
 			} else{
 				view.StoryButtonHide(i);
 			}
-			
 		}
+		view.SetTabNotification(amountVisible > amountVisibleRecognized, view.storyTab);
 		var cutscene = runtime.cutscene;
 		if (cutscene != null) {
 			var m = cutscene.messages[runtime.currentStoryProgression.index];
@@ -77,6 +77,6 @@ class StoryControlLogic {
 
 		for (i in 0...runtime.cutscenes.length) {}
 		StoryLogic.Update(runtime);
-		StoryLogic.VisibilityUpdate(view.IsTabSelected(view.storyTab), runtime, executer);
+		StoryLogic.VisibilityUpdate(view.IsTabSelected(view.storyTab.component), runtime, executer);
 	}
 }

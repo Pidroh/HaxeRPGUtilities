@@ -36,7 +36,7 @@ class View {
 	public var mainComponent:Component;
 	public var mainComponentB:Component;
 	public var equipTab:Component;
-	public var storyTab:Component;
+	public var storyTab:UIElementWrapper = new UIElementWrapper();
 	public var tabMaster:TabView;
 	public var logText:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
@@ -49,37 +49,39 @@ class View {
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
 	var equipments = new Array<EquipmentView>();
-	var cutsceneStartViews = new Array<CutsceneStartView>(); 
+	var cutsceneStartViews = new Array<CutsceneStartView>();
 	var saveDataDownload:Label;
 	var amountOfStoryMessagesShown = 0;
-	var storyDialog : StoryDialog;
+	var storyDialog:StoryDialog;
+
 	public var storyDialogActive = false;
 
-
-	public function LatestMessageUpdate(message : String, speaker: String, messagePos : Int){
-		if(messagePos >= amountOfStoryMessagesShown){
+	public function LatestMessageUpdate(message:String, speaker:String, messagePos:Int) {
+		if (messagePos >= amountOfStoryMessagesShown) {
 			amountOfStoryMessagesShown = messagePos + 1;
 			storyDialog.mainText.text += '$speaker: $message\n';
 		}
 	}
 
-	public function HideStory(){
+	public function HideStory() {
 		storyDialog.hide();
 		storyDialogActive = false;
 		this.amountOfStoryMessagesShown = 0;
 	}
 
-	public function StartStory(){
+	public function StartStory() {
 		storyDialog.showDialog();
 		storyDialogActive = true;
 		storyDialog.mainText.text = "";
 	}
 
-	public function StoryButtonAmount(amount : Int){
-		while(cutsceneStartViews.length < amount){
+	public function StoryButtonAmount(amount:Int) {
+		while (cutsceneStartViews.length < amount) {
 			var parent = new Box();
-			var startB = new Button(); startB.text = "Watch";
-			var resumeB = new Button(); resumeB.text = "Resume";
+			var startB = new Button();
+			startB.text = "Watch";
+			var resumeB = new Button();
+			resumeB.text = "Resume";
 			resumeB.hidden = true;
 			var title = new Label();
 			title.text = "dummy";
@@ -95,33 +97,42 @@ class View {
 			parent.height = 50;
 			startB.verticalAlign = "center";
 			resumeB.verticalAlign = "center";
-			
-			cutsceneStartViews.push({startButton: startB, resumeButton: resumeB, title: title, parent: parent});
-			var pos = cutsceneStartViews.length-1;
-			startB.onClick = (e) ->{
+
+			cutsceneStartViews.push({
+				startButton: startB,
+				resumeButton: resumeB,
+				title: title,
+				parent: parent
+			});
+			var pos = cutsceneStartViews.length - 1;
+			startB.onClick = (e) -> {
 				storyMainAction(View.storyAction_Start, pos);
 			}
-			resumeB.onClick = (e) ->{
+			resumeB.onClick = (e) -> {
 				storyMainAction(View.storyAction_Continue, pos);
 			}
 
-			storyTab.addComponent(parent);
+			storyTab.component.addComponent(parent);
 		}
 	}
 
-	public function StoryButtonFeed(buttonPos : Int, label : String, cleared : Bool){
+	public function SetTabNotification(notify:Bool, comp:UIElementWrapper) {
+		comp.component.text = comp.baseText;
+		if(notify)
+			comp.component.text += " (!)";
+	}
+
+	public function StoryButtonFeed(buttonPos:Int, label:String, cleared:Bool) {
 		cutsceneStartViews[buttonPos].title.text = label;
 		cutsceneStartViews[buttonPos].parent.show();
 	}
 
-	public function StoryButtonHide(buttonPos : Int){
+	public function StoryButtonHide(buttonPos:Int) {
 		cutsceneStartViews[buttonPos].parent.hide();
-		
 	}
 
 	public function new() {
 		{
-			
 			var boxParentP = new Box();
 			boxParentP.percentHeight = 100;
 			boxParentP.verticalAlign = "bottom";
@@ -230,8 +241,6 @@ class View {
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
 
-
-
 		{
 			equipTab = new ContinuousHBox();
 			// equipTab.percentWidth = 100;
@@ -243,7 +252,6 @@ class View {
 				equipmentMainAction(-1, View.equipmentAction_DiscardBad);
 			}
 			equipTab.addComponent(buttonDiscardBad);
-
 
 			equipTab.text = "Equipment";
 			var scroll = CreateScrollable(tabMaster);
@@ -261,20 +269,20 @@ class View {
 			storyTab.height = 300;
 			storyTab.text = "Story";
 			tabMaster.addComponent(storyTab);
-			this.storyTab = storyTab;
+			this.storyTab.component = storyTab;
+			this.storyTab.baseText = storyTab.text;
 
-			//var messageLabel = new Label();
-			//messageLabel.percentWidth = 100;
-			//messageLabel.textAlign = "left";
-			//storyTab.addComponent(messageLabel);
-			//messageLabel.text = "Biahdfsauidhsaiudhsa.\nDIOASdjasiodjaso\nFred: I am Fred.";
-
+			// var messageLabel = new Label();
+			// messageLabel.percentWidth = 100;
+			// messageLabel.textAlign = "left";
+			// storyTab.addComponent(messageLabel);
+			// messageLabel.text = "Biahdfsauidhsaiudhsa.\nDIOASdjasiodjaso\nFred: I am Fred.";
 		}
-		
+
 		storyDialog = new StoryDialog();
-		storyDialog.advanceButton.onClick = (e)->{
+		storyDialog.advanceButton.onClick = (e) -> {
 			storyMainAction(View.storyAction_AdvanceMessage, 0);
-		}		
+		}
 	}
 
 	public function FeedSave(saveDataContent:String) {
@@ -473,7 +481,7 @@ class View {
 		}
 	}
 
-	public function IsTabSelected(tab : Component):Bool{
+	public function IsTabSelected(tab:Component):Bool {
 		return tabMaster.selectedPage == tab;
 	}
 
@@ -572,45 +580,53 @@ typedef EquipmentView = {
 };
 
 typedef CutsceneStartView = {
-	var startButton : Button;
-	var resumeButton : Button;
-	var parent : Component;
-	var title : Label;
+	var startButton:Button;
+	var resumeButton:Button;
+	var parent:Component;
+	var title:Label;
 }
 
-class StoryDialog extends Dialog{
-	public var mainText : Label;
-	public var advanceButton : Button;
+class StoryDialog extends Dialog {
+	public var mainText:Label;
+	public var advanceButton:Button;
+
 	public function new() {
-        super();
-        title = "Entry Form";
+		super();
+		title = "Entry Form";
 		width = 300;
 		this.percentHeight = 80;
-		var scroll = new Scroll(); 
+		var scroll = new Scroll();
 		scroll.percentHeight = 90;
 		scroll.percentWidth = 100;
 		addComponent(scroll);
 
-		//var vbox = new VBox();
-		//vbox.percentWidth = 100;
+		// var vbox = new VBox();
+		// vbox.percentWidth = 100;
 
 		mainText = new Label();
 		mainText.text = "";
 		mainText.percentWidth = 100;
 		scroll.addComponent(mainText);
-		//vbox.addComponent(mainText);
-		
+		// vbox.addComponent(mainText);
+
 		advanceButton = new Button();
 		advanceButton.horizontalAlign = "right";
 		advanceButton.percentWidth = 100;
 		advanceButton.percentHeight = 10;
 		advanceButton.text = "=";
 		advanceButton.verticalAlign = "bottom";
-		//addComponent(vbox);
+		// addComponent(vbox);
 		this.addComponent(advanceButton);
-		
 
-		
-        //buttons = DialogButton.CANCEL | "Custom Button";
-    }
+		// buttons = DialogButton.CANCEL | "Custom Button";
+	}
+}
+
+class UIElementWrapper {
+	public var component:Component;
+	public var baseText:String;
+
+	public function new (){
+
+	}
 }
