@@ -88,6 +88,8 @@ class Main {
 		}
 		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
 		var scriptExecuter = new Interp();
+		var global = new Map<String, Float>();
+		scriptExecuter.variables.set("global", global);
 
 
 		// goblin
@@ -215,6 +217,9 @@ class Main {
 		var saveFileImporterSetup = false;
 
 		update = function(timeStamp:Float):Bool {
+
+			global["maxarea"] = bm.wdata.maxArea;
+
 			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
 			ActorToView(bm.wdata.enemy, view.enemyView);

@@ -33,14 +33,6 @@ class StoryLogic {
 	// find story progression and reset it
 	public static function StartStory(sceneId:String, runtime:StoryRuntimeData) {
 		var progressionData = runtime.persistence.progressionData;
-		if (progressionData.exists(sceneId) == false) {
-			progressionData.set(sceneId, {
-				index: 0,
-				visible: true,
-				timesCompleted: 0,
-				visibleSeen: false
-			});
-		}
 		progressionData[sceneId].index = 0;
 		runtime.toShow = null;
 
@@ -70,7 +62,7 @@ typedef StoryPersistence = {
 }
 
 typedef StoryProgress = {
-	var index:Int;
+	var index:Int; //message index, not cutscene index
 	var timesCompleted:Int;
 	var visible:Bool;
 	var visibleSeen:Bool;

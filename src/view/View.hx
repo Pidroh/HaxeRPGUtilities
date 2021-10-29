@@ -96,7 +96,7 @@ class View {
 			startB.verticalAlign = "center";
 			resumeB.verticalAlign = "center";
 			
-			cutsceneStartViews.push({startButton: startB, resumeButton: resumeB, title: title});
+			cutsceneStartViews.push({startButton: startB, resumeButton: resumeB, title: title, parent: parent});
 			var pos = cutsceneStartViews.length-1;
 			startB.onClick = (e) ->{
 				storyMainAction(View.storyAction_Start, pos);
@@ -111,6 +111,12 @@ class View {
 
 	public function StoryButtonFeed(buttonPos : Int, label : String, cleared : Bool){
 		cutsceneStartViews[buttonPos].title.text = label;
+		cutsceneStartViews[buttonPos].parent.show();
+	}
+
+	public function StoryButtonHide(buttonPos : Int){
+		cutsceneStartViews[buttonPos].parent.hide();
+		
 	}
 
 	public function new() {
@@ -568,6 +574,7 @@ typedef EquipmentView = {
 typedef CutsceneStartView = {
 	var startButton : Button;
 	var resumeButton : Button;
+	var parent : Component;
 	var title : Label;
 }
 
