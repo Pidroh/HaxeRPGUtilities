@@ -8,6 +8,9 @@ class StoryControlLogic {
 	public static function Init(jsonStory:String, view:View, runtime:StoryRuntimeData) {
 		var cutscenes = Json.parse(jsonStory);
 		runtime.cutscenes = cutscenes;
+		view.AddButton("cutscenestart", "", (e)->{
+			
+		});
 
 		var parser = new hscript.Parser();
 		for (i in 0...cutscenes.length) {
