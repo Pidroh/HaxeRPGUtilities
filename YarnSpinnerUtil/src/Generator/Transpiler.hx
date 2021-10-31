@@ -5,6 +5,7 @@ import StoryData;
 
 class Transpiler {
 	static function main() {
+    trace("Transpiler begin");
 		var directoryPath = "C:\\Users\\user\\gamedev\\_haxe\\HaxeRPGUtilities\\assets";
 		var json = File.getContent("C:\\Users\\user\\gamedev\\_haxe\\HaxeRPGUtilities.wiki\\yarn.json");
 		var master:Array<Dynamic> = Json.parse(json);
@@ -14,7 +15,7 @@ class Transpiler {
 			var tags = a.tags;
 			var body:String = a.body;
 			var lines = body.split('\n');
-			var cutscene:Cutscene = {messages: [], title: title, visibilityScript: null};
+			var cutscene:Cutscene = {messages: [], title: title, visibilityScript: null, actionLabel: null};
 			masterOutput.push(cutscene);
 
 			for (l in lines) {
@@ -24,6 +25,11 @@ class Transpiler {
 					var script = l.substring(haxeScriptStart + 2, l.indexOf("H>"));
 					if (StringTools.contains(script, "CONDITION")) {
             cutscene.visibilityScript = StringTools.replace(script, "CONDITION", "");
+            continue;
+          }
+          if(script.indexOf("BUTTONLABEL") != -1) {
+            cutscene.actionLabel = StringTools.replace(script,"BUTTONLABEL","");
+            trace("BUTTON LABEL FOUND");
             continue;
           }
 					l = l.split(l.substring(haxeScriptStart, l.indexOf("H>") - 2))[0];

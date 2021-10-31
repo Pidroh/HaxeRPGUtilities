@@ -26,7 +26,7 @@ class StoryControlLogic {
 				});
 			}
 			var vs = cutscenes[i].visibilityScript;
-			trace(vs);
+			//trace(vs);
 			if (vs != null) {
 				var script:Expr = parser.parseString(vs);
 
@@ -78,6 +78,11 @@ class StoryControlLogic {
 				view.StoryButtonHide(i);
 			}
 		}
+		view.ButtonEnabled("cutscenestart", runtime.cutsceneStartable != null);
+		if(runtime.cutsceneStartable != null){
+			view.ButtonChangeLabel("cutscenestart", runtime.cutsceneStartable.actionLabel+"\n<i>Story</i>");
+		}
+		
 		view.SetTabNotification(amountVisible > amountVisibleRecognized, view.storyTab);
 		var cutscene = runtime.cutscene;
 		if (cutscene != null) {

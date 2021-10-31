@@ -15,6 +15,7 @@ StringTools.replace = function(s,sub,by) {
 var Transpiler = function() { };
 Transpiler.__name__ = true;
 Transpiler.main = function() {
+	console.log("src/Generator/Transpiler.hx:8:","Transpiler begin");
 	var directoryPath = "C:\\Users\\user\\gamedev\\_haxe\\HaxeRPGUtilities\\assets";
 	var json = js_node_Fs.readFileSync("C:\\Users\\user\\gamedev\\_haxe\\HaxeRPGUtilities.wiki\\yarn.json",{ encoding : "utf8"});
 	var master = JSON.parse(json);
@@ -27,7 +28,7 @@ Transpiler.main = function() {
 		var tags = a.tags;
 		var body = a.body;
 		var lines = body.split("\n");
-		var cutscene = { messages : [], title : title, visibilityScript : null};
+		var cutscene = { messages : [], title : title, visibilityScript : null, actionLabel : null};
 		masterOutput.push(cutscene);
 		var _g1 = 0;
 		while(_g1 < lines.length) {
@@ -38,6 +39,11 @@ Transpiler.main = function() {
 				var script = l.substring(haxeScriptStart + 2,l.indexOf("H>"));
 				if(script.indexOf("CONDITION") != -1) {
 					cutscene.visibilityScript = StringTools.replace(script,"CONDITION","");
+					continue;
+				}
+				if(script.indexOf("BUTTONLABEL") != -1) {
+					cutscene.actionLabel = StringTools.replace(script,"BUTTONLABEL","");
+					console.log("src/Generator/Transpiler.hx:32:","BUTTON LABEL FOUND");
 					continue;
 				}
 				l = l.split(l.substring(haxeScriptStart,l.indexOf("H>") - 2))[0];
@@ -54,7 +60,7 @@ Transpiler.main = function() {
 		}
 	}
 	js_node_Fs.writeFileSync(directoryPath + "\\story.json",JSON.stringify(masterOutput));
-	console.log("src/Generator/Transpiler.hx:45:",JSON.stringify(masterOutput));
+	console.log("src/Generator/Transpiler.hx:51:",JSON.stringify(masterOutput));
 };
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);

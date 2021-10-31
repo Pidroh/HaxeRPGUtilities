@@ -451,9 +451,21 @@ class View {
 	}
 
 	public function ButtonLabel(id:String, label:String) {
+		
+		//var b = buttonMap[id];
+		//var lab = cast( b.getComponentAt(0), Label);
+		//var lab = b.getComponentAt(0);
+		//trace(lab);
+		//lab.htmlText = label;
+		//b.text = label;
+	}
+
+	public function ButtonChangeLabel(id:String, label:String) {
 		var b = buttonMap[id];
+		// b.allowInteraction = visible;
 		b.text = label;
 	}
+
 
 	public function ButtonEnabled(id:String, enabled:Bool) {
 		var b = buttonMap[id];
