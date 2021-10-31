@@ -138,24 +138,7 @@ class BattleManager {
 			recovering: false,
 			sleeping: false
 		};
-		w.playerActions.set("advance", {
-			visible: true,
-			enabled: false,
-			timesUsed: 0,
-			mode: 0
-		});
-		w.playerActions.set("retreat", {
-			visible: false,
-			enabled: false,
-			timesUsed: 0,
-			mode: 0
-		});
-		w.playerActions.set("levelup", {
-			visible: false,
-			enabled: false,
-			timesUsed: 0,
-			mode: 0
-		});
+
 
 		wdata = w;
 
@@ -171,7 +154,8 @@ class BattleManager {
 			var w = wdata;
 			if (wdata.playerActions.exists(id) == false) {
 				wdata.playerActions[id] = action;
-				playerActions[id] = {actionData: w.playerActions[id], actualAction: callback}
+				if(callback != null)
+					playerActions[id] = {actionData: w.playerActions[id], actualAction: callback}
 			}
 		}
 
@@ -195,6 +179,38 @@ class BattleManager {
 			wdata.enemy = null;
 			wdata.sleeping = !wdata.sleeping;
 		});
+
+		addAction("advance", {
+			visible: true,
+			enabled: false,
+			timesUsed: 0,
+			mode: 0
+		}, null);
+
+		addAction("retreat", {
+			visible: false,
+			enabled: false,
+			timesUsed: 0,
+			mode: 0
+		}, null);
+		addAction("levelup", {
+			visible: false,
+			enabled: false,
+			timesUsed: 0,
+			mode: 0
+		}, null);
+		addAction("tabequipment", {
+			visible: false,
+			enabled: false,
+			timesUsed: 0,
+			mode: 0
+		}, null);
+		addAction("tabmemory", {
+			visible: false,
+			enabled: false,
+			timesUsed: 0,
+			mode: 0
+		}, null);
 
 		addAction("repeat", createAction(), (a) -> {
 			wdata.killedInArea[wdata.battleArea] = 0;

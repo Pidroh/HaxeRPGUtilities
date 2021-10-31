@@ -26,9 +26,6 @@ var BattleManager = function() {
 	_g.h["SpeedCount"] = 0;
 	var stats = _g;
 	var w = { worldVersion : 401, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
-	w.playerActions.h["advance"] = { visible : true, enabled : false, timesUsed : 0, mode : 0};
-	w.playerActions.h["retreat"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
-	w.playerActions.h["levelup"] = { visible : false, enabled : false, timesUsed : 0, mode : 0};
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -100,8 +97,10 @@ BattleManager.prototype = {
 			var w = _gthis.wdata;
 			if(Object.prototype.hasOwnProperty.call(_gthis.wdata.playerActions.h,id) == false) {
 				_gthis.wdata.playerActions.h[id] = action;
-				var v = { actionData : w.playerActions.h[id], actualAction : callback};
-				_gthis.playerActions.h[id] = v;
+				if(callback != null) {
+					var v = { actionData : w.playerActions.h[id], actualAction : callback};
+					_gthis.playerActions.h[id] = v;
+				}
 			}
 		};
 		var createAction = function() {
@@ -112,6 +111,11 @@ BattleManager.prototype = {
 			_gthis.wdata.enemy = null;
 			_gthis.wdata.sleeping = !_gthis.wdata.sleeping;
 		});
+		addAction("advance",{ visible : true, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("retreat",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("levelup",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("tabequipment",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("tabmemory",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
 		addAction("repeat",createAction(),function(a) {
 			_gthis.wdata.killedInArea[_gthis.wdata.battleArea] = 0;
 		});

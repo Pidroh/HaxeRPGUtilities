@@ -35,8 +35,9 @@ class View {
 	public var areaLabel:ValueView;
 	public var mainComponent:Component;
 	public var mainComponentB:Component;
-	public var equipTab:Component;
+	public var equipTabChild:Component;
 	public var storyTab:UIElementWrapper = new UIElementWrapper();
+	public var equipTab:UIElementWrapper = new UIElementWrapper();
 	public var tabMaster:TabView;
 	public var logText:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
@@ -242,26 +243,29 @@ class View {
 		enemyView = GetActorView("Enemy", battleView);
 
 		{
-			equipTab = new ContinuousHBox();
-			// equipTab.percentWidth = 100;
-			equipTab.width = 600;
-			// equipTab.height = 300;
+			equipTabChild = new ContinuousHBox();
+			// equipTabChild.percentWidth = 100;
+			equipTabChild.width = 600;
+			// equipTabChild.height = 300;
 			var buttonDiscardBad = new Button();
 			buttonDiscardBad.text = "Discard worse equipment";
 			buttonDiscardBad.onClick = event -> {
 				equipmentMainAction(-1, View.equipmentAction_DiscardBad);
 			}
-			equipTab.addComponent(buttonDiscardBad);
-
-			equipTab.text = "Equipment";
+			equipTabChild.addComponent(buttonDiscardBad);
+			
 			var scroll = CreateScrollable(tabMaster);
+			equipTab.baseText = "Equipment";
+			equipTab.component = scroll;
+			equipTab.parent = tabMaster;
+			equipTab.desiredPosition = 1;
 			scroll.height = 300;
-
 			scroll.text = "Equipment";
-			scroll.addComponent(equipTab);
+			scroll.addComponent(equipTabChild);
+			//scroll.hidden = true;
 			// scroll.percentWidth = 100;
 			scroll.width = 640;
-			// tabMaster.addComponent(equipTab);
+			// tabMaster.addComponent(equipTabChild);
 		}
 		{
 			var storyTab = new ContinuousHBox();
@@ -298,6 +302,20 @@ class View {
 			DSADSADASD
 			</a>					
 		**/
+	}
+
+	//the current implementation for tab elements is to remove and add back to the parent
+	public function TabVisible(element:UIElementWrapper, visible : Bool){
+		var currentStateVisible = null != element.parent;
+		if(visible != currentStateVisible){
+			if(visible){
+				element.parent.addComponentAt(element.component, element.desiredPosition);
+			} else{
+				element.parent.removeComponent(element.component);
+			}
+
+		}
+			
 	}
 
 	public function CreateScrollable(parent:Component) {
@@ -370,7 +388,7 @@ class View {
 				values: [],
 				actionButtons: buttonsAct
 			};
-			equipTab.addComponent(viewParent);
+			equipTabChild.addComponent(viewParent);
 			equipments.push(ev);
 		}
 		var i = 0;
@@ -454,17 +472,8 @@ class View {
 		
 		var b = buttonMap[id];
 		var lab = cast( b.getComponentAt(0), Label);
-		//var lab = b.getComponentAt(0);
-		trace(Type.typeof(lab));
-		//var lab = cast(b.getComponentAt(0);
-		//b.text = "ss";
 		if(lab!= null)
 			lab.htmlText = label;
-		
-		//b.text = label;
-		//trace(lab);
-		//lab.htmlText = label;
-		
 	}
 
 
@@ -638,6 +647,8 @@ class StoryDialog extends Dialog {
 class UIElementWrapper {
 	public var component:Component;
 	public var baseText:String;
+	public var desiredPosition : Int;
+	public var parent: Component;
 
 	public function new (){
 

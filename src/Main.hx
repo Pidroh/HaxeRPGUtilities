@@ -251,7 +251,7 @@ class Main {
 					saveFileImporterSetup = true;
 				}
 			}
-
+  
 			/*
 				var amountEquipmentShow = 0;
 				for (i in 0...bm.wdata.hero.equipment.length) {
@@ -348,6 +348,15 @@ class Main {
 			buttonToAction("levelup", "levelup");
 			buttonToAction("sleep", "sleep");
 			buttonToAction("repeat", "repeat");
+
+			{
+				var action = bm.wdata.playerActions["tabequipment"];
+				view.TabVisible(view.equipTab, action.visible);
+			}
+			{
+				var action = bm.wdata.playerActions["tabmemr"];
+				view.TabVisible(view.equipTab, action.visible);
+			}
 
 			var sleepAct = bm.wdata.playerActions["sleep"];
 			if (sleepAct.mode == 0) {
