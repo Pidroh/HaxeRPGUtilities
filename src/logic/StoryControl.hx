@@ -63,7 +63,7 @@ class StoryControlLogic {
 			if(prog.timesCompleted == 0 && prog.visible == true){
 				runtime.cutsceneStartable = runtime.cutscenes[i];
 			}
-			if(prog.visible){
+			if(prog.visible && prog.timesCompleted > 0){
 				amountVisible++;
 				if(prog.visibleSeen)
 					amountVisibleRecognized++;
