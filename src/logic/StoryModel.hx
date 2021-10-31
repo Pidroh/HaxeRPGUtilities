@@ -50,6 +50,7 @@ class StoryLogic {
 	public static function MessageAdvance(runtime:StoryRuntimeData) {
 		runtime.currentStoryProgression.index++;
 		if (runtime.currentStoryProgression.index >= runtime.cutscene.messages.length) {
+            runtime.currentStoryProgression.timesCompleted++;
 			runtime.currentStoryProgression = null;
 			runtime.cutscene = null;
 		}

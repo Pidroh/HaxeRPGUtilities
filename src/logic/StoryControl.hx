@@ -57,6 +57,7 @@ class StoryControlLogic {
 		view.StoryButtonAmount(runtime.cutscenes.length);
 		var amountVisible = 0;
 		var amountVisibleRecognized = 0;
+		runtime.cutsceneStartable = null;
 		for (i in 0...runtime.cutscenes.length) {
 			var prog = runtime.persistence.progressionData[runtime.cutscenes[i].title];
 			if(prog.timesCompleted == 0 && prog.visible == true){
