@@ -36,6 +36,7 @@ class Main {
 
 	static function main() {
 		Toolkit.init();
+		trace("sss");
 		var key = "privacymemory";
 
 		var privacyAcceptance:String = Browser.getLocalStorage().getItem(key);
