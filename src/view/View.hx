@@ -1,3 +1,4 @@
+import js.html.AbortController;
 import haxe.ui.components.Scroll;
 import haxe.ui.containers.dialogs.Dialog;
 import haxe.ui.containers.ContinuousHBox;
@@ -36,8 +37,8 @@ class View {
 	public var mainComponent:Component;
 	public var mainComponentB:Component;
 	public var equipTabChild:Component;
-	public var storyTab:UIElementWrapper = new UIElementWrapper();
-	public var equipTab:UIElementWrapper = new UIElementWrapper();
+	public var storyTab:UIElementWrapper;
+	public var equipTab:UIElementWrapper;
 	public var tabMaster:TabView;
 	public var logText:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
@@ -254,33 +255,22 @@ class View {
 			}
 			equipTabChild.addComponent(buttonDiscardBad);
 			
-			var scroll = CreateScrollable(tabMaster);
-			equipTab.baseText = "Equipment";
-			equipTab.component = scroll;
-			equipTab.parent = tabMaster;
-			equipTab.desiredPosition = 1;
+			var scroll = CreateScrollable(null);
+			
 			scroll.height = 300;
 			scroll.text = "Equipment";
 			scroll.addComponent(equipTabChild);
-			//scroll.hidden = true;
-			// scroll.percentWidth = 100;
 			scroll.width = 640;
-			// tabMaster.addComponent(equipTabChild);
+			equipTab = new UIElementWrapper(scroll, tabMaster);
 		}
 		{
-			var storyTab = new ContinuousHBox();
-			storyTab.width = 600;
-			storyTab.height = 300;
-			storyTab.text = "Story";
-			tabMaster.addComponent(storyTab);
-			this.storyTab.component = storyTab;
-			this.storyTab.baseText = storyTab.text;
+			var storyTabComp = new ContinuousHBox();
+			storyTabComp.width = 600;
+			storyTabComp.height = 300;
+			storyTabComp.text = "Story";
+			//tabMaster.addComponent(storyTabComp);
 
-			// var messageLabel = new Label();
-			// messageLabel.percentWidth = 100;
-			// messageLabel.textAlign = "left";
-			// storyTab.addComponent(messageLabel);
-			// messageLabel.text = "Biahdfsauidhsaiudhsa.\nDIOASdjasiodjaso\nFred: I am Fred.";
+			this.storyTab = new UIElementWrapper(storyTabComp, tabMaster);
 		}
 
 		storyDialog = new StoryDialog();
@@ -306,11 +296,15 @@ class View {
 
 	//the current implementation for tab elements is to remove and add back to the parent
 	public function TabVisible(element:UIElementWrapper, visible : Bool){
-		var currentStateVisible = null != element.parent;
+		var currentStateVisible = null != element.component.parentComponent;
 		if(visible != currentStateVisible){
 			if(visible){
 				element.parent.addComponentAt(element.component, element.desiredPosition);
+				
 			} else{
+				tabMaster.removePage(element.desiredPosition);	
+
+				//tabMaster.removeAllPages();
 				element.parent.removeComponent(element.component);
 			}
 
@@ -321,7 +315,8 @@ class View {
 	public function CreateScrollable(parent:Component) {
 		var container:Component;
 		container = new ScrollView();
-		parent.addComponent(container);
+		if(parent != null)
+			parent.addComponent(container);
 		return container;
 	}
 
@@ -650,7 +645,10 @@ class UIElementWrapper {
 	public var desiredPosition : Int;
 	public var parent: Component;
 
-	public function new (){
-
+	public function new (component, parent){
+		this.component = component;
+		this.baseText = component.text;
+		this.desiredPosition = parent.getComponentIndex(component);
+		this.parent = parent;
 	}
 }

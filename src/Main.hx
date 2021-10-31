@@ -349,13 +349,14 @@ class Main {
 			buttonToAction("sleep", "sleep");
 			buttonToAction("repeat", "repeat");
 
+			
 			{
 				var action = bm.wdata.playerActions["tabequipment"];
 				view.TabVisible(view.equipTab, action.visible);
 			}
 			{
-				var action = bm.wdata.playerActions["tabmemr"];
-				view.TabVisible(view.equipTab, action.visible);
+				var action = bm.wdata.playerActions["tabmemory"];
+				view.TabVisible(view.storyTab, action.visible);
 			}
 
 			var sleepAct = bm.wdata.playerActions["sleep"];
