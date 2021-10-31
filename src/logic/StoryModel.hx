@@ -73,6 +73,7 @@ typedef StoryRuntimeData = {
 	var cutscenes:Array<Cutscene>;
 	var visibilityConditionScripts:Array<Expr>;
 	var cutscene:Cutscene;
+    var cutsceneStartable:Cutscene;
 	var persistence:StoryPersistence;
 	var currentCutsceneIndex:Int;
 	var toShow:Message;

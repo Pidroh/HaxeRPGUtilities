@@ -9,7 +9,10 @@ class StoryControlLogic {
 		var cutscenes = Json.parse(jsonStory);
 		runtime.cutscenes = cutscenes;
 		view.AddButton("cutscenestart", "", (e)->{
-			
+			if(runtime.cutsceneStartable != null && runtime.cutscene == null){
+				StoryLogic.StartStory(runtime.cutsceneStartable.title, runtime);
+				view.StartStory();
+			}
 		});
 
 		var parser = new hscript.Parser();
@@ -56,6 +59,9 @@ class StoryControlLogic {
 		var amountVisibleRecognized = 0;
 		for (i in 0...runtime.cutscenes.length) {
 			var prog = runtime.persistence.progressionData[runtime.cutscenes[i].title];
+			if(prog.timesCompleted == 0 && prog.visible == true){
+				runtime.cutsceneStartable = runtime.cutscenes[i];
+			}
 			if(prog.visible){
 				amountVisible++;
 				if(prog.visibleSeen)

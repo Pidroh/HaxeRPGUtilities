@@ -79,6 +79,7 @@ class Main {
 			toShow: null,
 			currentCutsceneIndex: -1,
 			cutscene: null,
+			cutsceneStartable: null,
 			cutscenes: null,
 			visibilityConditionScripts: [],
 			persistence: {
