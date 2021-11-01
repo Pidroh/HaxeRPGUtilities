@@ -265,15 +265,22 @@ class View {
 			scroll.addComponent(equipTabChild);
 			scroll.width = 640;
 			equipTab = new UIElementWrapper(scroll, tabMaster);
+			equipTab.desiredPosition = 1;
 		}
 		{
 			var storyTabComp = new ContinuousHBox();
 			storyTabComp.width = 600;
 			storyTabComp.height = 300;
-			storyTabComp.text = "Story";
+			storyTabComp.text = "Memories";
+			var storyLabel = new Label();
+			storyLabel.percentWidth = 100;
+			storyLabel.textAlign = "center";
+			storyLabel.text = "Revisit your memories of scenes you have seen";
+			storyTabComp.addComponent(storyLabel);
 			//tabMaster.addComponent(storyTabComp);
 
 			this.storyTab = new UIElementWrapper(storyTabComp, tabMaster);
+			storyTab.desiredPosition = 2;
 		}
 
 		storyDialog = new StoryDialog();
@@ -299,7 +306,7 @@ class View {
 
 	//the current implementation for tab elements is to remove and add back to the parent
 	public function TabVisible(element:UIElementWrapper, visible : Bool){
-		var currentStateVisible = null != element.component.parentComponent;
+		var currentStateVisible = element.tabVisible;
 		if(visible != currentStateVisible){
 			if(visible){
 				element.parent.addComponentAt(element.component, element.desiredPosition);
@@ -310,8 +317,8 @@ class View {
 				//tabMaster.removeAllPages();
 				element.parent.removeComponent(element.component);
 			}
-
 		}
+		element.tabVisible = visible;
 			
 	}
 
@@ -647,6 +654,9 @@ class UIElementWrapper {
 	public var baseText:String;
 	public var desiredPosition : Int;
 	public var parent: Component;
+
+	//for tab only
+	public var tabVisible = false;
 
 	public function new (component, parent){
 		this.component = component;

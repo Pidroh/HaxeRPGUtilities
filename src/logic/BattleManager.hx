@@ -497,6 +497,13 @@ $baseInfo';
 		canAdvance = wdata.battleArea < wdata.maxArea;
 		canRetreat = wdata.battleArea > 0;
 		canLevelUp = wdata.hero.xp.value >= wdata.hero.xp.calculatedMax;
+		var hasEquipment = wdata.hero.equipment.length > 0;
+
+		{
+			var lu = wdata.playerActions["tabequipment"];
+			lu.enabled = hasEquipment;
+			lu.visible = lu.enabled || lu.visible;
+		}
 		{
 			var lu = wdata.playerActions["levelup"];
 			lu.visible = canLevelUp;

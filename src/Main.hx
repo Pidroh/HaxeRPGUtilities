@@ -348,9 +348,6 @@ class Main {
 			view.battleView.hidden = !storyHappened;
 			view.areaContainer.hidden = !storyHappened;
 
-			var hasEquipment = bm.wdata.hero.equipment.length > 0;
-			view.TabVisible(view.equipTab, hasEquipment);
-
 			time = timeStamp;
 			buttonToAction("advance", "advance");
 			view.ButtonVisibility("advance", storyHappened);

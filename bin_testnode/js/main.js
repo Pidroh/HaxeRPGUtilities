@@ -371,6 +371,10 @@ BattleManager.prototype = {
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
 		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
+		var hasEquipment = this.wdata.hero.equipment.length > 0;
+		var lu = this.wdata.playerActions.h["tabequipment"];
+		lu.enabled = hasEquipment;
+		lu.visible = lu.enabled || lu.visible;
 		var lu = this.wdata.playerActions.h["levelup"];
 		lu.visible = this.canLevelUp;
 		lu.enabled = this.canLevelUp;
