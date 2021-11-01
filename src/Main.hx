@@ -344,6 +344,7 @@ class Main {
 
 			time = timeStamp;
 			buttonToAction("advance", "advance");
+			view.ButtonVisibility("advance", storyRuntime.persistence.progressionData[storyRuntime.cutscenes[0].title].timesCompleted > 0);
 			buttonToAction("retreat", "retreat");
 			buttonToAction("levelup", "levelup");
 			buttonToAction("sleep", "sleep");

@@ -29,6 +29,8 @@ var BattleManager = function() {
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
+	var v = this.wdata.hero.attributesCalculated.h["LifeMax"];
+	this.wdata.hero.attributesCalculated.h["Life"] = v;
 };
 BattleManager.__name__ = true;
 BattleManager.prototype = {

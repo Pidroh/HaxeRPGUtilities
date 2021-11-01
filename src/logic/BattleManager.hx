@@ -144,6 +144,7 @@ class BattleManager {
 
 		ReinitGameValues();
 		ChangeBattleArea(0);
+		wdata.hero.attributesCalculated["Life"] = wdata.hero.attributesCalculated["LifeMax"];
 	}
 
 	// currently everything gets saved, even stuff that shouldn't
@@ -185,7 +186,12 @@ class BattleManager {
 			enabled: false,
 			timesUsed: 0,
 			mode: 0
-		}, null);
+		}, 
+		null
+		//(a) ->{
+		//	AdvanceArea();
+		//}
+		);
 
 		addAction("retreat", {
 			visible: false,
