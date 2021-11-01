@@ -48,9 +48,9 @@ class View {
 	public var equipmentMainAction:(Int, Int) -> Void;
 	public var storyMainAction:(Int, Int) -> Void;
 
-	var areaContainer:Component;
-	var levelContainer : Component;
-	var battleView:Component;
+	public var areaContainer:Component;
+	public var levelContainer:Component;
+	public var battleView:Component;
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
 	var equipments = new Array<EquipmentView>();

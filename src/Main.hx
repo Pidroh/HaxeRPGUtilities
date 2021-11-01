@@ -342,9 +342,15 @@ class Main {
 
 			var delta = timeStamp - time;
 
+			var storyHappened = storyRuntime.persistence.progressionData[storyRuntime.cutscenes[0].title].timesCompleted > 0;
+
+			view.levelContainer.hidden = !storyHappened;
+			view.battleView.hidden = !storyHappened;
+			view.areaContainer.hidden = !storyHappened;
+
 			time = timeStamp;
 			buttonToAction("advance", "advance");
-			view.ButtonVisibility("advance", storyRuntime.persistence.progressionData[storyRuntime.cutscenes[0].title].timesCompleted > 0);
+			view.ButtonVisibility("advance", storyHappened);
 			buttonToAction("retreat", "retreat");
 			buttonToAction("levelup", "levelup");
 			buttonToAction("sleep", "sleep");
