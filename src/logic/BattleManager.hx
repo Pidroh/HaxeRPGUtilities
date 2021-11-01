@@ -504,6 +504,7 @@ $baseInfo';
 			lu.enabled = hasEquipment;
 			lu.visible = lu.enabled || lu.visible;
 		}
+
 		{
 			var lu = wdata.playerActions["levelup"];
 			lu.visible = canLevelUp;

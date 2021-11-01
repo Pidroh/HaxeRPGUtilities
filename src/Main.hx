@@ -363,7 +363,8 @@ class Main {
 			}
 			{
 				var action = bm.wdata.playerActions["tabmemory"];
-				view.TabVisible(view.storyTab, action.visible);
+				//view.TabVisible(view.storyTab, action.visible);
+				view.TabVisible(view.storyTab, storyHappened);
 			}
 
 			var sleepAct = bm.wdata.playerActions["sleep"];
