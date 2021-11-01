@@ -48,6 +48,9 @@ class View {
 	public var equipmentMainAction:(Int, Int) -> Void;
 	public var storyMainAction:(Int, Int) -> Void;
 
+	var areaContainer:Component;
+	var levelContainer : Component;
+	var battleView:Component;
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
 	var equipments = new Array<EquipmentView>();
@@ -227,18 +230,18 @@ class View {
 		logText = log;
 		logContainer.addComponent(log);
 
-		var areaContainer = CreateContainer(box, true);
+		areaContainer = CreateContainer(box, true);
 		areaLabel = CreateValueView(areaContainer, false, "Area: ");
 		enemyToAdvance = CreateValueView(areaContainer, true, "Progress: ");
 
-		var levelContainer = CreateContainer(box, true);
+		levelContainer = CreateContainer(box, true);
 		level = CreateValueView(levelContainer, false, "Level: ");
 		xpBar = CreateValueView(levelContainer, true, "XP: ");
 		speedView = CreateValueView(levelContainer, false, "Speed: ");
 		defView = CreateValueView(levelContainer, false, "Def: ");
 		mDefView = CreateValueView(levelContainer, false, "mDef: ");
 
-		var battleView = CreateContainer(box, false);
+		battleView = CreateContainer(box, false);
 		battleView.width = 400;
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
