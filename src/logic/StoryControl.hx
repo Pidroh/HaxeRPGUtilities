@@ -8,8 +8,8 @@ class StoryControlLogic {
 	public static function Init(jsonStory:String, view:View, runtime:StoryRuntimeData) {
 		var cutscenes = Json.parse(jsonStory);
 		runtime.cutscenes = cutscenes;
-		view.AddButton("cutscenestart", "", (e)->{
-			if(runtime.cutsceneStartable != null && runtime.cutscene == null){
+		view.AddButton("cutscenestart", "", (e) -> {
+			if (runtime.cutsceneStartable != null && runtime.cutscene == null) {
 				StoryLogic.StartStory(runtime.cutsceneStartable.title, runtime);
 				view.StartStory();
 			}
@@ -27,7 +27,7 @@ class StoryControlLogic {
 				});
 			}
 			var vs = cutscenes[i].visibilityScript;
-			//trace(vs);
+			// trace(vs);
 			if (vs != null) {
 				var script:Expr = parser.parseString(vs);
 
@@ -37,8 +37,14 @@ class StoryControlLogic {
 			}
 		}
 		view.storyMainAction = (actionId, argument) -> {
+
 			if (actionId == View.storyAction_Start) {
 				StoryLogic.StartStory(cutscenes[argument].title, runtime);
+				view.StartStory();
+			}
+
+			if (actionId == View.storyAction_Continue) {
+				StoryLogic.StartStory(cutscenes[argument].title, runtime, true);
 				view.StartStory();
 			}
 
@@ -69,36 +75,43 @@ class StoryControlLogic {
 		runtime.cutsceneStartable = null;
 		for (i in 0...runtime.cutscenes.length) {
 			var prog = runtime.persistence.progressionData[runtime.cutscenes[i].title];
-			if(runtime.cutsceneStartable == null && prog.timesCompleted == 0 && prog.visible == true){
+			if (runtime.cutsceneStartable == null && prog.timesCompleted == 0 && prog.visible == true) {
 				runtime.cutsceneStartable = runtime.cutscenes[i];
 			}
-			if(prog.visible && prog.timesCompleted > 0){
+			if (prog.visible && prog.timesCompleted > 0) {
 				amountVisible++;
-				if(prog.visibleSeen)
+				if (prog.visibleSeen)
 					amountVisibleRecognized++;
 				var completed = false;
-			
+
 				// if (prog != null) {
-				{
-					completed = runtime.persistence.progressionData[runtime.cutscenes[i].title].timesCompleted > 0;
-				}
-				view.StoryButtonFeed(i, runtime.cutscenes[i].title, completed);
-			} else{
+				completed = prog.timesCompleted > 0;
+				var resumable = prog.index > 0;
+				var newLabel = prog.wantToWatch;
+				var newLabelText = "NEW";
+				if(prog.timesCompleted > 1)
+					newLabelText = "Watch later";
+				view.StoryButtonFeed(i, runtime.cutscenes[i].title, completed,resumable, newLabel, newLabelText);
+			} else {
 				view.StoryButtonHide(i);
 			}
 		}
 		view.ButtonEnabled("cutscenestart", runtime.cutsceneStartable != null);
-		if(runtime.cutsceneStartable != null){
-			view.ButtonLabel("cutscenestart", runtime.cutsceneStartable.actionLabel+"\n<i>(Story)</i>");
-		} else{
-			//view.ButtonLabel("cutscenestart", "\n<i>(Story)</i>");
+		if (runtime.cutsceneStartable != null) {
+			view.ButtonLabel("cutscenestart", runtime.cutsceneStartable.actionLabel + "\n<i>(Story)</i>");
+		} else {
+			// view.ButtonLabel("cutscenestart", "\n<i>(Story)</i>");
 		}
-		
+
 		view.SetTabNotification(amountVisible > amountVisibleRecognized, view.storyTab);
 		var cutscene = runtime.cutscene;
+		
 		if (cutscene != null) {
-			var m = cutscene.messages[runtime.currentStoryProgression.index];
-			view.LatestMessageUpdate(m.body, m.speaker, runtime.currentStoryProgression.index);
+			while(view.amountOfStoryMessagesShown <= runtime.currentStoryProgression.index){
+				var m = cutscene.messages[view.amountOfStoryMessagesShown];
+				view.LatestMessageUpdate(m.body, m.speaker, view.amountOfStoryMessagesShown);
+			}
+			
 		}
 
 		for (i in 0...runtime.cutscenes.length) {}

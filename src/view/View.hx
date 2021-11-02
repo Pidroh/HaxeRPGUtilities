@@ -59,7 +59,7 @@ class View {
 	var equipments = new Array<EquipmentView>();
 	var cutsceneStartViews = new Array<CutsceneStartView>();
 	var saveDataDownload:Label;
-	var amountOfStoryMessagesShown = 0;
+	public var amountOfStoryMessagesShown = 0;
 	var storyDialog:StoryDialog;
 
 	public var storyDialogActive = false;
@@ -81,6 +81,7 @@ class View {
 		storyDialog.showDialog();
 		storyDialogActive = true;
 		storyDialog.mainText.text = "";
+		this.amountOfStoryMessagesShown = 0;
 	}
 
 	public function StoryButtonAmount(amount:Int) {
@@ -88,7 +89,7 @@ class View {
 			var parent = CreateContainer(storyTab.component, false, true);
 			parent.horizontalAlign = "center";
 			var startB = new Button();
-			startB.text = "Watch";
+			startB.text = "Start";
 			var resumeB = new Button();
 			resumeB.text = "Resume";
 			// resumeB.hidden = true;
@@ -109,12 +110,13 @@ class View {
 			var newL = new Label();
 			newL.text = "NEW";
 			newL.width = 70;
+			newL.textAlign = "center";
 			hBox.addComponent(newL);
 
 			newL.verticalAlign = "center";
 			newL.textAlign = "center";
 			//newL.percentHeight = 100;
-			
+
 			hBox.addComponent(startB);
 			hBox.addComponent(resumeB);
 			parent.addComponent(title);
@@ -127,7 +129,8 @@ class View {
 				startButton: startB,
 				resumeButton: resumeB,
 				title: title,
-				parent: parent
+				parent: parent,
+				newLabel: newL
 			});
 			var pos = cutsceneStartViews.length - 1;
 			startB.onClick = (e) -> {
@@ -147,9 +150,13 @@ class View {
 			comp.component.text += " (!)";
 	}
 
-	public function StoryButtonFeed(buttonPos:Int, label:String, cleared:Bool) {
+	public function StoryButtonFeed(buttonPos:Int, label:String, cleared:Bool, resumable:Bool, newLabel:Bool, newLabelText:String) {
 		cutsceneStartViews[buttonPos].title.text = label;
 		cutsceneStartViews[buttonPos].parent.show();
+		cutsceneStartViews[buttonPos].resumeButton.hidden = !resumable;
+		cutsceneStartViews[buttonPos].newLabel.hidden = !newLabel;
+		cutsceneStartViews[buttonPos].newLabel.text = newLabelText;
+		
 	}
 
 	public function StoryButtonHide(buttonPos:Int) {
@@ -638,6 +645,7 @@ typedef CutsceneStartView = {
 	var resumeButton:Button;
 	var parent:Component;
 	var title:Label;
+	var newLabel:Label;
 }
 
 class StoryDialog extends Dialog {

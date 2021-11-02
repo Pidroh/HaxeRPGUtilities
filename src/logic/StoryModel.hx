@@ -4,8 +4,6 @@ import StoryData;
 
 class StoryLogic {
 	public static function Update(runtime:StoryRuntimeData) {
-		if (runtime.cutscene != null)
-			runtime.toShow = runtime.cutscene.messages[runtime.currentStoryProgression.index];
 	}
 
 	public static function VisibilityUpdate(storyButtonsVisible:Bool, runtime:StoryRuntimeData, executer:Interp) {
@@ -31,10 +29,10 @@ class StoryLogic {
 	}
 
 	// find story progression and reset it
-	public static function StartStory(sceneId:String, runtime:StoryRuntimeData) {
+	public static function StartStory(sceneId:String, runtime:StoryRuntimeData, resume = false) {
 		var progressionData = runtime.persistence.progressionData;
-		progressionData[sceneId].index = 0;
-		runtime.toShow = null;
+		if(resume == false)
+			progressionData[sceneId].index = 0;
 
 		runtime.currentStoryProgression = progressionData[sceneId];
 
@@ -51,13 +49,17 @@ class StoryLogic {
 		runtime.currentStoryProgression.index++;
 		if (runtime.currentStoryProgression.index >= runtime.cutscene.messages.length) {
 			runtime.currentStoryProgression.timesCompleted++;
+			runtime.currentStoryProgression.index = 0;
+			runtime.currentStoryProgression.wantToWatch = false;
 			runtime.currentStoryProgression = null;
 			runtime.cutscene = null;
 		}
 	}
 
 	public static function SkipStory(runtime:StoryRuntimeData) {
-		runtime.currentStoryProgression.timesCompleted++;
+		if(runtime.currentStoryProgression.timesCompleted <= 0)
+			runtime.currentStoryProgression.timesCompleted++;
+		runtime.currentStoryProgression.wantToWatch = false;
 		runtime.currentStoryProgression = null;
 		runtime.cutscene = null;
 	}
@@ -67,7 +69,7 @@ class StoryLogic {
 		// only clears for the first time
 		if(runtime.currentStoryProgression.timesCompleted <= 0)
 			runtime.currentStoryProgression.timesCompleted++;
-		
+
 		runtime.currentStoryProgression.wantToWatch = true;
 		runtime.currentStoryProgression = null;
 		runtime.cutscene = null;
@@ -95,5 +97,4 @@ typedef StoryRuntimeData = {
 	var cutsceneStartable:Cutscene;
 	var persistence:StoryPersistence;
 	var currentCutsceneIndex:Int;
-	var toShow:Message;
 }

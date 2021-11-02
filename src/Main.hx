@@ -77,7 +77,6 @@ class Main {
 
 		var storyRuntime:StoryRuntimeData = {
 			currentStoryProgression: null,
-			toShow: null,
 			currentCutsceneIndex: -1,
 			cutscene: null,
 			cutsceneStartable: null,
