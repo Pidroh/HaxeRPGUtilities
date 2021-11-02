@@ -79,6 +79,9 @@ class View {
 
 	public function StartStory() {
 		storyDialog.showDialog();
+		storyDialog.onDialogClosed = event -> {
+			storyMainAction(storyAction_WatchLater, 0);
+		};
 		storyDialogActive = true;
 		storyDialog.mainText.text = "";
 		this.amountOfStoryMessagesShown = 0;
