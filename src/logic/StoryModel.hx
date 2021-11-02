@@ -50,10 +50,27 @@ class StoryLogic {
 	public static function MessageAdvance(runtime:StoryRuntimeData) {
 		runtime.currentStoryProgression.index++;
 		if (runtime.currentStoryProgression.index >= runtime.cutscene.messages.length) {
-            runtime.currentStoryProgression.timesCompleted++;
+			runtime.currentStoryProgression.timesCompleted++;
 			runtime.currentStoryProgression = null;
 			runtime.cutscene = null;
 		}
+	}
+
+	public static function SkipStory(runtime:StoryRuntimeData) {
+		runtime.currentStoryProgression.timesCompleted++;
+		runtime.currentStoryProgression = null;
+		runtime.cutscene = null;
+	}
+
+	public static function WatchLater(runtime:StoryRuntimeData) {
+
+		// only clears for the first time
+		if(runtime.currentStoryProgression.timesCompleted <= 0)
+			runtime.currentStoryProgression.timesCompleted++;
+		
+		runtime.currentStoryProgression.wantToWatch = true;
+		runtime.currentStoryProgression = null;
+		runtime.cutscene = null;
 	}
 }
 
@@ -63,10 +80,11 @@ typedef StoryPersistence = {
 }
 
 typedef StoryProgress = {
-	var index:Int; //message index, not cutscene index
+	var index:Int; // message index, not cutscene index
 	var timesCompleted:Int;
 	var visible:Bool;
 	var visibleSeen:Bool;
+	var wantToWatch:Bool;
 }
 
 typedef StoryRuntimeData = {
@@ -74,7 +92,7 @@ typedef StoryRuntimeData = {
 	var cutscenes:Array<Cutscene>;
 	var visibilityConditionScripts:Array<Expr>;
 	var cutscene:Cutscene;
-    var cutsceneStartable:Cutscene;
+	var cutsceneStartable:Cutscene;
 	var persistence:StoryPersistence;
 	var currentCutsceneIndex:Int;
 	var toShow:Message;

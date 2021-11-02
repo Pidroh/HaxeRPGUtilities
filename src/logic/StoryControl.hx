@@ -22,7 +22,8 @@ class StoryControlLogic {
 					index: 0,
 					timesCompleted: 0,
 					visible: false,
-					visibleSeen: false
+					visibleSeen: false,
+					wantToWatch: false
 				});
 			}
 			var vs = cutscenes[i].visibilityScript;
@@ -45,6 +46,14 @@ class StoryControlLogic {
 				StoryLogic.MessageAdvance(runtime);
 			}
 
+			if (actionId == View.storyAction_WatchLater) {
+				StoryLogic.WatchLater(runtime);
+			}
+
+			if (actionId == View.storyAction_SkipStory) {
+				StoryLogic.SkipStory(runtime);
+			}
+
 			if (view.storyDialogActive && runtime.cutscene == null) {
 				view.HideStory();
 			}
@@ -60,7 +69,7 @@ class StoryControlLogic {
 		runtime.cutsceneStartable = null;
 		for (i in 0...runtime.cutscenes.length) {
 			var prog = runtime.persistence.progressionData[runtime.cutscenes[i].title];
-			if(prog.timesCompleted == 0 && prog.visible == true){
+			if(runtime.cutsceneStartable == null && prog.timesCompleted == 0 && prog.visible == true){
 				runtime.cutsceneStartable = runtime.cutscenes[i];
 			}
 			if(prog.visible && prog.timesCompleted > 0){
