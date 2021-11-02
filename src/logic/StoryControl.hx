@@ -13,7 +13,7 @@ class StoryControlLogic {
 				StoryLogic.StartStory(runtime.cutsceneStartable.title, runtime);
 				view.StartStory();
 			}
-		});
+		}, null, 0);
 
 		var parser = new hscript.Parser();
 		for (i in 0...cutscenes.length) {
@@ -117,5 +117,14 @@ class StoryControlLogic {
 		for (i in 0...runtime.cutscenes.length) {}
 		StoryLogic.Update(runtime);
 		StoryLogic.VisibilityUpdate(view.IsTabSelected(view.storyTab.component), runtime, executer);
+	}
+
+	public static function ReadJsonPersistentData(json:String) : StoryPersistence{
+		var persistence : StoryPersistence = Json.parse(json);
+		return persistence;
+	}
+
+	public static function GetJsonPersistentData(runtime:StoryRuntimeData) : String{
+		return Json.stringify(runtime.persistence);
 	}
 }

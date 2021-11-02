@@ -79,6 +79,7 @@ class StoryLogic {
 typedef StoryPersistence = {
 	var progressionData:Map<String, StoryProgress>;
 	var currentStoryId:String;
+	var worldVersion : Int;
 }
 
 typedef StoryProgress = {

@@ -1,3 +1,4 @@
+import StoryModel.StoryPersistence;
 import hscript.Interp;
 import StoryModel.StoryRuntimeData;
 import js.html.FileReader;
@@ -75,22 +76,6 @@ class Main {
 		var enemyLife = 20;
 		var view:View = new View();
 
-		var storyRuntime:StoryRuntimeData = {
-			currentStoryProgression: null,
-			currentCutsceneIndex: -1,
-			cutscene: null,
-			cutsceneStartable: null,
-			cutscenes: null,
-			visibilityConditionScripts: [],
-			persistence: {
-				currentStoryId: null,
-				progressionData: []
-			}
-		}
-		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
-		var scriptExecuter = new Interp();
-		var global = new Map<String, Float>();
-		scriptExecuter.variables.set("global", global);
 
 
 		// goblin
@@ -136,6 +121,7 @@ class Main {
 		main.addComponent(view.mainComponent);
 		var key = "save data2";
 		var keyBackup = "save backup";
+		var keyStory = "savestory";
 
 		var CreateButtonFromAction = function(actionId:String, buttonLabel:String) {
 			// var action = bm.wdata.playerActions[actionId];
@@ -165,6 +151,7 @@ class Main {
 
 			var localStorage = js.Browser.getLocalStorage();
 			localStorage.setItem(key, "");
+			localStorage.setItem(keyStory, "");
 
 			Browser.location.reload();
 
@@ -196,9 +183,40 @@ class Main {
 		var saveCount:Float = 0.3;
 
 		var jsonData = ls.getItem(key);
-		if (jsonData != null) {
+		if (jsonData != null && jsonData != "") {
+			trace(jsonData);
 			bm.SendJsonPersistentData(jsonData);
 		}
+
+		var jsonData2 = ls.getItem(keyStory);
+		var storyPersistence:StoryPersistence = null;
+		if (jsonData2 != null && jsonData2 != ""	) {
+			storyPersistence = StoryControlLogic.ReadJsonPersistentData(jsonData2);
+		} else{
+			storyPersistence = {
+				currentStoryId: null,
+				progressionData: [],
+				worldVersion: bm.wdata.worldVersion
+			};
+		}
+
+		var storyRuntime:StoryRuntimeData = {
+			currentStoryProgression: null,
+			currentCutsceneIndex: -1,
+			cutscene: null,
+			cutsceneStartable: null,
+			cutscenes: null,
+			visibilityConditionScripts: [],
+			persistence: storyPersistence,
+			
+		}
+
+		
+		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
+		var scriptExecuter = new Interp();
+		var global = new Map<String, Float>();
+		scriptExecuter.variables.set("global", global);
+
 
 		var update = null;
 
@@ -382,12 +400,12 @@ class Main {
 			}
 			var text:String = bm.update(delta);
 			var localStorage = js.Browser.getLocalStorage();
+			
+			// #SAVE
 			var json = bm.GetJsonPersistentData();
-
 			localStorage.setItem(key, json);
-			if (text != null) {
-				// label.text = text;
-			}
+			var json2 = StoryControlLogic.GetJsonPersistentData(storyRuntime);
+			localStorage.setItem(keyStory, json2);
 
 			saveCount -= delta;
 			if (saveCount < 0) {

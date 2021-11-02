@@ -479,7 +479,7 @@ class View {
 		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName);
 	}
 
-	public function AddButton(id:String, label:String, onClick, warningMessage = null) {
+	public function AddButton(id:String, label:String, onClick, warningMessage = null, position = -1) {
 		var button = new Button();
 		button.text = label;
 		button.repeater = true;
@@ -487,18 +487,21 @@ class View {
 
 		// button.onClick = onClick;
 		if (warningMessage == null) {
-			buttonBox.addComponent(button);
+			if(position == -1)
+				buttonBox.addComponent(button);
+			else
+				buttonBox.addComponentAt(button, position);
 			button.onClick = onClick;
 		} else {
 			mainComponentB.addComponent(button);
 			button.onClick = function whatever(e) {
-				trace("lol");
+				//trace("lol");
 				Screen.instance.messageBox(warningMessage, label, MessageBoxType.TYPE_QUESTION, true, function(button) {
-					trace(button);
+					//trace(button);
 					if (button.toString().indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					trace("call back!");
+					//trace("call back!");
 				});
 			};
 		}
