@@ -83,7 +83,7 @@ class Main {
 		// wolf
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 0.6, "Speed" => 2, "LifeMax" => 0.5]
+				attributesBase: ["Attack" => 0.6, "Speed" => 2, "LifeMax" => 1.3]
 			},
 			speciesAdd: null,
 			speciesLevelStats: null

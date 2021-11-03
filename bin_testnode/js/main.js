@@ -25,7 +25,7 @@ var BattleManager = function() {
 	_g.h["Speed"] = 20;
 	_g.h["SpeedCount"] = 0;
 	var stats = _g;
-	var w = { worldVersion : 401, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
+	var w = { worldVersion : 401, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false};
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -75,15 +75,21 @@ BattleManager.prototype = {
 		e.data = xpPlus;
 	}
 	,CreateAreaEnemy: function() {
-		var area = this.wdata.battleArea;
+		var region = this.wdata.battleAreaRegion;
+		var enemyLevel = this.wdata.battleArea;
+		var sheet = this.enemySheets[region];
+		if(region > 0) {
+			enemyLevel = (enemyLevel + 1) * 10 - 1;
+		}
 		var timeToKillEnemy = this.balancing.timeToKillFirstEnemy;
 		var initialAttackHero = 1;
 		var heroAttackTime = this.timePeriod * 2;
 		var heroDPS = initialAttackHero / heroAttackTime;
 		var initialLifeEnemy = heroDPS * timeToKillEnemy | 0;
-		var enemyLife = initialLifeEnemy + (area - 1) * initialLifeEnemy;
+		var enemyLife = initialLifeEnemy + (enemyLevel - 1) * initialLifeEnemy;
+		var enemyAttack = 1 + (enemyLevel - 1);
 		var _g = new haxe_ds_StringMap();
-		_g.h["Attack"] = 1 + (area - 1);
+		_g.h["Attack"] = enemyAttack;
 		_g.h["Life"] = enemyLife;
 		_g.h["LifeMax"] = enemyLife;
 		_g.h["Speed"] = 20;
@@ -91,7 +97,57 @@ BattleManager.prototype = {
 		_g.h["Defense"] = 0;
 		_g.h["Magic Defense"] = 0;
 		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + area, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+		if(sheet != null) {
+			var mul = sheet.speciesMultiplier;
+			var h = mul.attributesBase.h;
+			var p_h = h;
+			var p_keys = Object.keys(h);
+			var p_length = p_keys.length;
+			var p_current = 0;
+			while(p_current < p_length) {
+				var key = p_keys[p_current++];
+				var p_key = key;
+				var p_value = p_h[key];
+				var mul = p_value;
+				var value = this.wdata.enemy.attributesBase.h[p_key] * mul | 0;
+				this.wdata.enemy.attributesBase.h[p_key] = value;
+				this.wdata.enemy.attributesCalculated.h[p_key] = value;
+			}
+			var h = sheet.speciesAdd.h;
+			var p_h = h;
+			var p_keys = Object.keys(h);
+			var p_length = p_keys.length;
+			var p_current = 0;
+			while(p_current < p_length) {
+				var key = p_keys[p_current++];
+				var p_key = key;
+				var p_value = p_h[key];
+				var add = p_value;
+				var _g = p_key;
+				var _g1 = this.wdata.enemy.attributesBase;
+				var v = _g1.h[_g] + add;
+				_g1.h[_g] = v;
+				var _g2 = p_key;
+				var _g3 = this.wdata.enemy.attributesCalculated;
+				var v1 = _g3.h[_g2] + add;
+				_g3.h[_g2] = v1;
+			}
+			var h = sheet.speciesLevelStats.attributesBase.h;
+			var p_h = h;
+			var p_keys = Object.keys(h);
+			var p_length = p_keys.length;
+			var p_current = 0;
+			while(p_current < p_length) {
+				var key = p_keys[p_current++];
+				var p_key = key;
+				var p_value = p_h[key];
+				var addLevel = p_value;
+				var value = this.wdata.enemy.attributesBase.h[p_key] + addLevel * enemyLevel | 0;
+				this.wdata.enemy.attributesBase.h[p_key] = value;
+				this.wdata.enemy.attributesCalculated.h[p_key] = value;
+			}
+		}
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;

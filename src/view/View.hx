@@ -1,3 +1,5 @@
+import haxe.ui.data.ArrayDataSource;
+import haxe.ui.components.DropDown;
 import haxe.ui.styles.Style;
 import js.html.StyleElement;
 import haxe.ui.backend.html5.native.layouts.ButtonLayout;
@@ -320,6 +322,9 @@ class View {
 		logContainer.addComponent(log);
 
 		areaContainer = CreateContainer(box, true);
+		
+		//areaLabel = CreateValueView(areaContainer, false, "Area: ");
+		CreateDropDownView(areaContainer, "Location: ");
 		areaLabel = CreateValueView(areaContainer, false, "Area: ");
 		enemyToAdvance = CreateValueView(areaContainer, true, "Progress: ");
 
@@ -629,6 +634,44 @@ class View {
 		};
 	}
 
+
+	function CreateDropDownView(parent:Component, label:String):DropDownView{
+		var boxh = new Box();
+		boxh.width = 180;
+		boxh.height = 25;
+		parent.addComponent(boxh);
+
+		
+
+		var addLabel = label != null && label != "";
+		var nameLabel = null;
+		if (addLabel) {
+			var l = new Label();
+			l.text = label;
+			l.percentHeight = 100;
+
+			l.verticalAlign = "center";
+			l.paddingTop = 5;
+			boxh.addComponent(l);
+
+			nameLabel = l;
+		}
+
+		
+
+		var dd = new DropDown();
+		dd.width = 120;
+		
+		dd.dataSource = new ArrayDataSource<String>();
+		dd.dataSource.add("Text");
+		dd.dataSource.add("Text");
+		dd.dataSource.add("Text");
+		dd.horizontalAlign = "right";
+		dd.verticalAlign = "center";
+		boxh.addComponent(dd);
+		return {parent: boxh, dropdown: dd, labelText: nameLabel};
+	}
+
 	function CreateValueView(parent:Component, withBar:Bool, label:String):ValueView {
 		var boxh = new Box();
 		boxh.width = 180;
@@ -688,6 +731,13 @@ typedef ValueView = {
 	var bar:HorizontalProgress;
 	var parent:Component;
 };
+
+typedef DropDownView = {
+	var labelText:Label;
+	var dropdown : DropDown;
+	var parent:Component;
+};
+
 
 typedef ActorView = {
 	var name:Label;

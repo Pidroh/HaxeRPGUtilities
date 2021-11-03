@@ -120,6 +120,7 @@ typedef WorldData = {
 	var enemy:Actor;
 	var timeCount:Float;
 	var battleArea:Int;
+	var battleAreaRegion:Int;
 	var playerTimesKilled:Int;
 	var killedInArea:Array<Int>;
 	var necessaryToKillInArea:Int;

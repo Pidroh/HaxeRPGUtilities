@@ -18,18 +18,17 @@ class BattleManager {
 	public var canAdvance = false;
 	public var canLevelUp = false;
 	public var areaBonus:ScalingResource;
-
 	public var enemySheets = new Array<ActorSheet>();
 
 	var balancing:Balancing;
 	var timePeriod = 0.6;
 	var equipDropChance = 30;
 	var random = new Random();
-	
 
 	public var events = new Array<GameEvent>();
-
 	public var playerActions:Map<String, PlayerActionExecution> = new Map<String, PlayerActionExecution>();
+
+	// public var enemyDefinitions = new Array<EnemyDe>
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -80,27 +79,65 @@ class BattleManager {
 	}
 
 	function CreateAreaEnemy() {
-		var area = wdata.battleArea;
-		var timeToKillEnemy = balancing.timeToKillFirstEnemy;
+		var region = wdata.battleAreaRegion;
+		var enemyLevel = wdata.battleArea;
+		var sheet = this.enemySheets[region];
+		
+		if(region > 0){
+			enemyLevel = (enemyLevel+1)*10 - 1;
+		}
 
-		var initialAttackHero = 1; // may have to put this somewhere...
-		var heroAttackTime = timePeriod * 2;
-		var heroDPS = initialAttackHero / heroAttackTime;
+		{
+			var timeToKillEnemy = balancing.timeToKillFirstEnemy;
 
-		var initialLifeEnemy = Std.int(heroDPS * timeToKillEnemy);
+			var initialAttackHero = 1; // may have to put this somewhere...
+			var heroAttackTime = timePeriod * 2;
+			var heroDPS = initialAttackHero / heroAttackTime;
 
-		var enemyLife = initialLifeEnemy + (area - 1) * (initialLifeEnemy);
+			var initialLifeEnemy = Std.int(heroDPS * timeToKillEnemy);
 
-		var stats2 = ["Attack" => 1 + (area - 1) * 1, "Life" => enemyLife, "LifeMax" => enemyLife, "Speed" => 20, "SpeedCount" => 0, "Defense" => 0, "Magic Defense" => 0];
-		wdata.enemy = {
-			level: 1 + area,
-			attributesBase: stats2,
-			equipmentSlots: null,
-			equipment: [],
-			xp: null,
-			attributesCalculated: stats2,
-			reference: new ActorReference(1, 0)
-		};
+			var enemyLife = initialLifeEnemy + (enemyLevel - 1) * (initialLifeEnemy);
+			var enemyAttack = 1 + (enemyLevel - 1) * 1;
+
+			var stats2 = [
+				"Attack" => enemyAttack,
+				"Life" => enemyLife,
+				"LifeMax" => enemyLife,
+				"Speed" => 20,
+				"SpeedCount" => 0,
+				"Defense" => 0,
+				"Magic Defense" => 0
+			];
+			wdata.enemy = {
+				level: 1 + enemyLevel,
+				attributesBase: stats2,
+				equipmentSlots: null,
+				equipment: [],
+				xp: null,
+				attributesCalculated: stats2,
+				reference: new ActorReference(1, 0)
+			};
+			if(sheet != null){
+				var mul = sheet.speciesMultiplier;
+				for(p in mul.attributesBase.keyValueIterator()){
+					var mul = p.value;
+					var value = Std.int(wdata.enemy.attributesBase[p.key]*mul);
+					wdata.enemy.attributesBase[p.key] = value;
+					wdata.enemy.attributesCalculated[p.key] = value;
+				}
+				for(p in sheet.speciesAdd.keyValueIterator()){
+					var add = p.value;
+					wdata.enemy.attributesBase[p.key] += add;
+					wdata.enemy.attributesCalculated[p.key] += add;
+				}
+				for(p in sheet.speciesLevelStats.attributesBase.keyValueIterator()){
+					var addLevel = p.value;
+					var value = Std.int(wdata.enemy.attributesBase[p.key] + addLevel*enemyLevel);
+					wdata.enemy.attributesBase[p.key] = value;
+					wdata.enemy.attributesCalculated[p.key] = value;
+				}
+			}
+		}
 	}
 
 	public function new() {
@@ -111,7 +148,7 @@ class BattleManager {
 			areaBonusXPPercentOfFirstLevelUp: 60
 		};
 
-		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed"=>20, "SpeedCount"=>0];
+		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0];
 		// var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
 		var w:WorldData = {
@@ -134,11 +171,11 @@ class BattleManager {
 			timeCount: 0,
 			playerTimesKilled: 0,
 			battleArea: 0,
+			battleAreaRegion: 0,
 			playerActions: new Map<String, PlayerAction>(),
 			recovering: false,
 			sleeping: false
 		};
-
 
 		wdata = w;
 
@@ -155,7 +192,7 @@ class BattleManager {
 			var w = wdata;
 			if (wdata.playerActions.exists(id) == false) {
 				wdata.playerActions[id] = action;
-				if(callback != null)
+				if (callback != null)
 					playerActions[id] = {actionData: w.playerActions[id], actualAction: callback}
 			}
 		}
@@ -186,11 +223,9 @@ class BattleManager {
 			enabled: false,
 			timesUsed: 0,
 			mode: 0
-		}, 
-		null
-		//(a) ->{
-		//	AdvanceArea();
-		//}
+		}, null // (a) ->{
+			//	AdvanceArea();
+			// }
 		);
 
 		addAction("retreat", {
@@ -303,32 +338,32 @@ class BattleManager {
 			// var which = 0;
 
 			var decided = false;
-			for (i in 0...100) { //should be a while(true) but just to be safer
+			for (i in 0...100) { // should be a while(true) but just to be safer
 				for (battleActor in 0...2) {
 					var bActor = hero;
 					if (battleActor == 1)
 						bActor = enemy;
 					bActor.attributesCalculated["SpeedCount"] += bActor.attributesCalculated["Speed"];
 					var sc = bActor.attributesCalculated["SpeedCount"];
-					//trace('$battleActor speed count $sc');
-					if(decided == false){
+					// trace('$battleActor speed count $sc');
+					if (decided == false) {
 						if (bActor.attributesCalculated["SpeedCount"] > 100) {
 							bActor.attributesCalculated["SpeedCount"] = bActor.attributesCalculated["SpeedCount"] - 100;
-							if (battleActor == 1){
+							if (battleActor == 1) {
 								attacker = enemy;
 								defender = hero;
 							}
 							decided = true;
 						}
 					}
-					
 				}
-				if(decided)
+				if (decided)
 					break;
 			}
 
 			var damage = attacker.attributesCalculated["Attack"] - defender.attributesCalculated["Defense"];
-			if(damage < 0) damage = 0;
+			if (damage < 0)
+				damage = 0;
 
 			defender.attributesCalculated["Life"] -= damage;
 			if (defender.attributesCalculated["Life"] < 0) {
@@ -370,10 +405,10 @@ class BattleManager {
 						var armorType = random.randomInt(0, 1);
 						var mainBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
 						var mainBonusType = "LifeMax";
-						if(armorType == 0){
+						if (armorType == 0) {
 							mainBonus *= 3;
 						}
-						if(armorType == 1){
+						if (armorType == 1) {
 							mainBonusType = "Defense";
 						}
 						e = {type: 1, requiredAttributes: null, attributes: [mainBonusType => mainBonus]};
@@ -530,7 +565,7 @@ $baseInfo';
 			if (wdata.sleeping == true) {
 				lu.mode = 1;
 				lu.enabled = true;
-				//trace(lu.mode);
+				// trace(lu.mode);
 			} else {
 				lu.mode = 0;
 				// sleep is okay even when recovered for faster active play
@@ -588,10 +623,20 @@ $baseInfo';
 	public function RecalculateAttributes(actor:Actor) {
 		var oldLife = actor.attributesCalculated["Life"];
 		var oldSpeedCount = actor.attributesCalculated["SpeedCount"];
-		if(oldSpeedCount < 0) oldSpeedCount = 0;
-		if(oldSpeedCount == null) oldSpeedCount = 0;
+		if (oldSpeedCount < 0)
+			oldSpeedCount = 0;
+		if (oldSpeedCount == null)
+			oldSpeedCount = 0;
 
-		AttributeLogic.Add(actor.attributesBase, ["Attack" => 1, "LifeMax" => 5, "Life" => 5, "Speed"=>0, "Defense"=>0, "Magic Defense"=>0, "SpeedCount"=>0], actor.level, actor.attributesCalculated);
+		AttributeLogic.Add(actor.attributesBase, [
+			"Attack" => 1,
+			"LifeMax" => 5,
+			"Life" => 5,
+			"Speed" => 0,
+			"Defense" => 0,
+			"Magic Defense" => 0,
+			"SpeedCount" => 0
+		], actor.level, actor.attributesCalculated);
 		for (es in actor.equipmentSlots) {
 			var e = actor.equipment[es];
 			if (e != null)
@@ -606,68 +651,74 @@ $baseInfo';
 		ChangeBattleArea(wdata.battleArea + 1);
 	}
 
-	public function DiscardWorseEquipment(){
-		for(i in 0...wdata.hero.equipment.length){
+	public function DiscardWorseEquipment() {
+		for (i in 0...wdata.hero.equipment.length) {
 			var e = wdata.hero.equipment[i];
-			if(e == null) continue;
-			for(j in (i+1)...wdata.hero.equipment.length){
+			if (e == null)
+				continue;
+			for (j in (i + 1)...wdata.hero.equipment.length) {
 				var e2 = wdata.hero.equipment[j];
-				if(e2 == null) continue;
-				if(e.type != e2.type) continue;
+				if (e2 == null)
+					continue;
+				if (e.type != e2.type)
+					continue;
 				var r = CompareEquipmentStrength(e, e2);
-				if(r == 1 || r == 0){//if they are exactly the same or r1 is better
+				if (r == 1 || r == 0) { // if they are exactly the same or r1 is better
 					wdata.hero.equipment[j] = null;
 					continue;
 				}
-				if(r == 2 ){ 
+				if (r == 2) {
 					wdata.hero.equipment[i] = null;
 					break;
 				}
-
 			}
 		}
 	}
 
-	public function CompareEquipmentStrength(e1 : Equipment, e2: Equipment) : Int{
+	public function CompareEquipmentStrength(e1:Equipment, e2:Equipment):Int {
 		var e1Superior = 0;
 		var e2Superior = 0;
 
-		for(attrKey in e1.attributes.keys()){
-			if(e2.attributes.exists(attrKey)){
-				if(e1.attributes[attrKey] > e2.attributes[attrKey])
+		for (attrKey in e1.attributes.keys()) {
+			if (e2.attributes.exists(attrKey)) {
+				if (e1.attributes[attrKey] > e2.attributes[attrKey])
 					e1Superior = 1;
-				if(e1.attributes[attrKey] < e2.attributes[attrKey])
+				if (e1.attributes[attrKey] < e2.attributes[attrKey])
 					e2Superior = 1;
-			} else{
-				e1Superior = 1; //e1 has attribute not in e2, thus superior
+			} else {
+				e1Superior = 1; // e1 has attribute not in e2, thus superior
 			}
-			//if it any time both items are superior, they are **different**
-			if(e1Superior == 1 && e2Superior == 1) return -1;
+			// if it any time both items are superior, they are **different**
+			if (e1Superior == 1 && e2Superior == 1)
+				return -1;
 		}
 
-		for(attrKey in e2.attributes.keys()){
-			if(e1.attributes.exists(attrKey)){
-				if(e1.attributes[attrKey] > e2.attributes[attrKey])
+		for (attrKey in e2.attributes.keys()) {
+			if (e1.attributes.exists(attrKey)) {
+				if (e1.attributes[attrKey] > e2.attributes[attrKey])
 					e1Superior = 1;
-				if(e1.attributes[attrKey] < e2.attributes[attrKey])
+				if (e1.attributes[attrKey] < e2.attributes[attrKey])
 					e2Superior = 1;
-			} else{
-				e2Superior = 1; //e2 has attribute not in e1, thus superior
+			} else {
+				e2Superior = 1; // e2 has attribute not in e1, thus superior
 			}
-			//if it any time both items are superior, they are **different**
-			if(e1Superior == 1 && e2Superior == 1) return -1;
+			// if it any time both items are superior, they are **different**
+			if (e1Superior == 1 && e2Superior == 1)
+				return -1;
 		}
-		if(e1Superior == 1 && e2Superior == 0) return 1;
-		if(e1Superior == 0 && e2Superior == 1) return 2;
-		return 0; //this means they are the same
+		if (e1Superior == 1 && e2Superior == 0)
+			return 1;
+		if (e1Superior == 0 && e2Superior == 1)
+			return 2;
+		return 0; // this means they are the same
 	}
 
 	public function GetJsonPersistentData():String {
 		// var data = {maxArea: maxArea, currentArea: battleArea, enemiesKilledInAreas: killedInArea};
 
-		//Don't do this. If there are problems, they are related to dynamic attributes like life or speedcount
-		//and they need to be addressed
-		//RecalculateAttributes(wdata.hero);
+		// Don't do this. If there are problems, they are related to dynamic attributes like life or speedcount
+		// and they need to be addressed
+		// RecalculateAttributes(wdata.hero);
 		return Json.stringify(wdata);
 	}
 
@@ -677,7 +728,7 @@ $baseInfo';
 			loadedWdata.worldVersion = wdata.worldVersion;
 			loadedWdata.sleeping = loadedWdata.sleeping == true;
 		}
-		if(loadedWdata.worldVersion != wdata.worldVersion){
+		if (loadedWdata.worldVersion != wdata.worldVersion) {
 			loadedWdata.enemy = null;
 		}
 		wdata = loadedWdata;
