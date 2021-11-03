@@ -1,3 +1,9 @@
+import haxe.ui.styles.Style;
+import js.html.StyleElement;
+import haxe.ui.backend.html5.native.layouts.ButtonLayout;
+import haxe.ui.layouts.VerticalLayout;
+import haxe.ui.containers.Grid;
+import haxe.ui.components.Image;
 import js.html.AbortController;
 import haxe.ui.components.Scroll;
 import haxe.ui.containers.dialogs.Dialog;
@@ -67,7 +73,52 @@ class View {
 	public function LatestMessageUpdate(message:String, speaker:String, messagePos:Int) {
 		if (messagePos >= amountOfStoryMessagesShown) {
 			amountOfStoryMessagesShown = messagePos + 1;
-			storyDialog.mainText.text += '$speaker: $message\n';
+			while(storyDialog.messages.length <= messagePos){
+				
+				var body = new Label();
+				body.percentWidth = 100;
+				var speaker = new Label();
+				speaker.percentWidth = 100;
+				//speaker.styleString = "font-weight: bold;";
+				speaker.styleString = "font-bold: true;";
+				//var style = new Style();
+				//style.fontBold = true;
+				//style.fontBold = true;
+				//speaker.style = style;
+
+				var textBox = new VBox();
+				textBox.percentWidth = 100;
+				textBox.percentHeight = 100;
+				textBox.addComponent(speaker);
+				textBox.addComponent(body);
+				
+				var face = new Image();
+				face.scaleMode = FIT_HEIGHT;
+				var res = face.resource;
+				face.percentHeight = 100;
+				face.resource = "graphics/main.png";
+
+				var parent = new Grid();
+				parent.columns = 2;
+				parent.addComponent(face);
+				
+				parent.addComponent(textBox);
+				parent.percentWidth = 100;
+				parent.height = 60;
+
+				var messageView : MessageView = {
+					message: body,
+					parent: parent,
+					speakerImage: face,
+					speakerText: speaker
+				};
+				storyDialog.messages.push(messageView);
+				storyDialog.messageParent.addComponent(parent);
+			}
+			
+			storyDialog.messages[messagePos].speakerText.text = speaker;
+			storyDialog.messages[messagePos].message.text = message;
+			//storyDialog.mainText.text += '$speaker: $message\n';
 		}
 	}
 
@@ -83,7 +134,7 @@ class View {
 			storyMainAction(storyAction_WatchLater, 0);
 		};
 		storyDialogActive = true;
-		storyDialog.mainText.text = "";
+		//storyDialog.mainText.text = "";
 		this.amountOfStoryMessagesShown = 0;
 	}
 
@@ -654,11 +705,19 @@ typedef CutsceneStartView = {
 	var newLabel:Label;
 }
 
+typedef MessageView = {
+	var speakerImage : Image;
+	var speakerText : Label;
+	var message : Label;
+	var parent : Component;
+}
+
 class StoryDialog extends Dialog {
-	public var mainText:Label;
+	public var messages = new Array<MessageView>();
 	public var advanceButton:Button;
 	public var skipButton:Button;
 	public var watchLaterButton:Button;
+	public var messageParent : Component;
 
 	public function new() {
 		super();
@@ -666,6 +725,9 @@ class StoryDialog extends Dialog {
 		width = 300;
 		this.percentHeight = 80;
 		var scroll = new Scroll();
+		messageParent = new VBox();
+		messageParent.percentWidth = 100;
+		scroll.addComponent(messageParent);
 		scroll.percentHeight = 90;
 		scroll.percentWidth = 100;
 		addComponent(scroll);
@@ -673,10 +735,10 @@ class StoryDialog extends Dialog {
 		// var vbox = new VBox();
 		// vbox.percentWidth = 100;
 
-		mainText = new Label();
-		mainText.text = "";
-		mainText.percentWidth = 100;
-		scroll.addComponent(mainText);
+		//mainText = new Label();
+		//mainText.text = "";
+		//mainText.percentWidth = 100;
+		//scroll.addComponent(mainText);
 		// vbox.addComponent(mainText);
 
 		{
