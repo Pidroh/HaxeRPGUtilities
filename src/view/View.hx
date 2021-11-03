@@ -57,6 +57,7 @@ class View {
 
 	public var equipmentMainAction:(Int, Int) -> Void;
 	public var storyMainAction:(Int, Int) -> Void;
+	public var regionChangeAction:(Int) -> Void;
 
 	public var areaContainer:Component;
 	public var levelContainer:Component;
@@ -324,7 +325,11 @@ class View {
 		areaContainer = CreateContainer(box, true);
 		
 		//areaLabel = CreateValueView(areaContainer, false, "Area: ");
-		CreateDropDownView(areaContainer, "Location: ");
+		var ddv = CreateDropDownView(areaContainer, "Location: ");
+		ddv.dropdown.onChange = event -> {
+			var region = ddv.dropdown.selectedIndex;
+			regionChangeAction(region);
+		};
 		areaLabel = CreateValueView(areaContainer, false, "Area: ");
 		enemyToAdvance = CreateValueView(areaContainer, true, "Progress: ");
 

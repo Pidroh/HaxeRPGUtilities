@@ -289,6 +289,10 @@ class BattleManager {
 		RecalculateAttributes(wdata.hero);
 	}
 
+	public function changeRegion(region){
+		wdata.battleAreaRegion = region;
+	}
+
 	public function advance() {
 		var hero = wdata.hero;
 		var enemy = wdata.enemy;

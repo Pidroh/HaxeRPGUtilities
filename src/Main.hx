@@ -170,6 +170,9 @@ class Main {
 			if (action == View.equipmentAction_DiscardBad)
 				bm.DiscardWorseEquipment();
 		};
+		view.regionChangeAction = i -> {
+			bm.changeRegion(i);
+		}
 
 		var ls = Browser.getLocalStorage();
 

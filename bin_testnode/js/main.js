@@ -206,6 +206,9 @@ BattleManager.prototype = {
 		}
 		this.RecalculateAttributes(this.wdata.hero);
 	}
+	,changeRegion: function(region) {
+		this.wdata.battleAreaRegion = region;
+	}
 	,advance: function() {
 		var hero = this.wdata.hero;
 		var enemy = this.wdata.enemy;
