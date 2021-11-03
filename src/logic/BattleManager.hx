@@ -733,6 +733,10 @@ $baseInfo';
 			loadedWdata.worldVersion = wdata.worldVersion;
 			loadedWdata.sleeping = loadedWdata.sleeping == true;
 		}
+		if (loadedWdata.worldVersion < 601) {
+			wdata.regionProgress = [];
+			wdata.regionProgress.push({area: loadedWdata.battleArea, maxArea: loadedWdata.maxArea});
+		}
 		if (loadedWdata.worldVersion != wdata.worldVersion) {
 			loadedWdata.enemy = null;
 		}

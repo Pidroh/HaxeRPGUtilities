@@ -623,6 +623,10 @@ BattleManager.prototype = {
 			loadedWdata.worldVersion = this.wdata.worldVersion;
 			loadedWdata.sleeping = loadedWdata.sleeping == true;
 		}
+		if(loadedWdata.worldVersion < 601) {
+			this.wdata.regionProgress = [];
+			this.wdata.regionProgress.push({ area : loadedWdata.battleArea, maxArea : loadedWdata.maxArea});
+		}
 		if(loadedWdata.worldVersion != this.wdata.worldVersion) {
 			loadedWdata.enemy = null;
 		}
