@@ -66,11 +66,12 @@ class View {
 	var cutsceneStartViews = new Array<CutsceneStartView>();
 	var saveDataDownload:Label;
 	public var amountOfStoryMessagesShown = 0;
-	var storyDialog:StoryDialog;
+	public var storyDialog:StoryDialog;
 
 	public var storyDialogActive = false;
+	public var storyDialogUtilityFlag = false;
 
-	public function LatestMessageUpdate(message:String, speaker:String, messagePos:Int) {
+	public function LatestMessageUpdate(message:String, speaker:String, imageFile:String, messagePos:Int) {
 		if (messagePos >= amountOfStoryMessagesShown) {
 			amountOfStoryMessagesShown = messagePos + 1;
 			while(storyDialog.messages.length <= messagePos){
@@ -114,10 +115,13 @@ class View {
 				};
 				storyDialog.messages.push(messageView);
 				storyDialog.messageParent.addComponent(parent);
+				
 			}
 			
 			storyDialog.messages[messagePos].speakerText.text = speaker;
 			storyDialog.messages[messagePos].message.text = message;
+			storyDialog.messages[messagePos].speakerImage.resource = imageFile;
+			storyDialog.scroll.vscrollPos = 9999;
 			//storyDialog.mainText.text += '$speaker: $message\n';
 		}
 	}
@@ -718,18 +722,24 @@ class StoryDialog extends Dialog {
 	public var skipButton:Button;
 	public var watchLaterButton:Button;
 	public var messageParent : Component;
+	public var scroll : ScrollView;
 
 	public function new() {
 		super();
 		title = "Entry Form";
 		width = 300;
 		this.percentHeight = 80;
-		var scroll = new Scroll();
+		
 		messageParent = new VBox();
-		messageParent.percentWidth = 100;
+		//messageParent.percentWidth = 100;
+		messageParent.width = width-10;
+		
+
+		scroll = new ScrollView();
 		scroll.addComponent(messageParent);
 		scroll.percentHeight = 90;
-		scroll.percentWidth = 100;
+		scroll.width = width-10;
+		scroll.horizontalAlign = "center";
 		addComponent(scroll);
 
 		// var vbox = new VBox();

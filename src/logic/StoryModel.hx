@@ -98,4 +98,5 @@ typedef StoryRuntimeData = {
 	var cutsceneStartable:Cutscene;
 	var persistence:StoryPersistence;
 	var currentCutsceneIndex:Int;
+	var speakerToImage: Map<String,String>;
 }

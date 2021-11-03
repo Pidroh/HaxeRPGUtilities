@@ -105,13 +105,18 @@ class StoryControlLogic {
 
 		view.SetTabNotification(amountVisible > amountVisibleRecognized, view.storyTab);
 		var cutscene = runtime.cutscene;
+
+		if(view.storyDialogUtilityFlag){
+			view.storyDialogUtilityFlag = false;
+			view.storyDialog.scroll.vscrollPos = 9999;
+		}
 		
 		if (cutscene != null) {
 			while(view.amountOfStoryMessagesShown <= runtime.currentStoryProgression.index){
 				var m = cutscene.messages[view.amountOfStoryMessagesShown];
-				view.LatestMessageUpdate(m.body, m.speaker, view.amountOfStoryMessagesShown);
+				view.LatestMessageUpdate(m.body, m.speaker,runtime.speakerToImage[m.speaker.toLowerCase()], view.amountOfStoryMessagesShown);
+				view.storyDialogUtilityFlag = true;
 			}
-			
 		}
 
 		for (i in 0...runtime.cutscenes.length) {}
