@@ -110,24 +110,30 @@ typedef Balancing = {
 	public var timeForFirstLevelUpGrind : Float;
 	public var timeForFirstAreaProgress : Float;
 	public var areaBonusXPPercentOfFirstLevelUp : Int;
-
 }
 
+typedef AreaPersistence = {
+	var area : Int;
+	var maxArea : Int;
+}
 
 typedef WorldData = {
 	var worldVersion :Int;
 	var hero:Actor;
 	var enemy:Actor;
 	var timeCount:Float;
-	var battleArea:Int;
+	var regionProgress : Array<AreaPersistence>;
 	var battleAreaRegion:Int;
 	var playerTimesKilled:Int;
 	var killedInArea:Array<Int>;
 	var necessaryToKillInArea:Int;
-	var maxArea:Int;
 	var playerActions : Map < String, PlayerAction >;
 	var recovering : Bool;
 	var sleeping : Bool;
+
+	//LEGACY from world version 401 and before
+	var battleArea:Int;
+	var maxArea:Int;
 }
 
 enum EventTypes{

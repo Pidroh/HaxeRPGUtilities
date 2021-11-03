@@ -152,7 +152,7 @@ class BattleManager {
 		// var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
 		var w:WorldData = {
-			worldVersion: 401,
+			worldVersion: 601,
 			hero: {
 				level: 1,
 				attributesBase: null,
@@ -174,7 +174,8 @@ class BattleManager {
 			battleAreaRegion: 0,
 			playerActions: new Map<String, PlayerAction>(),
 			recovering: false,
-			sleeping: false
+			sleeping: false,
+			regionProgress: []
 		};
 
 		wdata = w;
