@@ -121,6 +121,7 @@ class View {
 			storyDialog.messages[messagePos].speakerText.text = speaker;
 			storyDialog.messages[messagePos].message.text = message;
 			storyDialog.messages[messagePos].speakerImage.resource = imageFile;
+			storyDialog.messages[messagePos].parent.hidden = false;
 			storyDialog.scroll.vscrollPos = 9999;
 			//storyDialog.mainText.text += '$speaker: $message\n';
 		}
@@ -139,6 +140,9 @@ class View {
 		};
 		storyDialogActive = true;
 		//storyDialog.mainText.text = "";
+		for(a in storyDialog.messages){
+			a.parent.hidden = true;
+		}
 		this.amountOfStoryMessagesShown = 0;
 	}
 
