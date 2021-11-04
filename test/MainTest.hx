@@ -11,6 +11,7 @@ class MainTest {
 			Json.parse(sj);	
 		}
 		{
+			Sys.println("Discard worse equip tests");
 			var bm:BattleManager = new BattleManager();
 			bm.DefaultConfiguration();
 			bm.wdata.hero.equipment.push(

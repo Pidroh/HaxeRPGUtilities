@@ -115,6 +115,7 @@ typedef Balancing = {
 typedef AreaPersistence = {
 	var area : Int;
 	var maxArea : Int;
+	var amountEnemyKilledInArea : Int;
 }
 
 typedef WorldData = {
@@ -131,7 +132,7 @@ typedef WorldData = {
 	var recovering : Bool;
 	var sleeping : Bool;
 
-	//LEGACY from world version 401 and before
+	//Easier access for the data in region progress. Has to copy the data back in update.
 	var battleArea:Int;
 	var maxArea:Int;
 }

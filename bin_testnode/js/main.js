@@ -100,57 +100,66 @@ BattleManager.prototype = {
 		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
 		if(sheet != null) {
 			var mul = sheet.speciesMultiplier;
-			var h = mul.attributesBase.h;
-			var p_h = h;
-			var p_keys = Object.keys(h);
-			var p_length = p_keys.length;
-			var p_current = 0;
-			while(p_current < p_length) {
-				var key = p_keys[p_current++];
-				var p_key = key;
-				var p_value = p_h[key];
-				var mul = p_value;
-				var value = this.wdata.enemy.attributesBase.h[p_key] * mul | 0;
-				this.wdata.enemy.attributesBase.h[p_key] = value;
-				this.wdata.enemy.attributesCalculated.h[p_key] = value;
+			if(mul != null) {
+				var h = mul.attributesBase.h;
+				var p_h = h;
+				var p_keys = Object.keys(h);
+				var p_length = p_keys.length;
+				var p_current = 0;
+				while(p_current < p_length) {
+					var key = p_keys[p_current++];
+					var p_key = key;
+					var p_value = p_h[key];
+					var mul = p_value;
+					var value = this.wdata.enemy.attributesBase.h[p_key] * mul | 0;
+					this.wdata.enemy.attributesBase.h[p_key] = value;
+					this.wdata.enemy.attributesCalculated.h[p_key] = value;
+				}
 			}
-			var h = sheet.speciesAdd.h;
-			var p_h = h;
-			var p_keys = Object.keys(h);
-			var p_length = p_keys.length;
-			var p_current = 0;
-			while(p_current < p_length) {
-				var key = p_keys[p_current++];
-				var p_key = key;
-				var p_value = p_h[key];
-				var add = p_value;
-				var _g = p_key;
-				var _g1 = this.wdata.enemy.attributesBase;
-				var v = _g1.h[_g] + add;
-				_g1.h[_g] = v;
-				var _g2 = p_key;
-				var _g3 = this.wdata.enemy.attributesCalculated;
-				var v1 = _g3.h[_g2] + add;
-				_g3.h[_g2] = v1;
+			if(sheet.speciesAdd != null) {
+				var h = sheet.speciesAdd.h;
+				var p_h = h;
+				var p_keys = Object.keys(h);
+				var p_length = p_keys.length;
+				var p_current = 0;
+				while(p_current < p_length) {
+					var key = p_keys[p_current++];
+					var p_key = key;
+					var p_value = p_h[key];
+					var add = p_value;
+					var _g = p_key;
+					var _g1 = this.wdata.enemy.attributesBase;
+					var v = _g1.h[_g] + add;
+					_g1.h[_g] = v;
+					var _g2 = p_key;
+					var _g3 = this.wdata.enemy.attributesCalculated;
+					var v1 = _g3.h[_g2] + add;
+					_g3.h[_g2] = v1;
+				}
 			}
-			var h = sheet.speciesLevelStats.attributesBase.h;
-			var p_h = h;
-			var p_keys = Object.keys(h);
-			var p_length = p_keys.length;
-			var p_current = 0;
-			while(p_current < p_length) {
-				var key = p_keys[p_current++];
-				var p_key = key;
-				var p_value = p_h[key];
-				var addLevel = p_value;
-				var value = this.wdata.enemy.attributesBase.h[p_key] + addLevel * enemyLevel | 0;
-				this.wdata.enemy.attributesBase.h[p_key] = value;
-				this.wdata.enemy.attributesCalculated.h[p_key] = value;
+			if(sheet.speciesLevelStats != null) {
+				var h = sheet.speciesLevelStats.attributesBase.h;
+				var p_h = h;
+				var p_keys = Object.keys(h);
+				var p_length = p_keys.length;
+				var p_current = 0;
+				while(p_current < p_length) {
+					var key = p_keys[p_current++];
+					var p_key = key;
+					var p_value = p_h[key];
+					var addLevel = p_value;
+					var value = this.wdata.enemy.attributesBase.h[p_key] + addLevel * enemyLevel | 0;
+					this.wdata.enemy.attributesBase.h[p_key] = value;
+					this.wdata.enemy.attributesCalculated.h[p_key] = value;
+				}
 			}
 		}
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
+		if(this.wdata.regionProgress == null) {
+			this.wdata.regionProgress = [];
+		}
 		var addAction = function(id,action,callback) {
 			var w = _gthis.wdata;
 			if(Object.prototype.hasOwnProperty.call(_gthis.wdata.playerActions.h,id) == false) {
@@ -208,6 +217,12 @@ BattleManager.prototype = {
 	}
 	,changeRegion: function(region) {
 		this.wdata.battleAreaRegion = region;
+		if(this.wdata.regionProgress[region] == null) {
+			this.wdata.regionProgress[region] = { area : 0, maxArea : 1, amountEnemyKilledInArea : 0};
+		}
+		this.wdata.battleArea = this.wdata.regionProgress[region].area;
+		this.wdata.maxArea = this.wdata.regionProgress[region].maxArea;
+		this.wdata.killedInArea[this.wdata.battleArea] = this.wdata.regionProgress[region].amountEnemyKilledInArea;
 	}
 	,advance: function() {
 		var hero = this.wdata.hero;
@@ -427,6 +442,13 @@ BattleManager.prototype = {
 	}
 	,update: function(delta) {
 		this.wdata.timeCount += delta;
+		if(this.wdata.regionProgress == null) {
+			this.wdata.regionProgress = [];
+		}
+		while(this.wdata.regionProgress.length <= this.wdata.battleAreaRegion) this.wdata.regionProgress.push({ area : -1, maxArea : -1, amountEnemyKilledInArea : -1});
+		this.wdata.regionProgress[this.wdata.battleAreaRegion].area = this.wdata.battleArea;
+		this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea = this.wdata.maxArea;
+		this.wdata.regionProgress[this.wdata.battleAreaRegion].amountEnemyKilledInArea = this.wdata.killedInArea[this.wdata.battleArea];
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
 		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
@@ -624,8 +646,10 @@ BattleManager.prototype = {
 			loadedWdata.sleeping = loadedWdata.sleeping == true;
 		}
 		if(loadedWdata.worldVersion < 601) {
-			this.wdata.regionProgress = [];
-			this.wdata.regionProgress.push({ area : loadedWdata.battleArea, maxArea : loadedWdata.maxArea});
+			loadedWdata.regionProgress = [];
+			loadedWdata.regionProgress.push({ area : loadedWdata.battleArea, maxArea : loadedWdata.maxArea, amountEnemyKilledInArea : loadedWdata.killedInArea[loadedWdata.battleArea]});
+			loadedWdata.battleAreaRegion = 0;
+			loadedWdata.battleArea = 0;
 		}
 		if(loadedWdata.worldVersion != this.wdata.worldVersion) {
 			loadedWdata.enemy = null;
@@ -686,6 +710,8 @@ MainTest.main = function() {
 	process.stdout.write(Std.string(sj));
 	process.stdout.write("\n");
 	JSON.parse(sj);
+	process.stdout.write("Discard worse equip tests");
+	process.stdout.write("\n");
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -957,14 +983,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:190:","  _____ ");
 		console.log("test/MainTest.hx:191:","  _____ ");
 		console.log("test/MainTest.hx:192:","  _____ ");
-		console.log("test/MainTest.hx:193:",json);
-		console.log("test/MainTest.hx:194:","  _____ ");
+		console.log("test/MainTest.hx:193:","  _____ ");
+		console.log("test/MainTest.hx:194:",json);
 		console.log("test/MainTest.hx:195:","  _____ ");
 		console.log("test/MainTest.hx:196:","  _____ ");
-		console.log("test/MainTest.hx:197:",json2);
+		console.log("test/MainTest.hx:197:","  _____ ");
+		console.log("test/MainTest.hx:198:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}

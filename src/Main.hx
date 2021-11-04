@@ -119,9 +119,10 @@ class Main {
 		main.percentWidth = 100;
 		main.percentHeight = 100;
 		main.addComponent(view.mainComponent);
-		var key = "save data2";
+		
+		var keyOld = "save data2";
+		var key = "save data master";
 		var keyBackup = "save backup";
-		var keyStory = "savestory";
 
 		var CreateButtonFromAction = function(actionId:String, buttonLabel:String) {
 			// var action = bm.wdata.playerActions[actionId];
@@ -144,19 +145,6 @@ class Main {
 			bm.LevelUp();
 		});
 
-		view.AddButton("reset", "Reset", function(e) {
-			view.logText.text = "";
-			view.logText.htmlText = "";
-			bm = new BattleManager();
-
-			var localStorage = js.Browser.getLocalStorage();
-			localStorage.setItem(key, "");
-			localStorage.setItem(keyStory, "");
-
-			Browser.location.reload();
-
-			eventShown = 0;
-		}, "You will lose all your progress");
 
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart");
@@ -214,6 +202,22 @@ class Main {
 			speakerToImage: ["mom" => "graphics/mom.png", "you" => "graphics/main.png"]
 			
 		}
+
+		view.AddButton("reset", "Reset", function(e) {
+			view.logText.text = "";
+			view.logText.htmlText = "";
+			bm = new BattleManager();
+			
+
+			var localStorage = js.Browser.getLocalStorage();
+			localStorage.setItem(key, "");
+			localStorage.setItem(keyStory, "");
+
+			Browser.location.reload();
+
+			eventShown = 0;
+			storyRuntime = null;
+		}, "You will lose all your progress");
 
 		
 		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
@@ -429,4 +433,10 @@ class Main {
 			equipName = "Armor";
 		return equipName;
 	}
+}
+
+typedef PersistenceMaster = {
+	var worldVersion : Int;
+	var jsonGameplay : String;
+	var jsonStory : String;
 }

@@ -82,9 +82,9 @@ class BattleManager {
 		var region = wdata.battleAreaRegion;
 		var enemyLevel = wdata.battleArea;
 		var sheet = this.enemySheets[region];
-		
-		if(region > 0){
-			enemyLevel = (enemyLevel+1)*10 - 1;
+
+		if (region > 0) {
+			enemyLevel = (enemyLevel + 1) * 10 - 1;
 		}
 
 		{
@@ -117,25 +117,29 @@ class BattleManager {
 				attributesCalculated: stats2,
 				reference: new ActorReference(1, 0)
 			};
-			if(sheet != null){
+			if (sheet != null) {
 				var mul = sheet.speciesMultiplier;
-				for(p in mul.attributesBase.keyValueIterator()){
-					var mul = p.value;
-					var value = Std.int(wdata.enemy.attributesBase[p.key]*mul);
-					wdata.enemy.attributesBase[p.key] = value;
-					wdata.enemy.attributesCalculated[p.key] = value;
+				if (mul != null) {
+					for (p in mul.attributesBase.keyValueIterator()) {
+						var mul = p.value;
+						var value = Std.int(wdata.enemy.attributesBase[p.key] * mul);
+						wdata.enemy.attributesBase[p.key] = value;
+						wdata.enemy.attributesCalculated[p.key] = value;
+					}
 				}
-				for(p in sheet.speciesAdd.keyValueIterator()){
-					var add = p.value;
-					wdata.enemy.attributesBase[p.key] += add;
-					wdata.enemy.attributesCalculated[p.key] += add;
-				}
-				for(p in sheet.speciesLevelStats.attributesBase.keyValueIterator()){
-					var addLevel = p.value;
-					var value = Std.int(wdata.enemy.attributesBase[p.key] + addLevel*enemyLevel);
-					wdata.enemy.attributesBase[p.key] = value;
-					wdata.enemy.attributesCalculated[p.key] = value;
-				}
+				if (sheet.speciesAdd != null)
+					for (p in sheet.speciesAdd.keyValueIterator()) {
+						var add = p.value;
+						wdata.enemy.attributesBase[p.key] += add;
+						wdata.enemy.attributesCalculated[p.key] += add;
+					}
+				if (sheet.speciesLevelStats != null)
+					for (p in sheet.speciesLevelStats.attributesBase.keyValueIterator()) {
+						var addLevel = p.value;
+						var value = Std.int(wdata.enemy.attributesBase[p.key] + addLevel * enemyLevel);
+						wdata.enemy.attributesBase[p.key] = value;
+						wdata.enemy.attributesCalculated[p.key] = value;
+					}
 			}
 		}
 	}
@@ -188,6 +192,10 @@ class BattleManager {
 	// currently everything gets saved, even stuff that shouldn't
 	// This method will reinit some of those values when loading or creating a new game
 	public function ReinitGameValues() {
+		if (wdata.regionProgress == null) {
+			wdata.regionProgress = [];
+		}
+
 		var addAction = (id:String, action:PlayerAction, callback:PlayerAction->Void) -> {
 			// only if action isn't already defined
 			var w = wdata;
@@ -290,8 +298,17 @@ class BattleManager {
 		RecalculateAttributes(wdata.hero);
 	}
 
-	public function changeRegion(region){
+	public function changeRegion(region) {
 		wdata.battleAreaRegion = region;
+		if (wdata.regionProgress[region] == null)
+			wdata.regionProgress[region] = {
+				area: 0,
+				maxArea: 1,
+				amountEnemyKilledInArea: 0
+			}
+		wdata.battleArea = wdata.regionProgress[region].area;
+		wdata.maxArea = wdata.regionProgress[region].maxArea;
+		wdata.killedInArea[wdata.battleArea] = wdata.regionProgress[region].amountEnemyKilledInArea;
 	}
 
 	public function advance() {
@@ -534,6 +551,20 @@ $baseInfo';
 	public function update(delta:Float):String {
 		wdata.timeCount += delta;
 
+		if (wdata.regionProgress == null) {
+			wdata.regionProgress = [];
+		}
+		while (wdata.regionProgress.length <= wdata.battleAreaRegion) {
+			wdata.regionProgress.push({
+				area: -1,
+				maxArea: -1,
+				amountEnemyKilledInArea: -1
+			});
+		}
+		wdata.regionProgress[wdata.battleAreaRegion].area = wdata.battleArea;
+		wdata.regionProgress[wdata.battleAreaRegion].maxArea = wdata.maxArea;
+		wdata.regionProgress[wdata.battleAreaRegion].amountEnemyKilledInArea = wdata.killedInArea[wdata.battleArea];
+
 		canAdvance = wdata.battleArea < wdata.maxArea;
 		canRetreat = wdata.battleArea > 0;
 		canLevelUp = wdata.hero.xp.value >= wdata.hero.xp.calculatedMax;
@@ -733,9 +764,15 @@ $baseInfo';
 			loadedWdata.worldVersion = wdata.worldVersion;
 			loadedWdata.sleeping = loadedWdata.sleeping == true;
 		}
-		if (loadedWdata.worldVersion < 601) {
-			wdata.regionProgress = [];
-			wdata.regionProgress.push({area: loadedWdata.battleArea, maxArea: loadedWdata.maxArea});
+		if (loadedWdata.worldVersion >= 601 == false) {
+			loadedWdata.regionProgress = [];
+			loadedWdata.regionProgress.push({
+				area: loadedWdata.battleArea,
+				maxArea: loadedWdata.maxArea,
+				amountEnemyKilledInArea: loadedWdata.killedInArea[loadedWdata.battleArea]
+			});
+			loadedWdata.battleAreaRegion = 0;
+			loadedWdata.battleArea = 0;
 		}
 		if (loadedWdata.worldVersion != wdata.worldVersion) {
 			loadedWdata.enemy = null;
