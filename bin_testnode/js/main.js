@@ -155,6 +155,8 @@ BattleManager.prototype = {
 				}
 			}
 		}
+		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
+		this.wdata.enemy.attributesCalculated.h["Life"] = v;
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;

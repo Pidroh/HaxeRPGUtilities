@@ -140,6 +140,7 @@ class BattleManager {
 						wdata.enemy.attributesCalculated[p.key] = value;
 					}
 			}
+			wdata.enemy.attributesCalculated["Life"] = wdata.enemy.attributesCalculated["LifeMax"];
 		}
 	}
 
