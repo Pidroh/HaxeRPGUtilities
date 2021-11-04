@@ -76,8 +76,6 @@ class Main {
 		var enemyLife = 20;
 		var view:View = new View();
 
-
-
 		// goblin
 		bm.enemySheets.push({speciesMultiplier: null, speciesLevelStats: null, speciesAdd: null});
 		// wolf
@@ -119,9 +117,10 @@ class Main {
 		main.percentWidth = 100;
 		main.percentHeight = 100;
 		main.addComponent(view.mainComponent);
-		
+
 		var keyOld = "save data2";
 		var key = "save data master";
+		//var keyStory = "save data masterStory";
 		var keyBackup = "save backup";
 
 		var CreateButtonFromAction = function(actionId:String, buttonLabel:String) {
@@ -144,7 +143,6 @@ class Main {
 		view.AddButton("levelup", "Level Up", function(e) {
 			bm.LevelUp();
 		});
-
 
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart");
@@ -173,30 +171,38 @@ class Main {
 
 		var saveCount:Float = 0.3;
 
+		var storyPersistence:StoryPersistence = null;
 		var jsonData = ls.getItem(key);
 		if (jsonData != null && jsonData != "") {
 			var parsed = Json.parse(jsonData);
-			if(Std.isOfType(parsed, WorldData)){
-				
-			}
-			if(parsed ){
+			var persistenceMaster:PersistenceMaster = parsed;
+			trace(persistenceMaster);
+			trace(persistenceMaster.jsonGameplay);
+			trace(persistenceMaster.jsonStory);
+			trace(persistenceMaster.worldVersion);
 
+			// LEGACY DATA SUPPORT
+			// this means it is the old type of data
+			if (persistenceMaster.worldVersion >= 601 == false) {
+				bm.SendJsonPersistentData(jsonData);
 			}
-			trace(jsonData);
-			bm.SendJsonPersistentData(jsonData);
-		}
 
-		var jsonData2 = ls.getItem(keyStory);
-		var storyPersistence:StoryPersistence = null;
-		if (jsonData2 != null && jsonData2 != ""	) {
-			storyPersistence = StoryControlLogic.ReadJsonPersistentData(jsonData2);
-		} else{
-			storyPersistence = {
-				currentStoryId: null,
-				progressionData: [],
-				worldVersion: bm.wdata.worldVersion
-			};
+			if (persistenceMaster.jsonGameplay != null) {
+				bm.SendJsonPersistentData(persistenceMaster.jsonGameplay);
+			}
+
+			var jsonData2 = persistenceMaster.jsonStory;
+			if (jsonData2 != null && jsonData2 != "") {
+				storyPersistence = StoryControlLogic.ReadJsonPersistentData(jsonData2);
+			} else {
+				storyPersistence = {
+					currentStoryId: null,
+					progressionData: [],
+					worldVersion: bm.wdata.worldVersion
+				};
+			}
 		}
+		
 
 		var storyRuntime:StoryRuntimeData = {
 			currentStoryProgression: null,
@@ -207,18 +213,15 @@ class Main {
 			visibilityConditionScripts: [],
 			persistence: storyPersistence,
 			speakerToImage: ["mom" => "graphics/mom.png", "you" => "graphics/main.png"]
-			
 		}
 
 		view.AddButton("reset", "Reset", function(e) {
 			view.logText.text = "";
 			view.logText.htmlText = "";
 			bm = new BattleManager();
-			
 
 			var localStorage = js.Browser.getLocalStorage();
 			localStorage.setItem(key, "");
-			localStorage.setItem(keyStory, "");
 
 			Browser.location.reload();
 
@@ -226,12 +229,10 @@ class Main {
 			storyRuntime = null;
 		}, "You will lose all your progress");
 
-		
 		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
 		var scriptExecuter = new Interp();
 		var global = new Map<String, Float>();
 		scriptExecuter.variables.set("global", global);
-
 
 		var update = null;
 
@@ -251,7 +252,6 @@ class Main {
 		var saveFileImporterSetup = false;
 
 		update = function(timeStamp:Float):Bool {
-
 			global["maxarea"] = bm.wdata.maxArea;
 
 			GameAnalyticsIntegration.InitializeCheck();
@@ -283,7 +283,7 @@ class Main {
 					saveFileImporterSetup = true;
 				}
 			}
-  
+
 			/*
 				var amountEquipmentShow = 0;
 				for (i in 0...bm.wdata.hero.equipment.length) {
@@ -388,14 +388,13 @@ class Main {
 			buttonToAction("sleep", "sleep");
 			buttonToAction("repeat", "repeat");
 
-			
 			{
 				var action = bm.wdata.playerActions["tabequipment"];
 				view.TabVisible(view.equipTab, action.visible);
 			}
 			{
 				var action = bm.wdata.playerActions["tabmemory"];
-				//view.TabVisible(view.storyTab, action.visible);
+				// view.TabVisible(view.storyTab, action.visible);
 				view.TabVisible(view.storyTab, storyHappened);
 			}
 
@@ -415,12 +414,14 @@ class Main {
 			}
 			var text:String = bm.update(delta);
 			var localStorage = js.Browser.getLocalStorage();
-			
+
 			// #SAVE
 			var json = bm.GetJsonPersistentData();
-			localStorage.setItem(key, json);
+			// localStorage.setItem(key, json);
 			var json2 = StoryControlLogic.GetJsonPersistentData(storyRuntime);
-			localStorage.setItem(keyStory, json2);
+			var masterPers:PersistenceMaster = {worldVersion: bm.wdata.worldVersion, jsonGameplay: json, jsonStory: json2};
+			// localStorage.setItem(keyStory, json2);
+			localStorage.setItem(key, Json.stringify(masterPers));
 
 			saveCount -= delta;
 			if (saveCount < 0) {
@@ -443,7 +444,7 @@ class Main {
 }
 
 typedef PersistenceMaster = {
-	var worldVersion : Int;
-	var jsonGameplay : String;
-	var jsonStory : String;
+	var worldVersion:Int;
+	var jsonGameplay:String;
+	var jsonStory:String;
 }
