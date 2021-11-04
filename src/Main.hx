@@ -175,6 +175,13 @@ class Main {
 
 		var jsonData = ls.getItem(key);
 		if (jsonData != null && jsonData != "") {
+			var parsed = Json.parse(jsonData);
+			if(Std.isOfType(parsed, WorldData)){
+				
+			}
+			if(parsed ){
+
+			}
 			trace(jsonData);
 			bm.SendJsonPersistentData(jsonData);
 		}
