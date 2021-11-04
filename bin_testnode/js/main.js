@@ -325,27 +325,31 @@ BattleManager.prototype = {
 				if(this.random.randomInt(0,100) < this.equipDropChance) {
 					var equipType = this.random.randomInt(0,1);
 					var e = null;
+					var dropQuality = enemy.level;
+					if(this.wdata.battleAreaRegion > 0) {
+						dropQuality = 1.2 * dropQuality | 0;
+					}
 					if(equipType == 0) {
-						var attackBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
+						var attackBonus = this.random.randomInt(1,dropQuality / 2 + 2 | 0);
 						var _g = new haxe_ds_StringMap();
 						_g.h["Attack"] = attackBonus;
 						e = { type : 0, requiredAttributes : null, attributes : _g};
 						if(this.random.randomInt(0,100) < 15) {
-							var lifeBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] + 2 | 0);
+							var lifeBonus = this.random.randomInt(1,dropQuality + 2 | 0);
 							e.attributes.h["LifeMax"] = lifeBonus;
 						}
 						if(this.random.randomInt(0,100) < 15) {
-							var bonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 8 + 2 | 0);
+							var bonus = this.random.randomInt(1,dropQuality / 8 + 2 | 0);
 							e.attributes.h["Speed"] = bonus;
 						}
 						if(this.random.randomInt(0,100) < 15) {
-							var bonus = this.random.randomInt(1,enemy.attributesCalculated.h["Defense"] / 8 + 2 | 0);
+							var bonus = this.random.randomInt(1,dropQuality / 8 + 2 | 0);
 							e.attributes.h["Defense"] = bonus;
 						}
 					}
 					if(equipType == 1) {
 						var armorType = this.random.randomInt(0,1);
-						var mainBonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 2 + 2 | 0);
+						var mainBonus = this.random.randomInt(1,dropQuality / 2 + 2 | 0);
 						var mainBonusType = "LifeMax";
 						if(armorType == 0) {
 							mainBonus *= 3;
@@ -357,7 +361,7 @@ BattleManager.prototype = {
 						_g.h[mainBonusType] = mainBonus;
 						e = { type : 1, requiredAttributes : null, attributes : _g};
 						if(this.random.randomInt(0,100) < 20) {
-							var bonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 4 + 2 | 0);
+							var bonus = this.random.randomInt(1,dropQuality / 4 + 2 | 0);
 							e.attributes.h["Attack"] = bonus;
 						}
 						if(this.random.randomInt(0,100) < 20) {

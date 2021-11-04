@@ -195,7 +195,7 @@ class BattleManager {
 		if (wdata.regionProgress == null) {
 			wdata.regionProgress = [];
 		}
-		if(wdata.battleAreaRegionMax >= 1 == false){
+		if (wdata.battleAreaRegionMax >= 1 == false) {
 			wdata.battleAreaRegionMax = 1;
 		}
 
@@ -409,27 +409,31 @@ class BattleManager {
 				if (random.randomInt(0, 100) < equipDropChance) {
 					var equipType = random.randomInt(0, 1);
 					var e:Equipment = null;
+					var dropQuality = enemy.level;
+					if (wdata.battleAreaRegion > 0) {
+						dropQuality =  Std.int(1.2*dropQuality);
+					}
 					// sword
 					if (equipType == 0) {
-						var attackBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
+						var attackBonus = random.randomInt(1, Std.int( dropQuality / 2 + 2));
 						e = {type: 0, requiredAttributes: null, attributes: ["Attack" => attackBonus]};
 						if (random.randomInt(0, 100) < 15) {
-							var lifeBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] + 2));
+							var lifeBonus = random.randomInt(1, Std.int(dropQuality + 2));
 							e.attributes["LifeMax"] = lifeBonus;
 						}
 						if (random.randomInt(0, 100) < 15) {
-							var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 8 + 2));
+							var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
 							e.attributes["Speed"] = bonus;
 						}
 						if (random.randomInt(0, 100) < 15) {
-							var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Defense"] / 8 + 2));
+							var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
 							e.attributes["Defense"] = bonus;
 						}
 					}
 					// armor
 					if (equipType == 1) {
 						var armorType = random.randomInt(0, 1);
-						var mainBonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 2 + 2));
+						var mainBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
 						var mainBonusType = "LifeMax";
 						if (armorType == 0) {
 							mainBonus *= 3;
@@ -440,7 +444,7 @@ class BattleManager {
 						e = {type: 1, requiredAttributes: null, attributes: [mainBonusType => mainBonus]};
 
 						if (random.randomInt(0, 100) < 20) {
-							var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 4 + 2));
+							var bonus = random.randomInt(1, Std.int(dropQuality / 4 + 2));
 							e.attributes["Attack"] = bonus;
 						}
 						if (random.randomInt(0, 100) < 20) {
