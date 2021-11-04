@@ -381,7 +381,11 @@ BattleManager.prototype = {
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
 					this.AddEvent(EventTypes.AreaComplete).data = this.wdata.battleArea;
 					if(this.wdata.maxArea == this.wdata.battleArea) {
-						ResourceLogic.recalculateScalingResource(this.wdata.battleArea,this.areaBonus);
+						var areaForBonus = this.wdata.battleArea;
+						if(this.wdata.battleAreaRegion >= 1) {
+							areaForBonus *= 15;
+						}
+						ResourceLogic.recalculateScalingResource(areaForBonus,this.areaBonus);
 						var xpPlus = this.areaBonus.calculatedMax;
 						this.AwardXP(xpPlus);
 						this.wdata.maxArea++;

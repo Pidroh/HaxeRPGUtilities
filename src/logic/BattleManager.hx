@@ -470,7 +470,11 @@ class BattleManager {
 
 					if (wdata.maxArea == wdata.battleArea) {
 						// var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
-						ResourceLogic.recalculateScalingResource(wdata.battleArea, areaBonus);
+						var areaForBonus = wdata.battleArea;
+						if(wdata.battleAreaRegion >= 1){
+							areaForBonus *= 15;
+						}
+						ResourceLogic.recalculateScalingResource(areaForBonus, areaBonus);
 						var xpPlus = areaBonus.calculatedMax;
 						AwardXP(xpPlus);
 						wdata.maxArea++;
