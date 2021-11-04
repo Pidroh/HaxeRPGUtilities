@@ -54,6 +54,9 @@ BattleManager.prototype = {
 		var initialEnemyToKill = this.balancing.timeForFirstAreaProgress / this.balancing.timeToKillFirstEnemy | 0;
 		if(area > 0) {
 			this.wdata.necessaryToKillInArea = initialEnemyToKill * area;
+			if(this.wdata.battleAreaRegion > 0) {
+				this.wdata.necessaryToKillInArea = 3;
+			}
 			if(this.PlayerFightMode()) {
 				this.CreateAreaEnemy();
 			}

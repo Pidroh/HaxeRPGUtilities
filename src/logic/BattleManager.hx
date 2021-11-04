@@ -54,6 +54,7 @@ class BattleManager {
 
 		if (area > 0) {
 			wdata.necessaryToKillInArea = initialEnemyToKill * area;
+			if(wdata.battleAreaRegion > 0) wdata.necessaryToKillInArea = 3;
 
 			if (PlayerFightMode()) {
 				CreateAreaEnemy();
