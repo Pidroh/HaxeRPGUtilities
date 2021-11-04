@@ -9,6 +9,8 @@ class Transpiler {
 		var directoryPath = "C:\\Users\\user\\gamedev\\_haxe\\HaxeRPGUtilities\\assets";
 		var json = File.getContent("C:\\Users\\user\\gamedev\\_haxe\\HaxeRPGUtilities.wiki\\yarn.json");
 		var master:Array<Dynamic> = Json.parse(json);
+		trace(json);
+		Sys.print(json);
 		var masterOutput:Array<Cutscene> = [];
 		for (a in master) {
 			var title:String = a.title;

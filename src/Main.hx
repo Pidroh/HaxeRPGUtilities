@@ -186,7 +186,7 @@ class Main {
 
 		var saveCount:Float = 0.3;
 
-		var storyPersistence:StoryPersistence = null;
+		var storyPersistence:StoryPersistence = {progressionData: [], worldVersion: bm.wdata.worldVersion, currentStoryId: null};
 		var jsonData = ls.getItem(key);
 		if (jsonData != null && jsonData != "") {
 			var parsed = Json.parse(jsonData);
@@ -281,7 +281,7 @@ class Main {
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
 
 			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax);
-			
+
 
 			var imp = Browser.document.getElementById("import__");
 			if (imp != null && saveFileImporterSetup == false) {
