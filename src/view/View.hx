@@ -322,6 +322,7 @@ class View {
 		var log = new Label();
 		logText = log;
 		logContainer.addComponent(log);
+		logText.width = 190;
 
 		areaContainer = CreateContainer(box, true);
 		

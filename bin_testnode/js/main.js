@@ -467,6 +467,7 @@ BattleManager.prototype = {
 			var maxArea = this.wdata.regionProgress[0].maxArea;
 			if(maxArea > this.regionRequirements[this.wdata.battleAreaRegionMax]) {
 				this.wdata.battleAreaRegionMax++;
+				this.AddEvent(EventTypes.RegionUnlock).data = this.wdata.battleAreaRegionMax - 1;
 			}
 		}
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
@@ -1084,11 +1085,12 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,ActorAttack: {_hx_name:"ActorAttack",_hx_index:4,__enum__:"EventTypes",toString:$estr}
 	,ActorLevelUp: {_hx_name:"ActorLevelUp",_hx_index:5,__enum__:"EventTypes",toString:$estr}
 	,AreaUnlock: {_hx_name:"AreaUnlock",_hx_index:6,__enum__:"EventTypes",toString:$estr}
-	,AreaComplete: {_hx_name:"AreaComplete",_hx_index:7,__enum__:"EventTypes",toString:$estr}
-	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:8,__enum__:"EventTypes",toString:$estr}
-	,GetXP: {_hx_name:"GetXP",_hx_index:9,__enum__:"EventTypes",toString:$estr}
+	,RegionUnlock: {_hx_name:"RegionUnlock",_hx_index:7,__enum__:"EventTypes",toString:$estr}
+	,AreaComplete: {_hx_name:"AreaComplete",_hx_index:8,__enum__:"EventTypes",toString:$estr}
+	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:9,__enum__:"EventTypes",toString:$estr}
+	,GetXP: {_hx_name:"GetXP",_hx_index:10,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;

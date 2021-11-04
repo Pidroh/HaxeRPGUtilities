@@ -583,6 +583,7 @@ $baseInfo';
 			var maxArea = wdata.regionProgress[0].maxArea;
 			if (maxArea > regionRequirements[wdata.battleAreaRegionMax]) {
 				wdata.battleAreaRegionMax++;
+				this.AddEvent(RegionUnlock).data = wdata.battleAreaRegionMax-1;
 			}
 		}
 		//-----------------------------------

@@ -363,7 +363,9 @@ class Main {
 					ev = '$originText died';
 					if (e.target != null) {
 						if (e.target.type == 0) // hero died
-							GameAnalyticsIntegration.SendProgressFailEvent("world0", "stage0", "area" + bm.wdata.battleArea);
+							GameAnalyticsIntegration.SendProgressFailEvent("world0", 
+						"stage"+bm.wdata.battleAreaRegion, 
+						 "area" + bm.wdata.battleArea);
 					}
 				}
 				if (e.type == ActorLevelUp) {
@@ -373,7 +375,15 @@ class Main {
 				if (e.type == AreaUnlock) {
 					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>';
 					GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
-					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage0", "area" + e.data);
+					GameAnalyticsIntegration.SendProgressStartEvent("world0", 
+					"stage"+bm.wdata.battleAreaRegion, 
+					"area" + e.data);
+				}
+				if (e.type == RegionUnlock) {
+					var regionName = enemyRegionNames[e.data];
+					ev = '<b>Found new location: $regionName</b>';
+					GameAnalyticsIntegration.SendDesignEvent("RegionUnlock", e.data);
+					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage"+e.data);
 				}
 				if (e.type == AreaComplete) {
 					ev = 'There are no enemies left';
