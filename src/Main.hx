@@ -81,7 +81,7 @@ class Main {
 		// wolf
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 0.6, "Speed" => 2, "LifeMax" => 1.3]
+				attributesBase: ["Attack" => 0.4, "Speed" => 3, "LifeMax" => 1.3]
 			},
 			speciesAdd: null,
 			speciesLevelStats: null
@@ -89,7 +89,7 @@ class Main {
 		// Tonberry
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 4, "Speed" => 0.1, "LifeMax" => 1.5]
+				attributesBase: ["Attack" => 4, "Speed" => 0.1, "LifeMax" => 1.8]
 			},
 			speciesAdd: null,
 			speciesLevelStats: null
@@ -97,7 +97,7 @@ class Main {
 		// Turtle
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 1.3, "Speed" => 0.15, "LifeMax" => 2.5]
+				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 2.5]
 			},
 			speciesAdd: ["Defense" => 4],
 			speciesLevelStats: {attributesBase: ["Defense" => 1]}
@@ -105,11 +105,26 @@ class Main {
 		// Cactuar
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 1.2, "Speed" => 1.1, "LifeMax" => 1.7]
+				attributesBase: ["Attack" => 1.4, "Speed" => 1.1, "LifeMax" => 1.7]
 			},
 			speciesAdd: ["Piercing" => 1],
 			speciesLevelStats: {attributesBase: ["Defense" => 1]}
 		});
+		bm.regionRequirements = [0, 5, 10, 15, 30];
+		var enemyRegionNames = [
+			"Lagrima Continent",
+			"Wolf Fields",
+			"Tonberry's Lair",
+			"Altar Cave",
+			"Bikanel Island"
+		];
+		var enemyNames = [
+			"Enemy",
+			"Wolf",
+			"Tonberry",
+			"Land Turtle",
+			"Cactuar"
+		];
 
 		var eventShown = 0;
 
@@ -120,7 +135,7 @@ class Main {
 
 		var keyOld = "save data2";
 		var key = "save data master";
-		//var keyStory = "save data masterStory";
+		// var keyStory = "save data masterStory";
 		var keyBackup = "save backup";
 
 		var CreateButtonFromAction = function(actionId:String, buttonLabel:String) {
@@ -202,7 +217,6 @@ class Main {
 				};
 			}
 		}
-		
 
 		var storyRuntime:StoryRuntimeData = {
 			currentStoryProgression: null,
@@ -265,6 +279,9 @@ class Main {
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
+
+			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax);
+			
 
 			var imp = Browser.document.getElementById("import__");
 			if (imp != null && saveFileImporterSetup == false) {

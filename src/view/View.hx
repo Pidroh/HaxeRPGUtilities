@@ -67,6 +67,7 @@ class View {
 	var buttonMap = new Map<String, Button>();
 	var equipments = new Array<EquipmentView>();
 	var cutsceneStartViews = new Array<CutsceneStartView>();
+	var dropDownRegion : DropDownView;
 	var saveDataDownload:Label;
 	public var amountOfStoryMessagesShown = 0;
 	public var storyDialog:StoryDialog;
@@ -330,6 +331,7 @@ class View {
 			var region = ddv.dropdown.selectedIndex;
 			regionChangeAction(region);
 		};
+		dropDownRegion = ddv;
 		areaLabel = CreateValueView(areaContainer, false, "Area: ");
 		enemyToAdvance = CreateValueView(areaContainer, true, "Progress: ");
 
@@ -388,6 +390,15 @@ class View {
 		}
 		storyDialog.skipButton.onClick = event -> storyMainAction(View.storyAction_SkipStory, 0);
 		storyDialog.watchLaterButton.onClick = event -> storyMainAction(View.storyAction_WatchLater, 0);
+	}
+
+	public function FeedDropDownRegion(regionNames, regionAmount){
+		if(dropDownRegion.dropdown.dataSource.size != regionAmount){
+			dropDownRegion.dropdown.dataSource.clear();
+			for (i in 0...regionAmount){
+				dropDownRegion.dropdown.dataSource.add(regionNames[i]);
+			}
+		}
 	}
 
 	public function FeedSave(saveDataContent:String) {
@@ -643,7 +654,7 @@ class View {
 	function CreateDropDownView(parent:Component, label:String):DropDownView{
 		var boxh = new Box();
 		boxh.width = 180;
-		boxh.height = 25;
+		boxh.height = 30;
 		parent.addComponent(boxh);
 
 		
@@ -668,14 +679,13 @@ class View {
 		dd.width = 120;
 		
 		dd.dataSource = new ArrayDataSource<String>();
-		dd.dataSource.add("Text");
-		dd.dataSource.add("Text");
-		dd.dataSource.add("Text");
 		dd.horizontalAlign = "right";
 		dd.verticalAlign = "center";
 		boxh.addComponent(dd);
 		return {parent: boxh, dropdown: dd, labelText: nameLabel};
 	}
+
+	
 
 	function CreateValueView(parent:Component, withBar:Bool, label:String):ValueView {
 		var boxh = new Box();

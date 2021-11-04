@@ -27,8 +27,7 @@ class BattleManager {
 
 	public var events = new Array<GameEvent>();
 	public var playerActions:Map<String, PlayerActionExecution> = new Map<String, PlayerActionExecution>();
-
-	// public var enemyDefinitions = new Array<EnemyDe>
+	public var regionRequirements:Array<Int> = [0];
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -176,6 +175,7 @@ class BattleManager {
 			playerTimesKilled: 0,
 			battleArea: 0,
 			battleAreaRegion: 0,
+			battleAreaRegionMax: 1,
 			playerActions: new Map<String, PlayerAction>(),
 			recovering: false,
 			sleeping: false,
@@ -194,6 +194,9 @@ class BattleManager {
 	public function ReinitGameValues() {
 		if (wdata.regionProgress == null) {
 			wdata.regionProgress = [];
+		}
+		if(wdata.battleAreaRegionMax >= 1 == false){
+			wdata.battleAreaRegionMax = 1;
 		}
 
 		var addAction = (id:String, action:PlayerAction, callback:PlayerAction->Void) -> {
@@ -306,7 +309,8 @@ class BattleManager {
 				maxArea: 1,
 				amountEnemyKilledInArea: 0
 			}
-		wdata.battleArea = wdata.regionProgress[region].area;
+		ChangeBattleArea(wdata.regionProgress[region].area);
+		// wdata.battleArea = wdata.regionProgress[region].area;
 		wdata.maxArea = wdata.regionProgress[region].maxArea;
 		wdata.killedInArea[wdata.battleArea] = wdata.regionProgress[region].amountEnemyKilledInArea;
 	}
@@ -564,6 +568,15 @@ $baseInfo';
 		wdata.regionProgress[wdata.battleAreaRegion].area = wdata.battleArea;
 		wdata.regionProgress[wdata.battleAreaRegion].maxArea = wdata.maxArea;
 		wdata.regionProgress[wdata.battleAreaRegion].amountEnemyKilledInArea = wdata.killedInArea[wdata.battleArea];
+
+		// region unlock code ---------------
+		if (regionRequirements.length >= wdata.battleAreaRegionMax) {
+			var maxArea = wdata.regionProgress[0].maxArea;
+			if (maxArea > regionRequirements[wdata.battleAreaRegionMax]) {
+				wdata.battleAreaRegionMax++;
+			}
+		}
+		//-----------------------------------
 
 		canAdvance = wdata.battleArea < wdata.maxArea;
 		canRetreat = wdata.battleArea > 0;

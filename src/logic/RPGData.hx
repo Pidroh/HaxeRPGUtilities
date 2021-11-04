@@ -125,6 +125,7 @@ typedef WorldData = {
 	var timeCount:Float;
 	var regionProgress : Array<AreaPersistence>;
 	var battleAreaRegion:Int;
+	var battleAreaRegionMax:Int;
 	var playerTimesKilled:Int;
 	var killedInArea:Array<Int>;
 	var necessaryToKillInArea:Int;
