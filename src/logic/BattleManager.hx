@@ -90,7 +90,14 @@ class BattleManager {
 		var sheet = this.enemySheets[region];
 
 		if (region > 0) {
-			enemyLevel = (enemyLevel + 1) * 10 - 1;
+			var oldLevel = enemyLevel;
+			enemyLevel = 0;
+			for(i in 0...oldLevel){
+				enemyLevel += 10;
+				enemyLevel += (i)*10;
+			}
+			//enemyLevel = (enemyLevel + 1) * 10 - 1;
+
 		}
 
 		{
@@ -165,7 +172,7 @@ class BattleManager {
 		// wolf
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 0.45, "Speed" => 3.2, "LifeMax" => 1.5]
+				attributesBase: ["Attack" => 0.55, "Speed" => 3.3, "LifeMax" => 1.6]
 			},
 			speciesAdd: null,
 			speciesLevelStats: null
@@ -174,7 +181,7 @@ class BattleManager {
 		// Tonberry
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 4, "Speed" => 0.09, "LifeMax" => 3]
+				attributesBase: ["Attack" => 4, "Speed" => 0.09, "LifeMax" => 4]
 			},
 			speciesAdd: null,
 			speciesLevelStats: null
@@ -183,10 +190,10 @@ class BattleManager {
 		// Turtle
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 2.5]
+				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 5.5]
 			},
-			speciesAdd: ["Defense" => 4],
-			speciesLevelStats: {attributesBase: ["Defense" => 2]}
+			speciesAdd: ["Defense" => 5],
+			speciesLevelStats: {attributesBase: ["Defense" => 1]}
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Defense" => 1, "LifeMax" => 8]});
 		// Cactuar
@@ -530,13 +537,12 @@ class BattleManager {
 							AwardXP(xpPlus);
 						}
 						if(regionPrizes[wdata.battleAreaRegion].statBonus != null){
-							this.AddEvent(PermanentStatUpgrade);
-							
 							for(su in regionPrizes[wdata.battleAreaRegion].statBonus.keyValueIterator()){
 								var e = this.AddEvent(statUpgrade);
 								e.dataString = su.key;
 								e.data = su.value;
 							}
+							this.AddEvent(PermanentStatUpgrade);
 						}
 
 						wdata.maxArea++;
@@ -636,6 +642,8 @@ $baseInfo';
 			});
 		}
 		wdata.regionProgress[wdata.battleAreaRegion].area = wdata.battleArea;
+		if(wdata.regionProgress[wdata.battleAreaRegion].maxArea != wdata.maxArea)
+			RecalculateAttributes(wdata.hero);
 		wdata.regionProgress[wdata.battleAreaRegion].maxArea = wdata.maxArea;
 		wdata.regionProgress[wdata.battleAreaRegion].amountEnemyKilledInArea = wdata.killedInArea[wdata.battleArea];
 
@@ -771,7 +779,7 @@ $baseInfo';
 				var pro = wdata.regionProgress[i];
 				var prize = regionPrizes[i];
 				if(pro.area >= 1 && prize.statBonus != null){
-					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, pro.area, actor.attributesCalculated);
+					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, pro.maxArea, actor.attributesCalculated);
 				}
 			}
 			

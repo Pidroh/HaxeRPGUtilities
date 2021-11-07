@@ -24,9 +24,9 @@ var BattleManager = function() {
 	bm.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	var bm1 = bm.enemySheets;
 	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 0.45;
-	_g.h["Speed"] = 3.2;
-	_g.h["LifeMax"] = 1.5;
+	_g.h["Attack"] = 0.55;
+	_g.h["Speed"] = 3.3;
+	_g.h["LifeMax"] = 1.6;
 	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : null});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
@@ -37,7 +37,7 @@ var BattleManager = function() {
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 4;
 	_g.h["Speed"] = 0.09;
-	_g.h["LifeMax"] = 3;
+	_g.h["LifeMax"] = 4;
 	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : null});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
@@ -48,11 +48,11 @@ var BattleManager = function() {
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1.4;
 	_g.h["Speed"] = 0.15;
-	_g.h["LifeMax"] = 2.5;
+	_g.h["LifeMax"] = 5.5;
 	var _g1 = new haxe_ds_StringMap();
-	_g1.h["Defense"] = 4;
+	_g1.h["Defense"] = 5;
 	var _g2 = new haxe_ds_StringMap();
-	_g2.h["Defense"] = 2;
+	_g2.h["Defense"] = 1;
 	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
@@ -140,7 +140,15 @@ BattleManager.prototype = {
 		var enemyLevel = this.wdata.battleArea;
 		var sheet = this.enemySheets[region];
 		if(region > 0) {
-			enemyLevel = (enemyLevel + 1) * 10 - 1;
+			var oldLevel = enemyLevel;
+			enemyLevel = 0;
+			var _g = 0;
+			var _g1 = oldLevel;
+			while(_g < _g1) {
+				var i = _g++;
+				enemyLevel += 10;
+				enemyLevel += i * 10;
+			}
 		}
 		var timeToKillEnemy = this.balancing.timeToKillFirstEnemy;
 		var initialAttackHero = 1;
@@ -450,7 +458,6 @@ BattleManager.prototype = {
 							this.AwardXP(xpPlus);
 						}
 						if(this.regionPrizes[this.wdata.battleAreaRegion].statBonus != null) {
-							this.AddEvent(EventTypes.PermanentStatUpgrade);
 							var h = this.regionPrizes[this.wdata.battleAreaRegion].statBonus.h;
 							var su_h = h;
 							var su_keys = Object.keys(h);
@@ -464,6 +471,7 @@ BattleManager.prototype = {
 								e.dataString = su_key;
 								e.data = su_value;
 							}
+							this.AddEvent(EventTypes.PermanentStatUpgrade);
 						}
 						this.wdata.maxArea++;
 						this.AddEvent(EventTypes.AreaUnlock).data = this.wdata.maxArea;
@@ -536,6 +544,9 @@ BattleManager.prototype = {
 		}
 		while(this.wdata.regionProgress.length <= this.wdata.battleAreaRegion) this.wdata.regionProgress.push({ area : -1, maxArea : -1, amountEnemyKilledInArea : -1});
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].area = this.wdata.battleArea;
+		if(this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea != this.wdata.maxArea) {
+			this.RecalculateAttributes(this.wdata.hero);
+		}
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea = this.wdata.maxArea;
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].amountEnemyKilledInArea = this.wdata.killedInArea[this.wdata.battleArea];
 		if(this.regionRequirements.length >= this.wdata.battleAreaRegionMax) {
@@ -651,7 +662,7 @@ BattleManager.prototype = {
 				var pro = this.wdata.regionProgress[i];
 				var prize = this.regionPrizes[i];
 				if(pro.area >= 1 && prize.statBonus != null) {
-					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,pro.area,actor.attributesCalculated);
+					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,pro.maxArea,actor.attributesCalculated);
 				}
 			}
 		}
