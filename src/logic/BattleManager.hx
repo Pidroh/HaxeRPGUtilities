@@ -155,6 +155,7 @@ class BattleManager {
 					}
 			}
 			wdata.enemy.attributesCalculated["Life"] = wdata.enemy.attributesCalculated["LifeMax"];
+			trace('Enemy speed '+wdata.enemy.attributesCalculated["Speed"]);
 		}
 	}
 
@@ -175,7 +176,7 @@ class BattleManager {
 				attributesBase: ["Attack" => 0.55, "Speed" => 3.3, "LifeMax" => 1.6]
 			},
 			speciesAdd: null,
-			speciesLevelStats: null
+			speciesLevelStats: {attributesBase: ["Speed" => 1]}
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Speed" => 2, "LifeMax" => 3]});
 		// Tonberry
@@ -184,7 +185,7 @@ class BattleManager {
 				attributesBase: ["Attack" => 4, "Speed" => 0.09, "LifeMax" => 4]
 			},
 			speciesAdd: null,
-			speciesLevelStats: null
+			speciesLevelStats: {attributesBase: ["Speed" => 0.05]}
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 2, "LifeMax" => 5]});
 		// Turtle
@@ -193,7 +194,8 @@ class BattleManager {
 				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 5.5]
 			},
 			speciesAdd: ["Defense" => 5],
-			speciesLevelStats: {attributesBase: ["Defense" => 1]}
+			speciesLevelStats: {attributesBase: ["Defense" => 1, "Speed" => 0.05]}
+			
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Defense" => 1, "LifeMax" => 8]});
 		// Cactuar
@@ -202,7 +204,7 @@ class BattleManager {
 				attributesBase: ["Attack" => 1.4, "Speed" => 1.1, "LifeMax" => 1.7]
 			},
 			speciesAdd: ["Piercing" => 1],
-			speciesLevelStats: {attributesBase: ["Defense" => 1]}
+			speciesLevelStats: {attributesBase: ["Defense" => 1, "Speed" => 0.1]}
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Speed" => 1, "LifeMax"=>3]});
 		
@@ -409,7 +411,7 @@ class BattleManager {
 			var lifeMax = wdata.hero.attributesCalculated["LifeMax"];
 			life += 2;
 			if (wdata.sleeping) {
-				life += 10;
+				life += Std.int(wdata.hero.attributesCalculated["LifeMax"]*0.3);
 			}
 			if (life > lifeMax)
 				life = lifeMax;
@@ -433,8 +435,8 @@ class BattleManager {
 					var sc = bActor.attributesCalculated["SpeedCount"];
 					// trace('$battleActor speed count $sc');
 					if (decided == false) {
-						if (bActor.attributesCalculated["SpeedCount"] > 100) {
-							bActor.attributesCalculated["SpeedCount"] = bActor.attributesCalculated["SpeedCount"] - 100;
+						if (bActor.attributesCalculated["SpeedCount"] > 1000) {
+							bActor.attributesCalculated["SpeedCount"] = bActor.attributesCalculated["SpeedCount"] - 1000;
 							if (battleActor == 1) {
 								attacker = enemy;
 								defender = hero;

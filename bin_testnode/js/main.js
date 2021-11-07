@@ -27,7 +27,9 @@ var BattleManager = function() {
 	_g.h["Attack"] = 0.55;
 	_g.h["Speed"] = 3.3;
 	_g.h["LifeMax"] = 1.6;
-	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : null});
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Speed"] = 1;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Speed"] = 2;
@@ -38,7 +40,9 @@ var BattleManager = function() {
 	_g.h["Attack"] = 4;
 	_g.h["Speed"] = 0.09;
 	_g.h["LifeMax"] = 4;
-	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : null});
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Speed"] = 0.05;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
@@ -53,6 +57,7 @@ var BattleManager = function() {
 	_g1.h["Defense"] = 5;
 	var _g2 = new haxe_ds_StringMap();
 	_g2.h["Defense"] = 1;
+	_g2.h["Speed"] = 0.05;
 	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
@@ -68,6 +73,7 @@ var BattleManager = function() {
 	_g1.h["Piercing"] = 1;
 	var _g2 = new haxe_ds_StringMap();
 	_g2.h["Defense"] = 1;
+	_g2.h["Speed"] = 0.1;
 	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
@@ -225,6 +231,7 @@ BattleManager.prototype = {
 		}
 		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
 		this.wdata.enemy.attributesCalculated.h["Life"] = v;
+		console.log("src/logic/BattleManager.hx:158:","Enemy speed " + this.wdata.enemy.attributesCalculated.h["Speed"]);
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
@@ -328,7 +335,7 @@ BattleManager.prototype = {
 			var lifeMax = this.wdata.hero.attributesCalculated.h["LifeMax"];
 			life += 2;
 			if(this.wdata.sleeping) {
-				life += 10;
+				life += this.wdata.hero.attributesCalculated.h["LifeMax"] * 0.3 | 0;
 			}
 			if(life > lifeMax) {
 				life = lifeMax;
@@ -349,8 +356,8 @@ BattleManager.prototype = {
 				_g1.h["SpeedCount"] = v;
 				var sc = bActor.attributesCalculated.h["SpeedCount"];
 				if(decided == false) {
-					if(bActor.attributesCalculated.h["SpeedCount"] > 100) {
-						var v1 = bActor.attributesCalculated.h["SpeedCount"] - 100;
+					if(bActor.attributesCalculated.h["SpeedCount"] > 1000) {
+						var v1 = bActor.attributesCalculated.h["SpeedCount"] - 1000;
 						bActor.attributesCalculated.h["SpeedCount"] = v1;
 						decided = true;
 					}
@@ -362,8 +369,8 @@ BattleManager.prototype = {
 				_g2.h["SpeedCount"] = v2;
 				var sc1 = bActor1.attributesCalculated.h["SpeedCount"];
 				if(decided == false) {
-					if(bActor1.attributesCalculated.h["SpeedCount"] > 100) {
-						var v3 = bActor1.attributesCalculated.h["SpeedCount"] - 100;
+					if(bActor1.attributesCalculated.h["SpeedCount"] > 1000) {
+						var v3 = bActor1.attributesCalculated.h["SpeedCount"] - 1000;
 						bActor1.attributesCalculated.h["SpeedCount"] = v3;
 						attacker = enemy;
 						defender = hero;
