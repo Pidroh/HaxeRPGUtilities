@@ -87,6 +87,7 @@ class Main {
 			speciesAdd: null,
 			speciesLevelStats: null
 		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Speed" => 2, "LifeMax" => 3]});
 		// Tonberry
 		bm.enemySheets.push({
 			speciesMultiplier: {
@@ -95,14 +96,16 @@ class Main {
 			speciesAdd: null,
 			speciesLevelStats: null
 		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 2, "LifeMax" => 5]});
 		// Turtle
 		bm.enemySheets.push({
 			speciesMultiplier: {
 				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 2.5]
 			},
 			speciesAdd: ["Defense" => 4],
-			speciesLevelStats: {attributesBase: ["Defense" => 1]}
+			speciesLevelStats: {attributesBase: ["Defense" => 2]}
 		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Defense" => 1, "LifeMax" => 8]});
 		// Cactuar
 		bm.enemySheets.push({
 			speciesMultiplier: {
@@ -111,6 +114,9 @@ class Main {
 			speciesAdd: ["Piercing" => 1],
 			speciesLevelStats: {attributesBase: ["Defense" => 1]}
 		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Speed" => 1, "LifeMax"=>3]});
+		
+
 		bm.regionRequirements = [0, 5, 10, 15, 30];
 		var enemyRegionNames = [
 			"Lagrima Continent",

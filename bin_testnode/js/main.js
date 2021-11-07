@@ -7,6 +7,7 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
+	this.regionPrizes = [{ statBonus : null, xpPrize : true}];
 	this.regionRequirements = [0];
 	this.playerActions = new haxe_ds_StringMap();
 	this.events = [];

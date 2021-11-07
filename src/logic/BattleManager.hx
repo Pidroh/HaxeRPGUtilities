@@ -10,6 +10,11 @@ typedef PlayerActionExecution = {
 	public var actualAction:PlayerAction->Void;
 }
 
+typedef RegionPrize = {
+	var statBonus : Map<String, Int>;
+	var xpPrize : Bool;
+}
+
 class BattleManager {
 	public var wdata:WorldData;
 
@@ -28,6 +33,7 @@ class BattleManager {
 	public var events = new Array<GameEvent>();
 	public var playerActions:Map<String, PlayerActionExecution> = new Map<String, PlayerActionExecution>();
 	public var regionRequirements:Array<Int> = [0];
+	public var regionPrizes : Array<RegionPrize> = [{statBonus: null, xpPrize: true}];
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
