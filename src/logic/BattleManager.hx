@@ -602,8 +602,8 @@ $baseInfo';
 
 		{
 			var lu = wdata.playerActions["levelup"];
-			lu.visible = canLevelUp;
 			lu.enabled = canLevelUp;
+			lu.visible = canLevelUp || lu.visible;
 		}
 		{
 			var lu = wdata.playerActions["advance"];
