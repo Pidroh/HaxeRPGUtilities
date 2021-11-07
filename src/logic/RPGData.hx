@@ -150,6 +150,9 @@ enum EventTypes{
 	AreaComplete;
 	AreaEnterFirstTime;
 	GetXP;
+	PermanentStatUpgrade;
+	statUpgrade;
+
 	
 }
 
@@ -169,6 +172,7 @@ class GameEvent {
 	public var origin : ActorReference;
 	public var target : ActorReference;
 	public var data : Int;
+	public var dataString : String = null;
 	public function new (eType){
 		type = eType;
 	}

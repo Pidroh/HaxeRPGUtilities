@@ -529,7 +529,15 @@ class BattleManager {
 							var xpPlus = areaBonus.calculatedMax;
 							AwardXP(xpPlus);
 						}
-						
+						if(regionPrizes[wdata.battleAreaRegion].statBonus != null){
+							this.AddEvent(PermanentStatUpgrade);
+							
+							for(su in regionPrizes[wdata.battleAreaRegion].statBonus.keyValueIterator()){
+								var e = this.AddEvent(statUpgrade);
+								e.dataString = su.key;
+								e.data = su.value;
+							}
+						}
 
 						wdata.maxArea++;
 						this.AddEvent(AreaUnlock).data = wdata.maxArea;

@@ -449,6 +449,22 @@ BattleManager.prototype = {
 							var xpPlus = this.areaBonus.calculatedMax;
 							this.AwardXP(xpPlus);
 						}
+						if(this.regionPrizes[this.wdata.battleAreaRegion].statBonus != null) {
+							this.AddEvent(EventTypes.PermanentStatUpgrade);
+							var h = this.regionPrizes[this.wdata.battleAreaRegion].statBonus.h;
+							var su_h = h;
+							var su_keys = Object.keys(h);
+							var su_length = su_keys.length;
+							var su_current = 0;
+							while(su_current < su_length) {
+								var key = su_keys[su_current++];
+								var su_key = key;
+								var su_value = su_h[key];
+								var e = this.AddEvent(EventTypes.statUpgrade);
+								e.dataString = su_key;
+								e.data = su_value;
+							}
+						}
 						this.wdata.maxArea++;
 						this.AddEvent(EventTypes.AreaUnlock).data = this.wdata.maxArea;
 						killedInArea[this.wdata.maxArea] = 0;
@@ -1178,14 +1194,17 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,AreaComplete: {_hx_name:"AreaComplete",_hx_index:8,__enum__:"EventTypes",toString:$estr}
 	,AreaEnterFirstTime: {_hx_name:"AreaEnterFirstTime",_hx_index:9,__enum__:"EventTypes",toString:$estr}
 	,GetXP: {_hx_name:"GetXP",_hx_index:10,__enum__:"EventTypes",toString:$estr}
+	,PermanentStatUpgrade: {_hx_name:"PermanentStatUpgrade",_hx_index:11,__enum__:"EventTypes",toString:$estr}
+	,statUpgrade: {_hx_name:"statUpgrade",_hx_index:12,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;
 };
 ActorReference.__name__ = true;
 var GameEvent = function(eType) {
+	this.dataString = null;
 	this.type = eType;
 };
 GameEvent.__name__ = true;

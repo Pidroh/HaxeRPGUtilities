@@ -328,6 +328,15 @@ class Main {
 					ev = '<b>You leveled up!</b>';
 					GameAnalyticsIntegration.SendProgressCompleteEvent("LevelUp " + bm.wdata.hero.level, "", "");
 				}
+				if (e.type == PermanentStatUpgrade) {
+					ev = '<b>Your stats permanently increased!</b>';
+					GameAnalyticsIntegration.SendProgressCompleteEvent("Permanentupg", "", "");
+				}
+				if (e.type == statUpgrade) {
+					var dataS = e.dataString;
+					var data = e.data;
+					ev = '<b>$dataS +$data</b>';
+				}
 				if (e.type == AreaUnlock) {
 					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>';
 					GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
