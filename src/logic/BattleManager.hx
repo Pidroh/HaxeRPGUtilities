@@ -474,7 +474,7 @@ class BattleManager {
 						// var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
 						var areaForBonus = wdata.battleArea;
 						if(wdata.battleAreaRegion >= 1){
-							areaForBonus *= 15;
+							areaForBonus *= 10;
 						}
 						ResourceLogic.recalculateScalingResource(areaForBonus, areaBonus);
 						var xpPlus = areaBonus.calculatedMax;
@@ -801,6 +801,8 @@ $baseInfo';
 		if (loadedWdata.worldVersion != wdata.worldVersion) {
 			loadedWdata.enemy = null;
 		}
+
+		loadedWdata.worldVersion = wdata.worldVersion;
 		wdata = loadedWdata;
 
 		if (wdata.battleArea >= wdata.killedInArea.length) {

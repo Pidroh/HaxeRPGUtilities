@@ -56,11 +56,15 @@ class StoryControlLogic {
 				StoryLogic.WatchLater(runtime);
 			}
 
+			if (actionId == View.storyAction_WatchLaterClose) {
+				StoryLogic.WatchLater(runtime);
+			}
+
 			if (actionId == View.storyAction_SkipStory) {
 				StoryLogic.SkipStory(runtime);
 			}
 
-			if (view.storyDialogActive && runtime.cutscene == null) {
+			if (view.storyDialogActive && runtime.cutscene == null && actionId != View.storyAction_WatchLaterClose) {
 				view.HideStory();
 			}
 		}

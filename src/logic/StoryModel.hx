@@ -66,6 +66,8 @@ class StoryLogic {
 
 	public static function WatchLater(runtime:StoryRuntimeData) {
 
+		if(runtime.currentStoryProgression == null) return;
+		
 		// only clears for the first time
 		if(runtime.currentStoryProgression.timesCompleted <= 0)
 			runtime.currentStoryProgression.timesCompleted++;

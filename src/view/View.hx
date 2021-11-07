@@ -30,6 +30,7 @@ class View {
 	public static final storyAction_AdvanceMessage = 2;
 	public static final storyAction_SkipStory = 3;
 	public static final storyAction_WatchLater = 4;
+	public static final storyAction_WatchLaterClose = 5;
 
 	public static final equipmentAction_DiscardBad = 2;
 
@@ -140,7 +141,7 @@ class View {
 	public function StartStory() {
 		storyDialog.showDialog();
 		storyDialog.onDialogClosed = event -> {
-			storyMainAction(storyAction_WatchLater, 0);
+			storyMainAction(storyAction_WatchLaterClose, 0);
 		};
 		storyDialogActive = true;
 		//storyDialog.mainText.text = "";
@@ -266,7 +267,7 @@ class View {
 
 			{
 				var title = new Label();
-				title.htmlText = "Alpha 0.06B. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
+				title.htmlText = "Alpha 0.07A. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
 				title.percentWidth = 100;
 				title.textAlign = "right";
 				title.paddingRight = 20;

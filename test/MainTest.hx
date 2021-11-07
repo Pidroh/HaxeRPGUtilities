@@ -1,6 +1,7 @@
 import sys.io.File;
 import RPGData;
 import haxe.Json;
+import SaveAssistant.PersistenceMaster;
 
 class MainTest {
 	static function main() {
@@ -76,10 +77,11 @@ class MainTest {
 		{
 			Sys.println("Save legacy test");
 			for(file in sys.FileSystem.readDirectory("saves/")){
+				trace(file);
 				var path = haxe.io.Path.join(["saves/", file]);
 				var json = sys.io.File.getContent(path);
 				var bm = new BattleManager();
-				bm.SendJsonPersistentData(json);
+				bm.SendJsonPersistentData(SaveAssistant.GetPersistenceMaster(json).jsonGameplay);
 				for (i in 1...400) {
 					bm.update(0.9);
 				}
@@ -106,7 +108,8 @@ class MainTest {
 			var json = bm.GetJsonPersistentData();
 			//var content:String = sys.io.File.getContent('my_file.txt');
 			var fileName = "saves/basic"+bm.wdata.worldVersion+".json";
-			sys.io.File.saveContent(fileName,json);
+			var pm : PersistenceMaster = {worldVersion: bm.wdata.worldVersion, jsonGameplay : json, jsonStory:null};
+			sys.io.File.saveContent(fileName,Json.stringify(pm));
 			
 		}
 		{

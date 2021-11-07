@@ -1,3 +1,4 @@
+import SaveAssistant.PersistenceMaster;
 import StoryModel.StoryPersistence;
 import hscript.Interp;
 import StoryModel.StoryRuntimeData;
@@ -81,7 +82,7 @@ class Main {
 		// wolf
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 0.4, "Speed" => 3, "LifeMax" => 1.3]
+				attributesBase: ["Attack" => 0.45, "Speed" => 3.2, "LifeMax" => 1.5]
 			},
 			speciesAdd: null,
 			speciesLevelStats: null
@@ -89,7 +90,7 @@ class Main {
 		// Tonberry
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 4, "Speed" => 0.1, "LifeMax" => 1.8]
+				attributesBase: ["Attack" => 4, "Speed" => 0.09, "LifeMax" => 3]
 			},
 			speciesAdd: null,
 			speciesLevelStats: null
@@ -147,11 +148,11 @@ class Main {
 			});
 		}
 
-		view.AddButton("advance", "Advance", function(e) {
+		view.AddButton("advance", "Next Area", function(e) {
 			bm.AdvanceArea();
 		});
 
-		view.AddButton("retreat", "Retreat", function(e) {
+		view.AddButton("retreat", "Previous Area", function(e) {
 			bm.RetreatArea();
 		});
 
@@ -188,34 +189,24 @@ class Main {
 
 		var storyPersistence:StoryPersistence = {progressionData: [], worldVersion: bm.wdata.worldVersion, currentStoryId: null};
 		var jsonData = ls.getItem(key);
-		if (jsonData != null && jsonData != "") {
-			var parsed = Json.parse(jsonData);
-			var persistenceMaster:PersistenceMaster = parsed;
-			trace(persistenceMaster);
-			trace(persistenceMaster.jsonGameplay);
-			trace(persistenceMaster.jsonStory);
-			trace(persistenceMaster.worldVersion);
 
-			// LEGACY DATA SUPPORT
-			// this means it is the old type of data
-			if (persistenceMaster.worldVersion >= 601 == false) {
-				bm.SendJsonPersistentData(jsonData);
-			}
+		
 
-			if (persistenceMaster.jsonGameplay != null) {
-				bm.SendJsonPersistentData(persistenceMaster.jsonGameplay);
-			}
+		var persistenceMaster : PersistenceMaster = SaveAssistant.GetPersistenceMaster(jsonData);
+		
+		var jsonData2 = persistenceMaster.jsonStory;
+		if (jsonData2 != null && jsonData2 != "") {
+			storyPersistence = StoryControlLogic.ReadJsonPersistentData(jsonData2);
+		} else {
+			storyPersistence = {
+				currentStoryId: null,
+				progressionData: [],
+				worldVersion: bm.wdata.worldVersion
+			};
+		}
 
-			var jsonData2 = persistenceMaster.jsonStory;
-			if (jsonData2 != null && jsonData2 != "") {
-				storyPersistence = StoryControlLogic.ReadJsonPersistentData(jsonData2);
-			} else {
-				storyPersistence = {
-					currentStoryId: null,
-					progressionData: [],
-					worldVersion: bm.wdata.worldVersion
-				};
-			}
+		if (persistenceMaster.jsonGameplay != null) {
+			bm.SendJsonPersistentData(persistenceMaster.jsonGameplay);
 		}
 
 		var storyRuntime:StoryRuntimeData = {
@@ -402,6 +393,9 @@ class Main {
 			var delta = timeStamp - time;
 
 			var storyHappened = storyRuntime.persistence.progressionData[storyRuntime.cutscenes[0].title].timesCompleted > 0;
+			var storyHappenedPure = storyHappened;
+			if(bm.wdata.regionProgress != null && bm.wdata.regionProgress[0] != null)
+				storyHappened = storyHappened || bm.wdata.regionProgress[0].maxArea > 1;
 
 			view.levelContainer.hidden = !storyHappened;
 			view.battleView.hidden = !storyHappened;
@@ -422,7 +416,7 @@ class Main {
 			{
 				var action = bm.wdata.playerActions["tabmemory"];
 				// view.TabVisible(view.storyTab, action.visible);
-				view.TabVisible(view.storyTab, storyHappened);
+				view.TabVisible(view.storyTab, storyHappenedPure);
 			}
 
 			var sleepAct = bm.wdata.playerActions["sleep"];
@@ -448,11 +442,12 @@ class Main {
 			var json2 = StoryControlLogic.GetJsonPersistentData(storyRuntime);
 			var masterPers:PersistenceMaster = {worldVersion: bm.wdata.worldVersion, jsonGameplay: json, jsonStory: json2};
 			// localStorage.setItem(keyStory, json2);
-			localStorage.setItem(key, Json.stringify(masterPers));
+			var jsonMaster = Json.stringify(masterPers);
+			localStorage.setItem(key, jsonMaster);
 
 			saveCount -= delta;
 			if (saveCount < 0) {
-				view.FeedSave(json);
+				view.FeedSave(jsonMaster);
 				saveCount = 5;
 			}
 
@@ -470,8 +465,3 @@ class Main {
 	}
 }
 
-typedef PersistenceMaster = {
-	var worldVersion:Int;
-	var jsonGameplay:String;
-	var jsonStory:String;
-}

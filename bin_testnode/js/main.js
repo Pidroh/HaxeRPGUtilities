@@ -388,7 +388,7 @@ BattleManager.prototype = {
 					if(this.wdata.maxArea == this.wdata.battleArea) {
 						var areaForBonus = this.wdata.battleArea;
 						if(this.wdata.battleAreaRegion >= 1) {
-							areaForBonus *= 15;
+							areaForBonus *= 10;
 						}
 						ResourceLogic.recalculateScalingResource(areaForBonus,this.areaBonus);
 						var xpPlus = this.areaBonus.calculatedMax;
@@ -678,6 +678,7 @@ BattleManager.prototype = {
 		if(loadedWdata.worldVersion != this.wdata.worldVersion) {
 			loadedWdata.enemy = null;
 		}
+		loadedWdata.worldVersion = this.wdata.worldVersion;
 		this.wdata = loadedWdata;
 		if(this.wdata.battleArea >= this.wdata.killedInArea.length) {
 			this.wdata.battleArea = this.wdata.killedInArea.length - 1;
@@ -832,10 +833,11 @@ MainTest.main = function() {
 	while(_g < _g1.length) {
 		var file = _g1[_g];
 		++_g;
+		console.log("test/MainTest.hx:80:",file);
 		var path = haxe_io_Path.join(["saves/",file]);
 		var json = js_node_Fs.readFileSync(path,{ encoding : "utf8"});
 		var bm = new BattleManager();
-		bm.SendJsonPersistentData(json);
+		bm.SendJsonPersistentData(SaveAssistant.GetPersistenceMaster(json).jsonGameplay);
 		var _g2 = 1;
 		while(_g2 < 400) {
 			var i = _g2++;
@@ -869,7 +871,8 @@ MainTest.main = function() {
 	}
 	var json = bm.GetJsonPersistentData();
 	var fileName = "saves/basic" + bm.wdata.worldVersion + ".json";
-	js_node_Fs.writeFileSync(fileName,json);
+	var pm = { worldVersion : bm.wdata.worldVersion, jsonGameplay : json, jsonStory : null};
+	js_node_Fs.writeFileSync(fileName,JSON.stringify(pm));
 	process.stdout.write("Easy area no death");
 	process.stdout.write("\n");
 	var bm = new BattleManager();
@@ -1007,14 +1010,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:191:","  _____ ");
-		console.log("test/MainTest.hx:192:","  _____ ");
-		console.log("test/MainTest.hx:193:","  _____ ");
-		console.log("test/MainTest.hx:194:",json);
+		console.log("test/MainTest.hx:194:","  _____ ");
 		console.log("test/MainTest.hx:195:","  _____ ");
 		console.log("test/MainTest.hx:196:","  _____ ");
-		console.log("test/MainTest.hx:197:","  _____ ");
-		console.log("test/MainTest.hx:198:",json2);
+		console.log("test/MainTest.hx:197:",json);
+		console.log("test/MainTest.hx:198:","  _____ ");
+		console.log("test/MainTest.hx:199:","  _____ ");
+		console.log("test/MainTest.hx:200:","  _____ ");
+		console.log("test/MainTest.hx:201:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
@@ -1103,6 +1106,20 @@ var GameEvent = function(eType) {
 	this.type = eType;
 };
 GameEvent.__name__ = true;
+var SaveAssistant = function() { };
+SaveAssistant.__name__ = true;
+SaveAssistant.GetPersistenceMaster = function(jsonData) {
+	if(jsonData != null && jsonData != "") {
+		var parsed = JSON.parse(jsonData);
+		var persistenceMaster = parsed;
+		if(persistenceMaster.worldVersion >= 602 == false) {
+			persistenceMaster.jsonGameplay = jsonData;
+		}
+		return persistenceMaster;
+	} else {
+		return { worldVersion : -1, jsonStory : null, jsonGameplay : null};
+	}
+};
 var Std = function() { };
 Std.__name__ = true;
 Std.string = function(s) {
