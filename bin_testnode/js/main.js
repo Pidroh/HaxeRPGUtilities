@@ -20,6 +20,62 @@ var BattleManager = function() {
 	this.canRetreat = false;
 	this.dirty = false;
 	this.balancing = { timeToKillFirstEnemy : 5, timeForFirstAreaProgress : 20, timeForFirstLevelUpGrind : 90, areaBonusXPPercentOfFirstLevelUp : 60};
+	var bm = this;
+	bm.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
+	var bm1 = bm.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 0.45;
+	_g.h["Speed"] = 3.2;
+	_g.h["LifeMax"] = 1.5;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : null});
+	var bm1 = bm.regionPrizes;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Speed"] = 2;
+	_g.h["LifeMax"] = 3;
+	bm1.push({ xpPrize : false, statBonus : _g});
+	var bm1 = bm.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 4;
+	_g.h["Speed"] = 0.09;
+	_g.h["LifeMax"] = 3;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : null});
+	var bm1 = bm.regionPrizes;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 2;
+	_g.h["LifeMax"] = 5;
+	bm1.push({ xpPrize : false, statBonus : _g});
+	var bm1 = bm.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1.4;
+	_g.h["Speed"] = 0.15;
+	_g.h["LifeMax"] = 2.5;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Defense"] = 4;
+	var _g2 = new haxe_ds_StringMap();
+	_g2.h["Defense"] = 2;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
+	var bm1 = bm.regionPrizes;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Defense"] = 1;
+	_g.h["LifeMax"] = 8;
+	bm1.push({ xpPrize : false, statBonus : _g});
+	var bm1 = bm.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1.4;
+	_g.h["Speed"] = 1.1;
+	_g.h["LifeMax"] = 1.7;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Piercing"] = 1;
+	var _g2 = new haxe_ds_StringMap();
+	_g2.h["Defense"] = 1;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
+	var bm1 = bm.regionPrizes;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1;
+	_g.h["Speed"] = 1;
+	_g.h["LifeMax"] = 3;
+	bm1.push({ xpPrize : false, statBonus : _g});
+	bm.regionRequirements = [0,5,10,15,20];
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Life"] = 20;
@@ -387,13 +443,12 @@ BattleManager.prototype = {
 				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
 					this.AddEvent(EventTypes.AreaComplete).data = this.wdata.battleArea;
 					if(this.wdata.maxArea == this.wdata.battleArea) {
-						var areaForBonus = this.wdata.battleArea;
-						if(this.wdata.battleAreaRegion >= 1) {
-							areaForBonus *= 10;
+						if(this.regionPrizes[this.wdata.battleAreaRegion].xpPrize == true) {
+							var areaForBonus = this.wdata.battleArea;
+							ResourceLogic.recalculateScalingResource(areaForBonus,this.areaBonus);
+							var xpPlus = this.areaBonus.calculatedMax;
+							this.AwardXP(xpPlus);
 						}
-						ResourceLogic.recalculateScalingResource(areaForBonus,this.areaBonus);
-						var xpPlus = this.areaBonus.calculatedMax;
-						this.AwardXP(xpPlus);
 						this.wdata.maxArea++;
 						this.AddEvent(EventTypes.AreaUnlock).data = this.wdata.maxArea;
 						killedInArea[this.wdata.maxArea] = 0;
@@ -572,6 +627,18 @@ BattleManager.prototype = {
 		}
 		actor.attributesCalculated.h["Life"] = oldLife;
 		actor.attributesCalculated.h["SpeedCount"] = oldSpeedCount;
+		if(actor == this.wdata.hero) {
+			var _g = 0;
+			var _g1 = this.wdata.regionProgress.length;
+			while(_g < _g1) {
+				var i = _g++;
+				var pro = this.wdata.regionProgress[i];
+				var prize = this.regionPrizes[i];
+				if(pro.area >= 1 && prize.statBonus != null) {
+					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,pro.area,actor.attributesCalculated);
+				}
+			}
+		}
 	}
 	,AdvanceArea: function() {
 		this.ChangeBattleArea(this.wdata.battleArea + 1);
@@ -845,6 +912,21 @@ MainTest.main = function() {
 			bm.update(0.9);
 		}
 	}
+	process.stdout.write("Test region progress");
+	process.stdout.write("\n");
+	var bm = new BattleManager();
+	bm.DefaultConfiguration();
+	var _g = 0;
+	var _g1 = bm.wdata.regionProgress.length;
+	while(_g < _g1) {
+		var i = _g++;
+		bm.wdata.regionProgress[i].maxArea = 20;
+	}
+	var _g = 1;
+	while(_g < 400) {
+		var i = _g++;
+		bm.update(0.9);
+	}
 	process.stdout.write("Hard area death test");
 	process.stdout.write("\n");
 	var bm = new BattleManager();
@@ -1011,14 +1093,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:194:","  _____ ");
-		console.log("test/MainTest.hx:195:","  _____ ");
-		console.log("test/MainTest.hx:196:","  _____ ");
-		console.log("test/MainTest.hx:197:",json);
-		console.log("test/MainTest.hx:198:","  _____ ");
-		console.log("test/MainTest.hx:199:","  _____ ");
-		console.log("test/MainTest.hx:200:","  _____ ");
-		console.log("test/MainTest.hx:201:",json2);
+		console.log("test/MainTest.hx:205:","  _____ ");
+		console.log("test/MainTest.hx:206:","  _____ ");
+		console.log("test/MainTest.hx:207:","  _____ ");
+		console.log("test/MainTest.hx:208:",json);
+		console.log("test/MainTest.hx:209:","  _____ ");
+		console.log("test/MainTest.hx:210:","  _____ ");
+		console.log("test/MainTest.hx:211:","  _____ ");
+		console.log("test/MainTest.hx:212:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}

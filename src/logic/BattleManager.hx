@@ -159,6 +159,49 @@ class BattleManager {
 			areaBonusXPPercentOfFirstLevelUp: 60
 		};
 
+		var bm = this;
+		// goblin
+		bm.enemySheets.push({speciesMultiplier: null, speciesLevelStats: null, speciesAdd: null});
+		// wolf
+		bm.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 0.45, "Speed" => 3.2, "LifeMax" => 1.5]
+			},
+			speciesAdd: null,
+			speciesLevelStats: null
+		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Speed" => 2, "LifeMax" => 3]});
+		// Tonberry
+		bm.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 4, "Speed" => 0.09, "LifeMax" => 3]
+			},
+			speciesAdd: null,
+			speciesLevelStats: null
+		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 2, "LifeMax" => 5]});
+		// Turtle
+		bm.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 2.5]
+			},
+			speciesAdd: ["Defense" => 4],
+			speciesLevelStats: {attributesBase: ["Defense" => 2]}
+		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Defense" => 1, "LifeMax" => 8]});
+		// Cactuar
+		bm.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 1.4, "Speed" => 1.1, "LifeMax" => 1.7]
+			},
+			speciesAdd: ["Piercing" => 1],
+			speciesLevelStats: {attributesBase: ["Defense" => 1]}
+		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Speed" => 1, "LifeMax"=>3]});
+		
+
+		bm.regionRequirements = [0, 5, 10, 15, 20];
+
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0];
 		// var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
@@ -206,6 +249,8 @@ class BattleManager {
 		if (wdata.battleAreaRegionMax >= 1 == false) {
 			wdata.battleAreaRegionMax = 1;
 		}
+
+		
 
 		var addAction = (id:String, action:PlayerAction, callback:PlayerAction->Void) -> {
 			// only if action isn't already defined
@@ -478,13 +523,14 @@ class BattleManager {
 
 					if (wdata.maxArea == wdata.battleArea) {
 						// var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
-						var areaForBonus = wdata.battleArea;
-						if(wdata.battleAreaRegion >= 1){
-							areaForBonus *= 10;
+						if(regionPrizes[wdata.battleAreaRegion].xpPrize == true){
+							var areaForBonus = wdata.battleArea;						
+							ResourceLogic.recalculateScalingResource(areaForBonus, areaBonus);
+							var xpPlus = areaBonus.calculatedMax;
+							AwardXP(xpPlus);
 						}
-						ResourceLogic.recalculateScalingResource(areaForBonus, areaBonus);
-						var xpPlus = areaBonus.calculatedMax;
-						AwardXP(xpPlus);
+						
+
 						wdata.maxArea++;
 						this.AddEvent(AreaUnlock).data = wdata.maxArea;
 						killedInArea[wdata.maxArea] = 0;
@@ -711,6 +757,17 @@ $baseInfo';
 
 		actor.attributesCalculated["Life"] = oldLife;
 		actor.attributesCalculated["SpeedCount"] = oldSpeedCount;
+
+		if(actor == wdata.hero){
+			for (i in 0...wdata.regionProgress.length){
+				var pro = wdata.regionProgress[i];
+				var prize = regionPrizes[i];
+				if(pro.area >= 1 && prize.statBonus != null){
+					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, pro.area, actor.attributesCalculated);
+				}
+			}
+			
+		}
 	}
 
 	public function AdvanceArea() {

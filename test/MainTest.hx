@@ -88,6 +88,17 @@ class MainTest {
 			}
 		}
 		{
+			Sys.println("Test region progress");
+			var bm:BattleManager = new BattleManager();
+			bm.DefaultConfiguration();
+			for(i in 0...bm.wdata.regionProgress.length){
+				bm.wdata.regionProgress[i].maxArea = 20;
+			}
+			for (i in 1...400) {
+				bm.update(0.9);
+			}
+		}
+		{
 			Sys.println("Hard area death test");
 			var bm:BattleManager = new BattleManager();
 			bm.DefaultConfiguration();

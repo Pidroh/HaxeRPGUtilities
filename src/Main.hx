@@ -74,50 +74,9 @@ class Main {
 		}
 
 		var bm:BattleManager = new BattleManager();
-		var enemyLife = 20;
 		var view:View = new View();
 
-		// goblin
-		bm.enemySheets.push({speciesMultiplier: null, speciesLevelStats: null, speciesAdd: null});
-		// wolf
-		bm.enemySheets.push({
-			speciesMultiplier: {
-				attributesBase: ["Attack" => 0.45, "Speed" => 3.2, "LifeMax" => 1.5]
-			},
-			speciesAdd: null,
-			speciesLevelStats: null
-		});
-		bm.regionPrizes.push({xpPrize: false, statBonus: ["Speed" => 2, "LifeMax" => 3]});
-		// Tonberry
-		bm.enemySheets.push({
-			speciesMultiplier: {
-				attributesBase: ["Attack" => 4, "Speed" => 0.09, "LifeMax" => 3]
-			},
-			speciesAdd: null,
-			speciesLevelStats: null
-		});
-		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 2, "LifeMax" => 5]});
-		// Turtle
-		bm.enemySheets.push({
-			speciesMultiplier: {
-				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 2.5]
-			},
-			speciesAdd: ["Defense" => 4],
-			speciesLevelStats: {attributesBase: ["Defense" => 2]}
-		});
-		bm.regionPrizes.push({xpPrize: false, statBonus: ["Defense" => 1, "LifeMax" => 8]});
-		// Cactuar
-		bm.enemySheets.push({
-			speciesMultiplier: {
-				attributesBase: ["Attack" => 1.4, "Speed" => 1.1, "LifeMax" => 1.7]
-			},
-			speciesAdd: ["Piercing" => 1],
-			speciesLevelStats: {attributesBase: ["Defense" => 1]}
-		});
-		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Speed" => 1, "LifeMax"=>3]});
 		
-
-		bm.regionRequirements = [0, 5, 10, 15, 30];
 		var enemyRegionNames = [
 			"Lagrima Continent",
 			"Wolf Fields",
