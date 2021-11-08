@@ -11,8 +11,8 @@ typedef PlayerActionExecution = {
 }
 
 typedef RegionPrize = {
-	var statBonus : Map<String, Int>;
-	var xpPrize : Bool;
+	var statBonus:Map<String, Int>;
+	var xpPrize:Bool;
 }
 
 class BattleManager {
@@ -33,7 +33,7 @@ class BattleManager {
 	public var events = new Array<GameEvent>();
 	public var playerActions:Map<String, PlayerActionExecution> = new Map<String, PlayerActionExecution>();
 	public var regionRequirements:Array<Int> = [0];
-	public var regionPrizes : Array<RegionPrize> = [{statBonus: null, xpPrize: true}];
+	public var regionPrizes:Array<RegionPrize> = [{statBonus: null, xpPrize: true}];
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -60,7 +60,8 @@ class BattleManager {
 
 		if (area > 0) {
 			wdata.necessaryToKillInArea = initialEnemyToKill * area;
-			if(wdata.battleAreaRegion > 0) wdata.necessaryToKillInArea = 3;
+			if (wdata.battleAreaRegion > 0)
+				wdata.necessaryToKillInArea = 3;
 
 			if (PlayerFightMode()) {
 				CreateAreaEnemy();
@@ -79,9 +80,12 @@ class BattleManager {
 	}
 
 	function AwardXP(xpPlus) {
-		wdata.hero.xp.value += xpPlus;
-		var e = AddEvent(GetXP);
-		e.data = xpPlus;
+		if (wdata.hero.level <= wdata.heroMaxLevel) {
+			xpPlus = xpPlus + Std.int(xpPlus*wdata.prestigeTimes * 0.5);
+			wdata.hero.xp.value += xpPlus;
+			var e = AddEvent(GetXP);
+			e.data = xpPlus;
+		}
 	}
 
 	function CreateAreaEnemy() {
@@ -92,12 +96,11 @@ class BattleManager {
 		if (region > 0) {
 			var oldLevel = enemyLevel;
 			enemyLevel = 0;
-			for(i in 0...oldLevel){
+			for (i in 0...oldLevel) {
 				enemyLevel += 10;
-				enemyLevel += (i)*10;
+				enemyLevel += (i) * 10;
 			}
-			//enemyLevel = (enemyLevel + 1) * 10 - 1;
-
+			// enemyLevel = (enemyLevel + 1) * 10 - 1;
 		}
 
 		{
@@ -155,7 +158,7 @@ class BattleManager {
 					}
 			}
 			wdata.enemy.attributesCalculated["Life"] = wdata.enemy.attributesCalculated["LifeMax"];
-			trace('Enemy speed '+wdata.enemy.attributesCalculated["Speed"]);
+			trace('Enemy speed ' + wdata.enemy.attributesCalculated["Speed"]);
 		}
 	}
 
@@ -193,9 +196,8 @@ class BattleManager {
 			speciesMultiplier: {
 				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 5.5]
 			},
-			speciesAdd: ["Defense" => 5],	
+			speciesAdd: ["Defense" => 5],
 			speciesLevelStats: {attributesBase: ["Defense" => 1, "Speed" => 0.05]}
-			
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Defense" => 1, "LifeMax" => 8]});
 		// Cactuar
@@ -206,8 +208,7 @@ class BattleManager {
 			speciesAdd: ["Piercing" => 1],
 			speciesLevelStats: {attributesBase: ["Defense" => 1, "Speed" => 0.1]}
 		});
-		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Speed" => 1, "LifeMax"=>3]});
-		
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Speed" => 1, "LifeMax" => 3]});
 
 		bm.regionRequirements = [0, 5, 10, 15, 20];
 
@@ -230,6 +231,8 @@ class BattleManager {
 			maxArea: 1,
 			necessaryToKillInArea: 0,
 			killedInArea: [0, 0],
+			prestigeTimes: 0,
+			heroMaxLevel: 20,
 
 			timeCount: 0,
 			playerTimesKilled: 0,
@@ -258,8 +261,6 @@ class BattleManager {
 		if (wdata.battleAreaRegionMax >= 1 == false) {
 			wdata.battleAreaRegionMax = 1;
 		}
-
-		
 
 		var addAction = (id:String, action:PlayerAction, callback:PlayerAction->Void) -> {
 			// only if action isn't already defined
@@ -331,6 +332,21 @@ class BattleManager {
 			wdata.killedInArea[wdata.battleArea] = 0;
 		});
 
+		addAction("prestige", createAction(), (a) -> {
+			wdata.hero.level = 1;
+			wdata.hero.xp.value = 0;
+			for (i in 0...wdata.hero.equipment.length){
+				if(wdata.hero.equipmentSlots.contains(i)){
+					var e = wdata.hero.equipment[i];
+					for(s in e.attributes.keys()){
+						e.attributes[s] = Std.int(e.attributes[s]* 0.5);
+					}
+				} else{
+					wdata.hero.equipmentSlots[i] = null;
+				}
+			}
+		});
+
 		wdata.hero.attributesBase = [
 			       "Life" => 20,    "LifeMax" => 20,
 			      "Speed" => 20,  "SpeedCount" => 0,
@@ -369,7 +385,8 @@ class BattleManager {
 			wdata.regionProgress[region] = {
 				area: 0,
 				maxArea: 1,
-				amountEnemyKilledInArea: 0
+				amountEnemyKilledInArea: 0,
+				maxAreaRecord: 1
 			}
 		ChangeBattleArea(wdata.regionProgress[region].area);
 		// wdata.battleArea = wdata.regionProgress[region].area;
@@ -411,7 +428,7 @@ class BattleManager {
 			var lifeMax = wdata.hero.attributesCalculated["LifeMax"];
 			life += 2;
 			if (wdata.sleeping) {
-				life += Std.int(wdata.hero.attributesCalculated["LifeMax"]*0.3);
+				life += Std.int(wdata.hero.attributesCalculated["LifeMax"] * 0.3);
 			}
 			if (life > lifeMax)
 				life = lifeMax;
@@ -473,11 +490,11 @@ class BattleManager {
 					var e:Equipment = null;
 					var dropQuality = enemy.level;
 					if (wdata.battleAreaRegion > 0) {
-						dropQuality =  Std.int(1.2*dropQuality);
+						dropQuality = Std.int(1.2 * dropQuality);
 					}
 					// sword
 					if (equipType == 0) {
-						var attackBonus = random.randomInt(1, Std.int( dropQuality / 2 + 2));
+						var attackBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
 						e = {type: 0, requiredAttributes: null, attributes: ["Attack" => attackBonus]};
 						if (random.randomInt(0, 100) < 15) {
 							var lifeBonus = random.randomInt(1, Std.int(dropQuality + 2));
@@ -532,14 +549,14 @@ class BattleManager {
 
 					if (wdata.maxArea == wdata.battleArea) {
 						// var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
-						if(regionPrizes[wdata.battleAreaRegion].xpPrize == true){
-							var areaForBonus = wdata.battleArea;						
+						if (regionPrizes[wdata.battleAreaRegion].xpPrize == true) {
+							var areaForBonus = wdata.battleArea;
 							ResourceLogic.recalculateScalingResource(areaForBonus, areaBonus);
 							var xpPlus = areaBonus.calculatedMax;
 							AwardXP(xpPlus);
 						}
-						if(regionPrizes[wdata.battleAreaRegion].statBonus != null){
-							for(su in regionPrizes[wdata.battleAreaRegion].statBonus.keyValueIterator()){
+						if (regionPrizes[wdata.battleAreaRegion].statBonus != null) {
+							for (su in regionPrizes[wdata.battleAreaRegion].statBonus.keyValueIterator()) {
 								var e = this.AddEvent(statUpgrade);
 								e.dataString = su.key;
 								e.data = su.value;
@@ -640,15 +657,20 @@ $baseInfo';
 			wdata.regionProgress.push({
 				area: -1,
 				maxArea: -1,
-				amountEnemyKilledInArea: -1
+				amountEnemyKilledInArea: -1,
+				maxAreaRecord: -1
 			});
 		}
 		wdata.regionProgress[wdata.battleAreaRegion].area = wdata.battleArea;
 		var recalculate = false;
-		if(wdata.regionProgress[wdata.battleAreaRegion].maxArea != wdata.maxArea)
+		if (wdata.regionProgress[wdata.battleAreaRegion].maxArea != wdata.maxArea)
 			recalculate = true;
 		wdata.regionProgress[wdata.battleAreaRegion].maxArea = wdata.maxArea;
-		if(recalculate)
+		if (wdata.regionProgress[wdata.battleAreaRegion].maxArea != wdata.regionProgress[wdata.battleAreaRegion].maxAreaRecord) {
+			wdata.regionProgress[wdata.battleAreaRegion].maxAreaRecord = wdata.regionProgress[wdata.battleAreaRegion].maxArea;
+			recalculate = true;
+		}
+		if (recalculate)
 			RecalculateAttributes(wdata.hero);
 		wdata.regionProgress[wdata.battleAreaRegion].amountEnemyKilledInArea = wdata.killedInArea[wdata.battleArea];
 
@@ -657,7 +679,7 @@ $baseInfo';
 			var maxArea = wdata.regionProgress[0].maxArea;
 			if (maxArea > regionRequirements[wdata.battleAreaRegionMax]) {
 				wdata.battleAreaRegionMax++;
-				this.AddEvent(RegionUnlock).data = wdata.battleAreaRegionMax-1;
+				this.AddEvent(RegionUnlock).data = wdata.battleAreaRegionMax - 1;
 			}
 		}
 		//-----------------------------------
@@ -779,15 +801,14 @@ $baseInfo';
 		actor.attributesCalculated["Life"] = oldLife;
 		actor.attributesCalculated["SpeedCount"] = oldSpeedCount;
 
-		if(actor == wdata.hero){
-			for (i in 0...wdata.regionProgress.length){
+		if (actor == wdata.hero) {
+			for (i in 0...wdata.regionProgress.length) {
 				var pro = wdata.regionProgress[i];
 				var prize = regionPrizes[i];
-				if(pro.maxArea >= 2 && prize.statBonus != null){
-					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, pro.maxArea-1, actor.attributesCalculated);
+				if (pro.maxAreaRecord >= 2 && prize.statBonus != null) {
+					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, pro.maxAreaRecord - 1, actor.attributesCalculated);
 				}
 			}
-			
 		}
 	}
 
@@ -877,7 +898,8 @@ $baseInfo';
 			loadedWdata.regionProgress.push({
 				area: loadedWdata.battleArea,
 				maxArea: loadedWdata.maxArea,
-				amountEnemyKilledInArea: loadedWdata.killedInArea[loadedWdata.battleArea]
+				amountEnemyKilledInArea: loadedWdata.killedInArea[loadedWdata.battleArea],
+				maxAreaRecord: loadedWdata.maxArea
 			});
 			loadedWdata.battleAreaRegion = 0;
 			loadedWdata.battleArea = 0;

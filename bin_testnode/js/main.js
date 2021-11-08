@@ -89,7 +89,7 @@ var BattleManager = function() {
 	_g.h["Speed"] = 20;
 	_g.h["SpeedCount"] = 0;
 	var stats = _g;
-	var w = { worldVersion : 602, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
+	var w = { worldVersion : 602, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], prestigeTimes : 0, heroMaxLevel : 20, timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -137,9 +137,12 @@ BattleManager.prototype = {
 		}
 	}
 	,AwardXP: function(xpPlus) {
-		this.wdata.hero.xp.value += xpPlus;
-		var e = this.AddEvent(EventTypes.GetXP);
-		e.data = xpPlus;
+		if(this.wdata.hero.level <= this.wdata.heroMaxLevel) {
+			xpPlus += xpPlus * this.wdata.prestigeTimes * 0.5 | 0;
+			this.wdata.hero.xp.value += xpPlus;
+			var e = this.AddEvent(EventTypes.GetXP);
+			e.data = xpPlus;
+		}
 	}
 	,CreateAreaEnemy: function() {
 		var region = this.wdata.battleAreaRegion;
@@ -231,7 +234,7 @@ BattleManager.prototype = {
 		}
 		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
 		this.wdata.enemy.attributesCalculated.h["Life"] = v;
-		console.log("src/logic/BattleManager.hx:158:","Enemy speed " + this.wdata.enemy.attributesCalculated.h["Speed"]);
+		console.log("src/logic/BattleManager.hx:161:","Enemy speed " + this.wdata.enemy.attributesCalculated.h["Speed"]);
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
@@ -267,6 +270,30 @@ BattleManager.prototype = {
 		addAction("repeat",createAction(),function(a) {
 			_gthis.wdata.killedInArea[_gthis.wdata.battleArea] = 0;
 		});
+		addAction("prestige",createAction(),function(a) {
+			_gthis.wdata.hero.level = 1;
+			_gthis.wdata.hero.xp.value = 0;
+			var _g = 0;
+			var _g1 = _gthis.wdata.hero.equipment.length;
+			while(_g < _g1) {
+				var i = _g++;
+				if(_gthis.wdata.hero.equipmentSlots.indexOf(i) != -1) {
+					var e = _gthis.wdata.hero.equipment[i];
+					var h = e.attributes.h;
+					var s_h = h;
+					var s_keys = Object.keys(h);
+					var s_length = s_keys.length;
+					var s_current = 0;
+					while(s_current < s_length) {
+						var s = s_keys[s_current++];
+						var v = e.attributes.h[s] * 0.5 | 0;
+						e.attributes.h[s] = v;
+					}
+				} else {
+					_gthis.wdata.hero.equipmentSlots[i] = null;
+				}
+			}
+		});
 		var _g = new haxe_ds_StringMap();
 		_g.h["Life"] = 20;
 		_g.h["LifeMax"] = 20;
@@ -299,7 +326,7 @@ BattleManager.prototype = {
 	,changeRegion: function(region) {
 		this.wdata.battleAreaRegion = region;
 		if(this.wdata.regionProgress[region] == null) {
-			this.wdata.regionProgress[region] = { area : 0, maxArea : 1, amountEnemyKilledInArea : 0};
+			this.wdata.regionProgress[region] = { area : 0, maxArea : 1, amountEnemyKilledInArea : 0, maxAreaRecord : 1};
 		}
 		this.ChangeBattleArea(this.wdata.regionProgress[region].area);
 		this.wdata.maxArea = this.wdata.regionProgress[region].maxArea;
@@ -549,13 +576,17 @@ BattleManager.prototype = {
 		if(this.wdata.regionProgress == null) {
 			this.wdata.regionProgress = [];
 		}
-		while(this.wdata.regionProgress.length <= this.wdata.battleAreaRegion) this.wdata.regionProgress.push({ area : -1, maxArea : -1, amountEnemyKilledInArea : -1});
+		while(this.wdata.regionProgress.length <= this.wdata.battleAreaRegion) this.wdata.regionProgress.push({ area : -1, maxArea : -1, amountEnemyKilledInArea : -1, maxAreaRecord : -1});
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].area = this.wdata.battleArea;
 		var recalculate = false;
 		if(this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea != this.wdata.maxArea) {
 			recalculate = true;
 		}
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea = this.wdata.maxArea;
+		if(this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea != this.wdata.regionProgress[this.wdata.battleAreaRegion].maxAreaRecord) {
+			this.wdata.regionProgress[this.wdata.battleAreaRegion].maxAreaRecord = this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea;
+			recalculate = true;
+		}
 		if(recalculate) {
 			this.RecalculateAttributes(this.wdata.hero);
 		}
@@ -672,8 +703,8 @@ BattleManager.prototype = {
 				var i = _g++;
 				var pro = this.wdata.regionProgress[i];
 				var prize = this.regionPrizes[i];
-				if(pro.maxArea >= 2 && prize.statBonus != null) {
-					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,pro.maxArea - 1,actor.attributesCalculated);
+				if(pro.maxAreaRecord >= 2 && prize.statBonus != null) {
+					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,pro.maxAreaRecord - 1,actor.attributesCalculated);
 				}
 			}
 		}
@@ -777,7 +808,7 @@ BattleManager.prototype = {
 		}
 		if(loadedWdata.worldVersion >= 601 == false) {
 			loadedWdata.regionProgress = [];
-			loadedWdata.regionProgress.push({ area : loadedWdata.battleArea, maxArea : loadedWdata.maxArea, amountEnemyKilledInArea : loadedWdata.killedInArea[loadedWdata.battleArea]});
+			loadedWdata.regionProgress.push({ area : loadedWdata.battleArea, maxArea : loadedWdata.maxArea, amountEnemyKilledInArea : loadedWdata.killedInArea[loadedWdata.battleArea], maxAreaRecord : loadedWdata.maxArea});
 			loadedWdata.battleAreaRegion = 0;
 			loadedWdata.battleArea = 0;
 		}
