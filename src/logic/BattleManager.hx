@@ -193,7 +193,7 @@ class BattleManager {
 			speciesMultiplier: {
 				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 5.5]
 			},
-			speciesAdd: ["Defense" => 5],
+			speciesAdd: ["Defense" => 5],	
 			speciesLevelStats: {attributesBase: ["Defense" => 1, "Speed" => 0.05]}
 			
 		});
@@ -780,8 +780,8 @@ $baseInfo';
 			for (i in 0...wdata.regionProgress.length){
 				var pro = wdata.regionProgress[i];
 				var prize = regionPrizes[i];
-				if(pro.area >= 1 && prize.statBonus != null){
-					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, pro.maxArea, actor.attributesCalculated);
+				if(pro.maxArea >= 2 && prize.statBonus != null){
+					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, pro.maxArea-1, actor.attributesCalculated);
 				}
 			}
 			

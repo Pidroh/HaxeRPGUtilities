@@ -668,8 +668,8 @@ BattleManager.prototype = {
 				var i = _g++;
 				var pro = this.wdata.regionProgress[i];
 				var prize = this.regionPrizes[i];
-				if(pro.area >= 1 && prize.statBonus != null) {
-					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,pro.maxArea,actor.attributesCalculated);
+				if(pro.maxArea >= 2 && prize.statBonus != null) {
+					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,pro.maxArea - 1,actor.attributesCalculated);
 				}
 			}
 		}
