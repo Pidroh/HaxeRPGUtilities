@@ -551,10 +551,14 @@ BattleManager.prototype = {
 		}
 		while(this.wdata.regionProgress.length <= this.wdata.battleAreaRegion) this.wdata.regionProgress.push({ area : -1, maxArea : -1, amountEnemyKilledInArea : -1});
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].area = this.wdata.battleArea;
+		var recalculate = false;
 		if(this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea != this.wdata.maxArea) {
-			this.RecalculateAttributes(this.wdata.hero);
+			recalculate = true;
 		}
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea = this.wdata.maxArea;
+		if(recalculate) {
+			this.RecalculateAttributes(this.wdata.hero);
+		}
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].amountEnemyKilledInArea = this.wdata.killedInArea[this.wdata.battleArea];
 		if(this.regionRequirements.length >= this.wdata.battleAreaRegionMax) {
 			var maxArea = this.wdata.regionProgress[0].maxArea;

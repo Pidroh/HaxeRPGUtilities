@@ -644,9 +644,12 @@ $baseInfo';
 			});
 		}
 		wdata.regionProgress[wdata.battleAreaRegion].area = wdata.battleArea;
+		var recalculate = false;
 		if(wdata.regionProgress[wdata.battleAreaRegion].maxArea != wdata.maxArea)
-			RecalculateAttributes(wdata.hero);
+			recalculate = true;
 		wdata.regionProgress[wdata.battleAreaRegion].maxArea = wdata.maxArea;
+		if(recalculate)
+			RecalculateAttributes(wdata.hero);
 		wdata.regionProgress[wdata.battleAreaRegion].amountEnemyKilledInArea = wdata.killedInArea[wdata.battleArea];
 
 		// region unlock code ---------------
