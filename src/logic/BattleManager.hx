@@ -261,6 +261,9 @@ class BattleManager {
 		if (wdata.battleAreaRegionMax >= 1 == false) {
 			wdata.battleAreaRegionMax = 1;
 		}
+		if(wdata.heroMaxLevel > 0 == false){
+			wdata.heroMaxLevel = 20;
+		}
 
 		var addAction = (id:String, action:PlayerAction, callback:PlayerAction->Void) -> {
 			// only if action isn't already defined
@@ -339,10 +342,10 @@ class BattleManager {
 				if(wdata.hero.equipmentSlots.contains(i)){
 					var e = wdata.hero.equipment[i];
 					for(s in e.attributes.keys()){
-						e.attributes[s] = Std.int(e.attributes[s]* 0.5);
+						e.attributes[s] = Std.int(e.attributes[s]* 0.7);
 					}
 				} else{
-					wdata.hero.equipmentSlots[i] = null;
+					wdata.hero.equipment[i] = null;
 				}
 			}
 		});
