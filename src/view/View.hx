@@ -406,6 +406,10 @@ class View {
 		}
 	}
 
+	public function UpdateDropDownRegionSelection(op){
+		dropDownRegion.dropdown.selectedIndex = op;
+	}
+
 	public function FeedSave(saveDataContent:String) {
 		// saveDataContent = StringTools.htmlEscape(saveDataContent);
 		// saveDataContent = "ssssss";

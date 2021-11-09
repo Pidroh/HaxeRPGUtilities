@@ -366,6 +366,7 @@ class Main {
 				view.AddEventText(ev);
 				eventShown++;
 			}
+			view.UpdateDropDownRegionSelection(bm.wdata.battleAreaRegion);
 
 			var delta = timeStamp - time;
 
