@@ -89,7 +89,7 @@ var BattleManager = function() {
 	_g.h["Speed"] = 20;
 	_g.h["SpeedCount"] = 0;
 	var stats = _g;
-	var w = { worldVersion : 602, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], prestigeTimes : 0, heroMaxLevel : 20, timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
+	var w = { worldVersion : 602, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], prestigeTimes : 0, timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -136,8 +136,11 @@ BattleManager.prototype = {
 			return false;
 		}
 	}
+	,CalculateHeroMaxLevel: function() {
+		return this.wdata.prestigeTimes * 10 + 20;
+	}
 	,AwardXP: function(xpPlus) {
-		if(this.wdata.hero.level <= this.wdata.heroMaxLevel) {
+		if(this.wdata.hero.level <= this.CalculateHeroMaxLevel()) {
 			xpPlus += xpPlus * this.wdata.prestigeTimes * 0.5 | 0;
 			this.wdata.hero.xp.value += xpPlus;
 			var e = this.AddEvent(EventTypes.GetXP);
@@ -234,7 +237,7 @@ BattleManager.prototype = {
 		}
 		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
 		this.wdata.enemy.attributesCalculated.h["Life"] = v;
-		console.log("src/logic/BattleManager.hx:161:","Enemy speed " + this.wdata.enemy.attributesCalculated.h["Speed"]);
+		console.log("src/logic/BattleManager.hx:165:","Enemy speed " + this.wdata.enemy.attributesCalculated.h["Speed"]);
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
@@ -244,8 +247,8 @@ BattleManager.prototype = {
 		if(this.wdata.battleAreaRegionMax >= 1 == false) {
 			this.wdata.battleAreaRegionMax = 1;
 		}
-		if(this.wdata.heroMaxLevel > 0 == false) {
-			this.wdata.heroMaxLevel = 20;
+		if(this.wdata.prestigeTimes >= 0 == false) {
+			this.wdata.prestigeTimes = 0;
 		}
 		var addAction = function(id,action,callback) {
 			var w = _gthis.wdata;
@@ -276,6 +279,21 @@ BattleManager.prototype = {
 		addAction("prestige",createAction(),function(a) {
 			_gthis.wdata.hero.level = 1;
 			_gthis.wdata.hero.xp.value = 0;
+			var hero = _gthis.wdata.hero;
+			ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
+			var _g = 0;
+			var _g1 = _gthis.wdata.regionProgress.length;
+			while(_g < _g1) {
+				var i = _g++;
+				_gthis.wdata.regionProgress[i].area = 0;
+				_gthis.wdata.regionProgress[i].maxArea = 1;
+			}
+			_gthis.wdata.battleArea = 0;
+			_gthis.wdata.maxArea = 1;
+			_gthis.wdata.battleAreaRegionMax = 1;
+			var fh = _gthis.wdata;
+			fh.prestigeTimes++;
+			_gthis.RecalculateAttributes(_gthis.wdata.hero);
 			var _g = 0;
 			var _g1 = _gthis.wdata.hero.equipment.length;
 			while(_g < _g1) {
@@ -586,7 +604,7 @@ BattleManager.prototype = {
 			recalculate = true;
 		}
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea = this.wdata.maxArea;
-		if(this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea != this.wdata.regionProgress[this.wdata.battleAreaRegion].maxAreaRecord) {
+		if(false == this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea <= this.wdata.regionProgress[this.wdata.battleAreaRegion].maxAreaRecord) {
 			this.wdata.regionProgress[this.wdata.battleAreaRegion].maxAreaRecord = this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea;
 			recalculate = true;
 		}
@@ -612,7 +630,7 @@ BattleManager.prototype = {
 		lu.enabled = this.canLevelUp;
 		lu.visible = this.canLevelUp || lu.visible;
 		var lu = this.wdata.playerActions.h["prestige"];
-		lu.enabled = this.wdata.hero.level > this.wdata.heroMaxLevel - 10;
+		lu.enabled = this.wdata.hero.level > this.CalculateHeroMaxLevel() - 10;
 		lu.visible = lu.enabled || lu.visible;
 		var lu = this.wdata.playerActions.h["advance"];
 		lu.visible = this.canAdvance || lu.visible;

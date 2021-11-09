@@ -134,7 +134,6 @@ typedef WorldData = {
 	var playerActions:Map<String, PlayerAction>;
 	var recovering:Bool;
 	var sleeping:Bool;
-	var heroMaxLevel:Int;
 	var prestigeTimes:Int;
 
 	// Easier access for the data in region progress. Has to copy the data back in update.
