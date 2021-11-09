@@ -405,6 +405,12 @@ class Main {
 			} else {
 				view.ButtonLabel("sleep", "Wake up");
 			}
+			var pact = bm.wdata.playerActions["prestige"];
+			if (pact.enabled == true) {
+				view.ButtonLabel("prestige", "Soul Crush");
+			} else {
+				view.ButtonLabel("prestige", "Unlock at Level "+bm.GetLevelRequirementForPrestige());
+			}
 
 			delta = delta * 0.001;
 			// updates battle manager to account for very high deltas

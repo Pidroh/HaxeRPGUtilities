@@ -147,6 +147,9 @@ BattleManager.prototype = {
 			e.data = xpPlus;
 		}
 	}
+	,GetLevelRequirementForPrestige: function() {
+		return this.CalculateHeroMaxLevel() - 10;
+	}
 	,CreateAreaEnemy: function() {
 		var region = this.wdata.battleAreaRegion;
 		var enemyLevel = this.wdata.battleArea;
@@ -237,7 +240,7 @@ BattleManager.prototype = {
 		}
 		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
 		this.wdata.enemy.attributesCalculated.h["Life"] = v;
-		console.log("src/logic/BattleManager.hx:165:","Enemy speed " + this.wdata.enemy.attributesCalculated.h["Speed"]);
+		console.log("src/logic/BattleManager.hx:169:","Enemy speed " + this.wdata.enemy.attributesCalculated.h["Speed"]);
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
@@ -605,9 +608,15 @@ BattleManager.prototype = {
 			recalculate = true;
 		}
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea = this.wdata.maxArea;
-		if(false == this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea <= this.wdata.regionProgress[this.wdata.battleAreaRegion].maxAreaRecord) {
-			this.wdata.regionProgress[this.wdata.battleAreaRegion].maxAreaRecord = this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea;
-			recalculate = true;
+		var _g = 0;
+		var _g1 = this.wdata.regionProgress;
+		while(_g < _g1.length) {
+			var rp = _g1[_g];
+			++_g;
+			if(rp.maxArea > rp.maxAreaRecord) {
+				rp.maxAreaRecord = rp.maxArea;
+				recalculate = true;
+			}
 		}
 		if(recalculate) {
 			this.RecalculateAttributes(this.wdata.hero);
@@ -631,7 +640,7 @@ BattleManager.prototype = {
 		lu.enabled = this.canLevelUp;
 		lu.visible = this.canLevelUp || lu.visible;
 		var lu = this.wdata.playerActions.h["prestige"];
-		lu.enabled = this.wdata.hero.level > this.CalculateHeroMaxLevel() - 10;
+		lu.enabled = this.wdata.hero.level > this.GetLevelRequirementForPrestige();
 		lu.visible = lu.enabled || lu.visible;
 		var lu = this.wdata.playerActions.h["advance"];
 		lu.visible = this.canAdvance || lu.visible;

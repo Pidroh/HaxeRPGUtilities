@@ -92,6 +92,10 @@ class BattleManager {
 		}
 	}
 
+	public function GetLevelRequirementForPrestige() : Int{
+		return CalculateHeroMaxLevel() - 10;
+	}
+
 	function CreateAreaEnemy() {
 		var region = wdata.battleAreaRegion;
 		var enemyLevel = wdata.battleArea;
@@ -683,10 +687,13 @@ $baseInfo';
 		if (wdata.regionProgress[wdata.battleAreaRegion].maxArea != wdata.maxArea)
 			recalculate = true;
 		wdata.regionProgress[wdata.battleAreaRegion].maxArea = wdata.maxArea;
-		if (false == (wdata.regionProgress[wdata.battleAreaRegion].maxArea <= wdata.regionProgress[wdata.battleAreaRegion].maxAreaRecord)) {
-			wdata.regionProgress[wdata.battleAreaRegion].maxAreaRecord = wdata.regionProgress[wdata.battleAreaRegion].maxArea;
-			recalculate = true;
+		for(rp in wdata.regionProgress){
+			if(rp.maxArea > rp.maxAreaRecord){
+				rp.maxAreaRecord = rp.maxArea;
+				recalculate = true;
+			}
 		}
+		
 		if (recalculate)
 			RecalculateAttributes(wdata.hero);
 		wdata.regionProgress[wdata.battleAreaRegion].amountEnemyKilledInArea = wdata.killedInArea[wdata.battleArea];
@@ -719,7 +726,7 @@ $baseInfo';
 		}
 		{
 			var lu = wdata.playerActions["prestige"];
-			lu.enabled = wdata.hero.level > (CalculateHeroMaxLevel() - 10);
+			lu.enabled = wdata.hero.level > GetLevelRequirementForPrestige();
 			lu.visible = lu.enabled || lu.visible;
 		}
 		{
