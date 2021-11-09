@@ -347,6 +347,7 @@ class BattleManager {
 			var hero = wdata.hero;
 			ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
 			for (i in 0...wdata.regionProgress.length){
+				wdata.regionProgress[i].maxAreaOnPrestigeRecord.push(wdata.regionProgress[i].maxArea);
 				wdata.regionProgress[i].area = 0;
 				wdata.regionProgress[i].maxArea = 1;
 			}
@@ -407,7 +408,8 @@ class BattleManager {
 				area: 0,
 				maxArea: 1,
 				amountEnemyKilledInArea: 0,
-				maxAreaRecord: 1
+				maxAreaRecord: 1,
+				maxAreaOnPrestigeRecord: []
 			}
 		ChangeBattleArea(wdata.regionProgress[region].area);
 		// wdata.battleArea = wdata.regionProgress[region].area;
@@ -679,7 +681,8 @@ $baseInfo';
 				area: -1,
 				maxArea: -1,
 				amountEnemyKilledInArea: -1,
-				maxAreaRecord: -1
+				maxAreaRecord: -1,
+				maxAreaOnPrestigeRecord: []
 			});
 		}
 		wdata.regionProgress[wdata.battleAreaRegion].area = wdata.battleArea;
@@ -928,7 +931,8 @@ $baseInfo';
 				area: loadedWdata.battleArea,
 				maxArea: loadedWdata.maxArea,
 				amountEnemyKilledInArea: loadedWdata.killedInArea[loadedWdata.battleArea],
-				maxAreaRecord: loadedWdata.maxArea
+				maxAreaRecord: loadedWdata.maxArea,
+				maxAreaOnPrestigeRecord: []
 			});
 			loadedWdata.battleAreaRegion = 0;
 			loadedWdata.battleArea = 0;

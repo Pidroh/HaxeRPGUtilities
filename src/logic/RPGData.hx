@@ -117,6 +117,7 @@ typedef AreaPersistence = {
 	var area:Int;
 	var maxArea:Int;
 	var maxAreaRecord:Int;
+	var maxAreaOnPrestigeRecord: Array<Int>;
 	var amountEnemyKilledInArea:Int;
 }
 

@@ -288,6 +288,7 @@ BattleManager.prototype = {
 			var _g1 = _gthis.wdata.regionProgress.length;
 			while(_g < _g1) {
 				var i = _g++;
+				_gthis.wdata.regionProgress[i].maxAreaOnPrestigeRecord.push(_gthis.wdata.regionProgress[i].maxArea);
 				_gthis.wdata.regionProgress[i].area = 0;
 				_gthis.wdata.regionProgress[i].maxArea = 1;
 			}
@@ -351,7 +352,7 @@ BattleManager.prototype = {
 	,changeRegion: function(region) {
 		this.wdata.battleAreaRegion = region;
 		if(this.wdata.regionProgress[region] == null) {
-			this.wdata.regionProgress[region] = { area : 0, maxArea : 1, amountEnemyKilledInArea : 0, maxAreaRecord : 1};
+			this.wdata.regionProgress[region] = { area : 0, maxArea : 1, amountEnemyKilledInArea : 0, maxAreaRecord : 1, maxAreaOnPrestigeRecord : []};
 		}
 		this.ChangeBattleArea(this.wdata.regionProgress[region].area);
 		this.wdata.maxArea = this.wdata.regionProgress[region].maxArea;
@@ -601,7 +602,7 @@ BattleManager.prototype = {
 		if(this.wdata.regionProgress == null) {
 			this.wdata.regionProgress = [];
 		}
-		while(this.wdata.regionProgress.length <= this.wdata.battleAreaRegion) this.wdata.regionProgress.push({ area : -1, maxArea : -1, amountEnemyKilledInArea : -1, maxAreaRecord : -1});
+		while(this.wdata.regionProgress.length <= this.wdata.battleAreaRegion) this.wdata.regionProgress.push({ area : -1, maxArea : -1, amountEnemyKilledInArea : -1, maxAreaRecord : -1, maxAreaOnPrestigeRecord : []});
 		this.wdata.regionProgress[this.wdata.battleAreaRegion].area = this.wdata.battleArea;
 		var recalculate = false;
 		if(this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea != this.wdata.maxArea) {
@@ -842,7 +843,7 @@ BattleManager.prototype = {
 		}
 		if(loadedWdata.worldVersion >= 601 == false) {
 			loadedWdata.regionProgress = [];
-			loadedWdata.regionProgress.push({ area : loadedWdata.battleArea, maxArea : loadedWdata.maxArea, amountEnemyKilledInArea : loadedWdata.killedInArea[loadedWdata.battleArea], maxAreaRecord : loadedWdata.maxArea});
+			loadedWdata.regionProgress.push({ area : loadedWdata.battleArea, maxArea : loadedWdata.maxArea, amountEnemyKilledInArea : loadedWdata.killedInArea[loadedWdata.battleArea], maxAreaRecord : loadedWdata.maxArea, maxAreaOnPrestigeRecord : []});
 			loadedWdata.battleAreaRegion = 0;
 			loadedWdata.battleArea = 0;
 		}
