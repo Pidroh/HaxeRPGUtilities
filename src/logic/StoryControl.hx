@@ -121,7 +121,6 @@ class StoryControlLogic {
 		if (cutscene != null) {
 			while (view.amountOfStoryMessagesShown <= runtime.currentStoryProgression.index) {
 				var m = cutscene.messages[view.amountOfStoryMessagesShown];
-				if (m.script != null) {}
 				var speakerImageName = null;
 				if (m.speaker != null)
 					speakerImageName = runtime.speakerToImage[m.speaker.toLowerCase()];

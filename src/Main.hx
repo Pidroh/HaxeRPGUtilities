@@ -127,6 +127,7 @@ class Main {
 
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart");
+		CreateButtonFromAction("prestige", "Soul Crush");
 
 		view.equipmentMainAction = function(pos, action) {
 			if (action == 0) {
@@ -376,6 +377,7 @@ class Main {
 			view.levelContainer.hidden = !storyHappened;
 			view.battleView.hidden = !storyHappened;
 			view.areaContainer.hidden = !storyHappened;
+			
 
 			time = timeStamp;
 			buttonToAction("advance", "advance");
@@ -384,6 +386,8 @@ class Main {
 			buttonToAction("levelup", "levelup");
 			buttonToAction("sleep", "sleep");
 			buttonToAction("repeat", "repeat");
+			buttonToAction("prestige", "prestige");
+			view.ButtonVisibility("prestige", storyRuntime.persistence.progressionData[storyRuntime.cutscenes[2].title].timesCompleted > 0);
 
 			{
 				var action = bm.wdata.playerActions["tabequipment"];
