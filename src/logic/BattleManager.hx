@@ -265,6 +265,10 @@ class BattleManager {
 		if (wdata.regionProgress == null) {
 			wdata.regionProgress = [];
 		}
+		for(r in wdata.regionProgress){
+			if(r.maxAreaOnPrestigeRecord == null)
+				r.maxAreaOnPrestigeRecord = [];
+		}
 		if (wdata.battleAreaRegionMax >= 1 == false) {
 			wdata.battleAreaRegionMax = 1;
 		}
@@ -837,8 +841,18 @@ $baseInfo';
 			for (i in 0...wdata.regionProgress.length) {
 				var pro = wdata.regionProgress[i];
 				var prize = regionPrizes[i];
-				if (pro.maxAreaRecord >= 2 && prize.statBonus != null) {
-					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, pro.maxAreaRecord - 1, actor.attributesCalculated);
+				var bonusLevel = 0;
+				
+				if (prize.statBonus != null) {
+					if(pro.maxAreaRecord >= 2){
+						bonusLevel += pro.maxAreaRecord - 1;
+					}
+					for(maxAreaPrestiges in pro.maxAreaOnPrestigeRecord){
+						if(maxAreaPrestiges >= 2){
+							bonusLevel += maxAreaPrestiges-1;
+						}
+					}
+					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, bonusLevel, actor.attributesCalculated);
 				}
 			}
 		}

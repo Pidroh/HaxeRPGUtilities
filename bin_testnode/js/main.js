@@ -247,6 +247,15 @@ BattleManager.prototype = {
 		if(this.wdata.regionProgress == null) {
 			this.wdata.regionProgress = [];
 		}
+		var _g = 0;
+		var _g1 = this.wdata.regionProgress;
+		while(_g < _g1.length) {
+			var r = _g1[_g];
+			++_g;
+			if(r.maxAreaOnPrestigeRecord == null) {
+				r.maxAreaOnPrestigeRecord = [];
+			}
+		}
 		if(this.wdata.battleAreaRegionMax >= 1 == false) {
 			this.wdata.battleAreaRegionMax = 1;
 		}
@@ -738,8 +747,21 @@ BattleManager.prototype = {
 				var i = _g++;
 				var pro = this.wdata.regionProgress[i];
 				var prize = this.regionPrizes[i];
-				if(pro.maxAreaRecord >= 2 && prize.statBonus != null) {
-					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,pro.maxAreaRecord - 1,actor.attributesCalculated);
+				var bonusLevel = 0;
+				if(prize.statBonus != null) {
+					if(pro.maxAreaRecord >= 2) {
+						bonusLevel += pro.maxAreaRecord - 1;
+					}
+					var _g2 = 0;
+					var _g3 = pro.maxAreaOnPrestigeRecord;
+					while(_g2 < _g3.length) {
+						var maxAreaPrestiges = _g3[_g2];
+						++_g2;
+						if(maxAreaPrestiges >= 2) {
+							bonusLevel += maxAreaPrestiges - 1;
+						}
+					}
+					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,bonusLevel,actor.attributesCalculated);
 				}
 			}
 		}
