@@ -75,6 +75,40 @@ class MainTest {
 
 		}
 		{
+			Sys.println("Prestige unlock test");
+			var bm:BattleManager = new BattleManager();
+			bm.DefaultConfiguration();
+			var a = bm.wdata.playerActions["prestige"];
+			if(a.enabled == true){
+				Sys.println("Error: prestige wrong 1");
+			}
+			bm.wdata.hero.level = 15;
+			for (i in 1...400) {
+				bm.update(0.9);
+			}
+			if(a.enabled == false){
+				Sys.println("Error: prestige wrong 2");
+			}
+			bm.PrestigeExecute();
+			if(a.enabled == true){
+				Sys.println("Error: prestige wrong 3");
+			}
+			bm.wdata.hero.level = 15;
+			for (i in 1...400) {
+				bm.update(0.9);
+			}
+			if(a.enabled == true){
+				Sys.println("Error: prestige wrong 4");
+			}
+			bm.wdata.hero.level = 25;
+			for (i in 1...400) {
+				bm.update(0.9);
+			}
+			if(a.enabled == false){
+				Sys.println("Error: prestige wrong 5");
+			}
+		}
+		{
 			Sys.println("Save legacy test");
 			for(file in sys.FileSystem.readDirectory("saves/")){
 				trace(file);

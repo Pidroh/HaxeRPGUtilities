@@ -289,45 +289,7 @@ BattleManager.prototype = {
 			_gthis.wdata.killedInArea[_gthis.wdata.battleArea] = 0;
 		});
 		addAction("prestige",createAction(),function(a) {
-			_gthis.wdata.hero.level = 1;
-			_gthis.wdata.hero.xp.value = 0;
-			var hero = _gthis.wdata.hero;
-			ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
-			var _g = 0;
-			var _g1 = _gthis.wdata.regionProgress.length;
-			while(_g < _g1) {
-				var i = _g++;
-				_gthis.wdata.regionProgress[i].maxAreaOnPrestigeRecord.push(_gthis.wdata.regionProgress[i].maxArea);
-				_gthis.wdata.regionProgress[i].area = 0;
-				_gthis.wdata.regionProgress[i].maxArea = 1;
-			}
-			_gthis.wdata.battleAreaRegion = 0;
-			_gthis.wdata.battleArea = 0;
-			_gthis.wdata.maxArea = 1;
-			_gthis.wdata.battleAreaRegionMax = 1;
-			var fh = _gthis.wdata;
-			fh.prestigeTimes++;
-			_gthis.RecalculateAttributes(_gthis.wdata.hero);
-			var _g = 0;
-			var _g1 = _gthis.wdata.hero.equipment.length;
-			while(_g < _g1) {
-				var i = _g++;
-				if(_gthis.wdata.hero.equipmentSlots.indexOf(i) != -1) {
-					var e = _gthis.wdata.hero.equipment[i];
-					var h = e.attributes.h;
-					var s_h = h;
-					var s_keys = Object.keys(h);
-					var s_length = s_keys.length;
-					var s_current = 0;
-					while(s_current < s_length) {
-						var s = s_keys[s_current++];
-						var v = e.attributes.h[s] * 0.7 | 0;
-						e.attributes.h[s] = v;
-					}
-				} else {
-					_gthis.wdata.hero.equipment[i] = null;
-				}
-			}
+			_gthis.PrestigeExecute();
 		});
 		var _g = new haxe_ds_StringMap();
 		_g.h["Life"] = 20;
@@ -357,6 +319,46 @@ BattleManager.prototype = {
 			this.wdata.hero.equipmentSlots = [-1,-1,-1];
 		}
 		this.RecalculateAttributes(this.wdata.hero);
+	}
+	,PrestigeExecute: function() {
+		this.wdata.hero.level = 1;
+		this.wdata.hero.xp.value = 0;
+		var hero = this.wdata.hero;
+		ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
+		var _g = 0;
+		var _g1 = this.wdata.regionProgress.length;
+		while(_g < _g1) {
+			var i = _g++;
+			this.wdata.regionProgress[i].maxAreaOnPrestigeRecord.push(this.wdata.regionProgress[i].maxArea);
+			this.wdata.regionProgress[i].area = 0;
+			this.wdata.regionProgress[i].maxArea = 1;
+		}
+		this.wdata.battleAreaRegion = 0;
+		this.wdata.battleArea = 0;
+		this.wdata.maxArea = 1;
+		this.wdata.battleAreaRegionMax = 1;
+		this.wdata.prestigeTimes++;
+		this.RecalculateAttributes(this.wdata.hero);
+		var _g = 0;
+		var _g1 = this.wdata.hero.equipment.length;
+		while(_g < _g1) {
+			var i = _g++;
+			if(this.wdata.hero.equipmentSlots.indexOf(i) != -1) {
+				var e = this.wdata.hero.equipment[i];
+				var h = e.attributes.h;
+				var s_h = h;
+				var s_keys = Object.keys(h);
+				var s_length = s_keys.length;
+				var s_current = 0;
+				while(s_current < s_length) {
+					var s = s_keys[s_current++];
+					var v = e.attributes.h[s] * 0.7 | 0;
+					e.attributes.h[s] = v;
+				}
+			} else {
+				this.wdata.hero.equipment[i] = null;
+			}
+		}
 	}
 	,changeRegion: function(region) {
 		this.wdata.battleAreaRegion = region;
@@ -1020,6 +1022,50 @@ MainTest.main = function() {
 		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (b)"));
 		process.stdout.write("\n");
 	}
+	process.stdout.write("Prestige unlock test");
+	process.stdout.write("\n");
+	var bm = new BattleManager();
+	bm.DefaultConfiguration();
+	var a = bm.wdata.playerActions.h["prestige"];
+	if(a.enabled == true) {
+		process.stdout.write("Error: prestige wrong 1");
+		process.stdout.write("\n");
+	}
+	bm.wdata.hero.level = 15;
+	var _g = 1;
+	while(_g < 400) {
+		var i = _g++;
+		bm.update(0.9);
+	}
+	if(a.enabled == false) {
+		process.stdout.write("Error: prestige wrong 2");
+		process.stdout.write("\n");
+	}
+	bm.PrestigeExecute();
+	if(a.enabled == true) {
+		process.stdout.write("Error: prestige wrong 3");
+		process.stdout.write("\n");
+	}
+	bm.wdata.hero.level = 15;
+	var _g = 1;
+	while(_g < 400) {
+		var i = _g++;
+		bm.update(0.9);
+	}
+	if(a.enabled == true) {
+		process.stdout.write("Error: prestige wrong 4");
+		process.stdout.write("\n");
+	}
+	bm.wdata.hero.level = 25;
+	var _g = 1;
+	while(_g < 400) {
+		var i = _g++;
+		bm.update(0.9);
+	}
+	if(a.enabled == false) {
+		process.stdout.write("Error: prestige wrong 5");
+		process.stdout.write("\n");
+	}
 	process.stdout.write("Save legacy test");
 	process.stdout.write("\n");
 	var _g = 0;
@@ -1027,7 +1073,7 @@ MainTest.main = function() {
 	while(_g < _g1.length) {
 		var file = _g1[_g];
 		++_g;
-		console.log("test/MainTest.hx:80:",file);
+		console.log("test/MainTest.hx:114:",file);
 		var path = haxe_io_Path.join(["saves/",file]);
 		var json = js_node_Fs.readFileSync(path,{ encoding : "utf8"});
 		var bm = new BattleManager();
@@ -1219,14 +1265,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:205:","  _____ ");
-		console.log("test/MainTest.hx:206:","  _____ ");
-		console.log("test/MainTest.hx:207:","  _____ ");
-		console.log("test/MainTest.hx:208:",json);
-		console.log("test/MainTest.hx:209:","  _____ ");
-		console.log("test/MainTest.hx:210:","  _____ ");
-		console.log("test/MainTest.hx:211:","  _____ ");
-		console.log("test/MainTest.hx:212:",json2);
+		console.log("test/MainTest.hx:239:","  _____ ");
+		console.log("test/MainTest.hx:240:","  _____ ");
+		console.log("test/MainTest.hx:241:","  _____ ");
+		console.log("test/MainTest.hx:242:",json);
+		console.log("test/MainTest.hx:243:","  _____ ");
+		console.log("test/MainTest.hx:244:","  _____ ");
+		console.log("test/MainTest.hx:245:","  _____ ");
+		console.log("test/MainTest.hx:246:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}

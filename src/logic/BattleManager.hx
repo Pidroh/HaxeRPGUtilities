@@ -79,20 +79,20 @@ class BattleManager {
 		return wdata.recovering != true && wdata.sleeping != true;
 	}
 
-	function CalculateHeroMaxLevel():Int{
+	function CalculateHeroMaxLevel():Int {
 		return wdata.prestigeTimes * 10 + 20;
 	}
 
 	function AwardXP(xpPlus) {
 		if (wdata.hero.level <= CalculateHeroMaxLevel()) {
-			xpPlus = xpPlus + Std.int(xpPlus*wdata.prestigeTimes * 0.5);
+			xpPlus = xpPlus + Std.int(xpPlus * wdata.prestigeTimes * 0.5);
 			wdata.hero.xp.value += xpPlus;
 			var e = AddEvent(GetXP);
 			e.data = xpPlus;
 		}
 	}
 
-	public function GetLevelRequirementForPrestige() : Int{
+	public function GetLevelRequirementForPrestige():Int {
 		return CalculateHeroMaxLevel() - 10;
 	}
 
@@ -265,14 +265,14 @@ class BattleManager {
 		if (wdata.regionProgress == null) {
 			wdata.regionProgress = [];
 		}
-		for(r in wdata.regionProgress){
-			if(r.maxAreaOnPrestigeRecord == null)
+		for (r in wdata.regionProgress) {
+			if (r.maxAreaOnPrestigeRecord == null)
 				r.maxAreaOnPrestigeRecord = [];
 		}
 		if (wdata.battleAreaRegionMax >= 1 == false) {
 			wdata.battleAreaRegionMax = 1;
 		}
-		if(wdata.prestigeTimes >= 0 == false)
+		if (wdata.prestigeTimes >= 0 == false)
 			wdata.prestigeTimes = 0;
 
 		var addAction = (id:String, action:PlayerAction, callback:PlayerAction->Void) -> {
@@ -346,31 +346,7 @@ class BattleManager {
 		});
 
 		addAction("prestige", createAction(), (a) -> {
-			wdata.hero.level = 1;
-			wdata.hero.xp.value = 0;
-			var hero = wdata.hero;
-			ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
-			for (i in 0...wdata.regionProgress.length){
-				wdata.regionProgress[i].maxAreaOnPrestigeRecord.push(wdata.regionProgress[i].maxArea);
-				wdata.regionProgress[i].area = 0;
-				wdata.regionProgress[i].maxArea = 1;
-			}
-			wdata.battleAreaRegion = 0;
-			wdata.battleArea = 0;
-			wdata.maxArea = 1;
-			wdata.battleAreaRegionMax = 1;
-			wdata.prestigeTimes++;
-			RecalculateAttributes(wdata.hero);
-			for (i in 0...wdata.hero.equipment.length){
-				if(wdata.hero.equipmentSlots.contains(i)){
-					var e = wdata.hero.equipment[i];
-					for(s in e.attributes.keys()){
-						e.attributes[s] = Std.int(e.attributes[s]* 0.7);
-					}
-				} else{
-					wdata.hero.equipment[i] = null;
-				}
-			}
+			PrestigeExecute();
 		});
 
 		wdata.hero.attributesBase = [
@@ -403,6 +379,34 @@ class BattleManager {
 			wdata.hero.equipmentSlots = [-1, -1, -1];
 		}
 		RecalculateAttributes(wdata.hero);
+	}
+
+	public function PrestigeExecute() {
+		wdata.hero.level = 1;
+		wdata.hero.xp.value = 0;
+		var hero = wdata.hero;
+		ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
+		for (i in 0...wdata.regionProgress.length) {
+			wdata.regionProgress[i].maxAreaOnPrestigeRecord.push(wdata.regionProgress[i].maxArea);
+			wdata.regionProgress[i].area = 0;
+			wdata.regionProgress[i].maxArea = 1;
+		}
+		wdata.battleAreaRegion = 0;
+		wdata.battleArea = 0;
+		wdata.maxArea = 1;
+		wdata.battleAreaRegionMax = 1;
+		wdata.prestigeTimes++;
+		RecalculateAttributes(wdata.hero);
+		for (i in 0...wdata.hero.equipment.length) {
+			if (wdata.hero.equipmentSlots.contains(i)) {
+				var e = wdata.hero.equipment[i];
+				for (s in e.attributes.keys()) {
+					e.attributes[s] = Std.int(e.attributes[s] * 0.7);
+				}
+			} else {
+				wdata.hero.equipment[i] = null;
+			}
+		}
 	}
 
 	public function changeRegion(region) {
@@ -694,13 +698,13 @@ $baseInfo';
 		if (wdata.regionProgress[wdata.battleAreaRegion].maxArea != wdata.maxArea)
 			recalculate = true;
 		wdata.regionProgress[wdata.battleAreaRegion].maxArea = wdata.maxArea;
-		for(rp in wdata.regionProgress){
-			if(rp.maxArea > rp.maxAreaRecord){
+		for (rp in wdata.regionProgress) {
+			if (rp.maxArea > rp.maxAreaRecord) {
 				rp.maxAreaRecord = rp.maxArea;
 				recalculate = true;
 			}
 		}
-		
+
 		if (recalculate)
 			RecalculateAttributes(wdata.hero);
 		wdata.regionProgress[wdata.battleAreaRegion].amountEnemyKilledInArea = wdata.killedInArea[wdata.battleArea];
@@ -842,14 +846,14 @@ $baseInfo';
 				var pro = wdata.regionProgress[i];
 				var prize = regionPrizes[i];
 				var bonusLevel = 0;
-				
+
 				if (prize.statBonus != null) {
-					if(pro.maxAreaRecord >= 2){
+					if (pro.maxAreaRecord >= 2) {
 						bonusLevel += pro.maxAreaRecord - 1;
 					}
-					for(maxAreaPrestiges in pro.maxAreaOnPrestigeRecord){
-						if(maxAreaPrestiges >= 2){
-							bonusLevel += maxAreaPrestiges-1;
+					for (maxAreaPrestiges in pro.maxAreaOnPrestigeRecord) {
+						if (maxAreaPrestiges >= 2) {
+							bonusLevel += maxAreaPrestiges - 1;
 						}
 					}
 					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, bonusLevel, actor.attributesCalculated);
