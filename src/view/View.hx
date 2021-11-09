@@ -109,7 +109,7 @@ class View {
 				parent.addComponent(face);
 				
 				parent.addComponent(textBox);
-				parent.percentWidth = 100;
+				parent.percentWidth = 90;
 				parent.height = 60;
 
 				var messageView : MessageView = {
@@ -317,13 +317,16 @@ class View {
 
 		var scroll = CreateScrollable(battleParent);
 
-		scroll.width = 200;
+		scroll.width = 250;
 		scroll.percentHeight = 100;
 		var logContainer = CreateContainer(scroll, true);
+		
 		var log = new Label();
 		logText = log;
 		logContainer.addComponent(log);
 		logText.width = 190;
+		logText.horizontalAlign = "center";
+		logContainer.horizontalAlign = "center";
 
 		areaContainer = CreateContainer(box, true);
 		
@@ -798,12 +801,13 @@ class StoryDialog extends Dialog {
 	public function new() {
 		super();
 		title = "Entry Form";
-		width = 300;
+		width = 400;
 		this.percentHeight = 80;
 		
 		messageParent = new VBox();
 		//messageParent.percentWidth = 100;
-		messageParent.width = width-10;
+		messageParent.width = width-30;
+		messageParent.paddingBottom = 20;
 		
 
 		scroll = new ScrollView();

@@ -346,6 +346,7 @@ class BattleManager {
 				wdata.regionProgress[i].area = 0;
 				wdata.regionProgress[i].maxArea = 1;
 			}
+			wdata.battleAreaRegion = 0;
 			wdata.battleArea = 0;
 			wdata.maxArea = 1;
 			wdata.battleAreaRegionMax = 1;

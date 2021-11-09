@@ -288,6 +288,7 @@ BattleManager.prototype = {
 				_gthis.wdata.regionProgress[i].area = 0;
 				_gthis.wdata.regionProgress[i].maxArea = 1;
 			}
+			_gthis.wdata.battleAreaRegion = 0;
 			_gthis.wdata.battleArea = 0;
 			_gthis.wdata.maxArea = 1;
 			_gthis.wdata.battleAreaRegionMax = 1;
