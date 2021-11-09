@@ -1,6 +1,7 @@
 typedef Message = {
     var body : String;
     var speaker : String;
+    var script : String;
   }
   
   typedef Cutscene = {

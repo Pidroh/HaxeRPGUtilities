@@ -17,6 +17,7 @@ class StoryControlLogic {
 
 		var parser = new hscript.Parser();
 		for (i in 0...cutscenes.length) {
+			runtime.messageRuntimeInfo[i] = [];
 			if (runtime.persistence.progressionData.exists(cutscenes[i].title) == false) {
 				runtime.persistence.progressionData.set(cutscenes[i].title, {
 					index: 0,
@@ -35,35 +36,37 @@ class StoryControlLogic {
 			} else {
 				runtime.visibilityConditionScripts.push(null);
 			}
+			for (j in 0...cutscenes[i].messages.length) {
+				var sc = cutscenes[i].messages[j].script;
+				var script:Expr = null;
+				if (sc != null) {
+					script = parser.parseString(sc);
+				}
+				runtime.messageRuntimeInfo[i][j] = {script: script};
+			}
 		}
-		view.storyMainAction = (actionId, argument) -> {
 
+		view.storyMainAction = (actionId, argument) -> {
 			if (actionId == View.storyAction_Start) {
 				StoryLogic.StartStory(cutscenes[argument].title, runtime);
 				view.StartStory();
 			}
-
 			if (actionId == View.storyAction_Continue) {
 				StoryLogic.StartStory(cutscenes[argument].title, runtime, true);
 				view.StartStory();
 			}
-
 			if (actionId == View.storyAction_AdvanceMessage) {
 				StoryLogic.MessageAdvance(runtime);
 			}
-
 			if (actionId == View.storyAction_WatchLater) {
 				StoryLogic.WatchLater(runtime);
 			}
-
 			if (actionId == View.storyAction_WatchLaterClose) {
 				StoryLogic.WatchLater(runtime);
 			}
-
 			if (actionId == View.storyAction_SkipStory) {
 				StoryLogic.SkipStory(runtime);
 			}
-
 			if (view.storyDialogActive && runtime.cutscene == null && actionId != View.storyAction_WatchLaterClose) {
 				view.HideStory();
 			}
@@ -93,9 +96,9 @@ class StoryControlLogic {
 				var resumable = prog.index > 0;
 				var newLabel = prog.wantToWatch;
 				var newLabelText = "NEW";
-				if(prog.timesCompleted > 1)
+				if (prog.timesCompleted > 1)
 					newLabelText = "Watch later";
-				view.StoryButtonFeed(i, runtime.cutscenes[i].title, completed,resumable, newLabel, newLabelText);
+				view.StoryButtonFeed(i, runtime.cutscenes[i].title, completed, resumable, newLabel, newLabelText);
 			} else {
 				view.StoryButtonHide(i);
 			}
@@ -110,15 +113,19 @@ class StoryControlLogic {
 		view.SetTabNotification(amountVisible > amountVisibleRecognized, view.storyTab);
 		var cutscene = runtime.cutscene;
 
-		if(view.storyDialogUtilityFlag){
+		if (view.storyDialogUtilityFlag) {
 			view.storyDialogUtilityFlag = false;
 			view.storyDialog.scroll.vscrollPos = 9999;
 		}
-		
+
 		if (cutscene != null) {
-			while(view.amountOfStoryMessagesShown <= runtime.currentStoryProgression.index){
+			while (view.amountOfStoryMessagesShown <= runtime.currentStoryProgression.index) {
 				var m = cutscene.messages[view.amountOfStoryMessagesShown];
-				view.LatestMessageUpdate(m.body, m.speaker,runtime.speakerToImage[m.speaker.toLowerCase()], view.amountOfStoryMessagesShown);
+				if (m.script != null) {}
+				var speakerImageName = null;
+				if (m.speaker != null)
+					speakerImageName = runtime.speakerToImage[m.speaker.toLowerCase()];
+				view.LatestMessageUpdate(m.body, m.speaker, speakerImageName, view.amountOfStoryMessagesShown);
 				view.storyDialogUtilityFlag = true;
 			}
 		}
@@ -128,12 +135,12 @@ class StoryControlLogic {
 		StoryLogic.VisibilityUpdate(view.IsTabSelected(view.storyTab.component), runtime, executer);
 	}
 
-	public static function ReadJsonPersistentData(json:String) : StoryPersistence{
-		var persistence : StoryPersistence = Json.parse(json);
+	public static function ReadJsonPersistentData(json:String):StoryPersistence {
+		var persistence:StoryPersistence = Json.parse(json);
 		return persistence;
 	}
 
-	public static function GetJsonPersistentData(runtime:StoryRuntimeData) : String{
+	public static function GetJsonPersistentData(runtime:StoryRuntimeData):String {
 		return Json.stringify(runtime.persistence);
 	}
 }

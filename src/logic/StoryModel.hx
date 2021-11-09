@@ -6,6 +6,11 @@ class StoryLogic {
 	public static function Update(runtime:StoryRuntimeData) {
 	}
 
+
+	public static function RunScript(executer:Interp, script:String){
+
+	}
+
 	public static function VisibilityUpdate(storyButtonsVisible:Bool, runtime:StoryRuntimeData, executer:Interp) {
 		for (i in 0...runtime.cutscenes.length) {
 			var prog = runtime.persistence.progressionData[runtime.cutscenes[i].title];
@@ -78,6 +83,10 @@ class StoryLogic {
 	}
 }
 
+typedef ProcessedMessageRuntimeInfo = {
+	var script : Expr;
+}
+
 typedef StoryPersistence = {
 	var progressionData:Map<String, StoryProgress>;
 	var currentStoryId:String;
@@ -95,6 +104,7 @@ typedef StoryProgress = {
 typedef StoryRuntimeData = {
 	var currentStoryProgression:StoryProgress;
 	var cutscenes:Array<Cutscene>;
+	var messageRuntimeInfo : Array<Array<ProcessedMessageRuntimeInfo>>;
 	var visibilityConditionScripts:Array<Expr>;
 	var cutscene:Cutscene;
 	var cutsceneStartable:Cutscene;

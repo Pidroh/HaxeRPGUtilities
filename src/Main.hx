@@ -181,6 +181,7 @@ class Main {
 			cutsceneStartable: null,
 			cutscenes: null,
 			visibilityConditionScripts: [],
+			messageRuntimeInfo: [],
 			persistence: storyPersistence,
 			speakerToImage: ["mom" => "graphics/mom.png", "you" => "graphics/main.png", "cid" => "graphics/cid.png", "man" => "graphics/cid.png"]
 		}

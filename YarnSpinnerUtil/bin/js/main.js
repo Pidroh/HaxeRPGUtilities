@@ -7,81 +7,11 @@ function $extend(from, fields) {
 	return proto;
 }
 Math.__name__ = true;
-var Std = function() { };
-Std.__name__ = true;
-Std.string = function(s) {
-	return js_Boot.__string_rec(s,"");
-};
 var StringTools = function() { };
 StringTools.__name__ = true;
 StringTools.replace = function(s,sub,by) {
 	return s.split(sub).join(by);
 };
-var haxe_io_Output = function() { };
-haxe_io_Output.__name__ = true;
-var _$Sys_FileOutput = function(fd) {
-	this.fd = fd;
-};
-_$Sys_FileOutput.__name__ = true;
-_$Sys_FileOutput.__super__ = haxe_io_Output;
-_$Sys_FileOutput.prototype = $extend(haxe_io_Output.prototype,{
-	writeByte: function(c) {
-		js_node_Fs.writeSync(this.fd,String.fromCodePoint(c));
-	}
-	,writeBytes: function(s,pos,len) {
-		var data = s.b;
-		return js_node_Fs.writeSync(this.fd,js_node_buffer_Buffer.from(data.buffer,data.byteOffset,s.length),pos,len);
-	}
-	,writeString: function(s,encoding) {
-		js_node_Fs.writeSync(this.fd,s);
-	}
-	,flush: function() {
-		js_node_Fs.fsyncSync(this.fd);
-	}
-	,close: function() {
-		js_node_Fs.closeSync(this.fd);
-	}
-});
-var haxe_io_Input = function() { };
-haxe_io_Input.__name__ = true;
-var _$Sys_FileInput = function(fd) {
-	this.fd = fd;
-};
-_$Sys_FileInput.__name__ = true;
-_$Sys_FileInput.__super__ = haxe_io_Input;
-_$Sys_FileInput.prototype = $extend(haxe_io_Input.prototype,{
-	readByte: function() {
-		var buf = js_node_buffer_Buffer.alloc(1);
-		try {
-			js_node_Fs.readSync(this.fd,buf,0,1,null);
-		} catch( _g ) {
-			var e = haxe_Exception.caught(_g).unwrap();
-			if(e.code == "EOF") {
-				throw haxe_Exception.thrown(new haxe_io_Eof());
-			} else {
-				throw haxe_Exception.thrown(haxe_io_Error.Custom(e));
-			}
-		}
-		return buf[0];
-	}
-	,readBytes: function(s,pos,len) {
-		var data = s.b;
-		var buf = js_node_buffer_Buffer.from(data.buffer,data.byteOffset,s.length);
-		try {
-			return js_node_Fs.readSync(this.fd,buf,pos,len,null);
-		} catch( _g ) {
-			var e = haxe_Exception.caught(_g).unwrap();
-			if(e.code == "EOF") {
-				throw haxe_Exception.thrown(new haxe_io_Eof());
-			} else {
-				throw haxe_Exception.thrown(haxe_io_Error.Custom(e));
-			}
-		}
-	}
-	,close: function() {
-		js_node_Fs.closeSync(this.fd);
-	}
-});
 var Transpiler = function() { };
 Transpiler.__name__ = true;
 Transpiler.main = function() {
@@ -89,8 +19,6 @@ Transpiler.main = function() {
 	var directoryPath = "C:\\Users\\user\\gamedev\\_haxe\\HaxeRPGUtilities\\assets";
 	var json = js_node_Fs.readFileSync("C:\\Users\\user\\gamedev\\_haxe\\HaxeRPGUtilities.wiki\\yarn.json",{ encoding : "utf8"});
 	var master = JSON.parse(json);
-	console.log("src/Generator/Transpiler.hx:12:",json);
-	process.stdout.write(Std.string(json));
 	var masterOutput = [];
 	var _g = 0;
 	while(_g < master.length) {
@@ -106,16 +34,20 @@ Transpiler.main = function() {
 		while(_g1 < lines.length) {
 			var l = lines[_g1];
 			++_g1;
+			var script = null;
 			if(l.indexOf("<H") != -1) {
+				console.log("src/Generator/Transpiler.hx:32:","Script found");
 				var haxeScriptStart = l.indexOf("<H");
-				var script = l.substring(haxeScriptStart + 2,l.indexOf("H>"));
+				script = l.substring(haxeScriptStart + 2,l.indexOf("H>"));
+				console.log("src/Generator/Transpiler.hx:36:",script);
 				if(script.indexOf("CONDITION") != -1) {
 					cutscene.visibilityScript = StringTools.replace(script,"CONDITION","");
+					script = null;
 					continue;
 				}
 				if(script.indexOf("BUTTONLABEL") != -1) {
 					cutscene.actionLabel = StringTools.replace(script,"BUTTONLABEL","");
-					console.log("src/Generator/Transpiler.hx:34:","BUTTON LABEL FOUND");
+					console.log("src/Generator/Transpiler.hx:45:","BUTTON LABEL FOUND");
 					continue;
 				}
 				l = l.split(l.substring(haxeScriptStart,l.indexOf("H>") - 2))[0];
@@ -127,12 +59,12 @@ Transpiler.main = function() {
 				speaker = parts[0];
 				messageB = parts[1];
 			}
-			var message = { body : messageB, speaker : speaker};
+			var message = { body : messageB, speaker : speaker, script : script};
 			cutscene.messages.push(message);
 		}
 	}
 	js_node_Fs.writeFileSync(directoryPath + "\\story.json",JSON.stringify(masterOutput));
-	console.log("src/Generator/Transpiler.hx:53:",JSON.stringify(masterOutput));
+	console.log("src/Generator/Transpiler.hx:64:",JSON.stringify(masterOutput));
 };
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);
@@ -188,11 +120,6 @@ var haxe_io_Bytes = function(data) {
 	data.bytes = this.b;
 };
 haxe_io_Bytes.__name__ = true;
-var haxe_io_Encoding = $hxEnums["haxe.io.Encoding"] = { __ename__:true,__constructs__:null
-	,UTF8: {_hx_name:"UTF8",_hx_index:0,__enum__:"haxe.io.Encoding",toString:$estr}
-	,RawNative: {_hx_name:"RawNative",_hx_index:1,__enum__:"haxe.io.Encoding",toString:$estr}
-};
-haxe_io_Encoding.__constructs__ = [haxe_io_Encoding.UTF8,haxe_io_Encoding.RawNative];
 var haxe_io_Eof = function() {
 };
 haxe_io_Eof.__name__ = true;
@@ -208,6 +135,10 @@ var haxe_io_Error = $hxEnums["haxe.io.Error"] = { __ename__:true,__constructs__:
 	,Custom: ($_=function(e) { return {_hx_index:3,e:e,__enum__:"haxe.io.Error",toString:$estr}; },$_._hx_name="Custom",$_.__params__ = ["e"],$_)
 };
 haxe_io_Error.__constructs__ = [haxe_io_Error.Blocked,haxe_io_Error.Overflow,haxe_io_Error.OutsideBounds,haxe_io_Error.Custom];
+var haxe_io_Input = function() { };
+haxe_io_Input.__name__ = true;
+var haxe_io_Output = function() { };
+haxe_io_Output.__name__ = true;
 var haxe_iterators_ArrayIterator = function(array) {
 	this.current = 0;
 	this.array = array;
@@ -333,17 +264,6 @@ js_node_stream_WritableNewOptionsAdapter.from = function(options) {
 	}
 	return options;
 };
-var js_node_url_URLSearchParamsEntry = {};
-js_node_url_URLSearchParamsEntry._new = function(name,value) {
-	var this1 = [name,value];
-	return this1;
-};
-js_node_url_URLSearchParamsEntry.get_name = function(this1) {
-	return this1[0];
-};
-js_node_url_URLSearchParamsEntry.get_value = function(this1) {
-	return this1[1];
-};
 var sys_io_FileInput = function(fd) {
 	this.fd = fd;
 	this.pos = 0;
@@ -459,7 +379,6 @@ var sys_io_FileSeek = $hxEnums["sys.io.FileSeek"] = { __ename__:true,__construct
 	,SeekEnd: {_hx_name:"SeekEnd",_hx_index:2,__enum__:"sys.io.FileSeek",toString:$estr}
 };
 sys_io_FileSeek.__constructs__ = [sys_io_FileSeek.SeekBegin,sys_io_FileSeek.SeekCur,sys_io_FileSeek.SeekEnd];
-if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c < 0x10000 ? String.fromCharCode(c) : String.fromCharCode((c>>10)+0xD7C0)+String.fromCharCode((c&0x3FF)+0xDC00); }
 String.__name__ = true;
 Array.__name__ = true;
 js_Boot.__toStr = ({ }).toString;
