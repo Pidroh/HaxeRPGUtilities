@@ -110,7 +110,6 @@ class BattleManager {
 			}
 			// enemyLevel = (enemyLevel + 1) * 10 - 1;
 		}
-
 		{
 			var timeToKillEnemy = balancing.timeToKillFirstEnemy;
 
@@ -166,7 +165,7 @@ class BattleManager {
 					}
 			}
 			wdata.enemy.attributesCalculated["Life"] = wdata.enemy.attributesCalculated["LifeMax"];
-			trace('Enemy speed ' + wdata.enemy.attributesCalculated["Speed"]);
+			//trace('Enemy speed ' + wdata.enemy.attributesCalculated["Speed"]);
 		}
 	}
 
@@ -390,6 +389,8 @@ class BattleManager {
 			wdata.regionProgress[i].maxAreaOnPrestigeRecord.push(wdata.regionProgress[i].maxArea);
 			wdata.regionProgress[i].area = 0;
 			wdata.regionProgress[i].maxArea = 1;
+			wdata.regionProgress[i].amountEnemyKilledInArea = 0;
+			wdata.killedInArea = [0];
 		}
 		wdata.battleAreaRegion = 0;
 		wdata.battleArea = 0;
@@ -695,14 +696,17 @@ $baseInfo';
 		}
 		wdata.regionProgress[wdata.battleAreaRegion].area = wdata.battleArea;
 		var recalculate = false;
-		if (wdata.regionProgress[wdata.battleAreaRegion].maxArea != wdata.maxArea)
+		if (wdata.regionProgress[wdata.battleAreaRegion].maxArea != wdata.maxArea) {
 			recalculate = true;
-		wdata.regionProgress[wdata.battleAreaRegion].maxArea = wdata.maxArea;
+			wdata.regionProgress[wdata.battleAreaRegion].maxArea = wdata.maxArea;
+		}
+
 		for (rp in wdata.regionProgress) {
-			if (rp.maxArea > rp.maxAreaRecord) {
-				rp.maxAreaRecord = rp.maxArea;
-				recalculate = true;
-			}
+			if (rp != null)
+				if (rp.maxArea > rp.maxAreaRecord) {
+					rp.maxAreaRecord = rp.maxArea;
+					recalculate = true;
+				}
 		}
 
 		if (recalculate)
@@ -848,8 +852,10 @@ $baseInfo';
 				var bonusLevel = 0;
 
 				if (prize.statBonus != null) {
-					if (pro.maxAreaRecord >= 2) {
-						bonusLevel += pro.maxAreaRecord - 1;
+
+					//should not use record because you are recording all prestige max areas
+					if (pro.maxArea >= 2) {
+						bonusLevel += pro.maxArea - 1;
 					}
 					for (maxAreaPrestiges in pro.maxAreaOnPrestigeRecord) {
 						if (maxAreaPrestiges >= 2) {

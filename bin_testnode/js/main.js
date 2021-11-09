@@ -240,7 +240,6 @@ BattleManager.prototype = {
 		}
 		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
 		this.wdata.enemy.attributesCalculated.h["Life"] = v;
-		console.log("src/logic/BattleManager.hx:169:","Enemy speed " + this.wdata.enemy.attributesCalculated.h["Speed"]);
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
@@ -332,6 +331,8 @@ BattleManager.prototype = {
 			this.wdata.regionProgress[i].maxAreaOnPrestigeRecord.push(this.wdata.regionProgress[i].maxArea);
 			this.wdata.regionProgress[i].area = 0;
 			this.wdata.regionProgress[i].maxArea = 1;
+			this.wdata.regionProgress[i].amountEnemyKilledInArea = 0;
+			this.wdata.killedInArea = [0];
 		}
 		this.wdata.battleAreaRegion = 0;
 		this.wdata.battleArea = 0;
@@ -618,16 +619,18 @@ BattleManager.prototype = {
 		var recalculate = false;
 		if(this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea != this.wdata.maxArea) {
 			recalculate = true;
+			this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea = this.wdata.maxArea;
 		}
-		this.wdata.regionProgress[this.wdata.battleAreaRegion].maxArea = this.wdata.maxArea;
 		var _g = 0;
 		var _g1 = this.wdata.regionProgress;
 		while(_g < _g1.length) {
 			var rp = _g1[_g];
 			++_g;
-			if(rp.maxArea > rp.maxAreaRecord) {
-				rp.maxAreaRecord = rp.maxArea;
-				recalculate = true;
+			if(rp != null) {
+				if(rp.maxArea > rp.maxAreaRecord) {
+					rp.maxAreaRecord = rp.maxArea;
+					recalculate = true;
+				}
 			}
 		}
 		if(recalculate) {
@@ -751,8 +754,8 @@ BattleManager.prototype = {
 				var prize = this.regionPrizes[i];
 				var bonusLevel = 0;
 				if(prize.statBonus != null) {
-					if(pro.maxAreaRecord >= 2) {
-						bonusLevel += pro.maxAreaRecord - 1;
+					if(pro.maxArea >= 2) {
+						bonusLevel += pro.maxArea - 1;
 					}
 					var _g2 = 0;
 					var _g3 = pro.maxAreaOnPrestigeRecord;
@@ -928,8 +931,6 @@ MainTest.main = function() {
 	process.stdout.write("resource load text");
 	process.stdout.write("\n");
 	var sj = haxe_Resource.getString("storyjson");
-	process.stdout.write(Std.string(sj));
-	process.stdout.write("\n");
 	JSON.parse(sj);
 	process.stdout.write("Discard worse equip tests");
 	process.stdout.write("\n");
@@ -1042,8 +1043,13 @@ MainTest.main = function() {
 		process.stdout.write("\n");
 	}
 	bm.PrestigeExecute();
+	bm.update(0.9);
+	bm.update(0.9);
 	if(a.enabled == true) {
 		process.stdout.write("Error: prestige wrong 3");
+		process.stdout.write("\n");
+		var v = "Level Requirement for prestige " + bm.GetLevelRequirementForPrestige();
+		process.stdout.write(Std.string(v));
 		process.stdout.write("\n");
 	}
 	bm.wdata.hero.level = 15;
@@ -1066,6 +1072,82 @@ MainTest.main = function() {
 		process.stdout.write("Error: prestige wrong 5");
 		process.stdout.write("\n");
 	}
+	process.stdout.write("Prestige permanent stat test");
+	process.stdout.write("\n");
+	var bm = new BattleManager();
+	bm.DefaultConfiguration();
+	bm.wdata.hero.level = 200;
+	bm.RecalculateAttributes(bm.wdata.hero);
+	process.stdout.write("Accessing Speed 0");
+	process.stdout.write("\n");
+	if(bm.wdata.hero.attributesCalculated.h["Speed"] != 20) {
+		process.stdout.write("Error: wrong speed 0");
+		process.stdout.write("\n");
+	}
+	bm.changeRegion(0);
+	bm.changeRegion(1);
+	bm.ChangeBattleArea(1);
+	var _g = 1;
+	while(_g < 600) {
+		var i = _g++;
+		bm.update(0.9);
+	}
+	process.stdout.write("Accessing Speed 1");
+	process.stdout.write("\n");
+	if(bm.wdata.hero.attributesCalculated.h["Speed"] != 22) {
+		process.stdout.write("Error: wrong speed 1");
+		process.stdout.write("\n");
+	}
+	bm.PrestigeExecute();
+	process.stdout.write("Accessing Speed 2");
+	process.stdout.write("\n");
+	if(bm.wdata.hero.attributesCalculated.h["Speed"] != 22) {
+		process.stdout.write("Error: wrong speed 2");
+		process.stdout.write("\n");
+		var v = "speed is: " + bm.wdata.hero.attributesCalculated.h["Speed"];
+		process.stdout.write(Std.string(v));
+		process.stdout.write("\n");
+	}
+	bm.wdata.hero.level = 200;
+	bm.RecalculateAttributes(bm.wdata.hero);
+	bm.changeRegion(1);
+	bm.ChangeBattleArea(1);
+	var _g = 1;
+	while(_g < 600) {
+		var i = _g++;
+		bm.update(0.9);
+	}
+	process.stdout.write("Accessing Speed 3");
+	process.stdout.write("\n");
+	if(bm.wdata.hero.attributesCalculated.h["Speed"] != 24) {
+		process.stdout.write("Error: wrong speed 3");
+		process.stdout.write("\n");
+		var v = "speed is: " + bm.wdata.hero.attributesCalculated.h["Speed"];
+		process.stdout.write(Std.string(v));
+		process.stdout.write("\n");
+		var v = "max area in region 1 is: " + bm.wdata.regionProgress[1].maxArea;
+		process.stdout.write(Std.string(v));
+		process.stdout.write("\n");
+		var v = bm.wdata.hero;
+		process.stdout.write(Std.string(v));
+		process.stdout.write("\n");
+		return;
+	}
+	bm.ChangeBattleArea(2);
+	var _g = 1;
+	while(_g < 600) {
+		var i = _g++;
+		bm.update(0.9);
+	}
+	process.stdout.write("Accessing Speed 4");
+	process.stdout.write("\n");
+	if(bm.wdata.hero.attributesCalculated.h["Speed"] != 26) {
+		process.stdout.write("Error: wrong speed 4");
+		process.stdout.write("\n");
+		var v = "speed is: " + bm.wdata.hero.attributesCalculated.h["Speed"];
+		process.stdout.write(Std.string(v));
+		process.stdout.write("\n");
+	}
 	process.stdout.write("Save legacy test");
 	process.stdout.write("\n");
 	var _g = 0;
@@ -1073,7 +1155,7 @@ MainTest.main = function() {
 	while(_g < _g1.length) {
 		var file = _g1[_g];
 		++_g;
-		console.log("test/MainTest.hx:114:",file);
+		console.log("test/MainTest.hx:164:",file);
 		var path = haxe_io_Path.join(["saves/",file]);
 		var json = js_node_Fs.readFileSync(path,{ encoding : "utf8"});
 		var bm = new BattleManager();
@@ -1265,14 +1347,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:239:","  _____ ");
-		console.log("test/MainTest.hx:240:","  _____ ");
-		console.log("test/MainTest.hx:241:","  _____ ");
-		console.log("test/MainTest.hx:242:",json);
-		console.log("test/MainTest.hx:243:","  _____ ");
-		console.log("test/MainTest.hx:244:","  _____ ");
-		console.log("test/MainTest.hx:245:","  _____ ");
-		console.log("test/MainTest.hx:246:",json2);
+		console.log("test/MainTest.hx:294:","  _____ ");
+		console.log("test/MainTest.hx:295:","  _____ ");
+		console.log("test/MainTest.hx:296:","  _____ ");
+		console.log("test/MainTest.hx:297:",json);
+		console.log("test/MainTest.hx:298:","  _____ ");
+		console.log("test/MainTest.hx:299:","  _____ ");
+		console.log("test/MainTest.hx:300:","  _____ ");
+		console.log("test/MainTest.hx:301:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
