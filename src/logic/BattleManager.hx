@@ -701,6 +701,11 @@ $baseInfo';
 			lu.visible = canLevelUp || lu.visible;
 		}
 		{
+			var lu = wdata.playerActions["prestige"];
+			lu.enabled = wdata.hero.level > (wdata.heroMaxLevel -10);
+			lu.visible = lu.enabled || lu.visible;
+		}
+		{
 			var lu = wdata.playerActions["advance"];
 			lu.visible = canAdvance || lu.visible;
 			lu.enabled = canAdvance;

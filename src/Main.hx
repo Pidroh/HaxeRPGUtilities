@@ -182,7 +182,7 @@ class Main {
 			cutscenes: null,
 			visibilityConditionScripts: [],
 			persistence: storyPersistence,
-			speakerToImage: ["mom" => "graphics/mom.png", "you" => "graphics/main.png"]
+			speakerToImage: ["mom" => "graphics/mom.png", "you" => "graphics/main.png", "cid" => "graphics/cid.png", "man" => "graphics/cid.png"]
 		}
 
 		view.AddButton("reset", "Reset", function(e) {
@@ -223,6 +223,7 @@ class Main {
 
 		update = function(timeStamp:Float):Bool {
 			global["maxarea"] = bm.wdata.maxArea;
+			global["herolevel"] = bm.wdata.hero.level;
 
 			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
