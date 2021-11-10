@@ -403,6 +403,7 @@ class Main {
 			} else {
 				view.ButtonLabel("prestige", "Unlock at Level " + bm.GetLevelRequirementForPrestige());
 			}
+			view.Update();
 
 			delta = delta * 0.001;
 			// updates battle manager to account for very high deltas

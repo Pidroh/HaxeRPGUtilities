@@ -76,6 +76,11 @@ class View {
 	public var storyDialogActive = false;
 	public var storyDialogUtilityFlag = false;
 
+	public function Update(){
+		//equipTabChild.width = equipTabChild.parentComponent.width - 40;
+		equipTabChild.width = Screen.instance.width - 40 - 60;
+	}
+
 	public function LatestMessageUpdate(message:String, speaker:String, imageFile:String, messagePos:Int) {
 		if (messagePos >= amountOfStoryMessagesShown) {
 			amountOfStoryMessagesShown = messagePos + 1;
@@ -369,7 +374,11 @@ class View {
 			scroll.height = 300;
 			scroll.text = "Equipment";
 			scroll.addComponent(equipTabChild);
-			scroll.width = 640;
+			//scroll.width = 640;
+			scroll.percentWidth = 100;
+			//scroll.width = Screen.instance.width;
+			scroll.percentHeight = 100;
+			
 			equipTab = new UIElementWrapper(scroll, tabMaster);
 			equipTab.desiredPosition = 1;
 		}
