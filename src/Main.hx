@@ -219,10 +219,17 @@ class Main {
 		}
 
 		var saveFileImporterSetup = false;
+		var itemsInEquipmentWindowSeen = 0;
 
 		update = function(timeStamp:Float):Bool {
 			global["maxarea"] = bm.wdata.maxArea;
 			global["herolevel"] = bm.wdata.hero.level;
+
+			if(view.IsTabSelected(view.equipTab.component)){
+				itemsInEquipmentWindowSeen = bm.wdata.hero.equipment.length;
+			} 
+			view.SetTabNotification(itemsInEquipmentWindowSeen != bm.wdata.hero.equipment.length, view.equipTab);
+			
 
 			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
