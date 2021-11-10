@@ -196,7 +196,7 @@ class Main {
 
 			eventShown = 0;
 			storyRuntime = null;
-		}, "You will lose all your progress");
+		}, "You will lose all your progress", -1, true);
 
 		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
 		var scriptExecuter = new Interp();
