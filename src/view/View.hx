@@ -374,6 +374,8 @@ class View {
 			scroll.height = 300;
 			scroll.text = "Equipment";
 			scroll.addComponent(equipTabChild);
+			scroll.paddingLeft = 40;
+			scroll.paddingTop = 10;
 			//scroll.width = 640;
 			scroll.percentWidth = 100;
 			//scroll.width = Screen.instance.width;
@@ -392,10 +394,13 @@ class View {
 			storyLabel.textAlign = "center";
 			storyLabel.text = "Revisit your memories";
 			storyTabComp.addComponent(storyLabel);
+			storyTabComp.paddingLeft = 40;
+			storyTabComp.paddingTop = 10;
 			// tabMaster.addComponent(storyTabComp);
 
 			this.storyTab = new UIElementWrapper(storyTabComp, tabMaster);
 			storyTab.desiredPosition = 2;
+			
 		}
 
 		storyDialog = new StoryDialog();
