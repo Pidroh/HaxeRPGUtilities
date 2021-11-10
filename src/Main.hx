@@ -120,7 +120,12 @@ class Main {
 
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart");
-		var prestigeWarn = "Your experience awards will increase by "+Std.int(bm.GetXPBonusOnPrestige()*100) +"%. Your max level will increase by "+bm.GetMaxLevelBonusOnPrestige()+". You will keep all permanent stats bonuses. \n\nYou will go back to Level 1. Your progress in all regions will be reset. All that is not equipped will be lost. All that is equipped will lose strength.";
+		var prestigeWarn = "Your experience awards will increase by "
+			+ Std.int(bm.GetXPBonusOnPrestige() * 100)
+			+ "%. Your max level will increase by "
+			+ bm.GetMaxLevelBonusOnPrestige()
+			+
+			". You will keep all permanent stats bonuses. \n\nYou will go back to Level 1. Your progress in all regions will be reset. All that is not equipped will be lost. All that is equipped will lose strength.";
 		CreateButtonFromAction("prestige", "Soul Crush", prestigeWarn);
 
 		view.equipmentMainAction = function(pos, action) {
@@ -217,6 +222,7 @@ class Main {
 			view.ButtonVisibility(buttonId, action.visible);
 			view.ButtonEnabled(buttonId, action.enabled);
 		}
+		view.FeedEquipmentTypes(["Weapons", "Armor"]);
 
 		var saveFileImporterSetup = false;
 		var itemsInEquipmentWindowSeen = 0;
@@ -225,11 +231,10 @@ class Main {
 			global["maxarea"] = bm.wdata.maxArea;
 			global["herolevel"] = bm.wdata.hero.level;
 
-			if(view.IsTabSelected(view.equipTab.component)){
+			if (view.IsTabSelected(view.equipTab.component)) {
 				itemsInEquipmentWindowSeen = bm.wdata.hero.equipment.length;
-			} 
+			}
 			view.SetTabNotification(itemsInEquipmentWindowSeen != bm.wdata.hero.equipment.length, view.equipTab);
-			
 
 			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
@@ -270,12 +275,12 @@ class Main {
 						amountEquipmentShow++;
 				}
 			 */
-
+			var typeToShow = view.GetEquipmentType();
 			view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
 			var equipmentViewPos = 0;
 			for (i in 0...bm.wdata.hero.equipment.length) {
 				var e = bm.wdata.hero.equipment[i];
-				if (e != null) {
+				if (e != null && e.type == typeToShow) {
 					var equipName = GetEquipName(e);
 					view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i));
 					var vid = 0;

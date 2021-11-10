@@ -1,3 +1,4 @@
+import haxe.ui.components.TabBar;
 import haxe.ui.data.ArrayDataSource;
 import haxe.ui.components.DropDown;
 import haxe.ui.styles.Style;
@@ -33,6 +34,7 @@ class View {
 	public static final storyAction_WatchLaterClose = 5;
 
 	public static final equipmentAction_DiscardBad = 2;
+	public static final equipmentAction_ChangeTypeToView = 3;
 
 	public var heroView:ActorView;
 	public var enemyView:ActorView;
@@ -66,15 +68,19 @@ class View {
 
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
+	
 	var equipments = new Array<EquipmentView>();
-	var cutsceneStartViews = new Array<CutsceneStartView>();
+	var equipmentTypeSelectionTabbar : TabBar;
+
+	
 	var dropDownRegion : DropDownView;
 	var saveDataDownload:Label;
-	public var amountOfStoryMessagesShown = 0;
-	public var storyDialog:StoryDialog;
 
 	public var storyDialogActive = false;
 	public var storyDialogUtilityFlag = false;
+	var cutsceneStartViews = new Array<CutsceneStartView>();
+	public var amountOfStoryMessagesShown = 0;
+	public var storyDialog:StoryDialog;
 
 	public function Update(){
 		//equipTabChild.width = equipTabChild.parentComponent.width - 40;
@@ -359,15 +365,18 @@ class View {
 
 		{
 			equipTabChild = new ContinuousHBox();
-			// equipTabChild.percentWidth = 100;
-			equipTabChild.width = 600;
-			// equipTabChild.height = 300;
+			var tabBar = new TabBar();
+			tabBar.percentWidth = 100;
+			equipmentTypeSelectionTabbar = tabBar;
+			equipTabChild.addComponent(tabBar);
 			var buttonDiscardBad = new Button();
 			buttonDiscardBad.text = "Discard worse equipment";
 			buttonDiscardBad.onClick = event -> {
 				equipmentMainAction(-1, View.equipmentAction_DiscardBad);
 			}
 			equipTabChild.addComponent(buttonDiscardBad);
+
+			
 
 			var scroll = CreateScrollable(null);
 
@@ -409,6 +418,19 @@ class View {
 		}
 		storyDialog.skipButton.onClick = event -> storyMainAction(View.storyAction_SkipStory, 0);
 		storyDialog.watchLaterButton.onClick = event -> storyMainAction(View.storyAction_WatchLater, 0);
+	}
+
+	public function GetEquipmentType() : Int{
+		return equipmentTypeSelectionTabbar.selectedIndex;
+	}
+
+	public function FeedEquipmentTypes(types : Array<String>){
+		for (type in types){
+			var b = new Button();
+			b.text = type;
+			equipmentTypeSelectionTabbar.addComponent(b);
+		}
+		
 	}
 
 	public function FeedDropDownRegion(regionNames, regionAmount){
