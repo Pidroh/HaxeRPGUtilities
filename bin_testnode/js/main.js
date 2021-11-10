@@ -137,15 +137,21 @@ BattleManager.prototype = {
 		}
 	}
 	,CalculateHeroMaxLevel: function() {
-		return this.wdata.prestigeTimes * 10 + 20;
+		return this.wdata.prestigeTimes * this.GetMaxLevelBonusOnPrestige() + 20;
 	}
 	,AwardXP: function(xpPlus) {
 		if(this.wdata.hero.level <= this.CalculateHeroMaxLevel()) {
-			xpPlus += xpPlus * this.wdata.prestigeTimes * 0.5 | 0;
+			xpPlus += xpPlus * this.wdata.prestigeTimes * this.GetXPBonusOnPrestige() | 0;
 			this.wdata.hero.xp.value += xpPlus;
 			var e = this.AddEvent(EventTypes.GetXP);
 			e.data = xpPlus;
 		}
+	}
+	,GetMaxLevelBonusOnPrestige: function() {
+		return 10;
+	}
+	,GetXPBonusOnPrestige: function() {
+		return 0.5;
 	}
 	,GetLevelRequirementForPrestige: function() {
 		return this.CalculateHeroMaxLevel() - 10;

@@ -76,7 +76,6 @@ class Main {
 		var bm:BattleManager = new BattleManager();
 		var view:View = new View();
 
-		
 		var enemyRegionNames = [
 			"Lagrima Continent",
 			"Wolf Fields",
@@ -84,13 +83,7 @@ class Main {
 			"Altar Cave",
 			"Bikanel Island"
 		];
-		var enemyNames = [
-			"Enemy",
-			"Wolf",
-			"Tonberry",
-			"Land Turtle",
-			"Cactuar"
-		];
+		var enemyNames = ["Enemy", "Wolf", "Tonberry", "Land Turtle", "Cactuar"];
 
 		var eventShown = 0;
 
@@ -104,13 +97,13 @@ class Main {
 		// var keyStory = "save data masterStory";
 		var keyBackup = "save backup";
 
-		var CreateButtonFromAction = function(actionId:String, buttonLabel:String) {
+		var CreateButtonFromAction = function(actionId:String, buttonLabel:String, warning:String = null) {
 			// var action = bm.wdata.playerActions[actionId];
 			var action = bm.playerActions[actionId];
 			var actionData = bm.wdata.playerActions[actionId];
 			view.AddButton(actionId, buttonLabel, function(e) {
 				action.actualAction(actionData);
-			});
+			}, warning);
 		}
 
 		view.AddButton("advance", "Next Area", function(e) {
@@ -127,7 +120,8 @@ class Main {
 
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart");
-		CreateButtonFromAction("prestige", "Soul Crush");
+		var prestigeWarn = "Your experience awards will increase by "+Std.int(bm.GetXPBonusOnPrestige()*100) +"%. Your max level will increase by "+bm.GetMaxLevelBonusOnPrestige()+". You will keep all permanent stats bonuses. \n\nYou will go back to Level 1. Your progress in all regions will be reset. All that is not equipped will be lost. All that is equipped will lose strength.";
+		CreateButtonFromAction("prestige", "Soul Crush", prestigeWarn);
 
 		view.equipmentMainAction = function(pos, action) {
 			if (action == 0) {
@@ -156,10 +150,8 @@ class Main {
 		var storyPersistence:StoryPersistence = {progressionData: [], worldVersion: bm.wdata.worldVersion, currentStoryId: null};
 		var jsonData = ls.getItem(key);
 
-		
+		var persistenceMaster:PersistenceMaster = SaveAssistant.GetPersistenceMaster(jsonData);
 
-		var persistenceMaster : PersistenceMaster = SaveAssistant.GetPersistenceMaster(jsonData);
-		
 		var jsonData2 = persistenceMaster.jsonStory;
 		if (jsonData2 != null && jsonData2 != "") {
 			storyPersistence = StoryControlLogic.ReadJsonPersistentData(jsonData2);
@@ -184,7 +176,12 @@ class Main {
 			visibilityConditionScripts: [],
 			messageRuntimeInfo: [],
 			persistence: storyPersistence,
-			speakerToImage: ["mom" => "graphics/mom.png", "you" => "graphics/main.png", "cid" => "graphics/cid.png", "man" => "graphics/cid.png"]
+			speakerToImage: [
+				"mom" => "graphics/mom.png",
+				"you" => "graphics/main.png",
+				"cid" => "graphics/cid.png",
+				"man" => "graphics/cid.png"
+			]
 		}
 
 		view.AddButton("reset", "Reset", function(e) {
@@ -240,7 +237,6 @@ class Main {
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
 
 			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax);
-
 
 			var imp = Browser.document.getElementById("import__");
 			if (imp != null && saveFileImporterSetup == false) {
@@ -322,9 +318,7 @@ class Main {
 					ev = '$originText died';
 					if (e.target != null) {
 						if (e.target.type == 0) // hero died
-							GameAnalyticsIntegration.SendProgressFailEvent("world0", 
-						"stage"+bm.wdata.battleAreaRegion, 
-						 "area" + bm.wdata.battleArea);
+							GameAnalyticsIntegration.SendProgressFailEvent("world0", "stage" + bm.wdata.battleAreaRegion, "area" + bm.wdata.battleArea);
 					}
 				}
 				if (e.type == ActorLevelUp) {
@@ -343,15 +337,13 @@ class Main {
 				if (e.type == AreaUnlock) {
 					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>';
 					GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
-					GameAnalyticsIntegration.SendProgressStartEvent("world0", 
-					"stage"+bm.wdata.battleAreaRegion, 
-					"area" + e.data);
+					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage" + bm.wdata.battleAreaRegion, "area" + e.data);
 				}
 				if (e.type == RegionUnlock) {
 					var regionName = enemyRegionNames[e.data];
 					ev = '<b>Found new location: $regionName</b>';
 					GameAnalyticsIntegration.SendDesignEvent("RegionUnlock", e.data);
-					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage"+e.data);
+					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage" + e.data);
 				}
 				if (e.type == AreaComplete) {
 					ev = 'There are no enemies left';
@@ -372,13 +364,12 @@ class Main {
 
 			var storyHappened = storyRuntime.persistence.progressionData[storyRuntime.cutscenes[0].title].timesCompleted > 0;
 			var storyHappenedPure = storyHappened;
-			if(bm.wdata.regionProgress != null && bm.wdata.regionProgress[0] != null)
+			if (bm.wdata.regionProgress != null && bm.wdata.regionProgress[0] != null)
 				storyHappened = storyHappened || bm.wdata.regionProgress[0].maxArea > 1;
 
 			view.levelContainer.hidden = !storyHappened;
 			view.battleView.hidden = !storyHappened;
 			view.areaContainer.hidden = !storyHappened;
-			
 
 			time = timeStamp;
 			buttonToAction("advance", "advance");
@@ -410,7 +401,7 @@ class Main {
 			if (pact.enabled == true) {
 				view.ButtonLabel("prestige", "Soul Crush");
 			} else {
-				view.ButtonLabel("prestige", "Unlock at Level "+bm.GetLevelRequirementForPrestige());
+				view.ButtonLabel("prestige", "Unlock at Level " + bm.GetLevelRequirementForPrestige());
 			}
 
 			delta = delta * 0.001;
@@ -451,4 +442,3 @@ class Main {
 		return equipName;
 	}
 }
-

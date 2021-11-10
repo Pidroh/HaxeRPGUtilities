@@ -80,16 +80,24 @@ class BattleManager {
 	}
 
 	function CalculateHeroMaxLevel():Int {
-		return wdata.prestigeTimes * 10 + 20;
+		return wdata.prestigeTimes * GetMaxLevelBonusOnPrestige() + 20;
 	}
 
 	function AwardXP(xpPlus) {
 		if (wdata.hero.level <= CalculateHeroMaxLevel()) {
-			xpPlus = xpPlus + Std.int(xpPlus * wdata.prestigeTimes * 0.5);
+			xpPlus = xpPlus + Std.int(xpPlus * wdata.prestigeTimes * GetXPBonusOnPrestige());
 			wdata.hero.xp.value += xpPlus;
 			var e = AddEvent(GetXP);
 			e.data = xpPlus;
 		}
+	}
+
+	public function GetMaxLevelBonusOnPrestige() {
+		return 10;
+	}
+
+	public function GetXPBonusOnPrestige() {
+		return 0.5;
 	}
 
 	public function GetLevelRequirementForPrestige():Int {
@@ -165,7 +173,7 @@ class BattleManager {
 					}
 			}
 			wdata.enemy.attributesCalculated["Life"] = wdata.enemy.attributesCalculated["LifeMax"];
-			//trace('Enemy speed ' + wdata.enemy.attributesCalculated["Speed"]);
+			// trace('Enemy speed ' + wdata.enemy.attributesCalculated["Speed"]);
 		}
 	}
 
@@ -852,8 +860,7 @@ $baseInfo';
 				var bonusLevel = 0;
 
 				if (prize.statBonus != null) {
-
-					//should not use record because you are recording all prestige max areas
+					// should not use record because you are recording all prestige max areas
 					if (pro.maxArea >= 2) {
 						bonusLevel += pro.maxArea - 1;
 					}
