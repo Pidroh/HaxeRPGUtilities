@@ -97,6 +97,7 @@ typedef Equipment = {
 	var type:Int;
 	var requiredAttributes:Map<String, Int>;
 	var attributes:Map<String, Int>;
+	var seen:Bool;
 }
 
 typedef PlayerAction = {

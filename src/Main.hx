@@ -222,10 +222,12 @@ class Main {
 			view.ButtonVisibility(buttonId, action.visible);
 			view.ButtonEnabled(buttonId, action.enabled);
 		}
+
+		var itemsInEquipmentWindowSeen = 0;
+		var equipmentWindowTypeAlert = [false, false]; // have same amount
 		view.FeedEquipmentTypes(["Weapons", "Armor"]);
 
 		var saveFileImporterSetup = false;
-		var itemsInEquipmentWindowSeen = 0;
 
 		update = function(timeStamp:Float):Bool {
 			global["maxarea"] = bm.wdata.maxArea;
@@ -278,21 +280,35 @@ class Main {
 			var typeToShow = view.GetEquipmentType();
 			view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
 			var equipmentViewPos = 0;
+			for (i in 0...equipmentWindowTypeAlert.length) {
+				equipmentWindowTypeAlert[i] = false;
+			}
 			for (i in 0...bm.wdata.hero.equipment.length) {
 				var e = bm.wdata.hero.equipment[i];
-				if (e != null && e.type == typeToShow) {
-					var equipName = GetEquipName(e);
-					view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i));
-					var vid = 0;
-					for (v in e.attributes.keyValueIterator()) {
-						view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value);
-						vid++;
+				var hide = true;
+				if (e != null) {
+
+					if (e.type == typeToShow) {
+						e.seen = view.IsTabSelected(view.equipTab.component) || e.seen;
+						var equipName = GetEquipName(e);
+						hide = false;
+						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i));
+						var vid = 0;
+						for (v in e.attributes.keyValueIterator()) {
+							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value);
+							vid++;
+						}
 					}
-				} else {
+					if (!e.seen) {
+						equipmentWindowTypeAlert[e.type] = true;
+					}
+				}
+				if (hide) {
 					view.HideEquipmentView(equipmentViewPos);
 				}
 				equipmentViewPos++;
 			}
+			View.TabBarAlert(view.equipmentTypeSelectionTabbar, equipmentWindowTypeAlert, view.equipmentTypeNames);
 
 			var levelUpSystem = bm.wdata.hero.level > 1;
 			view.UpdateVisibilityOfValueView(view.level, levelUpSystem);

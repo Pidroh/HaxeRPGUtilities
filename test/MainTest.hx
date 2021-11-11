@@ -15,7 +15,7 @@ class MainTest {
 			Sys.println("Discard worse equip tests");
 			var bm:BattleManager = new BattleManager();
 			bm.DefaultConfiguration();
-			bm.wdata.hero.equipment.push({type: 0, requiredAttributes: null, attributes: ["Attack" => 2]});
+			bm.wdata.hero.equipment.push({seen: false,type: 0, requiredAttributes: null, attributes: ["Attack" => 2]});
 			bm.DiscardWorseEquipment();
 			var numberOfNullEquipment = 0;
 			for (e in bm.wdata.hero.equipment) {
@@ -26,9 +26,9 @@ class MainTest {
 				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 0');
 			}
 
-			bm.wdata.hero.equipment.push({type: 0, requiredAttributes: null, attributes: ["Attack" => 2]});
-			bm.wdata.hero.equipment.push({type: 0, requiredAttributes: null, attributes: ["Attack" => 1]});
-			bm.wdata.hero.equipment.push({type: 0, requiredAttributes: null, attributes: ["Life" => 3]});
+			bm.wdata.hero.equipment.push({seen: false,type: 0, requiredAttributes: null, attributes: ["Attack" => 2]});
+			bm.wdata.hero.equipment.push({seen: false,type: 0, requiredAttributes: null, attributes: ["Attack" => 1]});
+			bm.wdata.hero.equipment.push({seen: false,type: 0, requiredAttributes: null, attributes: ["Life" => 3]});
 
 			bm.DiscardWorseEquipment();
 
@@ -50,8 +50,8 @@ class MainTest {
 			if (bm.wdata.hero.equipment[3] == null)
 				Sys.println('ERROR: discard worse equipment problem 3');
 
-			bm.wdata.hero.equipment.push({type: 0, requiredAttributes: null, attributes: ["Attack" => 1, "Life" => 2]});
-			bm.wdata.hero.equipment.push({type: 0, requiredAttributes: null, attributes: ["Attack" => 1, "Defense" => 1]});
+			bm.wdata.hero.equipment.push({seen: false,type: 0, requiredAttributes: null, attributes: ["Attack" => 1, "Life" => 2]});
+			bm.wdata.hero.equipment.push({seen: false,type: 0, requiredAttributes: null, attributes: ["Attack" => 1, "Defense" => 1]});
 
 			bm.DiscardWorseEquipment();
 

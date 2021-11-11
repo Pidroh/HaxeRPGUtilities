@@ -70,7 +70,8 @@ class View {
 	var buttonMap = new Map<String, Button>();
 	
 	var equipments = new Array<EquipmentView>();
-	var equipmentTypeSelectionTabbar : TabBar;
+	public var equipmentTypeSelectionTabbar : TabBar;
+	public var equipmentTypeNames : Array<String>;
 
 	
 	var dropDownRegion : DropDownView;
@@ -85,6 +86,17 @@ class View {
 	public function Update(){
 		//equipTabChild.width = equipTabChild.parentComponent.width - 40;
 		equipTabChild.width = Screen.instance.width - 40 - 60;
+	}
+
+	public static function TabBarAlert(tabBar : TabBar, alert : Array<Bool>, names : Array<String>){
+		for (i in 0...alert.length){
+			if(alert[i])
+				
+				tabBar.getComponentAt(i).text = names[i] + " (!)";
+			else
+				tabBar.getComponentAt(i).text = names[i];
+
+		}
 	}
 
 	public function LatestMessageUpdate(message:String, speaker:String, imageFile:String, messagePos:Int) {
@@ -425,6 +437,7 @@ class View {
 	}
 
 	public function FeedEquipmentTypes(types : Array<String>){
+		equipmentTypeNames = types;
 		for (type in types){
 			var b = new Button();
 			b.text = type;

@@ -535,7 +535,7 @@ class BattleManager {
 					// sword
 					if (equipType == 0) {
 						var attackBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
-						e = {type: 0, requiredAttributes: null, attributes: ["Attack" => attackBonus]};
+						e = {type: 0, requiredAttributes: null, attributes: ["Attack" => attackBonus], seen: false};
 						if (random.randomInt(0, 100) < 15) {
 							var lifeBonus = random.randomInt(1, Std.int(dropQuality + 2));
 							e.attributes["LifeMax"] = lifeBonus;
@@ -560,7 +560,7 @@ class BattleManager {
 						if (armorType == 1) {
 							mainBonusType = "Defense";
 						}
-						e = {type: 1, requiredAttributes: null, attributes: [mainBonusType => mainBonus]};
+						e = {type: 1, requiredAttributes: null, attributes: [mainBonusType => mainBonus], seen:false};
 
 						if (random.randomInt(0, 100) < 20) {
 							var bonus = random.randomInt(1, Std.int(dropQuality / 4 + 2));

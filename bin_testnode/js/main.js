@@ -481,7 +481,7 @@ BattleManager.prototype = {
 						var attackBonus = this.random.randomInt(1,dropQuality / 2 + 2 | 0);
 						var _g = new haxe_ds_StringMap();
 						_g.h["Attack"] = attackBonus;
-						e = { type : 0, requiredAttributes : null, attributes : _g};
+						e = { type : 0, requiredAttributes : null, attributes : _g, seen : false};
 						if(this.random.randomInt(0,100) < 15) {
 							var lifeBonus = this.random.randomInt(1,dropQuality + 2 | 0);
 							e.attributes.h["LifeMax"] = lifeBonus;
@@ -507,7 +507,7 @@ BattleManager.prototype = {
 						}
 						var _g = new haxe_ds_StringMap();
 						_g.h[mainBonusType] = mainBonus;
-						e = { type : 1, requiredAttributes : null, attributes : _g};
+						e = { type : 1, requiredAttributes : null, attributes : _g, seen : false};
 						if(this.random.randomInt(0,100) < 20) {
 							var bonus = this.random.randomInt(1,dropQuality / 4 + 2 | 0);
 							e.attributes.h["Attack"] = bonus;
@@ -945,7 +945,7 @@ MainTest.main = function() {
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
-	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	bm1.push({ seen : false, type : 0, requiredAttributes : null, attributes : _g});
 	bm.DiscardWorseEquipment();
 	var numberOfNullEquipment = 0;
 	var _g = 0;
@@ -964,15 +964,15 @@ MainTest.main = function() {
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
-	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	bm1.push({ seen : false, type : 0, requiredAttributes : null, attributes : _g});
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
-	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	bm1.push({ seen : false, type : 0, requiredAttributes : null, attributes : _g});
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Life"] = 3;
-	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	bm1.push({ seen : false, type : 0, requiredAttributes : null, attributes : _g});
 	bm.DiscardWorseEquipment();
 	numberOfNullEquipment = 0;
 	var _g = 0;
@@ -1008,12 +1008,12 @@ MainTest.main = function() {
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Life"] = 2;
-	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	bm1.push({ seen : false, type : 0, requiredAttributes : null, attributes : _g});
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Defense"] = 1;
-	bm1.push({ type : 0, requiredAttributes : null, attributes : _g});
+	bm1.push({ seen : false, type : 0, requiredAttributes : null, attributes : _g});
 	bm.DiscardWorseEquipment();
 	numberOfNullEquipment = 0;
 	var _g = 0;
