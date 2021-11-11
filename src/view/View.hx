@@ -594,9 +594,11 @@ class View {
 		if (equipped) {
 			equipments[pos].actionButtons[0].text = "Unequip";
 			equipments[pos].parent.borderSize = 2;
+			equipments[pos].parent.backgroundColor = "#FAEBD7";
 		} else {
 			equipments[pos].actionButtons[0].text = "Equip";
 			equipments[pos].parent.borderSize = 1;
+			equipments[pos].parent.backgroundColor = "white";
 		}
 		equipments[pos].actionButtons[1].hidden = equipped == true;
 		while (equipments[pos].values.length < numberOfValues) {
