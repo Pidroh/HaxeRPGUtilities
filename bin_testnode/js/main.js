@@ -70,7 +70,7 @@ var BattleManager = function() {
 	_g.h["Speed"] = 1.1;
 	_g.h["LifeMax"] = 1.7;
 	var _g1 = new haxe_ds_StringMap();
-	_g1.h["Piercing"] = 1;
+	_g1.h["Piercing"] = 100;
 	var _g2 = new haxe_ds_StringMap();
 	_g2.h["Defense"] = 1;
 	_g2.h["Speed"] = 0.1;
@@ -452,7 +452,14 @@ BattleManager.prototype = {
 					break;
 				}
 			}
-			var damage = attacker.attributesCalculated.h["Attack"] - defender.attributesCalculated.h["Defense"];
+			var defenseRate = 100;
+			if(attacker.attributesCalculated.h["Piercing"] > 0 == true) {
+				defenseRate -= attacker.attributesCalculated.h["Piercing"];
+			}
+			if(defenseRate < 0) {
+				defenseRate = 0;
+			}
+			var damage = attacker.attributesCalculated.h["Attack"] - defender.attributesCalculated.h["Defense"] * defenseRate / 100 | 0;
 			if(damage < 0) {
 				damage = 0;
 			}

@@ -220,7 +220,7 @@ class BattleManager {
 			speciesMultiplier: {
 				attributesBase: ["Attack" => 1.4, "Speed" => 1.1, "LifeMax" => 1.7]
 			},
-			speciesAdd: ["Piercing" => 1],
+			speciesAdd: ["Piercing" => 100],
 			speciesLevelStats: {attributesBase: ["Defense" => 1, "Speed" => 0.1]}
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Speed" => 1, "LifeMax" => 3]});
@@ -506,7 +506,13 @@ class BattleManager {
 					break;
 			}
 
-			var damage = attacker.attributesCalculated["Attack"] - defender.attributesCalculated["Defense"];
+			var defenseRate = 100;
+			if(attacker.attributesCalculated["Piercing"] > 0 == true){
+				defenseRate = defenseRate - attacker.attributesCalculated["Piercing"];
+			}
+			if(defenseRate < 0) defenseRate = 0;
+			
+			var damage : Int = Std.int(attacker.attributesCalculated["Attack"] - defender.attributesCalculated["Defense"] * defenseRate/100);
 			if (damage < 0)
 				damage = 0;
 
