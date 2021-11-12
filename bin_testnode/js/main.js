@@ -186,6 +186,7 @@ BattleManager.prototype = {
 		_g.h["SpeedCount"] = 0;
 		_g.h["Defense"] = 0;
 		_g.h["Magic Defense"] = 0;
+		_g.h["Piercing"] = 0;
 		var stats2 = _g;
 		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
 		if(sheet != null) {
@@ -501,6 +502,13 @@ BattleManager.prototype = {
 							var bonus = this.random.randomInt(1,dropQuality / 8 + 2 | 0);
 							e.attributes.h["Defense"] = bonus;
 						}
+						if(this.random.randomInt(0,100) < 10) {
+							var bonus = this.random.randomInt(1,dropQuality * 2) + 20;
+							if(bonus > 80) {
+								bonus = 80;
+							}
+							e.attributes.h["Piercing"] = bonus;
+						}
 					}
 					if(equipType == 1) {
 						var armorType = this.random.randomInt(0,1);
@@ -745,6 +753,7 @@ BattleManager.prototype = {
 		_g.h["Defense"] = 0;
 		_g.h["Magic Defense"] = 0;
 		_g.h["SpeedCount"] = 0;
+		_g.h["Piercing"] = 0;
 		AttributeLogic.Add(actor1,_g,actor.level,actor.attributesCalculated);
 		var _g = 0;
 		var _g1 = actor.equipmentSlots;

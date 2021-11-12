@@ -137,7 +137,8 @@ class BattleManager {
 				"Speed" => 20,
 				"SpeedCount" => 0,
 				"Defense" => 0,
-				"Magic Defense" => 0
+				"Magic Defense" => 0,
+				"Piercing" => 0
 			];
 			wdata.enemy = {
 				level: 1 + enemyLevel,
@@ -554,6 +555,11 @@ class BattleManager {
 							var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
 							e.attributes["Defense"] = bonus;
 						}
+						if (random.randomInt(0, 100) < 10) {
+							var bonus = random.randomInt(1, dropQuality*2)+20;
+							if(bonus > 80) bonus = 80;
+							e.attributes["Piercing"] = bonus;
+						}
 					}
 					// armor
 					if (equipType == 1) {
@@ -848,7 +854,8 @@ $baseInfo';
 			"Speed" => 0,
 			"Defense" => 0,
 			"Magic Defense" => 0,
-			"SpeedCount" => 0
+			"SpeedCount" => 0,
+			"Piercing" => 0
 		], actor.level, actor.attributesCalculated);
 		for (es in actor.equipmentSlots) {
 			var e = actor.equipment[es];
