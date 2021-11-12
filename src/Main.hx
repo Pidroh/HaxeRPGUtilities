@@ -250,7 +250,7 @@ class Main {
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
 
-			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax);
+			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax,bm.wdata.battleAreaRegion);
 
 			var imp = Browser.document.getElementById("import__");
 			if (imp != null && saveFileImporterSetup == false) {
@@ -317,6 +317,7 @@ class Main {
 			while (bm.events.length > eventShown) {
 				var e = bm.events[eventShown];
 				var data = e.data;
+				var battle = true;
 				var originText = "XX";
 				if (e.origin != null) {
 					if (e.origin.type == 1) {
@@ -350,24 +351,29 @@ class Main {
 					}
 				}
 				if (e.type == ActorLevelUp) {
+					battle = false;
 					ev = '<b>You leveled up!</b>';
 					GameAnalyticsIntegration.SendProgressCompleteEvent("LevelUp " + bm.wdata.hero.level, "", "");
 				}
 				if (e.type == PermanentStatUpgrade) {
+					battle = false;
 					ev = '<b>Your stats permanently increased!</b>';
 					GameAnalyticsIntegration.SendProgressCompleteEvent("Permanentupg", "", "");
 				}
 				if (e.type == statUpgrade) {
+					battle = false;
 					var dataS = e.dataString;
 					var data = e.data;
 					ev = '<b>$dataS +$data</b>';
 				}
 				if (e.type == AreaUnlock) {
+					battle = false;
 					ev = '<spawn style="color:#005555; font-weight: normal;";>You found a new area!</span>';
 					GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
 					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage" + bm.wdata.battleAreaRegion, "area" + e.data);
 				}
 				if (e.type == RegionUnlock) {
+					battle = false;
 					var regionName = enemyRegionNames[e.data];
 					ev = '<b>Found new location: $regionName</b>';
 					GameAnalyticsIntegration.SendDesignEvent("RegionUnlock", e.data);
@@ -383,10 +389,13 @@ class Main {
 					ev = '<b>Enemy dropped $equipName</b>';
 				}
 
-				view.AddEventText(ev);
+				if(battle)
+					view.AddEventTextWithLabel(ev, view.logTextBattle);
+				else
+					view.AddEventText(ev);
 				eventShown++;
 			}
-			view.UpdateDropDownRegionSelection(bm.wdata.battleAreaRegion);
+			//view.UpdateDropDownRegionSelection(bm.wdata.battleAreaRegion);
 
 			var delta = timeStamp - time;
 

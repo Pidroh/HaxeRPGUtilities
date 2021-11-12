@@ -1,3 +1,6 @@
+import haxe.ui.components.TextArea;
+import js.html.Text;
+import haxe.ui.layouts.HorizontalGridLayout;
 import haxe.ui.components.TabBar;
 import haxe.ui.data.ArrayDataSource;
 import haxe.ui.components.DropDown;
@@ -47,6 +50,7 @@ class View {
 
 	public var enemyToAdvance:ValueView;
 	public var areaLabel:ValueView;
+	public var regionLabel:ValueView;
 	public var mainComponent:Component;
 	public var mainComponentB:Component;
 	public var equipTabChild:Component;
@@ -54,6 +58,7 @@ class View {
 	public var equipTab:UIElementWrapper;
 	public var tabMaster:TabView;
 	public var logText:Label;
+	public var logTextBattle:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
 	public var enemy1 = 'slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog'.split('@');
@@ -63,6 +68,7 @@ class View {
 	public var regionChangeAction:(Int) -> Void;
 
 	public var areaContainer:Component;
+	public var regionButtonParent:Component;
 	public var levelContainer:Component;
 	public var battleView:Component;
 
@@ -72,9 +78,6 @@ class View {
 	var equipments = new Array<EquipmentView>();
 	public var equipmentTypeSelectionTabbar : TabBar;
 	public var equipmentTypeNames : Array<String>;
-
-	
-	var dropDownRegion : DropDownView;
 	var saveDataDownload:Label;
 
 	public var storyDialogActive = false;
@@ -331,46 +334,102 @@ class View {
 		// boxParent.horizontalAlign = "center";
 		battleParent.paddingLeft = 40;
 		battleParent.paddingTop = 10;
-		var box:VBox = new VBox();
-		battleParent.addComponent(box);
+		var verticalBox = new Box();
+		var hgl = new HorizontalGridLayout();
+		hgl.rows = 3;
+		verticalBox.layout = hgl;
+		verticalBox.percentHeight = 100;
+		//var verticalBox = new Grid();
+		//verticalBox.columns= 1;
+
+		battleParent.addComponent(verticalBox);
 
 		buttonBox = CreateContainer(battleParent, true);
 		// buttonBox.percentHeight = 100;
 		// boxParent.addComponent(buttonBox);
 
-		var scroll = CreateScrollable(battleParent);
+		{
+			var box = new Box();
+			box.width = 250;
+			box.percentHeight = 100;
+			battleParent.addComponent(box);
 
-		scroll.width = 250;
-		scroll.percentHeight = 100;
-		var logContainer = CreateContainer(scroll, true);
+			{
+				var scroll = CreateScrollable(box);
+				scroll.width = 250;
+				scroll.percentHeight = 60; //TODO change this to 60 and add new log below it  X_X
+				var logContainer = CreateContainer(scroll, true);
+				
+				var log = new Label();
+				logTextBattle = log;
+				logContainer.addComponent(log);
+				log.width = 190;
+				log.horizontalAlign = "center";
+				logContainer.horizontalAlign = "center";
+			}
+			{
+				var scroll = CreateScrollable(box);
+				scroll.width = 250;
+				scroll.percentHeight = 40;
+				var logContainer = CreateContainer(scroll, true);
+				scroll.verticalAlign = "bottom";
+				
+
+				var log = new Label();
+				logText = log; // make this battle log
+				logContainer.addComponent(log);
+				log.width = 190;
+				log.horizontalAlign = "center";
+				logContainer.horizontalAlign = "center";	
+				
+			}
+			
+		}
 		
-		var log = new Label();
-		logText = log;
-		logContainer.addComponent(log);
-		logText.width = 190;
-		logText.horizontalAlign = "center";
-		logContainer.horizontalAlign = "center";
 
-		areaContainer = CreateContainer(box, true);
+		if(false)
+		{
+			var tt = new Box();
+			tt.width = 100;
+			tt.percentHeight = 100;
+			//new Box
+		}
+
+		areaContainer = CreateContainer(verticalBox, false);
+		//areaContainer.percentHeight = 60;
 		
 		//areaLabel = CreateValueView(areaContainer, false, "Area: ");
-		var ddv = CreateDropDownView(areaContainer, "Location: ");
+		/*var ddv = CreateDropDownView(areaContainer, "Location: ");
 		ddv.dropdown.onChange = event -> {
 			var region = ddv.dropdown.selectedIndex;
 			regionChangeAction(region);
 		};
 		dropDownRegion = ddv;
-		areaLabel = CreateValueView(areaContainer, false, "Area: ");
-		enemyToAdvance = CreateValueView(areaContainer, true, "Progress: ");
+		*/
+		{
+			var container = new VBox();
+			areaContainer.addComponent(container);
+			regionLabel = CreateValueView(container, false, "Region: ");
+			areaLabel = CreateValueView(container, false, "Area: ");
+			enemyToAdvance = CreateValueView(container, true, "Progress: ");
+		}
+		{
+			var container =  new ContinuousHBox();
+			areaContainer.addComponent(container);
+			regionButtonParent = container;
+		}
+		
 
-		levelContainer = CreateContainer(box, true);
+
+		levelContainer = CreateContainer(verticalBox, true);
 		level = CreateValueView(levelContainer, false, "Level: ");
 		xpBar = CreateValueView(levelContainer, true, "XP: ");
 		speedView = CreateValueView(levelContainer, false, "Speed: ");
 		defView = CreateValueView(levelContainer, false, "Def: ");
 		mDefView = CreateValueView(levelContainer, false, "mDef: ");
 
-		battleView = CreateContainer(box, false);
+		battleView = CreateContainer(verticalBox, false);
+		
 		battleView.width = 400;
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
@@ -446,17 +505,27 @@ class View {
 		
 	}
 
-	public function FeedDropDownRegion(regionNames, regionAmount){
-		if(dropDownRegion.dropdown.dataSource.size != regionAmount){
-			dropDownRegion.dropdown.dataSource.clear();
-			for (i in 0...regionAmount){
-				dropDownRegion.dropdown.dataSource.add(regionNames[i]);
+	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion){
+		regionLabel.centeredText.text = regionNames[currentRegion];
+		var buttonAmount = regionAmount;
+		var children = regionButtonParent.childComponents;
+		if(children.length < buttonAmount){
+			var b = new Button();
+			var regionPos = children.length;
+			regionButtonParent.addComponent(b);
+			
+			b.onClick = event -> regionChangeAction(regionPos);
+			b.width = 100;
+		}
+		for (i in 0...children.length){
+			var hide = i >= buttonAmount;
+			if(currentRegion == i) hide = true;
+			children[i].hidden = hide;
+			if(hide == false){
+				children[i].text = regionNames[i];
 			}
 		}
-	}
-
-	public function UpdateDropDownRegionSelection(op){
-		dropDownRegion.dropdown.selectedIndex = op;
+		
 	}
 
 	public function FeedSave(saveDataContent:String) {
@@ -524,6 +593,10 @@ class View {
 	}
 
 	public function AddEventText(text:String) {
+		AddEventTextWithLabel(text, logText);
+	}
+
+	public function AddEventTextWithLabel(text:String, logText:Label) {
 		if (logText.text == null) {
 			logText.text = text;
 			logText.htmlText = text;
