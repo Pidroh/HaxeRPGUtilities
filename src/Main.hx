@@ -29,6 +29,7 @@ import Library;
 import GameAnalyticsIntegration;
 import FileReader;
 import StoryControl;
+import PrototypeItemMaker;
 
 class Main {
 	static var hero:Actor;
@@ -74,6 +75,9 @@ class Main {
 		}
 
 		var bm:BattleManager = new BattleManager();
+		var proto = new PrototypeItemMaker();
+		proto.MakeItems();
+		bm.itemBases = proto.items;
 		var view:View = new View();
 
 		var enemyRegionNames = [
@@ -250,7 +254,7 @@ class Main {
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
 
-			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax,bm.wdata.battleAreaRegion);
+			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax, bm.wdata.battleAreaRegion);
 
 			var imp = Browser.document.getElementById("import__");
 			if (imp != null && saveFileImporterSetup == false) {
@@ -287,10 +291,9 @@ class Main {
 				var e = bm.wdata.hero.equipment[i];
 				var hide = true;
 				if (e != null) {
-
 					if (e.type == typeToShow) {
 						e.seen = view.IsTabSelected(view.equipTab.component) || e.seen;
-						var equipName = GetEquipName(e);
+						var equipName = GetEquipName(e, bm.itemBases);
 						hide = false;
 						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i));
 						var vid = 0;
@@ -385,17 +388,17 @@ class Main {
 					// GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
 				}
 				if (e.type == EquipDrop) {
-					var equipName = GetEquipName(bm.wdata.hero.equipment[e.data]);
+					var equipName = GetEquipName(bm.wdata.hero.equipment[e.data], bm.itemBases);
 					ev = '<b>Enemy dropped $equipName</b>';
 				}
 
-				if(battle)
+				if (battle)
 					view.AddEventTextWithLabel(ev, view.logTextBattle);
 				else
 					view.AddEventText(ev);
 				eventShown++;
 			}
-			//view.UpdateDropDownRegionSelection(bm.wdata.battleAreaRegion);
+			// view.UpdateDropDownRegionSelection(bm.wdata.battleAreaRegion);
 
 			var delta = timeStamp - time;
 
@@ -426,6 +429,9 @@ class Main {
 				var action = bm.wdata.playerActions["tabmemory"];
 				// view.TabVisible(view.storyTab, action.visible);
 				view.TabVisible(view.storyTab, storyHappenedPure);
+			}
+			{
+				view.TabVisible(view.developTab, bm.wdata.prestigeTimes >= 1 || bm.wdata.hero.level > 10);
 			}
 
 			var sleepAct = bm.wdata.playerActions["sleep"];
@@ -473,7 +479,10 @@ class Main {
 		update(0);
 	}
 
-	static function GetEquipName(e:Equipment):String {
+	static function GetEquipName(e:Equipment, itemBases:Array<ItemBase>):String {
+		if (e.generationBaseItem >= 0) {
+			return itemBases[e.generationBaseItem].name;
+		}
 		var equipName = "Sword";
 		if (e.type == 1)
 			equipName = "Armor";

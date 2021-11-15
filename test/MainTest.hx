@@ -4,6 +4,16 @@ import haxe.Json;
 import SaveAssistant.PersistenceMaster;
 
 class MainTest {
+
+	static function GetBattleManager():BattleManager{
+		var bm = new BattleManager();
+		bm.DefaultConfiguration();
+		var proto = new PrototypeItemMaker();
+		proto.MakeItems();
+		bm.itemBases = proto.items;
+		return bm;
+	}
+
 	static function main() {
 		{
 			Sys.println("resource load text");
@@ -13,8 +23,7 @@ class MainTest {
 		}
 		{
 			Sys.println("Discard worse equip tests");
-			var bm:BattleManager = new BattleManager();
-			bm.DefaultConfiguration();
+			var bm:BattleManager = GetBattleManager();
 			bm.wdata.hero.equipment.push({seen: false,type: 0, requiredAttributes: null, attributes: ["Attack" => 2]});
 			bm.DiscardWorseEquipment();
 			var numberOfNullEquipment = 0;
@@ -66,8 +75,8 @@ class MainTest {
 		}
 		{
 			Sys.println("Prestige unlock test");
-			var bm:BattleManager = new BattleManager();
-			bm.DefaultConfiguration();
+			var bm:BattleManager = GetBattleManager();
+			
 			var a = bm.wdata.playerActions["prestige"];
 			if (a.enabled == true) {
 				Sys.println("Error: prestige wrong 1");
@@ -104,8 +113,8 @@ class MainTest {
 		//if(false)
 		{
 			Sys.println("Prestige permanent stat test");
-			var bm:BattleManager = new BattleManager();
-			bm.DefaultConfiguration();
+			var bm:BattleManager = GetBattleManager();
+			
 			bm.wdata.hero.level = 200;
 			bm.RecalculateAttributes(bm.wdata.hero);
 
@@ -164,7 +173,7 @@ class MainTest {
 				trace(file);
 				var path = haxe.io.Path.join(["saves/", file]);
 				var json = sys.io.File.getContent(path);
-				var bm = new BattleManager();
+				var bm = GetBattleManager();
 				bm.SendJsonPersistentData(SaveAssistant.GetPersistenceMaster(json).jsonGameplay);
 				for (i in 1...400) {
 					bm.update(0.9);
@@ -173,8 +182,8 @@ class MainTest {
 		}
 		{
 			Sys.println("Test region progress");
-			var bm:BattleManager = new BattleManager();
-			bm.DefaultConfiguration();
+			var bm:BattleManager = GetBattleManager();
+			
 			for (i in 0...bm.wdata.regionProgress.length) {
 				bm.wdata.regionProgress[i].maxArea = 20;
 			}
@@ -184,8 +193,8 @@ class MainTest {
 		}
 		{
 			Sys.println("Hard area death test");
-			var bm:BattleManager = new BattleManager();
-			bm.DefaultConfiguration();
+			var bm:BattleManager = GetBattleManager();
+			
 			bm.ChangeBattleArea(100);
 			for (i in 1...400) {
 				bm.update(0.9);
@@ -208,8 +217,8 @@ class MainTest {
 		}
 		{
 			Sys.println("Easy area no death");
-			var bm:BattleManager = new BattleManager();
-			bm.DefaultConfiguration();
+			var bm:BattleManager = GetBattleManager();
+			
 			bm.ChangeBattleArea(1);
 			for (i in 1...4) {
 				bm.update(0.9);
@@ -258,8 +267,8 @@ class MainTest {
 
 		{
 			Sys.println("Json parsing save data tests");
-			var bm:BattleManager = new BattleManager();
-			bm.DefaultConfiguration();
+			var bm:BattleManager = GetBattleManager();
+			
 			var json0 = bm.GetJsonPersistentData();
 			bm.ChangeBattleArea(1);
 			for (i in 1...20) {

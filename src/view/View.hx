@@ -56,6 +56,7 @@ class View {
 	public var equipTabChild:Component;
 	public var storyTab:UIElementWrapper;
 	public var equipTab:UIElementWrapper;
+	public var developTab:UIElementWrapper;
 	public var tabMaster:TabView;
 	public var logText:Label;
 	public var logTextBattle:Label;
@@ -74,56 +75,57 @@ class View {
 
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
-	
+
 	var equipments = new Array<EquipmentView>();
-	public var equipmentTypeSelectionTabbar : TabBar;
-	public var equipmentTypeNames : Array<String>;
+
+	public var equipmentTypeSelectionTabbar:TabBar;
+	public var equipmentTypeNames:Array<String>;
+
 	var saveDataDownload:Label;
 
 	public var storyDialogActive = false;
 	public var storyDialogUtilityFlag = false;
+
 	var cutsceneStartViews = new Array<CutsceneStartView>();
+
 	public var amountOfStoryMessagesShown = 0;
 	public var storyDialog:StoryDialog;
 
-	public function Update(){
-		//equipTabChild.width = equipTabChild.parentComponent.width - 40;
+	public function Update() {
+		// equipTabChild.width = equipTabChild.parentComponent.width - 40;
 		equipTabChild.width = Screen.instance.width - 40 - 60;
 	}
 
-	public static function TabBarAlert(tabBar : TabBar, alert : Array<Bool>, names : Array<String>){
-		for (i in 0...alert.length){
-			if(alert[i])
-				
+	public static function TabBarAlert(tabBar:TabBar, alert:Array<Bool>, names:Array<String>) {
+		for (i in 0...alert.length) {
+			if (alert[i])
 				tabBar.getComponentAt(i).text = names[i] + " (!)";
 			else
 				tabBar.getComponentAt(i).text = names[i];
-
 		}
 	}
 
 	public function LatestMessageUpdate(message:String, speaker:String, imageFile:String, messagePos:Int) {
 		if (messagePos >= amountOfStoryMessagesShown) {
 			amountOfStoryMessagesShown = messagePos + 1;
-			while(storyDialog.messages.length <= messagePos){
-				
+			while (storyDialog.messages.length <= messagePos) {
 				var body = new Label();
 				body.percentWidth = 100;
 				var speaker = new Label();
 				speaker.percentWidth = 100;
-				//speaker.styleString = "font-weight: bold;";
+				// speaker.styleString = "font-weight: bold;";
 				speaker.styleString = "font-bold: true;";
-				//var style = new Style();
-				//style.fontBold = true;
-				//style.fontBold = true;
-				//speaker.style = style;
+				// var style = new Style();
+				// style.fontBold = true;
+				// style.fontBold = true;
+				// speaker.style = style;
 
 				var textBox = new VBox();
 				textBox.percentWidth = 100;
 				textBox.percentHeight = 100;
 				textBox.addComponent(speaker);
 				textBox.addComponent(body);
-				
+
 				var face = new Image();
 				face.scaleMode = FIT_HEIGHT;
 				var res = face.resource;
@@ -133,12 +135,12 @@ class View {
 				var parent = new Grid();
 				parent.columns = 2;
 				parent.addComponent(face);
-				
+
 				parent.addComponent(textBox);
 				parent.percentWidth = 90;
 				parent.height = 60;
 
-				var messageView : MessageView = {
+				var messageView:MessageView = {
 					message: body,
 					parent: parent,
 					speakerImage: face,
@@ -146,15 +148,14 @@ class View {
 				};
 				storyDialog.messages.push(messageView);
 				storyDialog.messageParent.addComponent(parent);
-				
 			}
-			
+
 			storyDialog.messages[messagePos].speakerText.text = speaker;
 			storyDialog.messages[messagePos].message.text = message;
 			storyDialog.messages[messagePos].speakerImage.resource = imageFile;
 			storyDialog.messages[messagePos].parent.hidden = false;
 			storyDialog.scroll.vscrollPos = 9999;
-			//storyDialog.mainText.text += '$speaker: $message\n';
+			// storyDialog.mainText.text += '$speaker: $message\n';
 		}
 	}
 
@@ -170,8 +171,8 @@ class View {
 			storyMainAction(storyAction_WatchLaterClose, 0);
 		};
 		storyDialogActive = true;
-		//storyDialog.mainText.text = "";
-		for(a in storyDialog.messages){
+		// storyDialog.mainText.text = "";
+		for (a in storyDialog.messages) {
 			a.parent.hidden = true;
 		}
 		this.amountOfStoryMessagesShown = 0;
@@ -189,8 +190,8 @@ class View {
 			var title = new Label();
 			title.text = "dummy";
 			title.verticalAlign = "center";
-			//title.percentHeight = 100;
-			
+			// title.percentHeight = 100;
+
 			// title.height = 20;
 
 			parent.percentWidth = 100;
@@ -208,7 +209,7 @@ class View {
 
 			newL.verticalAlign = "center";
 			newL.textAlign = "center";
-			//newL.percentHeight = 100;
+			// newL.percentHeight = 100;
 
 			hBox.addComponent(startB);
 			hBox.addComponent(resumeB);
@@ -249,7 +250,6 @@ class View {
 		cutsceneStartViews[buttonPos].resumeButton.hidden = !resumable;
 		cutsceneStartViews[buttonPos].newLabel.hidden = !newLabel;
 		cutsceneStartViews[buttonPos].newLabel.text = newLabelText;
-		
 	}
 
 	public function StoryButtonHide(buttonPos:Int) {
@@ -339,8 +339,8 @@ class View {
 		hgl.rows = 3;
 		verticalBox.layout = hgl;
 		verticalBox.percentHeight = 100;
-		//var verticalBox = new Grid();
-		//verticalBox.columns= 1;
+		// var verticalBox = new Grid();
+		// verticalBox.columns= 1;
 
 		battleParent.addComponent(verticalBox);
 
@@ -357,9 +357,9 @@ class View {
 			{
 				var scroll = CreateScrollable(box);
 				scroll.width = 250;
-				scroll.percentHeight = 60; //TODO change this to 60 and add new log below it  X_X
+				scroll.percentHeight = 60; // TODO change this to 60 and add new log below it  X_X
 				var logContainer = CreateContainer(scroll, true);
-				
+
 				var log = new Label();
 				logTextBattle = log;
 				logContainer.addComponent(log);
@@ -373,39 +373,34 @@ class View {
 				scroll.percentHeight = 40;
 				var logContainer = CreateContainer(scroll, true);
 				scroll.verticalAlign = "bottom";
-				
 
 				var log = new Label();
 				logText = log; // make this battle log
 				logContainer.addComponent(log);
 				log.width = 190;
 				log.horizontalAlign = "center";
-				logContainer.horizontalAlign = "center";	
-				
+				logContainer.horizontalAlign = "center";
 			}
-			
 		}
-		
 
-		if(false)
-		{
+		if (false) {
 			var tt = new Box();
 			tt.width = 100;
 			tt.percentHeight = 100;
-			//new Box
+			// new Box
 		}
 
 		areaContainer = CreateContainer(verticalBox, false);
-		//areaContainer.percentHeight = 60;
-		
-		//areaLabel = CreateValueView(areaContainer, false, "Area: ");
+		// areaContainer.percentHeight = 60;
+
+		// areaLabel = CreateValueView(areaContainer, false, "Area: ");
 		/*var ddv = CreateDropDownView(areaContainer, "Location: ");
-		ddv.dropdown.onChange = event -> {
-			var region = ddv.dropdown.selectedIndex;
-			regionChangeAction(region);
-		};
-		dropDownRegion = ddv;
-		*/
+			ddv.dropdown.onChange = event -> {
+				var region = ddv.dropdown.selectedIndex;
+				regionChangeAction(region);
+			};
+			dropDownRegion = ddv;
+		 */
 		{
 			var container = new VBox();
 			areaContainer.addComponent(container);
@@ -414,12 +409,10 @@ class View {
 			enemyToAdvance = CreateValueView(container, true, "Progress: ");
 		}
 		{
-			var container =  new ContinuousHBox();
+			var container = new ContinuousHBox();
 			areaContainer.addComponent(container);
 			regionButtonParent = container;
 		}
-		
-
 
 		levelContainer = CreateContainer(verticalBox, true);
 		level = CreateValueView(levelContainer, false, "Level: ");
@@ -429,7 +422,7 @@ class View {
 		mDefView = CreateValueView(levelContainer, false, "mDef: ");
 
 		battleView = CreateContainer(verticalBox, false);
-		
+
 		battleView.width = 400;
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
@@ -447,8 +440,6 @@ class View {
 			}
 			equipTabChild.addComponent(buttonDiscardBad);
 
-			
-
 			var scroll = CreateScrollable(null);
 
 			scroll.height = 300;
@@ -456,11 +447,11 @@ class View {
 			scroll.addComponent(equipTabChild);
 			scroll.paddingLeft = 40;
 			scroll.paddingTop = 10;
-			//scroll.width = 640;
+			// scroll.width = 640;
 			scroll.percentWidth = 100;
-			//scroll.width = Screen.instance.width;
+			// scroll.width = Screen.instance.width;
 			scroll.percentHeight = 100;
-			
+
 			equipTab = new UIElementWrapper(scroll, tabMaster);
 			equipTab.desiredPosition = 1;
 		}
@@ -480,7 +471,6 @@ class View {
 
 			this.storyTab = new UIElementWrapper(storyTabComp, tabMaster);
 			storyTab.desiredPosition = 2;
-			
 		}
 
 		storyDialog = new StoryDialog();
@@ -489,43 +479,79 @@ class View {
 		}
 		storyDialog.skipButton.onClick = event -> storyMainAction(View.storyAction_SkipStory, 0);
 		storyDialog.watchLaterButton.onClick = event -> storyMainAction(View.storyAction_WatchLater, 0);
+
+		{
+			var devTab = new VBox();
+			
+			devTab.paddingLeft = 40;
+			var texter = (text, bigfont = false) -> {
+				var label = new Label();
+				label.htmlText = text;
+				devTab.addComponent(label);
+
+				if (bigfont) {
+					
+					label.styleString = "font-size: 18";
+				}
+			};
+			{
+				texter('<h2 style="color: #2e6c80;">Stay up to date</h2>');
+			}
+			{
+				//texter('You can join us on Discord to stay up to date on news for the game!');
+				texter('You can join us on Discord to stay up to date on news for the game!
+				<br>Hate Discord? you can subscribe to our mailing list!');
+			}
+			texter('<h2 style="color: #2e6c80;">Suggest new features</h2>');
+			texter('There is a channel on Discord to suggest new features and you can also add them as comments on the mailing list articles');
+			//texter('There is a channel on Discord to suggest new features');
+			texter('<br><a href="https://discord.com/invite/AtGrxpM" target="_blank">DISCORD</a>', true);
+			texter('<a href="https://pidroh.substack.com/" target="_blank">MAILING LIST</a>', true);
+
+			devTab.text = "News & Suggestions";
+			developTab  = new UIElementWrapper( devTab, tabMaster);
+			developTab.tabVisible = false;
+			//tabMaster.addComponent(devTab);
+
+			// How to stay up to date
+			// How to suggest features
+		}
 	}
 
-	public function GetEquipmentType() : Int{
+	public function GetEquipmentType():Int {
 		return equipmentTypeSelectionTabbar.selectedIndex;
 	}
 
-	public function FeedEquipmentTypes(types : Array<String>){
+	public function FeedEquipmentTypes(types:Array<String>) {
 		equipmentTypeNames = types;
-		for (type in types){
+		for (type in types) {
 			var b = new Button();
 			b.text = type;
 			equipmentTypeSelectionTabbar.addComponent(b);
 		}
-		
 	}
 
-	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion){
+	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion) {
 		regionLabel.centeredText.text = regionNames[currentRegion];
 		var buttonAmount = regionAmount;
 		var children = regionButtonParent.childComponents;
-		if(children.length < buttonAmount){
+		if (children.length < buttonAmount) {
 			var b = new Button();
 			var regionPos = children.length;
 			regionButtonParent.addComponent(b);
-			
+
 			b.onClick = event -> regionChangeAction(regionPos);
 			b.width = 100;
 		}
-		for (i in 0...children.length){
+		for (i in 0...children.length) {
 			var hide = i >= buttonAmount;
-			if(currentRegion == i) hide = true;
+			if (currentRegion == i)
+				hide = true;
 			children[i].hidden = hide;
-			if(hide == false){
+			if (hide == false) {
 				children[i].text = regionNames[i];
 			}
 		}
-		
 	}
 
 	public function FeedSave(saveDataContent:String) {
@@ -700,27 +726,25 @@ class View {
 
 		// button.onClick = onClick;
 		var paren = buttonBox;
-		if(secondArea){
+		if (secondArea) {
 			paren = mainComponentB;
-			
 		}
-		if(position == -1)
+		if (position == -1)
 			paren.addComponent(button);
 		else
 			paren.addComponentAt(button, position);
 
 		if (warningMessage == null) {
-			
 			button.onClick = onClick;
 		} else {
 			button.onClick = function whatever(e) {
-				//trace("lol");
+				// trace("lol");
 				Screen.instance.messageBox(warningMessage, label, MessageBoxType.TYPE_QUESTION, true, function(button) {
-					//trace(button);
+					// trace(button);
 					if (button.toString().indexOf("yes") >= 0) {
 						onClick(null);
 					}
-					//trace("call back!");
+					// trace("call back!");
 				});
 			};
 		}
@@ -789,14 +813,11 @@ class View {
 		};
 	}
 
-
-	function CreateDropDownView(parent:Component, label:String):DropDownView{
+	function CreateDropDownView(parent:Component, label:String):DropDownView {
 		var boxh = new Box();
 		boxh.width = 180;
 		boxh.height = 30;
 		parent.addComponent(boxh);
-
-		
 
 		var addLabel = label != null && label != "";
 		var nameLabel = null;
@@ -812,19 +833,15 @@ class View {
 			nameLabel = l;
 		}
 
-		
-
 		var dd = new DropDown();
 		dd.width = 120;
-		
+
 		dd.dataSource = new ArrayDataSource<String>();
 		dd.horizontalAlign = "right";
 		dd.verticalAlign = "center";
 		boxh.addComponent(dd);
 		return {parent: boxh, dropdown: dd, labelText: nameLabel};
 	}
-
-	
 
 	function CreateValueView(parent:Component, withBar:Bool, label:String):ValueView {
 		var boxh = new Box();
@@ -888,10 +905,9 @@ typedef ValueView = {
 
 typedef DropDownView = {
 	var labelText:Label;
-	var dropdown : DropDown;
+	var dropdown:DropDown;
 	var parent:Component;
 };
-
 
 typedef ActorView = {
 	var name:Label;
@@ -918,10 +934,10 @@ typedef CutsceneStartView = {
 }
 
 typedef MessageView = {
-	var speakerImage : Image;
-	var speakerText : Label;
-	var message : Label;
-	var parent : Component;
+	var speakerImage:Image;
+	var speakerText:Label;
+	var message:Label;
+	var parent:Component;
 }
 
 class StoryDialog extends Dialog {
@@ -929,35 +945,34 @@ class StoryDialog extends Dialog {
 	public var advanceButton:Button;
 	public var skipButton:Button;
 	public var watchLaterButton:Button;
-	public var messageParent : Component;
-	public var scroll : ScrollView;
+	public var messageParent:Component;
+	public var scroll:ScrollView;
 
 	public function new() {
 		super();
 		title = "Entry Form";
 		width = 400;
 		this.percentHeight = 80;
-		
+
 		messageParent = new VBox();
-		//messageParent.percentWidth = 100;
-		messageParent.width = width-30;
+		// messageParent.percentWidth = 100;
+		messageParent.width = width - 30;
 		messageParent.paddingBottom = 20;
-		
 
 		scroll = new ScrollView();
 		scroll.addComponent(messageParent);
 		scroll.percentHeight = 90;
-		scroll.width = width-10;
+		scroll.width = width - 10;
 		scroll.horizontalAlign = "center";
 		addComponent(scroll);
 
 		// var vbox = new VBox();
 		// vbox.percentWidth = 100;
 
-		//mainText = new Label();
-		//mainText.text = "";
-		//mainText.percentWidth = 100;
-		//scroll.addComponent(mainText);
+		// mainText = new Label();
+		// mainText.text = "";
+		// mainText.percentWidth = 100;
+		// scroll.addComponent(mainText);
 		// vbox.addComponent(mainText);
 
 		{

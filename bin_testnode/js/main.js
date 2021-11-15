@@ -42,6 +42,7 @@ var BattleManager = function() {
 	_g.h["LifeMax"] = 4;
 	var _g1 = new haxe_ds_StringMap();
 	_g1.h["Speed"] = 0.05;
+	_g1.h["Defense"] = 0.4;
 	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
@@ -72,7 +73,7 @@ var BattleManager = function() {
 	var _g1 = new haxe_ds_StringMap();
 	_g1.h["Piercing"] = 100;
 	var _g2 = new haxe_ds_StringMap();
-	_g2.h["Defense"] = 1;
+	_g2.h["Defense"] = 0.2;
 	_g2.h["Speed"] = 0.1;
 	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
 	var bm1 = bm.regionPrizes;
@@ -306,6 +307,7 @@ BattleManager.prototype = {
 		_g.h["Defense"] = 0;
 		_g.h["Magic Attack"] = 0;
 		_g.h["Magic Defense"] = 0;
+		_g.h["Piercing"] = 0;
 		this.wdata.hero.attributesBase = _g;
 		var valueXP = 0;
 		if(this.wdata.hero.xp != null) {
@@ -479,59 +481,36 @@ BattleManager.prototype = {
 				}
 				killedInArea[battleArea]++;
 				if(this.random.randomInt(0,100) < this.equipDropChance) {
-					var equipType = this.random.randomInt(0,1);
+					var baseItem = this.random.randomInt(0,this.itemBases.length - 1);
+					var itemB = this.itemBases[baseItem];
 					var e = null;
-					var dropQuality = enemy.level;
-					if(this.wdata.battleAreaRegion > 0) {
-						dropQuality = 1.2 * dropQuality | 0;
+					var stat = new haxe_ds_StringMap();
+					var statVar = new haxe_ds_StringMap();
+					var minLevel = enemy.level - 3;
+					if(minLevel < 1) {
+						minLevel = 1;
 					}
-					if(equipType == 0) {
-						var attackBonus = this.random.randomInt(1,dropQuality / 2 + 2 | 0);
-						var _g = new haxe_ds_StringMap();
-						_g.h["Attack"] = attackBonus;
-						e = { type : 0, requiredAttributes : null, attributes : _g, seen : false};
-						if(this.random.randomInt(0,100) < 15) {
-							var lifeBonus = this.random.randomInt(1,dropQuality + 2 | 0);
-							e.attributes.h["LifeMax"] = lifeBonus;
+					var maxLevel = enemy.level + 2;
+					var level = this.random.randomInt(minLevel,maxLevel);
+					var h = itemB.scalingStats.h;
+					var s_h = h;
+					var s_keys = Object.keys(h);
+					var s_length = s_keys.length;
+					var s_current = 0;
+					while(s_current < s_length) {
+						var key = s_keys[s_current++];
+						var s_key = key;
+						var s_value = s_h[key];
+						var vari = this.random.randomInt(80,100);
+						statVar.h[s_key] = vari;
+						var value = s_value * vari * level;
+						if(value < 100) {
+							value = 100;
 						}
-						if(this.random.randomInt(0,100) < 15) {
-							var bonus = this.random.randomInt(1,dropQuality / 8 + 2 | 0);
-							e.attributes.h["Speed"] = bonus;
-						}
-						if(this.random.randomInt(0,100) < 15) {
-							var bonus = this.random.randomInt(1,dropQuality / 8 + 2 | 0);
-							e.attributes.h["Defense"] = bonus;
-						}
-						if(this.random.randomInt(0,100) < 10) {
-							var bonus = this.random.randomInt(1,dropQuality * 2) + 20;
-							if(bonus > 80) {
-								bonus = 80;
-							}
-							e.attributes.h["Piercing"] = bonus;
-						}
+						var v = value / 100 | 0;
+						stat.h[s_key] = v;
 					}
-					if(equipType == 1) {
-						var armorType = this.random.randomInt(0,1);
-						var mainBonus = this.random.randomInt(1,dropQuality / 2 + 2 | 0);
-						var mainBonusType = "LifeMax";
-						if(armorType == 0) {
-							mainBonus *= 3;
-						}
-						if(armorType == 1) {
-							mainBonusType = "Defense";
-						}
-						var _g = new haxe_ds_StringMap();
-						_g.h[mainBonusType] = mainBonus;
-						e = { type : 1, requiredAttributes : null, attributes : _g, seen : false};
-						if(this.random.randomInt(0,100) < 20) {
-							var bonus = this.random.randomInt(1,dropQuality / 4 + 2 | 0);
-							e.attributes.h["Attack"] = bonus;
-						}
-						if(this.random.randomInt(0,100) < 20) {
-							var bonus = this.random.randomInt(1,enemy.attributesCalculated.h["Attack"] / 8 + 2 | 0);
-							e.attributes.h["Speed"] = bonus;
-						}
-					}
+					e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem};
 					this.wdata.hero.equipment.push(e);
 					var e = this.AddEvent(EventTypes.EquipDrop);
 					e.data = this.wdata.hero.equipment.length - 1;
@@ -949,6 +928,14 @@ IntIterator.prototype = {
 };
 var MainTest = function() { };
 MainTest.__name__ = true;
+MainTest.GetBattleManager = function() {
+	var bm = new BattleManager();
+	bm.DefaultConfiguration();
+	var proto = new PrototypeItemMaker();
+	proto.MakeItems();
+	bm.itemBases = proto.items;
+	return bm;
+};
 MainTest.main = function() {
 	process.stdout.write("resource load text");
 	process.stdout.write("\n");
@@ -956,8 +943,7 @@ MainTest.main = function() {
 	JSON.parse(sj);
 	process.stdout.write("Discard worse equip tests");
 	process.stdout.write("\n");
-	var bm = new BattleManager();
-	bm.DefaultConfiguration();
+	var bm = MainTest.GetBattleManager();
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
@@ -1047,8 +1033,7 @@ MainTest.main = function() {
 	}
 	process.stdout.write("Prestige unlock test");
 	process.stdout.write("\n");
-	var bm = new BattleManager();
-	bm.DefaultConfiguration();
+	var bm = MainTest.GetBattleManager();
 	var a = bm.wdata.playerActions.h["prestige"];
 	if(a.enabled == true) {
 		process.stdout.write("Error: prestige wrong 1");
@@ -1096,8 +1081,7 @@ MainTest.main = function() {
 	}
 	process.stdout.write("Prestige permanent stat test");
 	process.stdout.write("\n");
-	var bm = new BattleManager();
-	bm.DefaultConfiguration();
+	var bm = MainTest.GetBattleManager();
 	bm.wdata.hero.level = 200;
 	bm.RecalculateAttributes(bm.wdata.hero);
 	process.stdout.write("Accessing Speed 0");
@@ -1177,10 +1161,10 @@ MainTest.main = function() {
 	while(_g < _g1.length) {
 		var file = _g1[_g];
 		++_g;
-		console.log("test/MainTest.hx:164:",file);
+		console.log("test/MainTest.hx:173:",file);
 		var path = haxe_io_Path.join(["saves/",file]);
 		var json = js_node_Fs.readFileSync(path,{ encoding : "utf8"});
-		var bm = new BattleManager();
+		var bm = MainTest.GetBattleManager();
 		bm.SendJsonPersistentData(SaveAssistant.GetPersistenceMaster(json).jsonGameplay);
 		var _g2 = 1;
 		while(_g2 < 400) {
@@ -1190,8 +1174,7 @@ MainTest.main = function() {
 	}
 	process.stdout.write("Test region progress");
 	process.stdout.write("\n");
-	var bm = new BattleManager();
-	bm.DefaultConfiguration();
+	var bm = MainTest.GetBattleManager();
 	var _g = 0;
 	var _g1 = bm.wdata.regionProgress.length;
 	while(_g < _g1) {
@@ -1205,8 +1188,7 @@ MainTest.main = function() {
 	}
 	process.stdout.write("Hard area death test");
 	process.stdout.write("\n");
-	var bm = new BattleManager();
-	bm.DefaultConfiguration();
+	var bm = MainTest.GetBattleManager();
 	bm.ChangeBattleArea(100);
 	var _g = 1;
 	while(_g < 400) {
@@ -1234,8 +1216,7 @@ MainTest.main = function() {
 	js_node_Fs.writeFileSync(fileName,JSON.stringify(pm));
 	process.stdout.write("Easy area no death");
 	process.stdout.write("\n");
-	var bm = new BattleManager();
-	bm.DefaultConfiguration();
+	var bm = MainTest.GetBattleManager();
 	bm.ChangeBattleArea(1);
 	bm.update(0.9);
 	bm.update(0.9);
@@ -1306,8 +1287,7 @@ MainTest.main = function() {
 	}
 	process.stdout.write("Json parsing save data tests");
 	process.stdout.write("\n");
-	var bm = new BattleManager();
-	bm.DefaultConfiguration();
+	var bm = MainTest.GetBattleManager();
 	var json0 = bm.GetJsonPersistentData();
 	bm.ChangeBattleArea(1);
 	bm.update(5);
@@ -1369,19 +1349,46 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:294:","  _____ ");
-		console.log("test/MainTest.hx:295:","  _____ ");
-		console.log("test/MainTest.hx:296:","  _____ ");
-		console.log("test/MainTest.hx:297:",json);
-		console.log("test/MainTest.hx:298:","  _____ ");
-		console.log("test/MainTest.hx:299:","  _____ ");
-		console.log("test/MainTest.hx:300:","  _____ ");
-		console.log("test/MainTest.hx:301:",json2);
+		console.log("test/MainTest.hx:303:","  _____ ");
+		console.log("test/MainTest.hx:304:","  _____ ");
+		console.log("test/MainTest.hx:305:","  _____ ");
+		console.log("test/MainTest.hx:306:",json);
+		console.log("test/MainTest.hx:307:","  _____ ");
+		console.log("test/MainTest.hx:308:","  _____ ");
+		console.log("test/MainTest.hx:309:","  _____ ");
+		console.log("test/MainTest.hx:310:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
 };
 Math.__name__ = true;
+var PrototypeItemMaker = function() {
+	this.items = [];
+};
+PrototypeItemMaker.__name__ = true;
+PrototypeItemMaker.prototype = {
+	MakeItems: function() {
+		var _g = new haxe_ds_StringMap();
+		_g.h["LifeMax"] = 3;
+		_g.h["Attack"] = 0.5;
+		_g.h["Defense"] = 0.2;
+		this.AddItem("Garb",PrototypeItemMaker.itemType_Armor,_g);
+		var _g = new haxe_ds_StringMap();
+		_g.h["LifeMax"] = 4;
+		_g.h["Speed"] = 0.3;
+		_g.h["Defense"] = 0.15;
+		this.AddItem("Shirt",PrototypeItemMaker.itemType_Armor,_g);
+		var _g = new haxe_ds_StringMap();
+		_g.h["Defense"] = 1;
+		this.AddItem("Vest",PrototypeItemMaker.itemType_Armor,_g);
+		var _g = new haxe_ds_StringMap();
+		_g.h["Attack"] = 1;
+		this.AddItem("Sword",PrototypeItemMaker.itemType_Weapon,_g);
+	}
+	,AddItem: function(name,type,scalingStats) {
+		this.items.push({ name : name, type : type, scalingStats : scalingStats});
+	}
+};
 var ResourceLogic = function() { };
 ResourceLogic.__name__ = true;
 ResourceLogic.recalculateScalingResource = function(base,res) {
@@ -2558,6 +2565,8 @@ String.__name__ = true;
 Array.__name__ = true;
 haxe_Resource.content = [{ name : "storyjson", data : "W3sibWVzc2FnZXMiOlt7ImJvZHkiOiIgV2hlcmUgYXJlIHlvdSBnb2luZz8iLCJzcGVha2VyIjoiTW9tIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgS2lsbCBzb21lIG1vbnN0ZXJzLCBtb20iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgVGhpcyBraWQuLi4iLCJzcGVha2VyIjoiTW9tIiwic2NyaXB0IjpudWxsfV0sInRpdGxlIjoiVGhpcyBraWQuLi4iLCJ2aXNpYmlsaXR5U2NyaXB0IjpudWxsLCJhY3Rpb25MYWJlbCI6Ildha2UgdXAifSx7Im1lc3NhZ2VzIjpbeyJib2R5IjoiIEknbSBiYWNrIiwic3BlYWtlciI6IllvdSIsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIEdvb2QsIGl0J3MgdGltZSBmb3IgZGlubmVyLiIsInNwZWFrZXIiOiJNb20iLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiBIZXkgbW9tLi4uIiwic3BlYWtlciI6IllvdSIsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIFdoYXQgaXMgd3JvbmcsIGRlYXI/Iiwic3BlYWtlciI6Ik1vbSIsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIEknbSBsZWF2aW5nIHRvd24iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgSGFoYWhhaGFhLCBvaCBZb3UuLi4iLCJzcGVha2VyIjoiTW9tIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgQW5kIEknbSBNYm9pLCBHb2Qgb2YgV2F0ZXJ3YXlzISIsInNwZWFrZXIiOiJNb20iLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiAuLi4iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgQydtb24sIGVhdCB1cC4iLCJzcGVha2VyIjoiTW9tIiwic2NyaXB0IjpudWxsfV0sInRpdGxlIjoiVGltZSBmb3IgZGlubmVyIiwidmlzaWJpbGl0eVNjcmlwdCI6IiByZXR1cm4gZ2xvYmFsW1wibWF4YXJlYVwiXSA+IDI7ICIsImFjdGlvbkxhYmVsIjoiSSdtIGh1bmdyeS4uLiJ9LHsibWVzc2FnZXMiOlt7ImJvZHkiOiIgSSBmZWVsIGxpa2UgaXQgYmVjb21lcyBoYXJkZXIgYW5kIGhhcmRlciB0byBiZWNvbWUgc3Ryb25nZXIuLi4iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiJBIHJlZC1oYWlyZWQgbWFuIGFwcHJvYWNoZXMgeW91LiIsInNwZWFrZXIiOm51bGwsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIEhleSBraWQuIiwic3BlYWtlciI6Ik1hbiIsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIFdobyBhcmUgeW91PyIsInNwZWFrZXIiOiJZb3UiLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiBOYW1lJ3MgQ2lkLiAiLCJzcGVha2VyIjoiTWFuIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgSSBmZWVsIGxpa2UgSSd2ZSBzZWVuIHRoYXQgbmFtZSBiZWZvcmUuLi4iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgWW91IHdhbm5hIGJlY29tZSBzdHJvbmdlcj8gSGVoLiBTb21ldGltZXMgeW91IGdvdHRhIGxvc2UgaXQgYWxsIHRvIHJlYWNoIGEgbmV3IGhlaWdodC4iLCJzcGVha2VyIjoiQ2lkIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgQW55d2F5cywgdGFrZSB0aGlzLiBJdCB0ZWFjaGVzIHlvdSBob3cgdG8gU291bCBDcnVzaC4iLCJzcGVha2VyIjoiQ2lkIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiJIZSBoYW5kcyB5b3UgYW4gb2xkIHNjcm9sbC4iLCJzcGVha2VyIjpudWxsLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiBJIHNob3VsZG4ndCByZWFsbHkgdGFrZSB0aGluZ3MgZnJvbSBzdHJhbmdlcnMuLi4iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgQnV0IG9oIHdlbGwuIEknbGwgdGFrZSBhIHNob3QuIEhvcGUgaXQgZG9lc24ndCBnZXQgbWUga2lsbGVkLiIsInNwZWFrZXIiOiJZb3UiLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiBZb3UgbWF5IG5vdCBiZSBhYmxlIHRvIGRvIGl0IG5vdywgYnV0IHNvbWVkYXkuLi4gR29vZCBsdWNrLCBraWQuIiwic3BlYWtlciI6IkNpZCIsInNjcmlwdCI6bnVsbH1dLCJ0aXRsZSI6IkJlY29tZSBzdHJvbmdlciIsInZpc2liaWxpdHlTY3JpcHQiOiIgcmV0dXJuIGdsb2JhbFtcImhlcm9sZXZlbFwiXSA+IDg7ICIsImFjdGlvbkxhYmVsIjoiSG93IGRvIEkgZ2V0IHN0cm9uZ2VyLi4uIn1d"}];
 js_Boot.__toStr = ({ }).toString;
+PrototypeItemMaker.itemType_Weapon = 0;
+PrototypeItemMaker.itemType_Armor = 1;
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);
 seedyrng_Xorshift128Plus.PARAMETER_A = 23;
