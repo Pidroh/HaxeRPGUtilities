@@ -418,9 +418,12 @@ class BattleManager {
 		for (i in 0...wdata.hero.equipment.length) {
 			if (wdata.hero.equipmentSlots.contains(i)) {
 				var e = wdata.hero.equipment[i];
-				for (s in e.attributes.keys()) {
-					e.attributes[s] = Std.int(e.attributes[s] * 0.7);
+				if(e != null){
+					for (s in e.attributes.keys()) {
+						e.attributes[s] = Std.int(e.attributes[s] * 0.7);
+					}
 				}
+				
 			} else {
 				wdata.hero.equipment[i] = null;
 			}
@@ -548,9 +551,9 @@ class BattleManager {
 					var e:Equipment = null;
 					var stat : Map<String, Int> = [];
 					var statVar : Map<String, Int> = [];
-					var minLevel = enemy.level - 3;
+					var minLevel = Std.int((enemy.level+1)/2 - 3);
 					if(minLevel < 1) minLevel = 1;
-					var maxLevel = enemy.level+2;
+					var maxLevel = Std.int(enemy.level/2+2);
 					var level = random.randomInt(minLevel, maxLevel);
 
 					for (s in itemB.scalingStats.keyValueIterator()){

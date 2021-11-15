@@ -7,9 +7,11 @@ class PrototypeItemMaker {
     public function new(){}
 
 	public function MakeItems() {
-		AddItem("Garb", itemType_Armor, ["LifeMax" => 3, "Attack" => 0.5, "Defense" => 0.2]);
-		AddItem("Shirt", itemType_Armor, ["LifeMax" => 4, "Speed" => 0.3, "Defense" => 0.15]);
-		AddItem("Vest", itemType_Armor, ["Defense" => 1]);
+		//AddItem("Garb", itemType_Armor, ["LifeMax" => 3, "Attack" => 0.5, "Defense" => 0.2]);
+		//AddItem("Shirt", itemType_Armor, ["LifeMax" => 4, "Speed" => 0.3, "Defense" => 0.15]);
+        AddItem("Shirt", itemType_Armor, ["LifeMax" => 5]);
+        AddItem("Vest", itemType_Armor, ["LifeMax" => 3, "Defense"=>0.6]);
+		AddItem("Plate", itemType_Armor, ["Defense" => 1]);
 		AddItem("Sword", itemType_Weapon, ["Attack" => 1]);
 	}
 

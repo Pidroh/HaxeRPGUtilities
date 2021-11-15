@@ -355,15 +355,17 @@ BattleManager.prototype = {
 			var i = _g++;
 			if(this.wdata.hero.equipmentSlots.indexOf(i) != -1) {
 				var e = this.wdata.hero.equipment[i];
-				var h = e.attributes.h;
-				var s_h = h;
-				var s_keys = Object.keys(h);
-				var s_length = s_keys.length;
-				var s_current = 0;
-				while(s_current < s_length) {
-					var s = s_keys[s_current++];
-					var v = e.attributes.h[s] * 0.7 | 0;
-					e.attributes.h[s] = v;
+				if(e != null) {
+					var h = e.attributes.h;
+					var s_h = h;
+					var s_keys = Object.keys(h);
+					var s_length = s_keys.length;
+					var s_current = 0;
+					while(s_current < s_length) {
+						var s = s_keys[s_current++];
+						var v = e.attributes.h[s] * 0.7 | 0;
+						e.attributes.h[s] = v;
+					}
 				}
 			} else {
 				this.wdata.hero.equipment[i] = null;
@@ -486,11 +488,11 @@ BattleManager.prototype = {
 					var e = null;
 					var stat = new haxe_ds_StringMap();
 					var statVar = new haxe_ds_StringMap();
-					var minLevel = enemy.level - 3;
+					var minLevel = (enemy.level + 1) / 2 - 3 | 0;
 					if(minLevel < 1) {
 						minLevel = 1;
 					}
-					var maxLevel = enemy.level + 2;
+					var maxLevel = enemy.level / 2 + 2 | 0;
 					var level = this.random.randomInt(minLevel,maxLevel);
 					var h = itemB.scalingStats.h;
 					var s_h = h;
@@ -1369,18 +1371,15 @@ PrototypeItemMaker.__name__ = true;
 PrototypeItemMaker.prototype = {
 	MakeItems: function() {
 		var _g = new haxe_ds_StringMap();
-		_g.h["LifeMax"] = 3;
-		_g.h["Attack"] = 0.5;
-		_g.h["Defense"] = 0.2;
-		this.AddItem("Garb",PrototypeItemMaker.itemType_Armor,_g);
-		var _g = new haxe_ds_StringMap();
-		_g.h["LifeMax"] = 4;
-		_g.h["Speed"] = 0.3;
-		_g.h["Defense"] = 0.15;
+		_g.h["LifeMax"] = 5;
 		this.AddItem("Shirt",PrototypeItemMaker.itemType_Armor,_g);
 		var _g = new haxe_ds_StringMap();
-		_g.h["Defense"] = 1;
+		_g.h["LifeMax"] = 3;
+		_g.h["Defense"] = 0.6;
 		this.AddItem("Vest",PrototypeItemMaker.itemType_Armor,_g);
+		var _g = new haxe_ds_StringMap();
+		_g.h["Defense"] = 1;
+		this.AddItem("Plate",PrototypeItemMaker.itemType_Armor,_g);
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 1;
 		this.AddItem("Sword",PrototypeItemMaker.itemType_Weapon,_g);
