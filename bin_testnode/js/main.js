@@ -818,6 +818,9 @@ BattleManager.prototype = {
 		var _g1 = this.wdata.hero.equipment.length;
 		while(_g < _g1) {
 			var i = _g++;
+			if(this.wdata.hero.equipmentSlots.indexOf(i) != -1) {
+				continue;
+			}
 			var e = this.wdata.hero.equipment[i];
 			if(e == null) {
 				continue;
@@ -826,6 +829,9 @@ BattleManager.prototype = {
 			var _g3 = this.wdata.hero.equipment.length;
 			while(_g2 < _g3) {
 				var j = _g2++;
+				if(this.wdata.hero.equipmentSlots.indexOf(j) != -1) {
+					continue;
+				}
 				var e2 = this.wdata.hero.equipment[j];
 				if(e2 == null) {
 					continue;
@@ -848,18 +854,20 @@ BattleManager.prototype = {
 	,CompareEquipmentStrength: function(e1,e2) {
 		var e1Superior = 0;
 		var e2Superior = 0;
-		var h = e1.attributes.h;
+		var mapAttr1 = e1.attributes;
+		var mapAttr2 = e2.attributes;
+		var h = mapAttr1.h;
 		var attrKey_h = h;
 		var attrKey_keys = Object.keys(h);
 		var attrKey_length = attrKey_keys.length;
 		var attrKey_current = 0;
 		while(attrKey_current < attrKey_length) {
 			var attrKey = attrKey_keys[attrKey_current++];
-			if(Object.prototype.hasOwnProperty.call(e2.attributes.h,attrKey)) {
-				if(e1.attributes.h[attrKey] > e2.attributes.h[attrKey]) {
+			if(Object.prototype.hasOwnProperty.call(mapAttr2.h,attrKey)) {
+				if(mapAttr1.h[attrKey] > mapAttr2.h[attrKey]) {
 					e1Superior = 1;
 				}
-				if(e1.attributes.h[attrKey] < e2.attributes.h[attrKey]) {
+				if(mapAttr1.h[attrKey] < mapAttr2.h[attrKey]) {
 					e2Superior = 1;
 				}
 			} else {
@@ -869,18 +877,18 @@ BattleManager.prototype = {
 				return -1;
 			}
 		}
-		var h = e2.attributes.h;
+		var h = mapAttr2.h;
 		var attrKey_h = h;
 		var attrKey_keys = Object.keys(h);
 		var attrKey_length = attrKey_keys.length;
 		var attrKey_current = 0;
 		while(attrKey_current < attrKey_length) {
 			var attrKey = attrKey_keys[attrKey_current++];
-			if(Object.prototype.hasOwnProperty.call(e1.attributes.h,attrKey)) {
-				if(e1.attributes.h[attrKey] > e2.attributes.h[attrKey]) {
+			if(Object.prototype.hasOwnProperty.call(mapAttr1.h,attrKey)) {
+				if(mapAttr1.h[attrKey] > mapAttr2.h[attrKey]) {
 					e1Superior = 1;
 				}
-				if(e1.attributes.h[attrKey] < e2.attributes.h[attrKey]) {
+				if(mapAttr1.h[attrKey] < mapAttr2.h[attrKey]) {
 					e2Superior = 1;
 				}
 			} else {
@@ -888,6 +896,68 @@ BattleManager.prototype = {
 			}
 			if(e1Superior == 1 && e2Superior == 1) {
 				return -1;
+			}
+		}
+		var mapAttr1 = e1.attributeMultiplier;
+		var mapAttr2 = e2.attributeMultiplier;
+		if(mapAttr1 != null || mapAttr2 != null) {
+			if(mapAttr2 == null) {
+				mapAttr2 = new haxe_ds_StringMap();
+			}
+			if(mapAttr1 == null) {
+				mapAttr1 = new haxe_ds_StringMap();
+			}
+			var h = mapAttr1.h;
+			var attrKey_h = h;
+			var attrKey_keys = Object.keys(h);
+			var attrKey_length = attrKey_keys.length;
+			var attrKey_current = 0;
+			while(attrKey_current < attrKey_length) {
+				var attrKey = attrKey_keys[attrKey_current++];
+				if(Object.prototype.hasOwnProperty.call(mapAttr2.h,attrKey)) {
+					if(mapAttr1.h[attrKey] > mapAttr2.h[attrKey]) {
+						e1Superior = 1;
+					}
+					if(mapAttr1.h[attrKey] < mapAttr2.h[attrKey]) {
+						e2Superior = 1;
+					}
+				} else {
+					if(mapAttr1.h[attrKey] > 100) {
+						e1Superior = 1;
+					}
+					if(mapAttr1.h[attrKey] < 100) {
+						e2Superior = 1;
+					}
+				}
+				if(e1Superior == 1 && e2Superior == 1) {
+					return -1;
+				}
+			}
+			var h = mapAttr2.h;
+			var attrKey_h = h;
+			var attrKey_keys = Object.keys(h);
+			var attrKey_length = attrKey_keys.length;
+			var attrKey_current = 0;
+			while(attrKey_current < attrKey_length) {
+				var attrKey = attrKey_keys[attrKey_current++];
+				if(Object.prototype.hasOwnProperty.call(mapAttr1.h,attrKey)) {
+					if(mapAttr1.h[attrKey] > mapAttr2.h[attrKey]) {
+						e1Superior = 1;
+					}
+					if(mapAttr1.h[attrKey] < mapAttr2.h[attrKey]) {
+						e2Superior = 1;
+					}
+				} else {
+					if(mapAttr2.h[attrKey] > 100) {
+						e2Superior = 1;
+					}
+					if(mapAttr2.h[attrKey] < 100) {
+						e1Superior = 1;
+					}
+				}
+				if(e1Superior == 1 && e2Superior == 1) {
+					return -1;
+				}
 			}
 		}
 		if(e1Superior == 1 && e2Superior == 0) {

@@ -586,69 +586,69 @@ class BattleManager {
 					};
 
 					/*
-										if(false){
-											var equipType = random.randomInt(0, 1);
-											
-											var dropQuality = enemy.level;
-											if (wdata.battleAreaRegion > 0) {
-												dropQuality = Std.int(1.2 * dropQuality);
-											}
-											// sword
-											if (equipType == 0) {
-												var attackBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
-												e = {
-													type: 0,
-													requiredAttributes: null,
-													attributes: ["Attack" => attackBonus],
-													seen: false
-												};
-												if (random.randomInt(0, 100) < 15) {
-													var lifeBonus = random.randomInt(1, Std.int(dropQuality + 2));
-													e.attributes["LifeMax"] = lifeBonus;
-												}
-												if (random.randomInt(0, 100) < 15) {
-													var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
-													e.attributes["Speed"] = bonus;
-												}
-												if (random.randomInt(0, 100) < 15) {
-													var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
-													e.attributes["Defense"] = bonus;
-												}
-												if (random.randomInt(0, 100) < 10) {
-													var bonus = random.randomInt(1, dropQuality * 2) + 20;
-													if (bonus > 80)
-														bonus = 80;
-													e.attributes["Piercing"] = bonus;
-												}
-											}
-											// armor
-											if (equipType == 1) {
-												var armorType = random.randomInt(0, 1);
-												var mainBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
-												var mainBonusType = "LifeMax";
-												if (armorType == 0) {
-													mainBonus *= 3;
-												}
-												if (armorType == 1) {
-													mainBonusType = "Defense";
-												}
-												e = {
-													type: 1,
-													requiredAttributes: null,
-													attributes: [mainBonusType => mainBonus],
-													seen: false
-												};
+						if(false){
+							var equipType = random.randomInt(0, 1);
+							
+							var dropQuality = enemy.level;
+							if (wdata.battleAreaRegion > 0) {
+								dropQuality = Std.int(1.2 * dropQuality);
+							}
+							// sword
+							if (equipType == 0) {
+								var attackBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
+								e = {
+									type: 0,
+									requiredAttributes: null,
+									attributes: ["Attack" => attackBonus],
+									seen: false
+								};
+								if (random.randomInt(0, 100) < 15) {
+									var lifeBonus = random.randomInt(1, Std.int(dropQuality + 2));
+									e.attributes["LifeMax"] = lifeBonus;
+								}
+								if (random.randomInt(0, 100) < 15) {
+									var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
+									e.attributes["Speed"] = bonus;
+								}
+								if (random.randomInt(0, 100) < 15) {
+									var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
+									e.attributes["Defense"] = bonus;
+								}
+								if (random.randomInt(0, 100) < 10) {
+									var bonus = random.randomInt(1, dropQuality * 2) + 20;
+									if (bonus > 80)
+										bonus = 80;
+									e.attributes["Piercing"] = bonus;
+								}
+							}
+							// armor
+							if (equipType == 1) {
+								var armorType = random.randomInt(0, 1);
+								var mainBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
+								var mainBonusType = "LifeMax";
+								if (armorType == 0) {
+									mainBonus *= 3;
+								}
+								if (armorType == 1) {
+									mainBonusType = "Defense";
+								}
+								e = {
+									type: 1,
+									requiredAttributes: null,
+									attributes: [mainBonusType => mainBonus],
+									seen: false
+								};
 
-												if (random.randomInt(0, 100) < 20) {
-													var bonus = random.randomInt(1, Std.int(dropQuality / 4 + 2));
-													e.attributes["Attack"] = bonus;
-												}
-												if (random.randomInt(0, 100) < 20) {
-													var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 8 + 2));
-													e.attributes["Speed"] = bonus;
-												}
-											}
-										}
+								if (random.randomInt(0, 100) < 20) {
+									var bonus = random.randomInt(1, Std.int(dropQuality / 4 + 2));
+									e.attributes["Attack"] = bonus;
+								}
+								if (random.randomInt(0, 100) < 20) {
+									var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 8 + 2));
+									e.attributes["Speed"] = bonus;
+								}
+							}
+						}
 					 */
 
 					wdata.hero.equipment.push(e);
@@ -970,10 +970,14 @@ $baseInfo';
 
 	public function DiscardWorseEquipment() {
 		for (i in 0...wdata.hero.equipment.length) {
+			if (wdata.hero.equipmentSlots.contains(i))
+				continue;
 			var e = wdata.hero.equipment[i];
 			if (e == null)
 				continue;
 			for (j in (i + 1)...wdata.hero.equipment.length) {
+				if (wdata.hero.equipmentSlots.contains(j))
+					continue;
 				var e2 = wdata.hero.equipment[j];
 				if (e2 == null)
 					continue;
@@ -996,33 +1000,82 @@ $baseInfo';
 		var e1Superior = 0;
 		var e2Superior = 0;
 
-		for (attrKey in e1.attributes.keys()) {
-			if (e2.attributes.exists(attrKey)) {
-				if (e1.attributes[attrKey] > e2.attributes[attrKey])
-					e1Superior = 1;
-				if (e1.attributes[attrKey] < e2.attributes[attrKey])
-					e2Superior = 1;
-			} else {
-				e1Superior = 1; // e1 has attribute not in e2, thus superior
+		var mapAttr1 = e1.attributes;
+		var mapAttr2 = e2.attributes;
+		{
+			for (attrKey in mapAttr1.keys()) {
+				if (mapAttr2.exists(attrKey)) {
+					if (mapAttr1[attrKey] > mapAttr2[attrKey])
+						e1Superior = 1;
+					if (mapAttr1[attrKey] < mapAttr2[attrKey])
+						e2Superior = 1;
+				} else {
+					e1Superior = 1; // e1 has attribute not in e2, thus superior
+				}
+				// if it any time both items are superior, they are **different**
+				if (e1Superior == 1 && e2Superior == 1)
+					return -1;
 			}
-			// if it any time both items are superior, they are **different**
-			if (e1Superior == 1 && e2Superior == 1)
-				return -1;
+
+			for (attrKey in mapAttr2.keys()) {
+				if (mapAttr1.exists(attrKey)) {
+					if (mapAttr1[attrKey] > mapAttr2[attrKey])
+						e1Superior = 1;
+					if (mapAttr1[attrKey] < mapAttr2[attrKey])
+						e2Superior = 1;
+				} else {
+					e2Superior = 1; // e2 has attribute not in e1, thus superior
+				}
+				// if it any time both items are superior, they are **different**
+				if (e1Superior == 1 && e2Superior == 1)
+					return -1;
+			}
 		}
 
-		for (attrKey in e2.attributes.keys()) {
-			if (e1.attributes.exists(attrKey)) {
-				if (e1.attributes[attrKey] > e2.attributes[attrKey])
-					e1Superior = 1;
-				if (e1.attributes[attrKey] < e2.attributes[attrKey])
-					e2Superior = 1;
-			} else {
-				e2Superior = 1; // e2 has attribute not in e1, thus superior
+		var mapAttr1 = e1.attributeMultiplier;
+		var mapAttr2 = e2.attributeMultiplier;
+		if (mapAttr1 != null || mapAttr2 != null) {
+			if (mapAttr2 == null)
+				mapAttr2 = new Map<String, Int>();
+			if (mapAttr1 == null)
+				mapAttr1 = new Map<String, Int>();
+			{
+				for (attrKey in mapAttr1.keys()) {
+					if (mapAttr2.exists(attrKey)) {
+						if (mapAttr1[attrKey] > mapAttr2[attrKey])
+							e1Superior = 1;
+						if (mapAttr1[attrKey] < mapAttr2[attrKey])
+							e2Superior = 1;
+					} else {
+						if (mapAttr1[attrKey] > 100)
+							e1Superior = 1; // e1 has attribute not in e2, and it is improving
+						if (mapAttr1[attrKey] < 100)
+							e2Superior = 1; // e1 has attribute not in e2, and it is diminishing
+					}
+					// if it any time both items are superior, they are **different**
+					if (e1Superior == 1 && e2Superior == 1)
+						return -1;
+				}
+
+				for (attrKey in mapAttr2.keys()) {
+					if (mapAttr1.exists(attrKey)) {
+						if (mapAttr1[attrKey] > mapAttr2[attrKey])
+							e1Superior = 1;
+						if (mapAttr1[attrKey] < mapAttr2[attrKey])
+							e2Superior = 1;
+					} else {
+						if (mapAttr2[attrKey] > 100)
+							e2Superior = 1; // e2 has attribute not in e1, and it is improving, thus superior
+						if (mapAttr2[attrKey] < 100)
+							e1Superior = 1; // e2 has attribute not in e1, and it is diminishing, thus e2 inferior
+					}
+					// if it any time both items are superior, they are **different**
+					if (e1Superior == 1 && e2Superior == 1)
+						return -1;
+				}
 			}
-			// if it any time both items are superior, they are **different**
-			if (e1Superior == 1 && e2Superior == 1)
-				return -1;
 		}
+
 		if (e1Superior == 1 && e2Superior == 0)
 			return 1;
 		if (e1Superior == 0 && e2Superior == 1)
