@@ -97,7 +97,9 @@ typedef Equipment = {
 	var type:Int;
 	var requiredAttributes:Map<String, Int>;
 	var attributes:Map<String, Int>;
+	var ?attributeMultiplier:Map<String, Int>;
 	var ?generationVariations:Map<String, Int>;
+	var ?generationVariationsMultiplier:Map<String, Int>;
 	var ?generationLevel:Int;
 	var ?generationBaseItem:Int;
 	var seen:Bool;

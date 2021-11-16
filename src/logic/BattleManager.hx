@@ -7,7 +7,6 @@ import haxe.ds.Vector;
 import RPGData;
 import PrototypeItemMaker;
 
-
 typedef PlayerActionExecution = {
 	public var actualAction:PlayerAction->Void;
 }
@@ -36,7 +35,7 @@ class BattleManager {
 	public var playerActions:Map<String, PlayerActionExecution> = new Map<String, PlayerActionExecution>();
 	public var regionRequirements:Array<Int> = [0];
 	public var regionPrizes:Array<RegionPrize> = [{statBonus: null, xpPrize: true}];
-	public var itemBases : Array<ItemBase>;
+	public var itemBases:Array<ItemBase>;
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -418,12 +417,11 @@ class BattleManager {
 		for (i in 0...wdata.hero.equipment.length) {
 			if (wdata.hero.equipmentSlots.contains(i)) {
 				var e = wdata.hero.equipment[i];
-				if(e != null){
+				if (e != null) {
 					for (s in e.attributes.keys()) {
 						e.attributes[s] = Std.int(e.attributes[s] * 0.7);
 					}
 				}
-				
 			} else {
 				wdata.hero.equipment[i] = null;
 			}
@@ -525,7 +523,8 @@ class BattleManager {
 			if (defenseRate < 0)
 				defenseRate = 0;
 
-			var damage:Int = Std.int(attacker.attributesCalculated["Attack"] - defender.attributesCalculated["Defense"] * defenseRate / 100);
+			var attack:Float = attacker.attributesCalculated["Attack"];
+			var damage:Int = Std.int(attack - defender.attributesCalculated["Defense"] * defenseRate / 100);
 			if (damage < 0)
 				damage = 0;
 
@@ -545,24 +544,35 @@ class BattleManager {
 				#end
 				killedInArea[battleArea]++;
 				if (random.randomInt(0, 100) < equipDropChance) {
-
-					var baseItem = random.randomInt(0, itemBases.length-1);
+					var baseItem = random.randomInt(0, itemBases.length - 1);
 					var itemB = itemBases[baseItem];
 					var e:Equipment = null;
-					var stat : Map<String, Int> = [];
-					var statVar : Map<String, Int> = [];
-					var minLevel = Std.int((enemy.level+1)/2 - 3);
-					if(minLevel < 1) minLevel = 1;
-					var maxLevel = Std.int(enemy.level/2+2);
+					var stat:Map<String, Int> = [];
+					var statVar:Map<String, Int> = [];
+					var mul:Map<String, Int> = [];
+					var mulVar:Map<String, Int> = [];
+					var minLevel = Std.int((enemy.level + 1) / 2 - 3);
+					if (minLevel < 1)
+						minLevel = 1;
+					var maxLevel = Std.int(enemy.level / 2 + 2);
 					var level = random.randomInt(minLevel, maxLevel);
-
-					for (s in itemB.scalingStats.keyValueIterator()){
+					for (s in itemB.scalingStats.keyValueIterator()) {
 						var vari = random.randomInt(80, 100);
 						statVar[s.key] = vari;
-						var value = s.value * vari*level;
-						if(value < 100) value = 100;
-						stat[s.key] = Std.int(value/100);
+						var value = s.value * vari * level;
+						if (value < 100)
+							value = 100;
+						stat[s.key] = Std.int(value / 100);
 					}
+					if (itemB.statMultipliers != null)
+						for (s in itemB.statMultipliers.keyValueIterator()) {
+							var vari = random.randomInt(0, 100);
+							mulVar[s.key] = vari;
+							var min = s.value.min;
+							var max = s.value.max;
+							var range = max - min;
+							mul[s.key] = Std.int(min + (range * vari) / 100);
+						}
 					e = {
 						type: itemB.type,
 						seen: false,
@@ -570,74 +580,76 @@ class BattleManager {
 						attributes: stat,
 						generationVariations: statVar,
 						generationLevel: level,
-						generationBaseItem: baseItem
+						generationBaseItem: baseItem,
+						attributeMultiplier: mul,
+						generationVariationsMultiplier: mulVar
 					};
 
 					/*
-					if(false){
-						var equipType = random.randomInt(0, 1);
-						
-						var dropQuality = enemy.level;
-						if (wdata.battleAreaRegion > 0) {
-							dropQuality = Std.int(1.2 * dropQuality);
-						}
-						// sword
-						if (equipType == 0) {
-							var attackBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
-							e = {
-								type: 0,
-								requiredAttributes: null,
-								attributes: ["Attack" => attackBonus],
-								seen: false
-							};
-							if (random.randomInt(0, 100) < 15) {
-								var lifeBonus = random.randomInt(1, Std.int(dropQuality + 2));
-								e.attributes["LifeMax"] = lifeBonus;
-							}
-							if (random.randomInt(0, 100) < 15) {
-								var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
-								e.attributes["Speed"] = bonus;
-							}
-							if (random.randomInt(0, 100) < 15) {
-								var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
-								e.attributes["Defense"] = bonus;
-							}
-							if (random.randomInt(0, 100) < 10) {
-								var bonus = random.randomInt(1, dropQuality * 2) + 20;
-								if (bonus > 80)
-									bonus = 80;
-								e.attributes["Piercing"] = bonus;
-							}
-						}
-						// armor
-						if (equipType == 1) {
-							var armorType = random.randomInt(0, 1);
-							var mainBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
-							var mainBonusType = "LifeMax";
-							if (armorType == 0) {
-								mainBonus *= 3;
-							}
-							if (armorType == 1) {
-								mainBonusType = "Defense";
-							}
-							e = {
-								type: 1,
-								requiredAttributes: null,
-								attributes: [mainBonusType => mainBonus],
-								seen: false
-							};
-	
-							if (random.randomInt(0, 100) < 20) {
-								var bonus = random.randomInt(1, Std.int(dropQuality / 4 + 2));
-								e.attributes["Attack"] = bonus;
-							}
-							if (random.randomInt(0, 100) < 20) {
-								var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 8 + 2));
-								e.attributes["Speed"] = bonus;
-							}
-						}
-					}
-					*/
+										if(false){
+											var equipType = random.randomInt(0, 1);
+											
+											var dropQuality = enemy.level;
+											if (wdata.battleAreaRegion > 0) {
+												dropQuality = Std.int(1.2 * dropQuality);
+											}
+											// sword
+											if (equipType == 0) {
+												var attackBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
+												e = {
+													type: 0,
+													requiredAttributes: null,
+													attributes: ["Attack" => attackBonus],
+													seen: false
+												};
+												if (random.randomInt(0, 100) < 15) {
+													var lifeBonus = random.randomInt(1, Std.int(dropQuality + 2));
+													e.attributes["LifeMax"] = lifeBonus;
+												}
+												if (random.randomInt(0, 100) < 15) {
+													var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
+													e.attributes["Speed"] = bonus;
+												}
+												if (random.randomInt(0, 100) < 15) {
+													var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
+													e.attributes["Defense"] = bonus;
+												}
+												if (random.randomInt(0, 100) < 10) {
+													var bonus = random.randomInt(1, dropQuality * 2) + 20;
+													if (bonus > 80)
+														bonus = 80;
+													e.attributes["Piercing"] = bonus;
+												}
+											}
+											// armor
+											if (equipType == 1) {
+												var armorType = random.randomInt(0, 1);
+												var mainBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
+												var mainBonusType = "LifeMax";
+												if (armorType == 0) {
+													mainBonus *= 3;
+												}
+												if (armorType == 1) {
+													mainBonusType = "Defense";
+												}
+												e = {
+													type: 1,
+													requiredAttributes: null,
+													attributes: [mainBonusType => mainBonus],
+													seen: false
+												};
+
+												if (random.randomInt(0, 100) < 20) {
+													var bonus = random.randomInt(1, Std.int(dropQuality / 4 + 2));
+													e.attributes["Attack"] = bonus;
+												}
+												if (random.randomInt(0, 100) < 20) {
+													var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 8 + 2));
+													e.attributes["Speed"] = bonus;
+												}
+											}
+										}
+					 */
 
 					wdata.hero.equipment.push(e);
 					var e = AddEvent(EquipDrop);
@@ -910,12 +922,21 @@ $baseInfo';
 			"Defense" => 0,
 			"Magic Defense" => 0,
 			"SpeedCount" => 0,
-			"Piercing" => 0
+			"Piercing" => 0,
 		], actor.level, actor.attributesCalculated);
+
+		// var muls = new Map<String, Int>();
+
 		for (es in actor.equipmentSlots) {
 			var e = actor.equipment[es];
-			if (e != null)
+			if (e != null) {
 				AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+				if (e.attributeMultiplier != null) {
+					for (a in e.attributeMultiplier.keyValueIterator()) {
+						actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+					}
+				}
+			}
 		}
 
 		actor.attributesCalculated["Life"] = oldLife;

@@ -464,7 +464,8 @@ BattleManager.prototype = {
 			if(defenseRate < 0) {
 				defenseRate = 0;
 			}
-			var damage = attacker.attributesCalculated.h["Attack"] - defender.attributesCalculated.h["Defense"] * defenseRate / 100 | 0;
+			var attack = attacker.attributesCalculated.h["Attack"];
+			var damage = attack - defender.attributesCalculated.h["Defense"] * defenseRate / 100 | 0;
 			if(damage < 0) {
 				damage = 0;
 			}
@@ -488,6 +489,8 @@ BattleManager.prototype = {
 					var e = null;
 					var stat = new haxe_ds_StringMap();
 					var statVar = new haxe_ds_StringMap();
+					var mul = new haxe_ds_StringMap();
+					var mulVar = new haxe_ds_StringMap();
 					var minLevel = (enemy.level + 1) / 2 - 3 | 0;
 					if(minLevel < 1) {
 						minLevel = 1;
@@ -512,7 +515,26 @@ BattleManager.prototype = {
 						var v = value / 100 | 0;
 						stat.h[s_key] = v;
 					}
-					e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem};
+					if(itemB.statMultipliers != null) {
+						var h = itemB.statMultipliers.h;
+						var s_h = h;
+						var s_keys = Object.keys(h);
+						var s_length = s_keys.length;
+						var s_current = 0;
+						while(s_current < s_length) {
+							var key = s_keys[s_current++];
+							var s_key = key;
+							var s_value = s_h[key];
+							var vari = this.random.randomInt(0,100);
+							mulVar.h[s_key] = vari;
+							var min = s_value.min;
+							var max = s_value.max;
+							var range = max - min;
+							var v = min + range * vari / 100 | 0;
+							mul.h[s_key] = v;
+						}
+					}
+					e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar};
 					this.wdata.hero.equipment.push(e);
 					var e = this.AddEvent(EventTypes.EquipDrop);
 					e.data = this.wdata.hero.equipment.length - 1;
@@ -744,6 +766,20 @@ BattleManager.prototype = {
 			var e = actor.equipment[es];
 			if(e != null) {
 				AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+				if(e.attributeMultiplier != null) {
+					var h = e.attributeMultiplier.h;
+					var a_h = h;
+					var a_keys = Object.keys(h);
+					var a_length = a_keys.length;
+					var a_current = 0;
+					while(a_current < a_length) {
+						var key = a_keys[a_current++];
+						var a_key = key;
+						var a_value = a_h[key];
+						var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
+						actor.attributesCalculated.h[a_key] = v;
+					}
+				}
 			}
 		}
 		actor.attributesCalculated.h["Life"] = oldLife;
@@ -1369,7 +1405,10 @@ var PrototypeItemMaker = function() {
 };
 PrototypeItemMaker.__name__ = true;
 PrototypeItemMaker.prototype = {
-	MakeItems: function() {
+	R: function(min,max) {
+		return { min : min, max : max};
+	}
+	,MakeItems: function() {
 		var _g = new haxe_ds_StringMap();
 		_g.h["LifeMax"] = 5;
 		this.AddItem("Shirt",PrototypeItemMaker.itemType_Armor,_g);
@@ -1382,10 +1421,26 @@ PrototypeItemMaker.prototype = {
 		this.AddItem("Plate",PrototypeItemMaker.itemType_Armor,_g);
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 1;
-		this.AddItem("Sword",PrototypeItemMaker.itemType_Weapon,_g);
+		this.AddItem("Broad Sword",PrototypeItemMaker.itemType_Weapon,_g);
+		var _g = new haxe_ds_StringMap();
+		_g.h["Attack"] = 1;
+		var _g1 = new haxe_ds_StringMap();
+		var value = this.R(110,130);
+		_g1.h["Attack"] = value;
+		var value = this.R(75,95);
+		_g1.h["Speed"] = value;
+		this.AddItem("Heavy Sword",PrototypeItemMaker.itemType_Weapon,_g,_g1);
+		var _g = new haxe_ds_StringMap();
+		_g.h["Attack"] = 1;
+		var _g1 = new haxe_ds_StringMap();
+		var value = this.R(140,180);
+		_g1.h["Attack"] = value;
+		var value = this.R(50,70);
+		_g1.h["Speed"] = value;
+		this.AddItem("Bastard Sword",PrototypeItemMaker.itemType_Weapon,_g,_g1);
 	}
-	,AddItem: function(name,type,scalingStats) {
-		this.items.push({ name : name, type : type, scalingStats : scalingStats});
+	,AddItem: function(name,type,scalingStats,statMultipliers) {
+		this.items.push({ name : name, type : type, scalingStats : scalingStats, statMultipliers : statMultipliers});
 	}
 };
 var ResourceLogic = function() { };

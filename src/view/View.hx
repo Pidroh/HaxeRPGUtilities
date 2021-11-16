@@ -482,7 +482,7 @@ class View {
 
 		{
 			var devTab = new VBox();
-			
+
 			devTab.paddingLeft = 40;
 			var texter = (text, bigfont = false) -> {
 				var label = new Label();
@@ -490,7 +490,6 @@ class View {
 				devTab.addComponent(label);
 
 				if (bigfont) {
-					
 					label.styleString = "font-size: 18";
 				}
 			};
@@ -498,20 +497,20 @@ class View {
 				texter('<h2 style="color: #2e6c80;">Stay up to date</h2>');
 			}
 			{
-				//texter('You can join us on Discord to stay up to date on news for the game!');
+				// texter('You can join us on Discord to stay up to date on news for the game!');
 				texter('You can join us on Discord to stay up to date on news for the game!
 				<br>Hate Discord? you can subscribe to our mailing list!');
 			}
 			texter('<h2 style="color: #2e6c80;">Suggest new features</h2>');
 			texter('There is a channel on Discord to suggest new features and you can also add them as comments on the mailing list articles');
-			//texter('There is a channel on Discord to suggest new features');
+			// texter('There is a channel on Discord to suggest new features');
 			texter('<br><a href="https://discord.com/invite/AtGrxpM" target="_blank">DISCORD</a>', true);
 			texter('<a href="https://pidroh.substack.com/" target="_blank">MAILING LIST</a>', true);
 
 			devTab.text = "News & Suggestions";
-			developTab  = new UIElementWrapper( devTab, tabMaster);
+			developTab = new UIElementWrapper(devTab, tabMaster);
 			developTab.tabVisible = false;
-			//tabMaster.addComponent(devTab);
+			// tabMaster.addComponent(devTab);
 
 			// How to stay up to date
 			// How to suggest features
@@ -710,12 +709,12 @@ class View {
 		equipments[pos].parent.hidden = true;
 	}
 
-	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int) {
+	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false) {
 		while (equipments[pos].values.length <= valuePos) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
 		}
-		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName);
+		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName, percent);
 	}
 
 	public function AddButton(id:String, label:String, onClick, warningMessage = null, position = -1, secondArea = false) {
@@ -779,7 +778,7 @@ class View {
 		valueView.parent.hidden = !visibility;
 	}
 
-	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null) {
+	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null, percent = false) {
 		if (label != null) {
 			res.labelText.text = label;
 		}
@@ -787,7 +786,10 @@ class View {
 			res.bar.pos = current * 100 / max;
 			res.centeredText.text = current + " / " + max;
 		} else {
-			res.centeredText.text = current + "";
+			if (percent)
+				res.centeredText.text = current + "%";
+			else
+				res.centeredText.text = current + "";
 		}
 	}
 

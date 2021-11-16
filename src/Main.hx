@@ -301,6 +301,11 @@ class Main {
 							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value);
 							vid++;
 						}
+						if (e.attributeMultiplier != null)
+							for (v in e.attributeMultiplier.keyValueIterator()) {
+								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, true);
+								vid++;
+							}
 					}
 					if (!e.seen) {
 						equipmentWindowTypeAlert[e.type] = true;
