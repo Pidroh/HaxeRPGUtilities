@@ -7,6 +7,8 @@ import haxe.ds.Vector;
 import RPGData;
 import PrototypeItemMaker;
 
+using PrototypeItemMaker.RandomExtender;
+
 typedef PlayerActionExecution = {
 	public var actualAction:PlayerAction->Void;
 }
@@ -29,6 +31,7 @@ class BattleManager {
 	var balancing:Balancing;
 	var timePeriod = 0.6;
 	var equipDropChance = 30;
+	var equipDropChance_Rare = 15;
 	var random = new Random();
 
 	public var events = new Array<GameEvent>();
@@ -36,6 +39,7 @@ class BattleManager {
 	public var regionRequirements:Array<Int> = [0];
 	public var regionPrizes:Array<RegionPrize> = [{statBonus: null, xpPrize: true}];
 	public var itemBases:Array<ItemBase>;
+	public var modBases:Array<ModBase>;
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -556,6 +560,11 @@ class BattleManager {
 						minLevel = 1;
 					var maxLevel = Std.int(enemy.level / 2 + 2);
 					var level = random.randomInt(minLevel, maxLevel);
+					var prefixPos = -1;
+					var prefixSeed = -1;
+					var suffixPos = -1;
+					var suffixSeed = -1;
+
 					for (s in itemB.scalingStats.keyValueIterator()) {
 						var vari = random.randomInt(80, 100);
 						statVar[s.key] = vari;
@@ -573,6 +582,21 @@ class BattleManager {
 							var range = max - min;
 							mul[s.key] = Std.int(min + (range * vari) / 100);
 						}
+					if (random.randomInt(0, 100) < equipDropChance_Rare) {
+						var modType = random.randomInt(0, 2);
+						var prefixExist = modType == 0 || modType == 2;
+						var suffixExist = modType == 1 || modType == 2;
+						if (prefixExist) {
+							prefixPos = random.randomInt(0, modBases.length - 1);
+							prefixSeed = random.nextInt();
+							AddMod(modBases[prefixPos], mul, prefixSeed);
+						}
+						if (suffixExist) {
+							suffixPos = random.randomInt(0, modBases.length - 1);
+							suffixSeed = random.nextInt();
+							AddMod(modBases[suffixPos], mul, suffixSeed);
+						}
+					}
 					e = {
 						type: itemB.type,
 						seen: false,
@@ -582,7 +606,11 @@ class BattleManager {
 						generationLevel: level,
 						generationBaseItem: baseItem,
 						attributeMultiplier: mul,
-						generationVariationsMultiplier: mulVar
+						generationVariationsMultiplier: mulVar,
+						generationSuffixMod: suffixPos,
+						generationPrefixMod: prefixPos,
+						generationSuffixModSeed: suffixSeed,
+						generationPrefixModSeed: prefixSeed,
 					};
 
 					/*
@@ -699,6 +727,19 @@ class BattleManager {
 		}
 
 		return "";
+	}
+
+	public function AddMod(modBase:ModBase, statMul:Map<String, Int>, seed) {
+		var mulAdd = modBase.statMultipliers;
+		random.seed = seed;
+		for (m in mulAdd.keyValueIterator()) {
+			var val = random.Range(mulAdd[m.key]);
+			if (statMul.exists(m.key)) {
+				statMul[m.key] = Std.int(statMul[m.key] * val / 100);
+			} else {
+				statMul[m.key] = val;
+			}
+		}
 	}
 
 	public function DiscardEquipment(pos) {
@@ -970,14 +1011,10 @@ $baseInfo';
 
 	public function DiscardWorseEquipment() {
 		for (i in 0...wdata.hero.equipment.length) {
-			if (wdata.hero.equipmentSlots.contains(i))
-				continue;
 			var e = wdata.hero.equipment[i];
 			if (e == null)
 				continue;
 			for (j in (i + 1)...wdata.hero.equipment.length) {
-				if (wdata.hero.equipmentSlots.contains(j))
-					continue;
 				var e2 = wdata.hero.equipment[j];
 				if (e2 == null)
 					continue;
@@ -985,10 +1022,14 @@ $baseInfo';
 					continue;
 				var r = CompareEquipmentStrength(e, e2);
 				if (r == 1 || r == 0) { // if they are exactly the same or r1 is better
+					if (wdata.hero.equipmentSlots.contains(j))
+						continue;
 					wdata.hero.equipment[j] = null;
 					continue;
 				}
 				if (r == 2) {
+					if (wdata.hero.equipmentSlots.contains(i))
+						continue;
 					wdata.hero.equipment[i] = null;
 					break;
 				}

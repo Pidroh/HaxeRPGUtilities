@@ -78,6 +78,7 @@ class Main {
 		var proto = new PrototypeItemMaker();
 		proto.MakeItems();
 		bm.itemBases = proto.items;
+		bm.modBases = proto.mods;
 		var view:View = new View();
 
 		var enemyRegionNames = [
@@ -293,7 +294,7 @@ class Main {
 				if (e != null) {
 					if (e.type == typeToShow) {
 						e.seen = view.IsTabSelected(view.equipTab.component) || e.seen;
-						var equipName = GetEquipName(e, bm.itemBases);
+						var equipName = GetEquipName(e, bm.itemBases, bm.modBases);
 						hide = false;
 						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i));
 						var vid = 0;
@@ -393,7 +394,7 @@ class Main {
 					// GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
 				}
 				if (e.type == EquipDrop) {
-					var equipName = GetEquipName(bm.wdata.hero.equipment[e.data], bm.itemBases);
+					var equipName = GetEquipName(bm.wdata.hero.equipment[e.data], bm.itemBases, bm.modBases);
 					ev = '<b>Enemy dropped $equipName</b>';
 				}
 
@@ -484,9 +485,16 @@ class Main {
 		update(0);
 	}
 
-	static function GetEquipName(e:Equipment, itemBases:Array<ItemBase>):String {
+	static function GetEquipName(e:Equipment, itemBases:Array<ItemBase>, modBases:Array<ModBase>):String {
 		if (e.generationBaseItem >= 0) {
-			return itemBases[e.generationBaseItem].name;
+			var name = itemBases[e.generationBaseItem].name;
+			if(e.generationPrefixMod >= 0){
+				name = modBases[e.generationPrefixMod].prefix + " "+name;
+			}
+			if(e.generationSuffixMod >= 0){
+				name = name + " "+modBases[e.generationSuffixMod].suffix;
+			}
+			return name;
 		}
 		var equipName = "Sword";
 		if (e.type == 1)

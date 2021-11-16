@@ -12,6 +12,7 @@ var BattleManager = function() {
 	this.playerActions = new haxe_ds_StringMap();
 	this.events = [];
 	this.random = new seedyrng_Random();
+	this.equipDropChance_Rare = 15;
 	this.equipDropChance = 30;
 	this.timePeriod = 0.6;
 	this.enemySheets = [];
@@ -497,6 +498,10 @@ BattleManager.prototype = {
 					}
 					var maxLevel = enemy.level / 2 + 2 | 0;
 					var level = this.random.randomInt(minLevel,maxLevel);
+					var prefixPos = -1;
+					var prefixSeed = -1;
+					var suffixPos = -1;
+					var suffixSeed = -1;
 					var h = itemB.scalingStats.h;
 					var s_h = h;
 					var s_keys = Object.keys(h);
@@ -534,7 +539,26 @@ BattleManager.prototype = {
 							mul.h[s_key] = v;
 						}
 					}
-					e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar};
+					if(this.random.randomInt(0,100) < this.equipDropChance_Rare) {
+						var modType = this.random.randomInt(0,2);
+						var prefixExist = modType == 0 || modType == 2;
+						var suffixExist = modType == 1 || modType == 2;
+						if(prefixExist) {
+							prefixPos = this.random.randomInt(0,this.modBases.length - 1);
+							prefixSeed = this.random.nextInt();
+							var tmp = this.modBases[prefixPos];
+							var this1 = new haxe__$Int64__$_$_$Int64(prefixSeed >> 31,prefixSeed);
+							this.AddMod(tmp,mul,this1);
+						}
+						if(suffixExist) {
+							suffixPos = this.random.randomInt(0,this.modBases.length - 1);
+							suffixSeed = this.random.nextInt();
+							var tmp = this.modBases[suffixPos];
+							var this1 = new haxe__$Int64__$_$_$Int64(suffixSeed >> 31,suffixSeed);
+							this.AddMod(tmp,mul,this1);
+						}
+					}
+					e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed};
 					this.wdata.hero.equipment.push(e);
 					var e = this.AddEvent(EventTypes.EquipDrop);
 					e.data = this.wdata.hero.equipment.length - 1;
@@ -584,6 +608,27 @@ BattleManager.prototype = {
 			}
 		}
 		return "";
+	}
+	,AddMod: function(modBase,statMul,seed) {
+		var mulAdd = modBase.statMultipliers;
+		this.random.set_seed(seed);
+		var h = mulAdd.h;
+		var m_h = h;
+		var m_keys = Object.keys(h);
+		var m_length = m_keys.length;
+		var m_current = 0;
+		while(m_current < m_length) {
+			var key = m_keys[m_current++];
+			var m_key = key;
+			var m_value = m_h[key];
+			var val = RandomExtender.Range(this.random,mulAdd.h[m_key]);
+			if(Object.prototype.hasOwnProperty.call(statMul.h,m_key)) {
+				var v = statMul.h[m_key] * val / 100 | 0;
+				statMul.h[m_key] = v;
+			} else {
+				statMul.h[m_key] = val;
+			}
+		}
 	}
 	,DiscardEquipment: function(pos) {
 		this.wdata.hero.equipment[pos] = null;
@@ -818,9 +863,6 @@ BattleManager.prototype = {
 		var _g1 = this.wdata.hero.equipment.length;
 		while(_g < _g1) {
 			var i = _g++;
-			if(this.wdata.hero.equipmentSlots.indexOf(i) != -1) {
-				continue;
-			}
 			var e = this.wdata.hero.equipment[i];
 			if(e == null) {
 				continue;
@@ -829,9 +871,6 @@ BattleManager.prototype = {
 			var _g3 = this.wdata.hero.equipment.length;
 			while(_g2 < _g3) {
 				var j = _g2++;
-				if(this.wdata.hero.equipmentSlots.indexOf(j) != -1) {
-					continue;
-				}
 				var e2 = this.wdata.hero.equipment[j];
 				if(e2 == null) {
 					continue;
@@ -841,10 +880,16 @@ BattleManager.prototype = {
 				}
 				var r = this.CompareEquipmentStrength(e,e2);
 				if(r == 1 || r == 0) {
+					if(this.wdata.hero.equipmentSlots.indexOf(j) != -1) {
+						continue;
+					}
 					this.wdata.hero.equipment[j] = null;
 					continue;
 				}
 				if(r == 2) {
+					if(this.wdata.hero.equipmentSlots.indexOf(i) != -1) {
+						continue;
+					}
 					this.wdata.hero.equipment[i] = null;
 					break;
 				}
@@ -1042,6 +1087,7 @@ MainTest.GetBattleManager = function() {
 	var proto = new PrototypeItemMaker();
 	proto.MakeItems();
 	bm.itemBases = proto.items;
+	bm.modBases = proto.mods;
 	return bm;
 };
 MainTest.main = function() {
@@ -1269,7 +1315,7 @@ MainTest.main = function() {
 	while(_g < _g1.length) {
 		var file = _g1[_g];
 		++_g;
-		console.log("test/MainTest.hx:173:",file);
+		console.log("test/MainTest.hx:174:",file);
 		var path = haxe_io_Path.join(["saves/",file]);
 		var json = js_node_Fs.readFileSync(path,{ encoding : "utf8"});
 		var bm = MainTest.GetBattleManager();
@@ -1457,20 +1503,21 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:303:","  _____ ");
 		console.log("test/MainTest.hx:304:","  _____ ");
 		console.log("test/MainTest.hx:305:","  _____ ");
-		console.log("test/MainTest.hx:306:",json);
-		console.log("test/MainTest.hx:307:","  _____ ");
+		console.log("test/MainTest.hx:306:","  _____ ");
+		console.log("test/MainTest.hx:307:",json);
 		console.log("test/MainTest.hx:308:","  _____ ");
 		console.log("test/MainTest.hx:309:","  _____ ");
-		console.log("test/MainTest.hx:310:",json2);
+		console.log("test/MainTest.hx:310:","  _____ ");
+		console.log("test/MainTest.hx:311:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
 };
 Math.__name__ = true;
 var PrototypeItemMaker = function() {
+	this.mods = [];
 	this.items = [];
 };
 PrototypeItemMaker.__name__ = true;
@@ -1495,23 +1542,53 @@ PrototypeItemMaker.prototype = {
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 1;
 		var _g1 = new haxe_ds_StringMap();
-		var value = this.R(110,130);
+		var value = this.R(115,115);
 		_g1.h["Attack"] = value;
-		var value = this.R(75,95);
+		var value = this.R(90,90);
 		_g1.h["Speed"] = value;
 		this.AddItem("Heavy Sword",PrototypeItemMaker.itemType_Weapon,_g,_g1);
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 1;
 		var _g1 = new haxe_ds_StringMap();
-		var value = this.R(140,180);
+		var value = this.R(150,150);
 		_g1.h["Attack"] = value;
-		var value = this.R(50,70);
+		var value = this.R(70,70);
 		_g1.h["Speed"] = value;
 		this.AddItem("Bastard Sword",PrototypeItemMaker.itemType_Weapon,_g,_g1);
+		var _g = new haxe_ds_StringMap();
+		var value = this.R(110,125);
+		_g.h["Attack"] = value;
+		this.AddMod("of the Brute","Barbarian's",_g);
+		var _g = new haxe_ds_StringMap();
+		var value = this.R(110,125);
+		_g.h["Defense"] = value;
+		this.AddMod("of the Guardian","Golem's",_g);
+		var _g = new haxe_ds_StringMap();
+		var value = this.R(110,125);
+		_g.h["Speed"] = value;
+		this.AddMod("of the Thief","Zidane's",_g);
+		var _g = new haxe_ds_StringMap();
+		var value = this.R(110,125);
+		_g.h["LifeMax"] = value;
+		this.AddMod("of Nature","Aerith's",_g);
+		var _g = new haxe_ds_StringMap();
+		var value = this.R(140,170);
+		_g.h["Attack"] = value;
+		var value = this.R(60,80);
+		_g.h["Defense"] = value;
+		this.AddMod("of Rage","Beserker's",_g);
+	}
+	,AddMod: function(suffix,prefix,statMultipliers) {
+		this.mods.push({ prefix : prefix, suffix : suffix, statMultipliers : statMultipliers});
 	}
 	,AddItem: function(name,type,scalingStats,statMultipliers) {
 		this.items.push({ name : name, type : type, scalingStats : scalingStats, statMultipliers : statMultipliers});
 	}
+};
+var RandomExtender = function() { };
+RandomExtender.__name__ = true;
+RandomExtender.Range = function(random,range) {
+	return random.randomInt(range.min,range.max);
 };
 var ResourceLogic = function() { };
 ResourceLogic.__name__ = true;

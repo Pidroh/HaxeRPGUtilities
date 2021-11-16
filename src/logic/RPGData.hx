@@ -102,6 +102,10 @@ typedef Equipment = {
 	var ?generationVariationsMultiplier:Map<String, Int>;
 	var ?generationLevel:Int;
 	var ?generationBaseItem:Int;
+	var ?generationPrefixMod:Int;
+	var ?generationSuffixMod:Int;
+	var ?generationPrefixModSeed:Int;
+	var ?generationSuffixModSeed:Int;
 	var seen:Bool;
 }
 

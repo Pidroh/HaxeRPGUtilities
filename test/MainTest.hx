@@ -11,6 +11,7 @@ class MainTest {
 		var proto = new PrototypeItemMaker();
 		proto.MakeItems();
 		bm.itemBases = proto.items;
+		bm.modBases = proto.mods;
 		return bm;
 	}
 
