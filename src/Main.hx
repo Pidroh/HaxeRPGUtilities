@@ -296,7 +296,10 @@ class Main {
 						e.seen = view.IsTabSelected(view.equipTab.component) || e.seen;
 						var equipName = GetEquipName(e, bm.itemBases, bm.modBases);
 						hide = false;
-						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i));
+						var rarity = 0;
+						if(e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0)
+							rarity = 1;
+						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity);
 						var vid = 0;
 						for (v in e.attributes.keyValueIterator()) {
 							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value);

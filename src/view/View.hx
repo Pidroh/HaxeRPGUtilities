@@ -686,9 +686,14 @@ class View {
 		}
 	}
 
-	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, numberOfValues:Int = -1) {
+	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool,rarity = 0, numberOfValues:Int = -1) {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
+		var color = "#000000";
+		if(rarity == 1){
+			color = "#002299";
+		}
+		equipments[pos].name.color = color;
 		if (equipped) {
 			equipments[pos].actionButtons[0].text = "Unequip";
 			equipments[pos].parent.borderSize = 2;
