@@ -803,32 +803,6 @@ BattleManager.prototype = {
 		_g.h["SpeedCount"] = 0;
 		_g.h["Piercing"] = 0;
 		AttributeLogic.Add(actor1,_g,actor.level,actor.attributesCalculated);
-		var _g = 0;
-		var _g1 = actor.equipmentSlots;
-		while(_g < _g1.length) {
-			var es = _g1[_g];
-			++_g;
-			var e = actor.equipment[es];
-			if(e != null) {
-				AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
-				if(e.attributeMultiplier != null) {
-					var h = e.attributeMultiplier.h;
-					var a_h = h;
-					var a_keys = Object.keys(h);
-					var a_length = a_keys.length;
-					var a_current = 0;
-					while(a_current < a_length) {
-						var key = a_keys[a_current++];
-						var a_key = key;
-						var a_value = a_h[key];
-						var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
-						actor.attributesCalculated.h[a_key] = v;
-					}
-				}
-			}
-		}
-		actor.attributesCalculated.h["Life"] = oldLife;
-		actor.attributesCalculated.h["SpeedCount"] = oldSpeedCount;
 		if(actor == this.wdata.hero) {
 			var _g = 0;
 			var _g1 = this.wdata.regionProgress.length;
@@ -854,6 +828,41 @@ BattleManager.prototype = {
 				}
 			}
 		}
+		var _g = 0;
+		var _g1 = actor.equipmentSlots;
+		while(_g < _g1.length) {
+			var es = _g1[_g];
+			++_g;
+			var e = actor.equipment[es];
+			if(e != null) {
+				AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+			}
+		}
+		var _g = 0;
+		var _g1 = actor.equipmentSlots;
+		while(_g < _g1.length) {
+			var es = _g1[_g];
+			++_g;
+			var e = actor.equipment[es];
+			if(e != null) {
+				if(e.attributeMultiplier != null) {
+					var h = e.attributeMultiplier.h;
+					var a_h = h;
+					var a_keys = Object.keys(h);
+					var a_length = a_keys.length;
+					var a_current = 0;
+					while(a_current < a_length) {
+						var key = a_keys[a_current++];
+						var a_key = key;
+						var a_value = a_h[key];
+						var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
+						actor.attributesCalculated.h[a_key] = v;
+					}
+				}
+			}
+		}
+		actor.attributesCalculated.h["Life"] = oldLife;
+		actor.attributesCalculated.h["SpeedCount"] = oldSpeedCount;
 	}
 	,AdvanceArea: function() {
 		this.ChangeBattleArea(this.wdata.battleArea + 1);

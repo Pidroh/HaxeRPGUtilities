@@ -968,21 +968,6 @@ $baseInfo';
 
 		// var muls = new Map<String, Int>();
 
-		for (es in actor.equipmentSlots) {
-			var e = actor.equipment[es];
-			if (e != null) {
-				AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
-				if (e.attributeMultiplier != null) {
-					for (a in e.attributeMultiplier.keyValueIterator()) {
-						actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
-					}
-				}
-			}
-		}
-
-		actor.attributesCalculated["Life"] = oldLife;
-		actor.attributesCalculated["SpeedCount"] = oldSpeedCount;
-
 		if (actor == wdata.hero) {
 			for (i in 0...wdata.regionProgress.length) {
 				var pro = wdata.regionProgress[i];
@@ -1003,6 +988,30 @@ $baseInfo';
 				}
 			}
 		}
+
+		//first do adds
+		for (es in actor.equipmentSlots) {
+			var e = actor.equipment[es];
+			if (e != null) {
+				AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+			}
+		}
+		//then do multipliers
+		for (es in actor.equipmentSlots) {
+			var e = actor.equipment[es];
+			if (e != null) {
+				if (e.attributeMultiplier != null) {
+					for (a in e.attributeMultiplier.keyValueIterator()) {
+						actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+					}
+				}
+			}
+		}
+
+		actor.attributesCalculated["Life"] = oldLife;
+		actor.attributesCalculated["SpeedCount"] = oldSpeedCount;
+
+		
 	}
 
 	public function AdvanceArea() {
