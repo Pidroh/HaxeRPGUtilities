@@ -558,6 +558,20 @@ BattleManager.prototype = {
 							this.AddMod(tmp,mul,this1);
 						}
 					}
+					var h = mul.h;
+					var m_h = h;
+					var m_keys = Object.keys(h);
+					var m_length = m_keys.length;
+					var m_current = 0;
+					while(m_current < m_length) {
+						var key = m_keys[m_current++];
+						var m_key = key;
+						var m_value = m_h[key];
+						if(m_value % 5 != 0) {
+							var v = ((m_value + 4) / 5 | 0) * 5;
+							mul.h[m_key] = v;
+						}
+					}
 					e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed};
 					this.wdata.hero.equipment.push(e);
 					var e = this.AddEvent(EventTypes.EquipDrop);
@@ -1565,25 +1579,25 @@ PrototypeItemMaker.prototype = {
 		_g1.h["Speed"] = value;
 		this.AddItem("Bastard Sword",PrototypeItemMaker.itemType_Weapon,_g,_g1);
 		var _g = new haxe_ds_StringMap();
-		var value = this.R(110,125);
+		var value = this.R(105,120);
 		_g.h["Attack"] = value;
 		this.AddMod("of the Brute","Barbarian's",_g);
 		var _g = new haxe_ds_StringMap();
-		var value = this.R(110,125);
+		var value = this.R(120,150);
 		_g.h["Defense"] = value;
 		this.AddMod("of the Guardian","Golem's",_g);
 		var _g = new haxe_ds_StringMap();
-		var value = this.R(110,125);
+		var value = this.R(115,130);
 		_g.h["Speed"] = value;
 		this.AddMod("of the Thief","Zidane's",_g);
 		var _g = new haxe_ds_StringMap();
-		var value = this.R(110,125);
+		var value = this.R(130,150);
 		_g.h["LifeMax"] = value;
 		this.AddMod("of Nature","Aerith's",_g);
 		var _g = new haxe_ds_StringMap();
-		var value = this.R(140,170);
+		var value = this.R(130,150);
 		_g.h["Attack"] = value;
-		var value = this.R(60,80);
+		var value = this.R(70,90);
 		_g.h["Defense"] = value;
 		this.AddMod("of Rage","Beserker's",_g);
 	}

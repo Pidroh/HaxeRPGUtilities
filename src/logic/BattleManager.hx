@@ -597,6 +597,11 @@ class BattleManager {
 							AddMod(modBases[suffixPos], mul, suffixSeed);
 						}
 					}
+					for (m in mul.keyValueIterator()){
+						if(m.value%5 != 0){
+							mul[m.key] = (Std.int((m.value+4) / 5)*5);
+						}
+					}
 					e = {
 						type: itemB.type,
 						seen: false,

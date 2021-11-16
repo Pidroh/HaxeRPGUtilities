@@ -23,12 +23,12 @@ class PrototypeItemMaker {
 		AddItem("Heavy Sword", itemType_Weapon, ["Attack" => 1], ["Attack" => R(115, 115), "Speed" => R(90, 90)]);
 		AddItem("Bastard Sword", itemType_Weapon, ["Attack" => 1], ["Attack" => R(150, 150), "Speed" => R(70, 70)]);
 
-		AddMod("of the Brute", "Barbarian's", ["Attack" => R(110, 125)]);
-		AddMod("of the Guardian", "Golem's", ["Defense" => R(110, 125)]);
-		AddMod("of the Thief", "Zidane's", ["Speed" => R(110, 125)]);
-		AddMod("of Nature", "Aerith's", ["LifeMax" => R(110, 125)]);
+		AddMod("of the Brute", "Barbarian's", ["Attack" => R(105, 120)]);
+		AddMod("of the Guardian", "Golem's", ["Defense" => R(120, 150)]);
+		AddMod("of the Thief", "Zidane's", ["Speed" => R(115, 130)]);
+		AddMod("of Nature", "Aerith's", ["LifeMax" => R(130, 150)]);
 
-		AddMod("of Rage", "Beserker's", ["Attack" => R(140, 170), "Defense" => R(60, 80)]);
+		AddMod("of Rage", "Beserker's", ["Attack" => R(130, 150), "Defense" => R(70, 90)]);
 
 		// AddItem("Bastard Sword", itemType_Weapon, ["Attack" => 1], ["Attack"=>R(200,280), "Speed"=>R(30, 45)]);
 		// AddItem("Bastard Sword", itemType_Weapon, ["Attack" => 1.1], ["Speed"=>R(30, 40), "Power"=>(50,60)]);
