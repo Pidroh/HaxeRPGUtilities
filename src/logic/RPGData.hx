@@ -127,7 +127,7 @@ typedef AreaPersistence = {
 	var area:Int;
 	var maxArea:Int;
 	var maxAreaRecord:Int;
-	var maxAreaOnPrestigeRecord: Array<Int>;
+	var maxAreaOnPrestigeRecord:Array<Int>;
 	var amountEnemyKilledInArea:Int;
 }
 
@@ -188,4 +188,25 @@ class GameEvent {
 	public function new(eType) {
 		type = eType;
 	}
+}
+
+enum Target {
+	SELF;
+	ENEMY;
+	ALL;
+}
+
+typedef Buff = {
+	var addStats:Map<String, Int>;
+	var mulStats:Map<String, Int>;
+}
+
+typedef Effect = {
+	var target:Target;
+	var effectExecution:(Actor, Array<Actor>) -> Void;
+}
+
+typedef Skill = {
+	var id : String;
+	var effects : Array<Effect>;
 }

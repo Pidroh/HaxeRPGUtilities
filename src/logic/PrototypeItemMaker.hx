@@ -28,7 +28,6 @@ class PrototypeItemMaker {
 		AddMod("of the Guardian", "Golem's", ["Defense" => R(120, 150)]);
 		AddMod("of the Thief", "Zidane's", ["Speed" => R(115, 130)]);
 		AddMod("of Nature", "Aerith's", ["LifeMax" => R(130, 150)]);
-
 		AddMod("of Rage", "Beserker's", ["Attack" => R(115, 125), "Defense" => R(70, 90)]);
 
 		// AddItem("Bastard Sword", itemType_Weapon, ["Attack" => 1], ["Attack"=>R(200,280), "Speed"=>R(30, 45)]);

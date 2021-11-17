@@ -1711,6 +1711,12 @@ var GameEvent = function(eType) {
 	this.type = eType;
 };
 GameEvent.__name__ = true;
+var Target = $hxEnums["Target"] = { __ename__:true,__constructs__:null
+	,SELF: {_hx_name:"SELF",_hx_index:0,__enum__:"Target",toString:$estr}
+	,ENEMY: {_hx_name:"ENEMY",_hx_index:1,__enum__:"Target",toString:$estr}
+	,ALL: {_hx_name:"ALL",_hx_index:2,__enum__:"Target",toString:$estr}
+};
+Target.__constructs__ = [Target.SELF,Target.ENEMY,Target.ALL];
 var SaveAssistant = function() { };
 SaveAssistant.__name__ = true;
 SaveAssistant.GetPersistenceMaster = function(jsonData) {

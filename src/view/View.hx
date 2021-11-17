@@ -293,7 +293,7 @@ class View {
 
 			{
 				var title = new Label();
-				title.htmlText = "Alpha 0.07B. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
+				title.htmlText = "Alpha 0.08C. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
 				title.percentWidth = 100;
 				title.textAlign = "right";
 				title.paddingRight = 20;
@@ -573,13 +573,14 @@ class View {
 		var currentStateVisible = element.tabVisible;
 		if (visible != currentStateVisible) {
 			if (visible) {
-				if (element.parent.childComponents.length <= element.desiredPosition) {
+				if (element.parent.childComponents.length <= element.desiredPosition || element.desiredPosition < 0) {
 					element.parent.addComponent(element.component);
 				} else {
 					element.parent.addComponentAt(element.component, element.desiredPosition);
 				}
 			} else {
-				tabMaster.removePage(element.desiredPosition);
+				if(element.desiredPosition >= 0)
+					tabMaster.removePage(element.desiredPosition);
 
 				// tabMaster.removeAllPages();
 				element.parent.removeComponent(element.component);
