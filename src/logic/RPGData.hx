@@ -71,6 +71,7 @@ typedef Actor = {
 	var equipmentSlots:Array<Int>;
 	var reference:ActorReference;
 	var ?buffs : Array<Buff>;
+	var ?usableSkills : Array<SkillUsable>;
 }
 
 typedef LevelGrowth = {
@@ -208,6 +209,11 @@ typedef Buff = {
 typedef Effect = {
 	var target:Target;
 	var effectExecution:(Int, Actor, Array<Actor>) -> Void;
+}
+
+typedef SkillUsable = {
+	var id : String;
+	var level : Int;
 }
 
 typedef Skill = {

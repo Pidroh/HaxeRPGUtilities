@@ -813,7 +813,8 @@ BattleManager.prototype = {
 		_g.h["Life"] = 5;
 		_g.h["Speed"] = 0;
 		_g.h["Defense"] = 0;
-		_g.h["Magic Defense"] = 0;
+		_g.h["MagicAttack"] = 0;
+		_g.h["MagicDefense"] = 0;
 		_g.h["SpeedCount"] = 0;
 		_g.h["Piercing"] = 0;
 		AttributeLogic.Add(actor1,_g,actor.level,actor.attributesCalculated);

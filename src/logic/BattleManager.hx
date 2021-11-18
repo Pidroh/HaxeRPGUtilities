@@ -966,7 +966,8 @@ $baseInfo';
 			"Life" => 5,
 			"Speed" => 0,
 			"Defense" => 0,
-			"Magic Defense" => 0,
+			"MagicAttack" => 0,
+			"MagicDefense" => 0,
 			"SpeedCount" => 0,
 			"Piercing" => 0,
 		], actor.level, actor.attributesCalculated);

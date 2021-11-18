@@ -178,6 +178,12 @@ class Main {
 			bm.SendJsonPersistentData(persistenceMaster.jsonGameplay);
 		}
 
+		bm.wdata.hero.usableSkills = [{
+			id: "Regen",
+			level: 1
+		}];
+		//bm.wdata.hero.usableSkills.push();
+
 		var storyRuntime:StoryRuntimeData = {
 			currentStoryProgression: null,
 			currentCutsceneIndex: -1,
