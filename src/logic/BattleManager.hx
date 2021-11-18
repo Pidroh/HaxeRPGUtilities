@@ -40,6 +40,7 @@ class BattleManager {
 	public var regionPrizes:Array<RegionPrize> = [{statBonus: null, xpPrize: true}];
 	public var itemBases:Array<ItemBase>;
 	public var modBases:Array<ModBase>;
+	public var skillBases:Array<Skill>;
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];

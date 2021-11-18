@@ -76,10 +76,18 @@ class Main {
 		}
 
 		var bm:BattleManager = new BattleManager();
-		var proto = new PrototypeItemMaker();
-		proto.MakeItems();
-		bm.itemBases = proto.items;
-		bm.modBases = proto.mods;
+		{
+			var proto = new PrototypeItemMaker();
+			proto.MakeItems();
+			bm.itemBases = proto.items;
+			bm.modBases = proto.mods;
+		}
+		{
+			var proto = new PrototypeSkillMaker();
+			proto.init();
+			bm.skillBases = proto.skills;
+		}
+		
 		var view:View = new View();
 
 		var enemyRegionNames = [
