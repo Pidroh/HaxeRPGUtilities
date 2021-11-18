@@ -49,6 +49,24 @@ class BattleManager {
 		return i;
 	}
 
+	public function UseSkill(skill: SkillUsable, actor : Actor){
+		var id = skill.id;
+		var skillBase = GetSkillBase(id);
+		//skillBase.effects
+	}
+
+	public function AddBuff(buff : Buff, actor : Actor){
+		actor.buffs.push(buff);
+	}
+
+	public function GetSkillBase(id):Skill{
+		for(s in skillBases){
+			if(s.id == id)
+				return s;
+		}
+		return null;
+	}
+
 	public function ChangeBattleArea(area:Int) {
 		// previous area code
 		// reset kill count of complete areas when leaving them

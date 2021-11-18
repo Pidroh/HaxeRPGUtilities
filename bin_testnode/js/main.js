@@ -107,6 +107,25 @@ BattleManager.prototype = {
 		}
 		return i;
 	}
+	,UseSkill: function(skill,actor) {
+		var id = skill.id;
+		var skillBase = this.GetSkillBase(id);
+	}
+	,AddBuff: function(buff,actor) {
+		actor.buffs.push(buff);
+	}
+	,GetSkillBase: function(id) {
+		var _g = 0;
+		var _g1 = this.skillBases;
+		while(_g < _g1.length) {
+			var s = _g1[_g];
+			++_g;
+			if(s.id == id) {
+				return s;
+			}
+		}
+		return null;
+	}
 	,ChangeBattleArea: function(area) {
 		if(this.wdata.killedInArea[this.wdata.battleArea] >= this.wdata.necessaryToKillInArea) {
 			this.wdata.killedInArea[this.wdata.battleArea] = 0;

@@ -208,7 +208,7 @@ typedef Buff = {
 
 typedef Effect = {
 	var target:Target;
-	var effectExecution:(Int, Actor, Array<Actor>) -> Void;
+	var effectExecution:(BattleManager, Int, Actor, Array<Actor>) -> Void;
 }
 
 typedef SkillUsable = {
