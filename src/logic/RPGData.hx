@@ -70,6 +70,7 @@ typedef Actor = {
 	var equipment:Array<Equipment>;
 	var equipmentSlots:Array<Int>;
 	var reference:ActorReference;
+	var ?buffs : Array<Buff>;
 }
 
 typedef LevelGrowth = {
@@ -197,13 +198,16 @@ enum Target {
 }
 
 typedef Buff = {
+	var uniqueId: String;
+	var strength: Int; //this is used for overwriting with stronger buffs
+	var duration : Int;
 	var addStats:Map<String, Int>;
 	var mulStats:Map<String, Int>;
 }
 
 typedef Effect = {
 	var target:Target;
-	var effectExecution:(Actor, Array<Actor>) -> Void;
+	var effectExecution:(Int, Actor, Array<Actor>) -> Void;
 }
 
 typedef Skill = {

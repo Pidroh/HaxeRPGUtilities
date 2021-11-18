@@ -30,6 +30,7 @@ import GameAnalyticsIntegration;
 import FileReader;
 import StoryControl;
 import PrototypeItemMaker;
+import PrototypeSkillMaker;
 
 class Main {
 	static var hero:Actor;
