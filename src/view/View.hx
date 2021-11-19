@@ -427,6 +427,9 @@ class View {
 		heroView = GetActorView("You", battleView);
 		enemyView = GetActorView("Enemy", battleView);
 
+		var battleButtonView = CreateContainer(verticalBox, false);
+		s
+
 		{
 			equipTabChild = new ContinuousHBox();
 			var tabBar = new TabBar();

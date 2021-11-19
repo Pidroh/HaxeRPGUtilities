@@ -49,19 +49,19 @@ class BattleManager {
 		return i;
 	}
 
-	public function UseSkill(skill: SkillUsable, actor : Actor){
+	public function UseSkill(skill:SkillUsable, actor:Actor) {
 		var id = skill.id;
 		var skillBase = GetSkillBase(id);
-		//skillBase.effects
+		// skillBase.effects
 	}
 
-	public function AddBuff(buff : Buff, actor : Actor){
+	public function AddBuff(buff:Buff, actor:Actor) {
 		actor.buffs.push(buff);
 	}
 
-	public function GetSkillBase(id):Skill{
-		for(s in skillBases){
-			if(s.id == id)
+	public function GetSkillBase(id):Skill {
+		for (s in skillBases) {
+			if (s.id == id)
 				return s;
 		}
 		return null;
@@ -172,7 +172,9 @@ class BattleManager {
 				equipment: [],
 				xp: null,
 				attributesCalculated: stats2,
-				reference: new ActorReference(1, 0)
+				reference: new ActorReference(1, 0),
+				buffs: [],
+				usableSkills: []
 			};
 			if (sheet != null) {
 				var mul = sheet.speciesMultiplier;
@@ -308,6 +310,18 @@ class BattleManager {
 		if (wdata.prestigeTimes >= 0 == false)
 			wdata.prestigeTimes = 0;
 
+		if (wdata.hero.buffs != null == false) {
+			wdata.hero.buffs = new Array<Buff>();
+		}
+
+		if (wdata.hero.usableSkills != null == false) {
+			wdata.hero.usableSkills = new Array<SkillUsable>();
+		}
+
+		if (wdata.enemy != null)
+			if (wdata.enemy.buffs != null == false)
+				wdata.enemy.buffs = new Array<Buff>();
+
 		var addAction = (id:String, action:PlayerAction, callback:PlayerAction->Void) -> {
 			// only if action isn't already defined
 			var w = wdata;
@@ -381,6 +395,14 @@ class BattleManager {
 		addAction("prestige", createAction(), (a) -> {
 			PrestigeExecute();
 		});
+
+		for (i in 0...7){
+			var buttonId = i;
+			addAction("battleaction_"+i, createAction(), struct -> {
+				var skill = wdata.hero.usableSkills[i];
+				UseSkill(skill, wdata.hero);
+			});
+		}
 
 		wdata.hero.attributesBase = [
 			"Life" => 20,
@@ -510,33 +532,53 @@ class BattleManager {
 
 		// c = Sys.getChar(true);
 		if (attackHappen) {
-			var gEvent = AddEvent(ActorAttack);
-			var attacker = hero;
-			var defender = enemy;
-			// var which = 0;
-
-			var decided = false;
-			for (i in 0...100) { // should be a while(true) but just to be safer
-				for (battleActor in 0...2) {
-					var bActor = hero;
-					if (battleActor == 1)
-						bActor = enemy;
-					bActor.attributesCalculated["SpeedCount"] += bActor.attributesCalculated["Speed"];
-					var sc = bActor.attributesCalculated["SpeedCount"];
-					// trace('$battleActor speed count $sc');
-					if (decided == false) {
-						if (bActor.attributesCalculated["SpeedCount"] > 1000) {
-							bActor.attributesCalculated["SpeedCount"] = bActor.attributesCalculated["SpeedCount"] - 1000;
-							if (battleActor == 1) {
-								attacker = enemy;
-								defender = hero;
-							}
-							decided = true;
-						}
+			for (i in 0...2) {
+				var actor = wdata.hero;
+				if (i == 1)
+					actor = wdata.enemy;
+				{
+					var regen = actor.attributesCalculated["Regen"];
+					if (regen > 0) {
+						var recovery = regen * actor.attributesCalculated["LifeMax"] / 100;
+						if (recovery < 1)
+							recovery = 1;
+						actor.attributesCalculated["Life"] += Std.int(recovery);
 					}
 				}
-				if (decided)
-					break;
+			}
+
+			var gEvent = AddEvent(ActorAttack);
+
+			// var which = 0;
+			var attacker:Actor = null;
+			var defender:Actor = null;
+			// Decide attacker and defender
+			{
+				var decided = false;
+				attacker = hero;
+				defender = enemy;
+				for (i in 0...100) { // should be a while(true) but just to be safer
+					for (battleActor in 0...2) {
+						var bActor = hero;
+						if (battleActor == 1)
+							bActor = enemy;
+						bActor.attributesCalculated["SpeedCount"] += bActor.attributesCalculated["Speed"];
+						var sc = bActor.attributesCalculated["SpeedCount"];
+						// trace('$battleActor speed count $sc');
+						if (decided == false) {
+							if (bActor.attributesCalculated["SpeedCount"] > 1000) {
+								bActor.attributesCalculated["SpeedCount"] = bActor.attributesCalculated["SpeedCount"] - 1000;
+								if (battleActor == 1) {
+									attacker = enemy;
+									defender = hero;
+								}
+								decided = true;
+							}
+						}
+					}
+					if (decided)
+						break;
+				}
 			}
 
 			var defenseRate = 100;
@@ -616,9 +658,9 @@ class BattleManager {
 							AddMod(modBases[suffixPos], mul, suffixSeed);
 						}
 					}
-					for (m in mul.keyValueIterator()){
-						if(m.value%5 != 0){
-							mul[m.key] = (Std.int((m.value+4) / 5)*5);
+					for (m in mul.keyValueIterator()) {
+						if (m.value % 5 != 0) {
+							mul[m.key] = (Std.int((m.value + 4) / 5) * 5);
 						}
 					}
 					e = {
@@ -747,6 +789,23 @@ class BattleManager {
 				var e = AddEvent(ActorDead);
 				e.origin = hero.reference;
 				wdata.playerTimesKilled++;
+			}
+
+			var attackerBuffChanged = false;
+			for (b in 0...attacker.buffs.length) {
+				var bu = attacker.buffs[b];
+				if (attacker.buffs[b] != null) {
+					bu.duration -= 1;
+					if (bu.duration <= 0) {
+						attacker.buffs[b] = null;
+						// attacker.buffs.remove(bu);
+						attackerBuffChanged = true;
+					}
+				}
+			}
+			while (attacker.buffs.remove(null)) {};
+			if (attackerBuffChanged) {
+				RecalculateAttributes(attacker);
 			}
 		}
 
@@ -1014,14 +1073,19 @@ $baseInfo';
 			}
 		}
 
-		//first do adds
+		// first do adds
 		for (es in actor.equipmentSlots) {
 			var e = actor.equipment[es];
 			if (e != null) {
 				AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
 			}
 		}
-		//then do multipliers
+		for (b in actor.buffs) {
+			if (b.addStats != null)
+				AttributeLogic.Add(actor.attributesCalculated, b.addStats, 1, actor.attributesCalculated);
+		}
+
+		// then do multipliers
 		for (es in actor.equipmentSlots) {
 			var e = actor.equipment[es];
 			if (e != null) {
@@ -1032,11 +1096,15 @@ $baseInfo';
 				}
 			}
 		}
+		for (b in actor.buffs) {
+			if (b.mulStats != null)
+				for (a in b.mulStats.keyValueIterator()) {
+					actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+				}
+		}
 
 		actor.attributesCalculated["Life"] = oldLife;
 		actor.attributesCalculated["SpeedCount"] = oldSpeedCount;
-
-		
 	}
 
 	public function AdvanceArea() {

@@ -209,7 +209,7 @@ BattleManager.prototype = {
 		_g.h["Magic Defense"] = 0;
 		_g.h["Piercing"] = 0;
 		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0)};
+		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
 		if(sheet != null) {
 			var mul = sheet.speciesMultiplier;
 			if(mul != null) {
@@ -288,6 +288,17 @@ BattleManager.prototype = {
 		}
 		if(this.wdata.prestigeTimes >= 0 == false) {
 			this.wdata.prestigeTimes = 0;
+		}
+		if(this.wdata.hero.buffs != null == false) {
+			this.wdata.hero.buffs = [];
+		}
+		if(this.wdata.hero.usableSkills != null == false) {
+			this.wdata.hero.usableSkills = [];
+		}
+		if(this.wdata.enemy != null) {
+			if(this.wdata.enemy.buffs != null == false) {
+				this.wdata.enemy.buffs = [];
+			}
 		}
 		var addAction = function(id,action,callback) {
 			var w = _gthis.wdata;
@@ -439,10 +450,31 @@ BattleManager.prototype = {
 			this.wdata.hero.attributesCalculated.h["Life"] = life;
 		}
 		if(attackHappen) {
+			var actor = this.wdata.hero;
+			var regen = actor.attributesCalculated.h["Regen"];
+			var recovery = regen * actor.attributesCalculated.h["LifeMax"] / 100;
+			if(recovery < 1) {
+				recovery = 1;
+			}
+			var _g = actor.attributesCalculated;
+			var v = _g.h["Life"] + (recovery | 0);
+			_g.h["Life"] = v;
+			var actor = this.wdata.hero;
+			actor = this.wdata.enemy;
+			var regen = actor.attributesCalculated.h["Regen"];
+			var recovery = regen * actor.attributesCalculated.h["LifeMax"] / 100;
+			if(recovery < 1) {
+				recovery = 1;
+			}
+			var _g = actor.attributesCalculated;
+			var v = _g.h["Life"] + (recovery | 0);
+			_g.h["Life"] = v;
 			var gEvent = this.AddEvent(EventTypes.ActorAttack);
-			var attacker = hero;
-			var defender = enemy;
+			var attacker = null;
+			var defender = null;
 			var decided = false;
+			attacker = hero;
+			defender = enemy;
 			var _g = 0;
 			while(_g < 100) {
 				var i = _g++;
@@ -638,6 +670,25 @@ BattleManager.prototype = {
 				var e = this.AddEvent(EventTypes.ActorDead);
 				e.origin = hero.reference;
 				this.wdata.playerTimesKilled++;
+			}
+			var attackerBuffChanged = false;
+			var _g = 0;
+			var _g1 = attacker.buffs.length;
+			while(_g < _g1) {
+				var b = _g++;
+				var bu = attacker.buffs[b];
+				if(attacker.buffs[b] != null) {
+					bu.duration -= 1;
+					if(bu.duration <= 0) {
+						attacker.buffs[b] = null;
+						attackerBuffChanged = true;
+					}
+				}
+			}
+			while(HxOverrides.remove(attacker.buffs,null)) {
+			}
+			if(attackerBuffChanged) {
+				this.RecalculateAttributes(attacker);
 			}
 		}
 		return "";
@@ -873,6 +924,15 @@ BattleManager.prototype = {
 			}
 		}
 		var _g = 0;
+		var _g1 = actor.buffs;
+		while(_g < _g1.length) {
+			var b = _g1[_g];
+			++_g;
+			if(b.addStats != null) {
+				AttributeLogic.Add(actor.attributesCalculated,b.addStats,1,actor.attributesCalculated);
+			}
+		}
+		var _g = 0;
 		var _g1 = actor.equipmentSlots;
 		while(_g < _g1.length) {
 			var es = _g1[_g];
@@ -892,6 +952,26 @@ BattleManager.prototype = {
 						var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
 						actor.attributesCalculated.h[a_key] = v;
 					}
+				}
+			}
+		}
+		var _g = 0;
+		var _g1 = actor.buffs;
+		while(_g < _g1.length) {
+			var b = _g1[_g];
+			++_g;
+			if(b.mulStats != null) {
+				var h = b.mulStats.h;
+				var a_h = h;
+				var a_keys = Object.keys(h);
+				var a_length = a_keys.length;
+				var a_current = 0;
+				while(a_current < a_length) {
+					var key = a_keys[a_current++];
+					var a_key = key;
+					var a_value = a_h[key];
+					var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
+					actor.attributesCalculated.h[a_key] = v;
 				}
 			}
 		}
@@ -1105,6 +1185,14 @@ HxOverrides.substr = function(s,pos,len) {
 		}
 	}
 	return s.substr(pos,len);
+};
+HxOverrides.remove = function(a,obj) {
+	var i = a.indexOf(obj);
+	if(i == -1) {
+		return false;
+	}
+	a.splice(i,1);
+	return true;
 };
 HxOverrides.now = function() {
 	return Date.now();
