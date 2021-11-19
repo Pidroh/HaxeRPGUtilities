@@ -123,7 +123,7 @@ class BattleManager {
 	}
 
 	function AwardXP(xpPlus) {
-		if (wdata.hero.level <= CalculateHeroMaxLevel()) {
+		if (wdata.hero.level < CalculateHeroMaxLevel()) {
 			xpPlus = xpPlus + Std.int(xpPlus * wdata.prestigeTimes * GetXPBonusOnPrestige());
 			wdata.hero.xp.value += xpPlus;
 			var e = AddEvent(GetXP);

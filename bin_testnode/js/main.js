@@ -180,7 +180,7 @@ BattleManager.prototype = {
 		return this.wdata.prestigeTimes * this.GetMaxLevelBonusOnPrestige() + 20;
 	}
 	,AwardXP: function(xpPlus) {
-		if(this.wdata.hero.level <= this.CalculateHeroMaxLevel()) {
+		if(this.wdata.hero.level < this.CalculateHeroMaxLevel()) {
 			xpPlus += xpPlus * this.wdata.prestigeTimes * this.GetXPBonusOnPrestige() | 0;
 			this.wdata.hero.xp.value += xpPlus;
 			var e = this.AddEvent(EventTypes.GetXP);
