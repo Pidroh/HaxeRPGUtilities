@@ -685,7 +685,20 @@ BattleManager.prototype = {
 						}
 					}
 					e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed};
-					this.wdata.hero.equipment.push(e);
+					var added = false;
+					var _g = 0;
+					var _g1 = this.wdata.hero.equipment.length;
+					while(_g < _g1) {
+						var i = _g++;
+						if(this.wdata.hero.equipment[i] == null) {
+							added = true;
+							this.wdata.hero.equipment[i] = e;
+							break;
+						}
+					}
+					if(added == false) {
+						this.wdata.hero.equipment.push(e);
+					}
 					var e = this.AddEvent(EventTypes.EquipDrop);
 					e.data = this.wdata.hero.equipment.length - 1;
 					e.origin = enemy.reference;

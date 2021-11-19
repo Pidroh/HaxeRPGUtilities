@@ -698,73 +698,16 @@ class BattleManager {
 						generationPrefixModSeed: prefixSeed,
 					};
 
-					/*
-						if(false){
-							var equipType = random.randomInt(0, 1);
-							
-							var dropQuality = enemy.level;
-							if (wdata.battleAreaRegion > 0) {
-								dropQuality = Std.int(1.2 * dropQuality);
-							}
-							// sword
-							if (equipType == 0) {
-								var attackBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
-								e = {
-									type: 0,
-									requiredAttributes: null,
-									attributes: ["Attack" => attackBonus],
-									seen: false
-								};
-								if (random.randomInt(0, 100) < 15) {
-									var lifeBonus = random.randomInt(1, Std.int(dropQuality + 2));
-									e.attributes["LifeMax"] = lifeBonus;
-								}
-								if (random.randomInt(0, 100) < 15) {
-									var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
-									e.attributes["Speed"] = bonus;
-								}
-								if (random.randomInt(0, 100) < 15) {
-									var bonus = random.randomInt(1, Std.int(dropQuality / 8 + 2));
-									e.attributes["Defense"] = bonus;
-								}
-								if (random.randomInt(0, 100) < 10) {
-									var bonus = random.randomInt(1, dropQuality * 2) + 20;
-									if (bonus > 80)
-										bonus = 80;
-									e.attributes["Piercing"] = bonus;
-								}
-							}
-							// armor
-							if (equipType == 1) {
-								var armorType = random.randomInt(0, 1);
-								var mainBonus = random.randomInt(1, Std.int(dropQuality / 2 + 2));
-								var mainBonusType = "LifeMax";
-								if (armorType == 0) {
-									mainBonus *= 3;
-								}
-								if (armorType == 1) {
-									mainBonusType = "Defense";
-								}
-								e = {
-									type: 1,
-									requiredAttributes: null,
-									attributes: [mainBonusType => mainBonus],
-									seen: false
-								};
-
-								if (random.randomInt(0, 100) < 20) {
-									var bonus = random.randomInt(1, Std.int(dropQuality / 4 + 2));
-									e.attributes["Attack"] = bonus;
-								}
-								if (random.randomInt(0, 100) < 20) {
-									var bonus = random.randomInt(1, Std.int(enemy.attributesCalculated["Attack"] / 8 + 2));
-									e.attributes["Speed"] = bonus;
-								}
-							}
+					var added = false;
+					for (i in 0...wdata.hero.equipment.length){
+						if(wdata.hero.equipment[i] == null){
+							added = true;
+							wdata.hero.equipment[i] = e;
+							break;
 						}
-					 */
-
-					wdata.hero.equipment.push(e);
+					}
+					if(added == false)
+						wdata.hero.equipment.push(e);
 					var e = AddEvent(EquipDrop);
 					e.data = wdata.hero.equipment.length - 1;
 					e.origin = enemy.reference;
