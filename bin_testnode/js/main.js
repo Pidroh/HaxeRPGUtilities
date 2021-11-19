@@ -497,37 +497,39 @@ BattleManager.prototype = {
 			var lifeMax = this.wdata.hero.attributesCalculated.h["LifeMax"];
 			life += 2;
 			if(this.wdata.sleeping) {
-				life += this.wdata.hero.attributesCalculated.h["LifeMax"] * 0.3 | 0;
+				life += lifeMax * 0.3 | 0;
 			}
 			if(life > lifeMax) {
 				life = lifeMax;
 			}
 			this.wdata.hero.attributesCalculated.h["Life"] = life;
 		}
+		var _g = 0;
+		while(_g < 2) {
+			var i = _g++;
+			var actor = this.wdata.hero;
+			if(i == 1) {
+				actor = this.wdata.enemy;
+			}
+			if(actor == null) {
+				continue;
+			}
+			var regen = actor.attributesCalculated.h["Regen"];
+			if(regen > 0) {
+				var recovery = regen * actor.attributesCalculated.h["LifeMax"] / 100;
+				if(recovery < 1) {
+					recovery = 1;
+				}
+				var _g1 = actor.attributesCalculated;
+				var v = _g1.h["Life"] + (recovery | 0);
+				_g1.h["Life"] = v;
+			}
+			if(actor.attributesCalculated.h["Life"] > actor.attributesCalculated.h["LifeMax"]) {
+				var v1 = actor.attributesCalculated.h["LifeMax"];
+				actor.attributesCalculated.h["Life"] = v1;
+			}
+		}
 		if(attackHappen) {
-			var actor = this.wdata.hero;
-			var regen = actor.attributesCalculated.h["Regen"];
-			if(regen > 0) {
-				var recovery = regen * actor.attributesCalculated.h["LifeMax"] / 100;
-				if(recovery < 1) {
-					recovery = 1;
-				}
-				var _g = actor.attributesCalculated;
-				var v = _g.h["Life"] + (recovery | 0);
-				_g.h["Life"] = v;
-			}
-			var actor = this.wdata.hero;
-			actor = this.wdata.enemy;
-			var regen = actor.attributesCalculated.h["Regen"];
-			if(regen > 0) {
-				var recovery = regen * actor.attributesCalculated.h["LifeMax"] / 100;
-				if(recovery < 1) {
-					recovery = 1;
-				}
-				var _g = actor.attributesCalculated;
-				var v = _g.h["Life"] + (recovery | 0);
-				_g.h["Life"] = v;
-			}
 			var gEvent = this.AddEvent(EventTypes.ActorAttack);
 			var attacker = null;
 			var defender = null;

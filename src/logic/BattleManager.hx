@@ -538,29 +538,33 @@ class BattleManager {
 			var lifeMax = wdata.hero.attributesCalculated["LifeMax"];
 			life += 2;
 			if (wdata.sleeping) {
-				life += Std.int(wdata.hero.attributesCalculated["LifeMax"] * 0.3);
+				life += Std.int(lifeMax * 0.3);
 			}
 			if (life > lifeMax)
 				life = lifeMax;
 			wdata.hero.attributesCalculated["Life"] = life;
 		}
-
-		// c = Sys.getChar(true);
-		if (attackHappen) {
-			for (i in 0...2) {
-				var actor = wdata.hero;
-				if (i == 1)
-					actor = wdata.enemy;
-				{
-					var regen = actor.attributesCalculated["Regen"];
-					if (regen > 0) {
-						var recovery = regen * actor.attributesCalculated["LifeMax"] / 100;
-						if (recovery < 1)
-							recovery = 1;
-						actor.attributesCalculated["Life"] += Std.int(recovery);
-					}
+		for (i in 0...2) {
+			var actor = wdata.hero;
+			if (i == 1)
+				actor = wdata.enemy;
+			if(actor == null) continue;
+			{
+				var regen = actor.attributesCalculated["Regen"];
+				if (regen > 0) {
+					var recovery = regen * actor.attributesCalculated["LifeMax"] / 100;
+					if (recovery < 1)
+						recovery = 1;
+					actor.attributesCalculated["Life"] += Std.int(recovery);
 				}
 			}
+			if(actor.attributesCalculated["Life"] > actor.attributesCalculated["LifeMax"]){
+				actor.attributesCalculated["Life"] = actor.attributesCalculated["LifeMax"];
+			}
+		}
+		// c = Sys.getChar(true);
+		if (attackHappen) {
+			
 
 			var gEvent = AddEvent(ActorAttack);
 
