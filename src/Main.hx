@@ -134,6 +134,10 @@ class Main {
 
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart");
+		for (i in 0...7){
+			CreateButtonFromAction("battleaction_"+i, "Action "+i);
+		}
+		CreateButtonFromAction("repeat", "Restart");
 		var prestigeWarn = "Your experience awards will increase by "
 			+ Std.int(bm.GetXPBonusOnPrestige() * 100)
 			+ "%. Your max level will increase by "
@@ -444,6 +448,11 @@ class Main {
 			buttonToAction("repeat", "repeat");
 			buttonToAction("prestige", "prestige");
 			view.ButtonVisibility("prestige", storyRuntime.persistence.progressionData[storyRuntime.cutscenes[2].title].timesCompleted > 0);
+
+			for (i in 0...7){
+				buttonToAction("battleaction_"+i, "battleaction_"+i);
+				
+			}
 
 			{
 				var action = bm.wdata.playerActions["tabequipment"];

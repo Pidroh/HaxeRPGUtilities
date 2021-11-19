@@ -52,11 +52,25 @@ class BattleManager {
 	public function UseSkill(skill:SkillUsable, actor:Actor) {
 		var id = skill.id;
 		var skillBase = GetSkillBase(id);
+		for (ef in skillBase.effects){
+			var targets = new Array<Actor>();
+			if(ef.target == SELF){
+				targets.push(actor);
+			}
+			if(ef.target == ENEMY){
+				if(wdata.hero == actor)
+					targets.push(wdata.enemy);
+				else
+					targets.push(wdata.hero);
+			}
+			ef.effectExecution(this, skill.level, actor, targets);
+		}
 		// skillBase.effects
 	}
 
 	public function AddBuff(buff:Buff, actor:Actor) {
 		actor.buffs.push(buff);
+		RecalculateAttributes(actor);
 	}
 
 	public function GetSkillBase(id):Skill {
@@ -413,7 +427,8 @@ class BattleManager {
 			"Defense" => 0,
 			"Magic Attack" => 0,
 			"Magic Defense" => 0,
-			"Piercing" => 0
+			"Piercing" => 0,
+			"Regen" => 0
 		];
 
 		var valueXP = 0;
@@ -956,6 +971,14 @@ $baseInfo';
 			lu.visible = lu.enabled || lu.visible;
 		}
 		{
+			for (i in 0...7){
+				var buttonId = i;
+				var lu = wdata.playerActions["battleaction_"+i];
+				lu.enabled = wdata.hero.usableSkills[i] != null;
+				lu.visible = wdata.hero.usableSkills[i] != null;
+			}
+		}
+		{
 			var lu = wdata.playerActions["advance"];
 			lu.visible = canAdvance || lu.visible;
 			lu.enabled = canAdvance;
@@ -970,6 +993,7 @@ $baseInfo';
 			lu.enabled = wdata.maxArea > wdata.battleArea && wdata.killedInArea[wdata.battleArea] > 0;
 			lu.visible = lu.enabled || lu.visible;
 		}
+		
 		{
 			var lu = wdata.playerActions["sleep"];
 			if (wdata.sleeping == true) {
@@ -1038,6 +1062,7 @@ $baseInfo';
 		if (oldSpeedCount == null)
 			oldSpeedCount = 0;
 
+		actor.attributesCalculated.clear();
 		AttributeLogic.Add(actor.attributesBase, [
 			"Attack" => 1,
 			"LifeMax" => 5,

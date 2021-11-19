@@ -110,9 +110,28 @@ BattleManager.prototype = {
 	,UseSkill: function(skill,actor) {
 		var id = skill.id;
 		var skillBase = this.GetSkillBase(id);
+		var _g = 0;
+		var _g1 = skillBase.effects;
+		while(_g < _g1.length) {
+			var ef = _g1[_g];
+			++_g;
+			var targets = [];
+			if(ef.target == Target.SELF) {
+				targets.push(actor);
+			}
+			if(ef.target == Target.ENEMY) {
+				if(this.wdata.hero == actor) {
+					targets.push(this.wdata.enemy);
+				} else {
+					targets.push(this.wdata.hero);
+				}
+			}
+			ef.effectExecution(this,skill.level,actor,targets);
+		}
 	}
 	,AddBuff: function(buff,actor) {
 		actor.buffs.push(buff);
+		this.RecalculateAttributes(actor);
 	}
 	,GetSkillBase: function(id) {
 		var _g = 0;
@@ -329,6 +348,41 @@ BattleManager.prototype = {
 		addAction("prestige",createAction(),function(a) {
 			_gthis.PrestigeExecute();
 		});
+		var buttonId = 0;
+		addAction("battleaction_" + 0,createAction(),function(struct) {
+			var skill = _gthis.wdata.hero.usableSkills[0];
+			_gthis.UseSkill(skill,_gthis.wdata.hero);
+		});
+		var buttonId = 1;
+		addAction("battleaction_" + 1,createAction(),function(struct) {
+			var skill = _gthis.wdata.hero.usableSkills[1];
+			_gthis.UseSkill(skill,_gthis.wdata.hero);
+		});
+		var buttonId = 2;
+		addAction("battleaction_" + 2,createAction(),function(struct) {
+			var skill = _gthis.wdata.hero.usableSkills[2];
+			_gthis.UseSkill(skill,_gthis.wdata.hero);
+		});
+		var buttonId = 3;
+		addAction("battleaction_" + 3,createAction(),function(struct) {
+			var skill = _gthis.wdata.hero.usableSkills[3];
+			_gthis.UseSkill(skill,_gthis.wdata.hero);
+		});
+		var buttonId = 4;
+		addAction("battleaction_" + 4,createAction(),function(struct) {
+			var skill = _gthis.wdata.hero.usableSkills[4];
+			_gthis.UseSkill(skill,_gthis.wdata.hero);
+		});
+		var buttonId = 5;
+		addAction("battleaction_" + 5,createAction(),function(struct) {
+			var skill = _gthis.wdata.hero.usableSkills[5];
+			_gthis.UseSkill(skill,_gthis.wdata.hero);
+		});
+		var buttonId = 6;
+		addAction("battleaction_" + 6,createAction(),function(struct) {
+			var skill = _gthis.wdata.hero.usableSkills[6];
+			_gthis.UseSkill(skill,_gthis.wdata.hero);
+		});
 		var _g = new haxe_ds_StringMap();
 		_g.h["Life"] = 20;
 		_g.h["LifeMax"] = 20;
@@ -339,6 +393,7 @@ BattleManager.prototype = {
 		_g.h["Magic Attack"] = 0;
 		_g.h["Magic Defense"] = 0;
 		_g.h["Piercing"] = 0;
+		_g.h["Regen"] = 0;
 		this.wdata.hero.attributesBase = _g;
 		var valueXP = 0;
 		if(this.wdata.hero.xp != null) {
@@ -452,23 +507,27 @@ BattleManager.prototype = {
 		if(attackHappen) {
 			var actor = this.wdata.hero;
 			var regen = actor.attributesCalculated.h["Regen"];
-			var recovery = regen * actor.attributesCalculated.h["LifeMax"] / 100;
-			if(recovery < 1) {
-				recovery = 1;
+			if(regen > 0) {
+				var recovery = regen * actor.attributesCalculated.h["LifeMax"] / 100;
+				if(recovery < 1) {
+					recovery = 1;
+				}
+				var _g = actor.attributesCalculated;
+				var v = _g.h["Life"] + (recovery | 0);
+				_g.h["Life"] = v;
 			}
-			var _g = actor.attributesCalculated;
-			var v = _g.h["Life"] + (recovery | 0);
-			_g.h["Life"] = v;
 			var actor = this.wdata.hero;
 			actor = this.wdata.enemy;
 			var regen = actor.attributesCalculated.h["Regen"];
-			var recovery = regen * actor.attributesCalculated.h["LifeMax"] / 100;
-			if(recovery < 1) {
-				recovery = 1;
+			if(regen > 0) {
+				var recovery = regen * actor.attributesCalculated.h["LifeMax"] / 100;
+				if(recovery < 1) {
+					recovery = 1;
+				}
+				var _g = actor.attributesCalculated;
+				var v = _g.h["Life"] + (recovery | 0);
+				_g.h["Life"] = v;
 			}
-			var _g = actor.attributesCalculated;
-			var v = _g.h["Life"] + (recovery | 0);
-			_g.h["Life"] = v;
 			var gEvent = this.AddEvent(EventTypes.ActorAttack);
 			var attacker = null;
 			var defender = null;
@@ -810,6 +869,34 @@ BattleManager.prototype = {
 		var lu = this.wdata.playerActions.h["prestige"];
 		lu.enabled = this.wdata.hero.level > this.GetLevelRequirementForPrestige();
 		lu.visible = lu.enabled || lu.visible;
+		var buttonId = 0;
+		var lu = this.wdata.playerActions.h["battleaction_" + 0];
+		lu.enabled = this.wdata.hero.usableSkills[0] != null;
+		lu.visible = this.wdata.hero.usableSkills[0] != null;
+		var buttonId = 1;
+		var lu = this.wdata.playerActions.h["battleaction_" + 1];
+		lu.enabled = this.wdata.hero.usableSkills[1] != null;
+		lu.visible = this.wdata.hero.usableSkills[1] != null;
+		var buttonId = 2;
+		var lu = this.wdata.playerActions.h["battleaction_" + 2];
+		lu.enabled = this.wdata.hero.usableSkills[2] != null;
+		lu.visible = this.wdata.hero.usableSkills[2] != null;
+		var buttonId = 3;
+		var lu = this.wdata.playerActions.h["battleaction_" + 3];
+		lu.enabled = this.wdata.hero.usableSkills[3] != null;
+		lu.visible = this.wdata.hero.usableSkills[3] != null;
+		var buttonId = 4;
+		var lu = this.wdata.playerActions.h["battleaction_" + 4];
+		lu.enabled = this.wdata.hero.usableSkills[4] != null;
+		lu.visible = this.wdata.hero.usableSkills[4] != null;
+		var buttonId = 5;
+		var lu = this.wdata.playerActions.h["battleaction_" + 5];
+		lu.enabled = this.wdata.hero.usableSkills[5] != null;
+		lu.visible = this.wdata.hero.usableSkills[5] != null;
+		var buttonId = 6;
+		var lu = this.wdata.playerActions.h["battleaction_" + 6];
+		lu.enabled = this.wdata.hero.usableSkills[6] != null;
+		lu.visible = this.wdata.hero.usableSkills[6] != null;
 		var lu = this.wdata.playerActions.h["advance"];
 		lu.visible = this.canAdvance || lu.visible;
 		lu.enabled = this.canAdvance;
@@ -876,6 +963,7 @@ BattleManager.prototype = {
 		if(oldSpeedCount == null) {
 			oldSpeedCount = 0;
 		}
+		actor.attributesCalculated.h = Object.create(null);
 		var actor1 = actor.attributesBase;
 		var _g = new haxe_ds_StringMap();
 		_g.h["Attack"] = 1;
@@ -1789,7 +1877,11 @@ AttributeLogic.Add = function(attributes,attributeAddition,quantityOfAddition,re
 		var _g1_value = _g_h[key];
 		var key1 = _g1_key;
 		var value = _g1_value;
-		var v = attributes.h[key1] + (value * quantityOfAddition | 0);
+		var originalValue = attributes.h[key1];
+		if(originalValue >= 0 == false && originalValue < 0 == false) {
+			originalValue = 0;
+		}
+		var v = originalValue + (value * quantityOfAddition | 0);
 		result.h[key1] = v;
 	}
 };

@@ -50,8 +50,14 @@ class AttributeLogic {
 	}
 
 	public static function Add(attributes:Map<String, Int>, attributeAddition:Map<String, Int>, quantityOfAddition:Int, result:Map<String, Int>) {
+		
 		for (key => value in attributeAddition) {
-			result[key] = attributes[key] + Std.int(value * quantityOfAddition);
+			var originalValue = attributes[key];
+			//this will always be false, unless it is null / undefined
+			if(originalValue >= 0 == false && originalValue < 0 == false){
+				originalValue = 0;
+			}
+			result[key] = originalValue + Std.int(value * quantityOfAddition);
 		}
 	}
 }
