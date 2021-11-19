@@ -971,7 +971,7 @@ $baseInfo';
 		}
 		{
 			var lu = wdata.playerActions["prestige"];
-			lu.enabled = wdata.hero.level > GetLevelRequirementForPrestige();
+			lu.enabled = wdata.hero.level >= GetLevelRequirementForPrestige();
 			lu.visible = lu.enabled || lu.visible;
 		}
 		{

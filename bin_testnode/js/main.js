@@ -869,7 +869,7 @@ BattleManager.prototype = {
 		lu.enabled = this.canLevelUp;
 		lu.visible = this.canLevelUp || lu.visible;
 		var lu = this.wdata.playerActions.h["prestige"];
-		lu.enabled = this.wdata.hero.level > this.GetLevelRequirementForPrestige();
+		lu.enabled = this.wdata.hero.level >= this.GetLevelRequirementForPrestige();
 		lu.visible = lu.enabled || lu.visible;
 		var buttonId = 0;
 		var lu = this.wdata.playerActions.h["battleaction_" + 0];
