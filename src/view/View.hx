@@ -353,26 +353,11 @@ class View {
 			box.width = 250;
 			box.percentHeight = 100;
 			battleParent.addComponent(box);
-
-			{
-				var scroll = CreateScrollable(box);
-				scroll.width = 250;
-				scroll.percentHeight = 60; // TODO change this to 60 and add new log below it  X_X
-				var logContainer = CreateContainer(scroll, true);
-
-				var log = new Label();
-				logTextBattle = log;
-				logContainer.addComponent(log);
-				log.width = 190;
-				log.horizontalAlign = "center";
-				logContainer.horizontalAlign = "center";
-			}
 			{
 				var scroll = CreateScrollable(box);
 				scroll.width = 250;
 				scroll.percentHeight = 40;
 				var logContainer = CreateContainer(scroll, true);
-				scroll.verticalAlign = "bottom";
 
 				var log = new Label();
 				logText = log; // make this battle log
@@ -381,6 +366,21 @@ class View {
 				log.horizontalAlign = "center";
 				logContainer.horizontalAlign = "center";
 			}
+			{
+				var scroll = CreateScrollable(box);
+				scroll.width = 250;
+				scroll.percentHeight = 60; // TODO change this to 60 and add new log below it  X_X
+				var logContainer = CreateContainer(scroll, true);
+				scroll.verticalAlign = "bottom";
+
+				var log = new Label();
+				logTextBattle = log;
+				logContainer.addComponent(log);
+				log.width = 190;
+				log.horizontalAlign = "center";
+				logContainer.horizontalAlign = "center";
+			}
+			
 		}
 
 		if (false) {
