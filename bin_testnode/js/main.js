@@ -225,7 +225,7 @@ BattleManager.prototype = {
 		_g.h["Speed"] = 20;
 		_g.h["SpeedCount"] = 0;
 		_g.h["Defense"] = 0;
-		_g.h["Magic Defense"] = 0;
+		_g.h["MagicDefense"] = 0;
 		_g.h["Piercing"] = 0;
 		var stats2 = _g;
 		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
@@ -390,10 +390,11 @@ BattleManager.prototype = {
 		_g.h["SpeedCount"] = 0;
 		_g.h["Attack"] = 1;
 		_g.h["Defense"] = 0;
-		_g.h["Magic Attack"] = 0;
-		_g.h["Magic Defense"] = 0;
+		_g.h["MagicAttack"] = 1;
+		_g.h["MagicDefense"] = 0;
 		_g.h["Piercing"] = 0;
 		_g.h["Regen"] = 0;
+		_g.h["enchant-fire"] = 0;
 		this.wdata.hero.attributesBase = _g;
 		var valueXP = 0;
 		if(this.wdata.hero.xp != null) {
@@ -571,14 +572,34 @@ BattleManager.prototype = {
 				}
 			}
 			var defenseRate = 100;
-			if(attacker.attributesCalculated.h["Piercing"] > 0 == true) {
-				defenseRate -= attacker.attributesCalculated.h["Piercing"];
+			var attackRate = 100;
+			var attackBonus = 0;
+			var magicAttack = false;
+			var enchant = attacker.attributesCalculated.h["enchant-fire"];
+			if(enchant > 0) {
+				magicAttack = true;
+				attackBonus += enchant;
+			}
+			if(magicAttack == false) {
+				if(attacker.attributesCalculated.h["Piercing"] > 0 == true) {
+					defenseRate -= attacker.attributesCalculated.h["Piercing"];
+				}
 			}
 			if(defenseRate < 0) {
 				defenseRate = 0;
 			}
-			var attack = attacker.attributesCalculated.h["Attack"];
-			var damage = attack - defender.attributesCalculated.h["Defense"] * defenseRate / 100 | 0;
+			var attack = 0;
+			var defense = 0;
+			if(magicAttack) {
+				attack = attacker.attributesCalculated.h["MagicAttack"];
+				var this1 = defender.attributesCalculated;
+			} else {
+				attack = attacker.attributesCalculated.h["Attack"];
+				var this1 = defender.attributesCalculated;
+			}
+			attack = attacker.attributesCalculated.h["Attack"];
+			attack = attackRate * attack / 100 + attackBonus;
+			var damage = attack - defense * defenseRate / 100 | 0;
 			if(damage < 0) {
 				damage = 0;
 			}
@@ -685,22 +706,23 @@ BattleManager.prototype = {
 						}
 					}
 					e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed};
-					var added = false;
+					var addedIndex = -1;
 					var _g = 0;
 					var _g1 = this.wdata.hero.equipment.length;
 					while(_g < _g1) {
 						var i = _g++;
 						if(this.wdata.hero.equipment[i] == null) {
-							added = true;
 							this.wdata.hero.equipment[i] = e;
+							addedIndex = i;
 							break;
 						}
 					}
-					if(added == false) {
+					if(addedIndex < 0) {
 						this.wdata.hero.equipment.push(e);
+						addedIndex = this.wdata.hero.equipment.length - 1;
 					}
 					var e = this.AddEvent(EventTypes.EquipDrop);
-					e.data = this.wdata.hero.equipment.length - 1;
+					e.data = addedIndex;
 					e.origin = enemy.reference;
 				}
 				var e = this.AddEvent(EventTypes.ActorDead);

@@ -717,12 +717,19 @@ class View {
 		equipments[pos].parent.hidden = true;
 	}
 
+	public function FinishFeedingEquipmentValue(pos, vid){
+		for(i in vid...equipments[pos].values.length){
+			equipments[pos].values[i].parent.hidden = true;
+		}
+	}
+
 	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false) {
 		while (equipments[pos].values.length <= valuePos) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
 		}
 		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName, percent);
+		equipments[pos].values[valuePos].parent.hidden = false;
 	}
 
 	public function AddButton(id:String, label:String, onClick, warningMessage = null, position = -1, secondArea = false) {

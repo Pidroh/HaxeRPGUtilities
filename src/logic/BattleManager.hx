@@ -52,13 +52,13 @@ class BattleManager {
 	public function UseSkill(skill:SkillUsable, actor:Actor) {
 		var id = skill.id;
 		var skillBase = GetSkillBase(id);
-		for (ef in skillBase.effects){
+		for (ef in skillBase.effects) {
 			var targets = new Array<Actor>();
-			if(ef.target == SELF){
+			if (ef.target == SELF) {
 				targets.push(actor);
 			}
-			if(ef.target == ENEMY){
-				if(wdata.hero == actor)
+			if (ef.target == ENEMY) {
+				if (wdata.hero == actor)
 					targets.push(wdata.enemy);
 				else
 					targets.push(wdata.hero);
@@ -176,7 +176,7 @@ class BattleManager {
 				"Speed" => 20,
 				"SpeedCount" => 0,
 				"Defense" => 0,
-				"Magic Defense" => 0,
+				"MagicDefense" => 0,
 				"Piercing" => 0
 			];
 			wdata.enemy = {
@@ -410,25 +410,17 @@ class BattleManager {
 			PrestigeExecute();
 		});
 
-		for (i in 0...7){
+		for (i in 0...7) {
 			var buttonId = i;
-			addAction("battleaction_"+i, createAction(), struct -> {
+			addAction("battleaction_" + i, createAction(), struct -> {
 				var skill = wdata.hero.usableSkills[i];
 				UseSkill(skill, wdata.hero);
 			});
 		}
 
 		wdata.hero.attributesBase = [
-			"Life" => 20,
-			"LifeMax" => 20,
-			"Speed" => 20,
-			"SpeedCount" => 0,
-			"Attack" => 1,
-			"Defense" => 0,
-			"Magic Attack" => 0,
-			"Magic Defense" => 0,
-			"Piercing" => 0,
-			"Regen" => 0
+			"Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0, "Attack" => 1, "Defense" => 0, "MagicAttack" => 1, "MagicDefense" => 0,
+			"Piercing" => 0, "Regen" => 0, "enchant-fire" => 0
 		];
 
 		var valueXP = 0;
@@ -548,7 +540,8 @@ class BattleManager {
 			var actor = wdata.hero;
 			if (i == 1)
 				actor = wdata.enemy;
-			if(actor == null) continue;
+			if (actor == null)
+				continue;
 			{
 				var regen = actor.attributesCalculated["Regen"];
 				if (regen > 0) {
@@ -558,14 +551,12 @@ class BattleManager {
 					actor.attributesCalculated["Life"] += Std.int(recovery);
 				}
 			}
-			if(actor.attributesCalculated["Life"] > actor.attributesCalculated["LifeMax"]){
+			if (actor.attributesCalculated["Life"] > actor.attributesCalculated["LifeMax"]) {
 				actor.attributesCalculated["Life"] = actor.attributesCalculated["LifeMax"];
 			}
 		}
 		// c = Sys.getChar(true);
 		if (attackHappen) {
-			
-
 			var gEvent = AddEvent(ActorAttack);
 
 			// var which = 0;
@@ -601,14 +592,36 @@ class BattleManager {
 			}
 
 			var defenseRate = 100;
-			if (attacker.attributesCalculated["Piercing"] > 0 == true) {
-				defenseRate = defenseRate - attacker.attributesCalculated["Piercing"];
+			var attackRate = 100;
+			var attackBonus = 0;
+
+			var magicAttack = false;
+			var enchant = attacker.attributesCalculated["enchant-fire"];
+			if (enchant > 0) {
+				magicAttack = true;
+				attackBonus += enchant;
+			}
+
+			if (magicAttack == false) {
+				if (attacker.attributesCalculated["Piercing"] > 0 == true) {
+					defenseRate = defenseRate - attacker.attributesCalculated["Piercing"];
+				}
 			}
 			if (defenseRate < 0)
 				defenseRate = 0;
 
-			var attack:Float = attacker.attributesCalculated["Attack"];
-			var damage:Int = Std.int(attack - defender.attributesCalculated["Defense"] * defenseRate / 100);
+			var attack:Float = 0;
+			var defense:Float = 0;
+			if (magicAttack) {
+				attack = attacker.attributesCalculated["MagicAttack"];
+				defender.attributesCalculated["MagicDefense"];
+			} else {
+				attack = attacker.attributesCalculated["Attack"];
+				defender.attributesCalculated["Defense"];
+			}
+			attack = attacker.attributesCalculated["Attack"];
+			attack = (attackRate * attack / 100) + attackBonus;
+			var damage:Int = Std.int(attack - defense * defenseRate / 100);
 			if (damage < 0)
 				damage = 0;
 
@@ -698,18 +711,21 @@ class BattleManager {
 						generationPrefixModSeed: prefixSeed,
 					};
 
-					var added = false;
-					for (i in 0...wdata.hero.equipment.length){
-						if(wdata.hero.equipment[i] == null){
-							added = true;
+					var addedIndex = -1;
+					for (i in 0...wdata.hero.equipment.length) {
+						if (wdata.hero.equipment[i] == null) {
 							wdata.hero.equipment[i] = e;
+							addedIndex = i;
 							break;
 						}
 					}
-					if(added == false)
+					if (addedIndex < 0){
 						wdata.hero.equipment.push(e);
+						addedIndex =  wdata.hero.equipment.length - 1;
+					}
+						
 					var e = AddEvent(EquipDrop);
-					e.data = wdata.hero.equipment.length - 1;
+					e.data = addedIndex;
 					e.origin = enemy.reference;
 				}
 
@@ -918,9 +934,9 @@ $baseInfo';
 			lu.visible = lu.enabled || lu.visible;
 		}
 		{
-			for (i in 0...7){
+			for (i in 0...7) {
 				var buttonId = i;
-				var lu = wdata.playerActions["battleaction_"+i];
+				var lu = wdata.playerActions["battleaction_" + i];
 				lu.enabled = wdata.hero.usableSkills[i] != null;
 				lu.visible = wdata.hero.usableSkills[i] != null;
 			}
@@ -940,7 +956,7 @@ $baseInfo';
 			lu.enabled = wdata.maxArea > wdata.battleArea && wdata.killedInArea[wdata.battleArea] > 0;
 			lu.visible = lu.enabled || lu.visible;
 		}
-		
+
 		{
 			var lu = wdata.playerActions["sleep"];
 			if (wdata.sleeping == true) {

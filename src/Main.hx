@@ -193,7 +193,7 @@ class Main {
 		bm.wdata.hero.usableSkills = [{
 			id: "Regen",
 			level: 1
-		}];
+		}, {id: "Fire Edge", level: 1}];
 		//bm.wdata.hero.usableSkills.push();
 
 		var storyRuntime:StoryRuntimeData = {
@@ -329,6 +329,7 @@ class Main {
 								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, true);
 								vid++;
 							}
+						view.FinishFeedingEquipmentValue(equipmentViewPos, vid);
 					}
 					if (!e.seen) {
 						equipmentWindowTypeAlert[e.type] = true;
@@ -513,6 +514,7 @@ class Main {
 	}
 
 	static function GetEquipName(e:Equipment, itemBases:Array<ItemBase>, modBases:Array<ModBase>):String {
+
 		if (e.generationBaseItem >= 0) {
 			var name = itemBases[e.generationBaseItem].name;
 			if(e.generationPrefixMod >= 0){
