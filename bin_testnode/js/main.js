@@ -7,6 +7,8 @@ function $extend(from, fields) {
 	return proto;
 }
 var BattleManager = function() {
+	this.volatileAttributeAux = [];
+	this.volatileAttributeList = ["MP","Life","MPRechargeCount","SpeedCount"];
 	this.regionPrizes = [{ statBonus : null, xpPrize : true}];
 	this.regionRequirements = [0];
 	this.playerActions = new haxe_ds_StringMap();
@@ -110,6 +112,12 @@ BattleManager.prototype = {
 	,UseSkill: function(skill,actor) {
 		var id = skill.id;
 		var skillBase = this.GetSkillBase(id);
+		var mp = actor.attributesCalculated.h["MP"];
+		mp -= skillBase.mpCost;
+		if(mp <= 0) {
+			mp = 0;
+			actor.attributesCalculated.h["MPRechargeCount"] = 0;
+		}
 		var _g = 0;
 		var _g1 = skillBase.effects;
 		while(_g < _g1.length) {
@@ -395,6 +403,10 @@ BattleManager.prototype = {
 		_g.h["Piercing"] = 0;
 		_g.h["Regen"] = 0;
 		_g.h["enchant-fire"] = 0;
+		_g.h["MP"] = 0;
+		_g.h["MPMax"] = 100;
+		_g.h["MPRecharge"] = 100;
+		_g.h["MPRechargeCount"] = 10000;
 		this.wdata.hero.attributesBase = _g;
 		var valueXP = 0;
 		if(this.wdata.hero.xp != null) {
@@ -494,16 +506,57 @@ BattleManager.prototype = {
 		}
 		if(this.PlayerFightMode() == false || enemy == null) {
 			attackHappen = false;
-			var life = this.wdata.hero.attributesCalculated.h["Life"];
-			var lifeMax = this.wdata.hero.attributesCalculated.h["LifeMax"];
-			life += 2;
+			var chargeMultiplier = 3;
+			var max = 99999;
+			var restMultiplier = 1;
+			var valueK = "Life";
+			var valueMaxK = "LifeMax";
+			var value = this.wdata.hero.attributesCalculated.h[valueK];
+			if(valueMaxK != null) {
+				max = this.wdata.hero.attributesCalculated.h[valueMaxK];
+			}
+			value += 2 * restMultiplier;
 			if(this.wdata.sleeping) {
-				life += lifeMax * 0.3 | 0;
+				value += max * 0.3 | 0;
 			}
-			if(life > lifeMax) {
-				life = lifeMax;
+			if(value > max) {
+				value = max;
 			}
-			this.wdata.hero.attributesCalculated.h["Life"] = life;
+			this.wdata.hero.attributesCalculated.h[valueK] = value;
+			var valueK = "Life";
+			var valueMaxK = "LifeMax";
+			valueK = "MP";
+			valueMaxK = "MPMax";
+			var value = this.wdata.hero.attributesCalculated.h[valueK];
+			if(valueMaxK != null) {
+				max = this.wdata.hero.attributesCalculated.h[valueMaxK];
+			}
+			value += 2 * restMultiplier;
+			if(this.wdata.sleeping) {
+				value += max * 0.3 | 0;
+			}
+			if(value > max) {
+				value = max;
+			}
+			this.wdata.hero.attributesCalculated.h[valueK] = value;
+			var valueK = "Life";
+			var valueMaxK = "LifeMax";
+			valueK = "MPRechargeCount";
+			valueMaxK = null;
+			max = 10000;
+			restMultiplier = 500;
+			var value = this.wdata.hero.attributesCalculated.h[valueK];
+			if(valueMaxK != null) {
+				max = this.wdata.hero.attributesCalculated.h[valueMaxK];
+			}
+			value += 2 * restMultiplier;
+			if(this.wdata.sleeping) {
+				value += max * 0.3 | 0;
+			}
+			if(value > max) {
+				value = max;
+			}
+			this.wdata.hero.attributesCalculated.h[valueK] = value;
 		}
 		var _g = 0;
 		while(_g < 2) {
@@ -906,34 +959,20 @@ BattleManager.prototype = {
 		var lu = this.wdata.playerActions.h["prestige"];
 		lu.enabled = this.wdata.hero.level >= this.GetLevelRequirementForPrestige();
 		lu.visible = lu.enabled || lu.visible;
-		var buttonId = 0;
-		var lu = this.wdata.playerActions.h["battleaction_" + 0];
-		lu.enabled = this.wdata.hero.usableSkills[0] != null;
-		lu.visible = this.wdata.hero.usableSkills[0] != null;
-		var buttonId = 1;
-		var lu = this.wdata.playerActions.h["battleaction_" + 1];
-		lu.enabled = this.wdata.hero.usableSkills[1] != null;
-		lu.visible = this.wdata.hero.usableSkills[1] != null;
-		var buttonId = 2;
-		var lu = this.wdata.playerActions.h["battleaction_" + 2];
-		lu.enabled = this.wdata.hero.usableSkills[2] != null;
-		lu.visible = this.wdata.hero.usableSkills[2] != null;
-		var buttonId = 3;
-		var lu = this.wdata.playerActions.h["battleaction_" + 3];
-		lu.enabled = this.wdata.hero.usableSkills[3] != null;
-		lu.visible = this.wdata.hero.usableSkills[3] != null;
-		var buttonId = 4;
-		var lu = this.wdata.playerActions.h["battleaction_" + 4];
-		lu.enabled = this.wdata.hero.usableSkills[4] != null;
-		lu.visible = this.wdata.hero.usableSkills[4] != null;
-		var buttonId = 5;
-		var lu = this.wdata.playerActions.h["battleaction_" + 5];
-		lu.enabled = this.wdata.hero.usableSkills[5] != null;
-		lu.visible = this.wdata.hero.usableSkills[5] != null;
-		var buttonId = 6;
-		var lu = this.wdata.playerActions.h["battleaction_" + 6];
-		lu.enabled = this.wdata.hero.usableSkills[6] != null;
-		lu.visible = this.wdata.hero.usableSkills[6] != null;
+		var _g = 0;
+		while(_g < 7) {
+			var i = _g++;
+			var buttonId = i;
+			var lu = this.wdata.playerActions.h["battleaction_" + i];
+			var skillUsable = false;
+			if(this.wdata.hero.usableSkills[i] != null) {
+				if(this.wdata.hero.attributesCalculated.h["MPRechargeCount"] >= 10000) {
+					skillUsable = true;
+				}
+			}
+			lu.enabled = skillUsable;
+			lu.visible = this.wdata.hero.usableSkills[i] != null;
+		}
 		var lu = this.wdata.playerActions.h["advance"];
 		lu.visible = this.canAdvance || lu.visible;
 		lu.enabled = this.canAdvance;
@@ -956,6 +995,15 @@ BattleManager.prototype = {
 			var v = this.wdata.hero.attributesCalculated.h["LifeMax"];
 			this.wdata.hero.attributesCalculated.h["Life"] = v;
 			this.wdata.recovering = false;
+		}
+		var mrc = this.wdata.hero.attributesCalculated.h["MPRechargeCount"];
+		if(mrc < 10000) {
+			mrc += this.wdata.hero.attributesCalculated.h["MPRecharge"] * delta * 3 | 0;
+			this.wdata.hero.attributesCalculated.h["MPRechargeCount"] = mrc;
+			if(mrc >= 10000) {
+				var v = this.wdata.hero.attributesCalculated.h["MPMax"];
+				this.wdata.hero.attributesCalculated.h["MP"] = v;
+			}
 		}
 		if(this.wdata.timeCount >= this.timePeriod) {
 			this.wdata.timeCount = 0;
@@ -990,15 +1038,18 @@ BattleManager.prototype = {
 		ResourceLogic.recalculateScalingResource(hero.level,hero.xp);
 		var v = hero.attributesCalculated.h["LifeMax"];
 		hero.attributesCalculated.h["Life"] = v;
+		var v = hero.attributesCalculated.h["MPMax"];
+		hero.attributesCalculated.h["MP"] = v;
 	}
 	,RecalculateAttributes: function(actor) {
-		var oldLife = actor.attributesCalculated.h["Life"];
-		var oldSpeedCount = actor.attributesCalculated.h["SpeedCount"];
-		if(oldSpeedCount < 0) {
-			oldSpeedCount = 0;
-		}
-		if(oldSpeedCount == null) {
-			oldSpeedCount = 0;
+		var _g = 0;
+		var _g1 = this.volatileAttributeList.length;
+		while(_g < _g1) {
+			var i = _g++;
+			this.volatileAttributeAux[i] = actor.attributesCalculated.h[this.volatileAttributeList[i]];
+			if(this.volatileAttributeAux[i] >= 0 == false) {
+				this.volatileAttributeAux[i] = 0;
+			}
 		}
 		actor.attributesCalculated.h = Object.create(null);
 		var actor1 = actor.attributesBase;
@@ -1100,8 +1151,13 @@ BattleManager.prototype = {
 				}
 			}
 		}
-		actor.attributesCalculated.h["Life"] = oldLife;
-		actor.attributesCalculated.h["SpeedCount"] = oldSpeedCount;
+		var _g = 0;
+		var _g1 = this.volatileAttributeList.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var v = this.volatileAttributeAux[i];
+			actor.attributesCalculated.h[this.volatileAttributeList[i]] = v;
+		}
 	}
 	,AdvanceArea: function() {
 		this.ChangeBattleArea(this.wdata.battleArea + 1);

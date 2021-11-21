@@ -41,6 +41,8 @@ class BattleManager {
 	public var itemBases:Array<ItemBase>;
 	public var modBases:Array<ModBase>;
 	public var skillBases:Array<Skill>;
+	public var volatileAttributeList = ["MP", "Life", "MPRechargeCount", "SpeedCount"];
+	public var volatileAttributeAux = new Array<Int>();
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -52,6 +54,12 @@ class BattleManager {
 	public function UseSkill(skill:SkillUsable, actor:Actor) {
 		var id = skill.id;
 		var skillBase = GetSkillBase(id);
+		var mp = actor.attributesCalculated["MP"];
+		mp -= skillBase.mpCost;
+		if (mp <= 0) {
+			mp = 0;
+			actor.attributesCalculated["MPRechargeCount"] = 0;
+		}
 		for (ef in skillBase.effects) {
 			var targets = new Array<Actor>();
 			if (ef.target == SELF) {
@@ -420,7 +428,7 @@ class BattleManager {
 
 		wdata.hero.attributesBase = [
 			"Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0, "Attack" => 1, "Defense" => 0, "MagicAttack" => 1, "MagicDefense" => 0,
-			"Piercing" => 0, "Regen" => 0, "enchant-fire" => 0
+			"Piercing" => 0, "Regen" => 0, "enchant-fire" => 0, "MP" => 0, "MPMax" => 100, "MPRecharge" => 100, "MPRechargeCount" => 10000
 		];
 
 		var valueXP = 0;
@@ -526,15 +534,35 @@ class BattleManager {
 
 		if (PlayerFightMode() == false || enemy == null) {
 			attackHappen = false;
-			var life = wdata.hero.attributesCalculated["Life"];
-			var lifeMax = wdata.hero.attributesCalculated["LifeMax"];
-			life += 2;
-			if (wdata.sleeping) {
-				life += Std.int(lifeMax * 0.3);
+			var chargeMultiplier = 3;
+			var max = 99999;
+			var restMultiplier = 1;
+			for (i in 0...3) {
+				var valueK = "Life";
+				var valueMaxK = "LifeMax";
+				if (i == 1) {
+					valueK = "MP";
+					valueMaxK = "MPMax";
+				}
+				if (i == 2) {
+					valueK = "MPRechargeCount";
+					valueMaxK = null;
+					max = 10000;
+					restMultiplier = 500;
+				}
+				var value = wdata.hero.attributesCalculated[valueK];
+
+				if (valueMaxK != null)
+					max = wdata.hero.attributesCalculated[valueMaxK];
+
+				value += 2 * restMultiplier;
+				if (wdata.sleeping) {
+					value += Std.int(max * 0.3);
+				}
+				if (value > max)
+					value = max;
+				wdata.hero.attributesCalculated[valueK] = value;
 			}
-			if (life > lifeMax)
-				life = lifeMax;
-			wdata.hero.attributesCalculated["Life"] = life;
 		}
 		for (i in 0...2) {
 			var actor = wdata.hero;
@@ -719,11 +747,11 @@ class BattleManager {
 							break;
 						}
 					}
-					if (addedIndex < 0){
+					if (addedIndex < 0) {
 						wdata.hero.equipment.push(e);
-						addedIndex =  wdata.hero.equipment.length - 1;
+						addedIndex = wdata.hero.equipment.length - 1;
 					}
-						
+
 					var e = AddEvent(EquipDrop);
 					e.data = addedIndex;
 					e.origin = enemy.reference;
@@ -937,7 +965,13 @@ $baseInfo';
 			for (i in 0...7) {
 				var buttonId = i;
 				var lu = wdata.playerActions["battleaction_" + i];
-				lu.enabled = wdata.hero.usableSkills[i] != null;
+				var skillUsable = false;
+				if (wdata.hero.usableSkills[i] != null) {
+					if (wdata.hero.attributesCalculated["MPRechargeCount"] >= 10000) {
+						skillUsable = true;
+					}
+				}
+				lu.enabled = skillUsable;
 				lu.visible = wdata.hero.usableSkills[i] != null;
 			}
 		}
@@ -975,6 +1009,15 @@ $baseInfo';
 		if (wdata.recovering && wdata.hero.attributesCalculated["Life"] >= wdata.hero.attributesCalculated["LifeMax"]) {
 			wdata.hero.attributesCalculated["Life"] = wdata.hero.attributesCalculated["LifeMax"];
 			wdata.recovering = false;
+		}
+
+		var mrc = wdata.hero.attributesCalculated["MPRechargeCount"];
+		if (mrc < 10000) {
+			mrc += Std.int(wdata.hero.attributesCalculated["MPRecharge"] * delta * 3);
+			wdata.hero.attributesCalculated["MPRechargeCount"] = mrc;
+			if (mrc >= 10000) {
+				wdata.hero.attributesCalculated["MP"] = wdata.hero.attributesCalculated["MPMax"];
+			}
 		}
 
 		if (wdata.timeCount >= timePeriod) {
@@ -1015,15 +1058,15 @@ $baseInfo';
 		ResourceLogic.recalculateScalingResource(hero.level, hero.xp);
 
 		hero.attributesCalculated["Life"] = hero.attributesCalculated["LifeMax"];
+		hero.attributesCalculated["MP"] = hero.attributesCalculated["MPMax"];
 	}
 
 	public function RecalculateAttributes(actor:Actor) {
-		var oldLife = actor.attributesCalculated["Life"];
-		var oldSpeedCount = actor.attributesCalculated["SpeedCount"];
-		if (oldSpeedCount < 0)
-			oldSpeedCount = 0;
-		if (oldSpeedCount == null)
-			oldSpeedCount = 0;
+		for (i in 0...volatileAttributeList.length) {
+			volatileAttributeAux[i] = actor.attributesCalculated[volatileAttributeList[i]];
+			if (volatileAttributeAux[i] >= 0 == false)
+				volatileAttributeAux[i] = 0;
+		}
 
 		actor.attributesCalculated.clear();
 		AttributeLogic.Add(actor.attributesBase, [
@@ -1091,8 +1134,9 @@ $baseInfo';
 				}
 		}
 
-		actor.attributesCalculated["Life"] = oldLife;
-		actor.attributesCalculated["SpeedCount"] = oldSpeedCount;
+		for (i in 0...volatileAttributeList.length) {
+			actor.attributesCalculated[volatileAttributeList[i]] = volatileAttributeAux[i];
+		}
 	}
 
 	public function AdvanceArea() {

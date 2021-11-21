@@ -50,11 +50,10 @@ class AttributeLogic {
 	}
 
 	public static function Add(attributes:Map<String, Int>, attributeAddition:Map<String, Int>, quantityOfAddition:Int, result:Map<String, Int>) {
-		
 		for (key => value in attributeAddition) {
 			var originalValue = attributes[key];
-			//this will always be false, unless it is null / undefined
-			if(originalValue >= 0 == false && originalValue < 0 == false){
+			// this will always be false, unless it is null / undefined
+			if (originalValue >= 0 == false && originalValue < 0 == false) {
 				originalValue = 0;
 			}
 			result[key] = originalValue + Std.int(value * quantityOfAddition);
@@ -76,8 +75,8 @@ typedef Actor = {
 	var equipment:Array<Equipment>;
 	var equipmentSlots:Array<Int>;
 	var reference:ActorReference;
-	var ?buffs : Array<Buff>;
-	var ?usableSkills : Array<SkillUsable>;
+	var ?buffs:Array<Buff>;
+	var ?usableSkills:Array<SkillUsable>;
 }
 
 typedef LevelGrowth = {
@@ -205,9 +204,9 @@ enum Target {
 }
 
 typedef Buff = {
-	var uniqueId: String;
-	var strength: Int; //this is used for overwriting with stronger buffs
-	var duration : Int;
+	var uniqueId:String;
+	var strength:Int; // this is used for overwriting with stronger buffs
+	var duration:Int;
 	var addStats:Map<String, Int>;
 	var mulStats:Map<String, Int>;
 }
@@ -218,11 +217,12 @@ typedef Effect = {
 }
 
 typedef SkillUsable = {
-	var id : String;
-	var level : Int;
+	var id:String;
+	var level:Int;
 }
 
 typedef Skill = {
-	var id : String;
-	var effects : Array<Effect>;
+	var id:String;
+	var effects:Array<Effect>;
+	var mpCost:Int;
 }

@@ -26,7 +26,8 @@ class PrototypeSkillMaker {
 						}, actor);
 					}
 				}
-			]
+			],
+			mpCost: 20
 		});
 		skills.push({
 			id: "Fire Edge",
@@ -45,7 +46,8 @@ class PrototypeSkillMaker {
 						
 					}
 				}
-			]
+			],
+			mpCost: 20
 		});
 	}
 }
