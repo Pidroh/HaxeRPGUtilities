@@ -192,11 +192,13 @@ class Main {
 
 		bm.wdata.hero.usableSkills = [
 
-			{id: "Fire Edge", level: 1},
-			{
+			{id: "Slash", level: 1},
+			{id: "Cure", level: 1},
+			//{id: "Fire Edge", level: 2},
+			/*{
 				id: "Regen",
-				level: 1
-			}
+				level: 2
+			}*/
 		];
 		// bm.wdata.hero.usableSkills.push();
 

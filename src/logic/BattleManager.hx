@@ -84,6 +84,197 @@ class BattleManager {
 		// skillBase.effects
 	}
 
+	public function Heal(target:Actor, lifeMaxPercentage = 0, rawBonus = 0) {
+		var lifem = target.attributesCalculated["LifeMax"];
+		var life = target.attributesCalculated["Life"];
+		life += rawBonus + Std.int(lifeMaxPercentage * lifem / 100);
+		if (life > lifem)
+			life = lifem;
+		target.attributesCalculated["Life"] = life;
+	}
+
+	public function AttackExecute(attacker:Actor, defender:Actor, attackRate = 100, attackBonus = 0, defenseRate = 100) {
+		var gEvent = AddEvent(ActorAttack);
+		var magicAttack = false;
+		var enchant = attacker.attributesCalculated["enchant-fire"];
+		if (enchant > 0) {
+			magicAttack = true;
+			attackBonus += enchant;
+		}
+
+		if (magicAttack == false) {
+			if (attacker.attributesCalculated["Piercing"] > 0 == true) {
+				defenseRate = defenseRate - attacker.attributesCalculated["Piercing"];
+			}
+		}
+		if (defenseRate < 0)
+			defenseRate = 0;
+
+		var attack:Float = 0;
+		var defense:Float = 0;
+		if (magicAttack) {
+			attack = attacker.attributesCalculated["MagicAttack"];
+			defense = defender.attributesCalculated["MagicDefense"];
+		} else {
+			attack = attacker.attributesCalculated["Attack"];
+			defense = defender.attributesCalculated["Defense"];
+		}
+		attack = (attackRate * attack / 100) + attackBonus;
+		var damage:Int = Std.int(attack - defense * defenseRate / 100);
+		if (damage < 0)
+			damage = 0;
+
+		defender.attributesCalculated["Life"] -= damage;
+		if (defender.attributesCalculated["Life"] < 0) {
+			defender.attributesCalculated["Life"] = 0;
+		}
+		gEvent.origin = attacker.reference;
+		gEvent.target = defender.reference;
+		gEvent.data = damage;
+
+		var hero = wdata.hero;
+		var enemy = wdata.enemy;
+		var killedInArea = wdata.killedInArea;
+		var battleArea = wdata.battleArea;
+		var areaComplete = killedInArea[battleArea] >= wdata.necessaryToKillInArea;
+		if (enemy.attributesCalculated["Life"] <= 0) {
+			#if !target.static
+			if (killedInArea[battleArea] == null) {
+				killedInArea[battleArea] = 0;
+			}
+			#end
+			killedInArea[battleArea]++;
+			if (random.randomInt(0, 100) < equipDropChance) {
+				var baseItem = random.randomInt(0, itemBases.length - 1);
+				var itemB = itemBases[baseItem];
+				var e:Equipment = null;
+				var stat:Map<String, Int> = [];
+				var statVar:Map<String, Int> = [];
+				var mul:Map<String, Int> = [];
+				var mulVar:Map<String, Int> = [];
+				var minLevel = Std.int((enemy.level + 1) / 2 - 3);
+				if (minLevel < 1)
+					minLevel = 1;
+				var maxLevel = Std.int(enemy.level / 2 + 2);
+				var level = random.randomInt(minLevel, maxLevel);
+				var prefixPos = -1;
+				var prefixSeed = -1;
+				var suffixPos = -1;
+				var suffixSeed = -1;
+
+				for (s in itemB.scalingStats.keyValueIterator()) {
+					var vari = random.randomInt(80, 100);
+					statVar[s.key] = vari;
+					var value = s.value * vari * level;
+					if (value < 100)
+						value = 100;
+					stat[s.key] = Std.int(value / 100);
+				}
+				if (itemB.statMultipliers != null)
+					for (s in itemB.statMultipliers.keyValueIterator()) {
+						var vari = random.randomInt(0, 100);
+						mulVar[s.key] = vari;
+						var min = s.value.min;
+						var max = s.value.max;
+						var range = max - min;
+						mul[s.key] = Std.int(min + (range * vari) / 100);
+					}
+				if (random.randomInt(0, 100) < equipDropChance_Rare) {
+					var modType = random.randomInt(0, 2);
+					var prefixExist = modType == 0 || modType == 2;
+					var suffixExist = modType == 1 || modType == 2;
+					if (prefixExist) {
+						prefixPos = random.randomInt(0, modBases.length - 1);
+						prefixSeed = random.nextInt();
+						AddMod(modBases[prefixPos], mul, prefixSeed);
+					}
+					if (suffixExist) {
+						suffixPos = random.randomInt(0, modBases.length - 1);
+						suffixSeed = random.nextInt();
+						AddMod(modBases[suffixPos], mul, suffixSeed);
+					}
+				}
+				for (m in mul.keyValueIterator()) {
+					if (m.value % 5 != 0) {
+						mul[m.key] = (Std.int((m.value + 4) / 5) * 5);
+					}
+				}
+				e = {
+					type: itemB.type,
+					seen: false,
+					requiredAttributes: null,
+					attributes: stat,
+					generationVariations: statVar,
+					generationLevel: level,
+					generationBaseItem: baseItem,
+					attributeMultiplier: mul,
+					generationVariationsMultiplier: mulVar,
+					generationSuffixMod: suffixPos,
+					generationPrefixMod: prefixPos,
+					generationSuffixModSeed: suffixSeed,
+					generationPrefixModSeed: prefixSeed,
+				};
+
+				var addedIndex = -1;
+				for (i in 0...wdata.hero.equipment.length) {
+					if (wdata.hero.equipment[i] == null) {
+						wdata.hero.equipment[i] = e;
+						addedIndex = i;
+						break;
+					}
+				}
+				if (addedIndex < 0) {
+					wdata.hero.equipment.push(e);
+					addedIndex = wdata.hero.equipment.length - 1;
+				}
+
+				var e = AddEvent(EquipDrop);
+				e.data = addedIndex;
+				e.origin = enemy.reference;
+			}
+
+			var e = AddEvent(ActorDead);
+			e.origin = enemy.reference;
+
+			var xpGain = enemy.level;
+			AwardXP(enemy.level);
+
+			if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
+				this.AddEvent(AreaComplete).data = wdata.battleArea;
+
+				if (wdata.maxArea == wdata.battleArea) {
+					// var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
+					if (regionPrizes[wdata.battleAreaRegion].xpPrize == true) {
+						var areaForBonus = wdata.battleArea;
+						ResourceLogic.recalculateScalingResource(areaForBonus, areaBonus);
+						var xpPlus = areaBonus.calculatedMax;
+						AwardXP(xpPlus);
+					}
+					if (regionPrizes[wdata.battleAreaRegion].statBonus != null) {
+						for (su in regionPrizes[wdata.battleAreaRegion].statBonus.keyValueIterator()) {
+							var e = this.AddEvent(statUpgrade);
+							e.dataString = su.key;
+							e.data = su.value;
+						}
+						this.AddEvent(PermanentStatUpgrade);
+					}
+
+					wdata.maxArea++;
+					this.AddEvent(AreaUnlock).data = wdata.maxArea;
+					killedInArea[wdata.maxArea] = 0;
+				}
+			}
+		}
+
+		if (hero.attributesCalculated["Life"] <= 0) {
+			wdata.recovering = true;
+			wdata.enemy = null;
+			var e = AddEvent(ActorDead);
+			e.origin = hero.reference;
+			wdata.playerTimesKilled++;
+		}
+	}
+
 	public function AddBuff(buff:Buff, actor:Actor) {
 		actor.buffs.push(buff);
 		RecalculateAttributes(actor);
@@ -595,8 +786,6 @@ class BattleManager {
 		}
 		// c = Sys.getChar(true);
 		if (attackHappen) {
-			var gEvent = AddEvent(ActorAttack);
-
 			// var which = 0;
 			var attacker:Actor = null;
 			var defender:Actor = null;
@@ -629,182 +818,7 @@ class BattleManager {
 				}
 			}
 
-			var defenseRate = 100;
-			var attackRate = 100;
-			var attackBonus = 0;
-
-			var magicAttack = false;
-			var enchant = attacker.attributesCalculated["enchant-fire"];
-			if (enchant > 0) {
-				magicAttack = true;
-				attackBonus += enchant;
-			}
-
-			if (magicAttack == false) {
-				if (attacker.attributesCalculated["Piercing"] > 0 == true) {
-					defenseRate = defenseRate - attacker.attributesCalculated["Piercing"];
-				}
-			}
-			if (defenseRate < 0)
-				defenseRate = 0;
-
-			var attack:Float = 0;
-			var defense:Float = 0;
-			if (magicAttack) {
-				attack = attacker.attributesCalculated["MagicAttack"];
-				defense = defender.attributesCalculated["MagicDefense"];
-			} else {
-				attack = attacker.attributesCalculated["Attack"];
-				defense = defender.attributesCalculated["Defense"];
-			}
-			attack = (attackRate * attack / 100) + attackBonus;
-			var damage:Int = Std.int(attack - defense * defenseRate / 100);
-			if (damage < 0)
-				damage = 0;
-
-			defender.attributesCalculated["Life"] -= damage;
-			if (defender.attributesCalculated["Life"] < 0) {
-				defender.attributesCalculated["Life"] = 0;
-			}
-			gEvent.origin = attacker.reference;
-			gEvent.target = defender.reference;
-			gEvent.data = damage;
-
-			if (enemy.attributesCalculated["Life"] <= 0) {
-				#if !target.static
-				if (killedInArea[battleArea] == null) {
-					killedInArea[battleArea] = 0;
-				}
-				#end
-				killedInArea[battleArea]++;
-				if (random.randomInt(0, 100) < equipDropChance) {
-					var baseItem = random.randomInt(0, itemBases.length - 1);
-					var itemB = itemBases[baseItem];
-					var e:Equipment = null;
-					var stat:Map<String, Int> = [];
-					var statVar:Map<String, Int> = [];
-					var mul:Map<String, Int> = [];
-					var mulVar:Map<String, Int> = [];
-					var minLevel = Std.int((enemy.level + 1) / 2 - 3);
-					if (minLevel < 1)
-						minLevel = 1;
-					var maxLevel = Std.int(enemy.level / 2 + 2);
-					var level = random.randomInt(minLevel, maxLevel);
-					var prefixPos = -1;
-					var prefixSeed = -1;
-					var suffixPos = -1;
-					var suffixSeed = -1;
-
-					for (s in itemB.scalingStats.keyValueIterator()) {
-						var vari = random.randomInt(80, 100);
-						statVar[s.key] = vari;
-						var value = s.value * vari * level;
-						if (value < 100)
-							value = 100;
-						stat[s.key] = Std.int(value / 100);
-					}
-					if (itemB.statMultipliers != null)
-						for (s in itemB.statMultipliers.keyValueIterator()) {
-							var vari = random.randomInt(0, 100);
-							mulVar[s.key] = vari;
-							var min = s.value.min;
-							var max = s.value.max;
-							var range = max - min;
-							mul[s.key] = Std.int(min + (range * vari) / 100);
-						}
-					if (random.randomInt(0, 100) < equipDropChance_Rare) {
-						var modType = random.randomInt(0, 2);
-						var prefixExist = modType == 0 || modType == 2;
-						var suffixExist = modType == 1 || modType == 2;
-						if (prefixExist) {
-							prefixPos = random.randomInt(0, modBases.length - 1);
-							prefixSeed = random.nextInt();
-							AddMod(modBases[prefixPos], mul, prefixSeed);
-						}
-						if (suffixExist) {
-							suffixPos = random.randomInt(0, modBases.length - 1);
-							suffixSeed = random.nextInt();
-							AddMod(modBases[suffixPos], mul, suffixSeed);
-						}
-					}
-					for (m in mul.keyValueIterator()) {
-						if (m.value % 5 != 0) {
-							mul[m.key] = (Std.int((m.value + 4) / 5) * 5);
-						}
-					}
-					e = {
-						type: itemB.type,
-						seen: false,
-						requiredAttributes: null,
-						attributes: stat,
-						generationVariations: statVar,
-						generationLevel: level,
-						generationBaseItem: baseItem,
-						attributeMultiplier: mul,
-						generationVariationsMultiplier: mulVar,
-						generationSuffixMod: suffixPos,
-						generationPrefixMod: prefixPos,
-						generationSuffixModSeed: suffixSeed,
-						generationPrefixModSeed: prefixSeed,
-					};
-
-					var addedIndex = -1;
-					for (i in 0...wdata.hero.equipment.length) {
-						if (wdata.hero.equipment[i] == null) {
-							wdata.hero.equipment[i] = e;
-							addedIndex = i;
-							break;
-						}
-					}
-					if (addedIndex < 0) {
-						wdata.hero.equipment.push(e);
-						addedIndex = wdata.hero.equipment.length - 1;
-					}
-
-					var e = AddEvent(EquipDrop);
-					e.data = addedIndex;
-					e.origin = enemy.reference;
-				}
-
-				var e = AddEvent(ActorDead);
-				e.origin = enemy.reference;
-
-				var xpGain = enemy.level;
-				AwardXP(enemy.level);
-
-				if (killedInArea[battleArea] >= wdata.necessaryToKillInArea) {
-					this.AddEvent(AreaComplete).data = wdata.battleArea;
-
-					if (wdata.maxArea == wdata.battleArea) {
-						// var xpPlus = Std.int(Math.pow((hero.xp.scaling.data1-1)*0.5 +1, wdata.battleArea) * 50);
-						if (regionPrizes[wdata.battleAreaRegion].xpPrize == true) {
-							var areaForBonus = wdata.battleArea;
-							ResourceLogic.recalculateScalingResource(areaForBonus, areaBonus);
-							var xpPlus = areaBonus.calculatedMax;
-							AwardXP(xpPlus);
-						}
-						if (regionPrizes[wdata.battleAreaRegion].statBonus != null) {
-							for (su in regionPrizes[wdata.battleAreaRegion].statBonus.keyValueIterator()) {
-								var e = this.AddEvent(statUpgrade);
-								e.dataString = su.key;
-								e.data = su.value;
-							}
-							this.AddEvent(PermanentStatUpgrade);
-						}
-
-						wdata.maxArea++;
-						this.AddEvent(AreaUnlock).data = wdata.maxArea;
-						killedInArea[wdata.maxArea] = 0;
-					}
-				}
-			}
-			if (hero.attributesCalculated["Life"] <= 0) {
-				wdata.recovering = true;
-				wdata.enemy = null;
-				var e = AddEvent(ActorDead);
-				e.origin = hero.reference;
-				wdata.playerTimesKilled++;
-			}
+			AttackExecute(attacker, defender);
 
 			var attackerBuffChanged = false;
 			for (b in 0...attacker.buffs.length) {
@@ -978,12 +992,12 @@ $baseInfo';
 				var skillVisible = false;
 				var skillButtonMode = 0;
 				if (wdata.hero.usableSkills[i] != null) {
-					if (wdata.hero.attributesCalculated["MPRechargeCount"] >= 10000) {
-						if (wdata.hero.level >= skillSlotUnlocklevel[i]) {
+					if (wdata.hero.level >= skillSlotUnlocklevel[i]) {
+						if (wdata.hero.attributesCalculated["MPRechargeCount"] >= 10000) {
 							skillUsable = true;
-						} else {
-							skillButtonMode = 1;
 						}
+					} else {
+						skillButtonMode = 1;
 					}
 
 					if (i == 0 || wdata.hero.level >= skillSlotUnlocklevel[i - 1]) {

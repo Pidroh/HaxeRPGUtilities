@@ -42,12 +42,39 @@ class PrototypeSkillMaker {
 							mulStats: null,
 							strength: strength,
 							duration: 5
-						}, actor);
-						
+						}, actor);						
 					}
 				}
 			],
 			mpCost: 20
+		});
+		skills.push({
+			id: "Slash",
+			effects: [
+				{
+					target: ENEMY,
+					effectExecution: (bm, level, actor, array) -> {
+						var strength = level * 5;
+						bm.AttackExecute(actor, array[0], 50, 5+level, 100);
+					}
+				}
+			],
+			mpCost: 10
+		});
+		skills.push({
+			id: "Cure",
+			effects: [
+				{
+					target: SELF,
+					effectExecution: (bm, level, actor, array) -> {
+						//15, 50, 105, 180
+						var bonus = 5 + level * 10;
+						var strength = level * bonus;
+						bm.Heal(array[0], 10, bonus);
+					}
+				}
+			],
+			mpCost: 15
 		});
 	}
 }

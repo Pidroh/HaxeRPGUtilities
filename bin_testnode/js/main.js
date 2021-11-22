@@ -144,6 +144,230 @@ BattleManager.prototype = {
 			ef.effectExecution(this,skill.level,actor,targets);
 		}
 	}
+	,Heal: function(target,lifeMaxPercentage,rawBonus) {
+		if(rawBonus == null) {
+			rawBonus = 0;
+		}
+		if(lifeMaxPercentage == null) {
+			lifeMaxPercentage = 0;
+		}
+		var lifem = target.attributesCalculated.h["LifeMax"];
+		var life = target.attributesCalculated.h["Life"];
+		life += rawBonus + (lifeMaxPercentage * lifem / 100 | 0);
+		if(life > lifem) {
+			life = lifem;
+		}
+		target.attributesCalculated.h["Life"] = life;
+	}
+	,AttackExecute: function(attacker,defender,attackRate,attackBonus,defenseRate) {
+		if(defenseRate == null) {
+			defenseRate = 100;
+		}
+		if(attackBonus == null) {
+			attackBonus = 0;
+		}
+		if(attackRate == null) {
+			attackRate = 100;
+		}
+		var gEvent = this.AddEvent(EventTypes.ActorAttack);
+		var magicAttack = false;
+		var enchant = attacker.attributesCalculated.h["enchant-fire"];
+		if(enchant > 0) {
+			magicAttack = true;
+			attackBonus += enchant;
+		}
+		if(magicAttack == false) {
+			if(attacker.attributesCalculated.h["Piercing"] > 0 == true) {
+				defenseRate -= attacker.attributesCalculated.h["Piercing"];
+			}
+		}
+		if(defenseRate < 0) {
+			defenseRate = 0;
+		}
+		var attack = 0;
+		var defense = 0;
+		if(magicAttack) {
+			attack = attacker.attributesCalculated.h["MagicAttack"];
+			defense = defender.attributesCalculated.h["MagicDefense"];
+		} else {
+			attack = attacker.attributesCalculated.h["Attack"];
+			defense = defender.attributesCalculated.h["Defense"];
+		}
+		attack = attackRate * attack / 100 + attackBonus;
+		var damage = attack - defense * defenseRate / 100 | 0;
+		if(damage < 0) {
+			damage = 0;
+		}
+		var _g = defender.attributesCalculated;
+		var v = _g.h["Life"] - damage;
+		_g.h["Life"] = v;
+		if(defender.attributesCalculated.h["Life"] < 0) {
+			defender.attributesCalculated.h["Life"] = 0;
+		}
+		gEvent.origin = attacker.reference;
+		gEvent.target = defender.reference;
+		gEvent.data = damage;
+		var hero = this.wdata.hero;
+		var enemy = this.wdata.enemy;
+		var killedInArea = this.wdata.killedInArea;
+		var battleArea = this.wdata.battleArea;
+		var areaComplete = killedInArea[battleArea] >= this.wdata.necessaryToKillInArea;
+		if(enemy.attributesCalculated.h["Life"] <= 0) {
+			if(killedInArea[battleArea] == null) {
+				killedInArea[battleArea] = 0;
+			}
+			killedInArea[battleArea]++;
+			if(this.random.randomInt(0,100) < this.equipDropChance) {
+				var baseItem = this.random.randomInt(0,this.itemBases.length - 1);
+				var itemB = this.itemBases[baseItem];
+				var e = null;
+				var stat = new haxe_ds_StringMap();
+				var statVar = new haxe_ds_StringMap();
+				var mul = new haxe_ds_StringMap();
+				var mulVar = new haxe_ds_StringMap();
+				var minLevel = (enemy.level + 1) / 2 - 3 | 0;
+				if(minLevel < 1) {
+					minLevel = 1;
+				}
+				var maxLevel = enemy.level / 2 + 2 | 0;
+				var level = this.random.randomInt(minLevel,maxLevel);
+				var prefixPos = -1;
+				var prefixSeed = -1;
+				var suffixPos = -1;
+				var suffixSeed = -1;
+				var h = itemB.scalingStats.h;
+				var s_h = h;
+				var s_keys = Object.keys(h);
+				var s_length = s_keys.length;
+				var s_current = 0;
+				while(s_current < s_length) {
+					var key = s_keys[s_current++];
+					var s_key = key;
+					var s_value = s_h[key];
+					var vari = this.random.randomInt(80,100);
+					statVar.h[s_key] = vari;
+					var value = s_value * vari * level;
+					if(value < 100) {
+						value = 100;
+					}
+					var v = value / 100 | 0;
+					stat.h[s_key] = v;
+				}
+				if(itemB.statMultipliers != null) {
+					var h = itemB.statMultipliers.h;
+					var s_h = h;
+					var s_keys = Object.keys(h);
+					var s_length = s_keys.length;
+					var s_current = 0;
+					while(s_current < s_length) {
+						var key = s_keys[s_current++];
+						var s_key = key;
+						var s_value = s_h[key];
+						var vari = this.random.randomInt(0,100);
+						mulVar.h[s_key] = vari;
+						var min = s_value.min;
+						var max = s_value.max;
+						var range = max - min;
+						var v = min + range * vari / 100 | 0;
+						mul.h[s_key] = v;
+					}
+				}
+				if(this.random.randomInt(0,100) < this.equipDropChance_Rare) {
+					var modType = this.random.randomInt(0,2);
+					var prefixExist = modType == 0 || modType == 2;
+					var suffixExist = modType == 1 || modType == 2;
+					if(prefixExist) {
+						prefixPos = this.random.randomInt(0,this.modBases.length - 1);
+						prefixSeed = this.random.nextInt();
+						var tmp = this.modBases[prefixPos];
+						var this1 = new haxe__$Int64__$_$_$Int64(prefixSeed >> 31,prefixSeed);
+						this.AddMod(tmp,mul,this1);
+					}
+					if(suffixExist) {
+						suffixPos = this.random.randomInt(0,this.modBases.length - 1);
+						suffixSeed = this.random.nextInt();
+						var tmp = this.modBases[suffixPos];
+						var this1 = new haxe__$Int64__$_$_$Int64(suffixSeed >> 31,suffixSeed);
+						this.AddMod(tmp,mul,this1);
+					}
+				}
+				var h = mul.h;
+				var m_h = h;
+				var m_keys = Object.keys(h);
+				var m_length = m_keys.length;
+				var m_current = 0;
+				while(m_current < m_length) {
+					var key = m_keys[m_current++];
+					var m_key = key;
+					var m_value = m_h[key];
+					if(m_value % 5 != 0) {
+						var v = ((m_value + 4) / 5 | 0) * 5;
+						mul.h[m_key] = v;
+					}
+				}
+				e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed};
+				var addedIndex = -1;
+				var _g = 0;
+				var _g1 = this.wdata.hero.equipment.length;
+				while(_g < _g1) {
+					var i = _g++;
+					if(this.wdata.hero.equipment[i] == null) {
+						this.wdata.hero.equipment[i] = e;
+						addedIndex = i;
+						break;
+					}
+				}
+				if(addedIndex < 0) {
+					this.wdata.hero.equipment.push(e);
+					addedIndex = this.wdata.hero.equipment.length - 1;
+				}
+				var e = this.AddEvent(EventTypes.EquipDrop);
+				e.data = addedIndex;
+				e.origin = enemy.reference;
+			}
+			var e = this.AddEvent(EventTypes.ActorDead);
+			e.origin = enemy.reference;
+			var xpGain = enemy.level;
+			this.AwardXP(enemy.level);
+			if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
+				this.AddEvent(EventTypes.AreaComplete).data = this.wdata.battleArea;
+				if(this.wdata.maxArea == this.wdata.battleArea) {
+					if(this.regionPrizes[this.wdata.battleAreaRegion].xpPrize == true) {
+						var areaForBonus = this.wdata.battleArea;
+						ResourceLogic.recalculateScalingResource(areaForBonus,this.areaBonus);
+						var xpPlus = this.areaBonus.calculatedMax;
+						this.AwardXP(xpPlus);
+					}
+					if(this.regionPrizes[this.wdata.battleAreaRegion].statBonus != null) {
+						var h = this.regionPrizes[this.wdata.battleAreaRegion].statBonus.h;
+						var su_h = h;
+						var su_keys = Object.keys(h);
+						var su_length = su_keys.length;
+						var su_current = 0;
+						while(su_current < su_length) {
+							var key = su_keys[su_current++];
+							var su_key = key;
+							var su_value = su_h[key];
+							var e = this.AddEvent(EventTypes.statUpgrade);
+							e.dataString = su_key;
+							e.data = su_value;
+						}
+						this.AddEvent(EventTypes.PermanentStatUpgrade);
+					}
+					this.wdata.maxArea++;
+					this.AddEvent(EventTypes.AreaUnlock).data = this.wdata.maxArea;
+					killedInArea[this.wdata.maxArea] = 0;
+				}
+			}
+		}
+		if(hero.attributesCalculated.h["Life"] <= 0) {
+			this.wdata.recovering = true;
+			this.wdata.enemy = null;
+			var e = this.AddEvent(EventTypes.ActorDead);
+			e.origin = hero.reference;
+			this.wdata.playerTimesKilled++;
+		}
+	}
 	,AddBuff: function(buff,actor) {
 		actor.buffs.push(buff);
 		this.RecalculateAttributes(actor);
@@ -557,7 +781,6 @@ BattleManager.prototype = {
 			}
 		}
 		if(attackHappen) {
-			var gEvent = this.AddEvent(EventTypes.ActorAttack);
 			var attacker = null;
 			var defender = null;
 			var decided = false;
@@ -597,201 +820,7 @@ BattleManager.prototype = {
 					break;
 				}
 			}
-			var defenseRate = 100;
-			var attackRate = 100;
-			var attackBonus = 0;
-			var magicAttack = false;
-			var enchant = attacker.attributesCalculated.h["enchant-fire"];
-			if(enchant > 0) {
-				magicAttack = true;
-				attackBonus += enchant;
-			}
-			if(magicAttack == false) {
-				if(attacker.attributesCalculated.h["Piercing"] > 0 == true) {
-					defenseRate -= attacker.attributesCalculated.h["Piercing"];
-				}
-			}
-			if(defenseRate < 0) {
-				defenseRate = 0;
-			}
-			var attack = 0;
-			var defense = 0;
-			if(magicAttack) {
-				attack = attacker.attributesCalculated.h["MagicAttack"];
-				defense = defender.attributesCalculated.h["MagicDefense"];
-			} else {
-				attack = attacker.attributesCalculated.h["Attack"];
-				defense = defender.attributesCalculated.h["Defense"];
-			}
-			attack = attackRate * attack / 100 + attackBonus;
-			var damage = attack - defense * defenseRate / 100 | 0;
-			if(damage < 0) {
-				damage = 0;
-			}
-			var _g = defender.attributesCalculated;
-			var v = _g.h["Life"] - damage;
-			_g.h["Life"] = v;
-			if(defender.attributesCalculated.h["Life"] < 0) {
-				defender.attributesCalculated.h["Life"] = 0;
-			}
-			gEvent.origin = attacker.reference;
-			gEvent.target = defender.reference;
-			gEvent.data = damage;
-			if(enemy.attributesCalculated.h["Life"] <= 0) {
-				if(killedInArea[battleArea] == null) {
-					killedInArea[battleArea] = 0;
-				}
-				killedInArea[battleArea]++;
-				if(this.random.randomInt(0,100) < this.equipDropChance) {
-					var baseItem = this.random.randomInt(0,this.itemBases.length - 1);
-					var itemB = this.itemBases[baseItem];
-					var e = null;
-					var stat = new haxe_ds_StringMap();
-					var statVar = new haxe_ds_StringMap();
-					var mul = new haxe_ds_StringMap();
-					var mulVar = new haxe_ds_StringMap();
-					var minLevel = (enemy.level + 1) / 2 - 3 | 0;
-					if(minLevel < 1) {
-						minLevel = 1;
-					}
-					var maxLevel = enemy.level / 2 + 2 | 0;
-					var level = this.random.randomInt(minLevel,maxLevel);
-					var prefixPos = -1;
-					var prefixSeed = -1;
-					var suffixPos = -1;
-					var suffixSeed = -1;
-					var h = itemB.scalingStats.h;
-					var s_h = h;
-					var s_keys = Object.keys(h);
-					var s_length = s_keys.length;
-					var s_current = 0;
-					while(s_current < s_length) {
-						var key = s_keys[s_current++];
-						var s_key = key;
-						var s_value = s_h[key];
-						var vari = this.random.randomInt(80,100);
-						statVar.h[s_key] = vari;
-						var value = s_value * vari * level;
-						if(value < 100) {
-							value = 100;
-						}
-						var v = value / 100 | 0;
-						stat.h[s_key] = v;
-					}
-					if(itemB.statMultipliers != null) {
-						var h = itemB.statMultipliers.h;
-						var s_h = h;
-						var s_keys = Object.keys(h);
-						var s_length = s_keys.length;
-						var s_current = 0;
-						while(s_current < s_length) {
-							var key = s_keys[s_current++];
-							var s_key = key;
-							var s_value = s_h[key];
-							var vari = this.random.randomInt(0,100);
-							mulVar.h[s_key] = vari;
-							var min = s_value.min;
-							var max = s_value.max;
-							var range = max - min;
-							var v = min + range * vari / 100 | 0;
-							mul.h[s_key] = v;
-						}
-					}
-					if(this.random.randomInt(0,100) < this.equipDropChance_Rare) {
-						var modType = this.random.randomInt(0,2);
-						var prefixExist = modType == 0 || modType == 2;
-						var suffixExist = modType == 1 || modType == 2;
-						if(prefixExist) {
-							prefixPos = this.random.randomInt(0,this.modBases.length - 1);
-							prefixSeed = this.random.nextInt();
-							var tmp = this.modBases[prefixPos];
-							var this1 = new haxe__$Int64__$_$_$Int64(prefixSeed >> 31,prefixSeed);
-							this.AddMod(tmp,mul,this1);
-						}
-						if(suffixExist) {
-							suffixPos = this.random.randomInt(0,this.modBases.length - 1);
-							suffixSeed = this.random.nextInt();
-							var tmp = this.modBases[suffixPos];
-							var this1 = new haxe__$Int64__$_$_$Int64(suffixSeed >> 31,suffixSeed);
-							this.AddMod(tmp,mul,this1);
-						}
-					}
-					var h = mul.h;
-					var m_h = h;
-					var m_keys = Object.keys(h);
-					var m_length = m_keys.length;
-					var m_current = 0;
-					while(m_current < m_length) {
-						var key = m_keys[m_current++];
-						var m_key = key;
-						var m_value = m_h[key];
-						if(m_value % 5 != 0) {
-							var v = ((m_value + 4) / 5 | 0) * 5;
-							mul.h[m_key] = v;
-						}
-					}
-					e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed};
-					var addedIndex = -1;
-					var _g = 0;
-					var _g1 = this.wdata.hero.equipment.length;
-					while(_g < _g1) {
-						var i = _g++;
-						if(this.wdata.hero.equipment[i] == null) {
-							this.wdata.hero.equipment[i] = e;
-							addedIndex = i;
-							break;
-						}
-					}
-					if(addedIndex < 0) {
-						this.wdata.hero.equipment.push(e);
-						addedIndex = this.wdata.hero.equipment.length - 1;
-					}
-					var e = this.AddEvent(EventTypes.EquipDrop);
-					e.data = addedIndex;
-					e.origin = enemy.reference;
-				}
-				var e = this.AddEvent(EventTypes.ActorDead);
-				e.origin = enemy.reference;
-				var xpGain = enemy.level;
-				this.AwardXP(enemy.level);
-				if(killedInArea[battleArea] >= this.wdata.necessaryToKillInArea) {
-					this.AddEvent(EventTypes.AreaComplete).data = this.wdata.battleArea;
-					if(this.wdata.maxArea == this.wdata.battleArea) {
-						if(this.regionPrizes[this.wdata.battleAreaRegion].xpPrize == true) {
-							var areaForBonus = this.wdata.battleArea;
-							ResourceLogic.recalculateScalingResource(areaForBonus,this.areaBonus);
-							var xpPlus = this.areaBonus.calculatedMax;
-							this.AwardXP(xpPlus);
-						}
-						if(this.regionPrizes[this.wdata.battleAreaRegion].statBonus != null) {
-							var h = this.regionPrizes[this.wdata.battleAreaRegion].statBonus.h;
-							var su_h = h;
-							var su_keys = Object.keys(h);
-							var su_length = su_keys.length;
-							var su_current = 0;
-							while(su_current < su_length) {
-								var key = su_keys[su_current++];
-								var su_key = key;
-								var su_value = su_h[key];
-								var e = this.AddEvent(EventTypes.statUpgrade);
-								e.dataString = su_key;
-								e.data = su_value;
-							}
-							this.AddEvent(EventTypes.PermanentStatUpgrade);
-						}
-						this.wdata.maxArea++;
-						this.AddEvent(EventTypes.AreaUnlock).data = this.wdata.maxArea;
-						killedInArea[this.wdata.maxArea] = 0;
-					}
-				}
-			}
-			if(hero.attributesCalculated.h["Life"] <= 0) {
-				this.wdata.recovering = true;
-				this.wdata.enemy = null;
-				var e = this.AddEvent(EventTypes.ActorDead);
-				e.origin = hero.reference;
-				this.wdata.playerTimesKilled++;
-			}
+			this.AttackExecute(attacker,defender);
 			var attackerBuffChanged = false;
 			var _g = 0;
 			var _g1 = attacker.buffs.length;
@@ -940,12 +969,12 @@ BattleManager.prototype = {
 			var skillVisible = false;
 			var skillButtonMode = 0;
 			if(this.wdata.hero.usableSkills[i] != null) {
-				if(this.wdata.hero.attributesCalculated.h["MPRechargeCount"] >= 10000) {
-					if(this.wdata.hero.level >= this.skillSlotUnlocklevel[i]) {
+				if(this.wdata.hero.level >= this.skillSlotUnlocklevel[i]) {
+					if(this.wdata.hero.attributesCalculated.h["MPRechargeCount"] >= 10000) {
 						skillUsable = true;
-					} else {
-						skillButtonMode = 1;
 					}
+				} else {
+					skillButtonMode = 1;
 				}
 				if(i == 0 || this.wdata.hero.level >= this.skillSlotUnlocklevel[i - 1]) {
 					skillVisible = true;
