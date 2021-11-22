@@ -651,7 +651,6 @@ BattleManager.prototype = {
 				attack = attacker.attributesCalculated.h["Attack"];
 				var this1 = defender.attributesCalculated;
 			}
-			attack = attacker.attributesCalculated.h["Attack"];
 			attack = attackRate * attack / 100 + attackBonus;
 			var damage = attack - defense * defenseRate / 100 | 0;
 			if(damage < 0) {
@@ -1060,7 +1059,7 @@ BattleManager.prototype = {
 		_g.h["Life"] = 5;
 		_g.h["Speed"] = 0;
 		_g.h["Defense"] = 0;
-		_g.h["MagicAttack"] = 0;
+		_g.h["MagicAttack"] = 1;
 		_g.h["MagicDefense"] = 0;
 		_g.h["SpeedCount"] = 0;
 		_g.h["Piercing"] = 0;

@@ -648,7 +648,6 @@ class BattleManager {
 				attack = attacker.attributesCalculated["Attack"];
 				defender.attributesCalculated["Defense"];
 			}
-			attack = attacker.attributesCalculated["Attack"];
 			attack = (attackRate * attack / 100) + attackBonus;
 			var damage:Int = Std.int(attack - defense * defenseRate / 100);
 			if (damage < 0)
@@ -1076,7 +1075,7 @@ $baseInfo';
 			"Life" => 5,
 			"Speed" => 0,
 			"Defense" => 0,
-			"MagicAttack" => 0,
+			"MagicAttack" => 1,
 			"MagicDefense" => 0,
 			"SpeedCount" => 0,
 			"Piercing" => 0,

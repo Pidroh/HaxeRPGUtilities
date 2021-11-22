@@ -137,7 +137,7 @@ class Main {
 		for (i in 0...7) {
 			CreateButtonFromAction("battleaction_" + i, "Action " + i);
 		}
-		CreateButtonFromAction("repeat", "Restart");
+		//CreateButtonFromAction("repeat", "Restart");
 		var prestigeWarn = "Your experience awards will increase by "
 			+ Std.int(bm.GetXPBonusOnPrestige() * 100)
 			+ "%. Your max level will increase by "
@@ -466,7 +466,13 @@ class Main {
 			view.ButtonVisibility("prestige", storyRuntime.persistence.progressionData[storyRuntime.cutscenes[2].title].timesCompleted > 0);
 
 			for (i in 0...7) {
-				buttonToAction("battleaction_" + i, "battleaction_" + i);
+				var id = "battleaction_" + i;
+				buttonToAction(id,id);
+				var skills = bm.wdata.hero.usableSkills;
+				if(skills[i] != null){
+					view.ButtonLabel(id, bm.GetSkillBase(skills[i].id).id);
+				}
+				
 			}
 
 			{
