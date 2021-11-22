@@ -173,6 +173,8 @@ enum EventTypes {
 	GetXP;
 	PermanentStatUpgrade;
 	statUpgrade;
+	SkillUse;
+	MPRunOut;
 }
 
 class ActorReference {

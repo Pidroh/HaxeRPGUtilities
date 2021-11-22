@@ -9,6 +9,7 @@ function $extend(from, fields) {
 var BattleManager = function() {
 	this.volatileAttributeAux = [];
 	this.volatileAttributeList = ["MP","Life","MPRechargeCount","SpeedCount"];
+	this.skillSlotUnlocklevel = [2,5,12];
 	this.regionPrizes = [{ statBonus : null, xpPrize : true}];
 	this.regionRequirements = [0];
 	this.playerActions = new haxe_ds_StringMap();
@@ -114,9 +115,14 @@ BattleManager.prototype = {
 		var skillBase = this.GetSkillBase(id);
 		var mp = actor.attributesCalculated.h["MP"];
 		mp -= skillBase.mpCost;
+		var ev = this.AddEvent(EventTypes.SkillUse);
+		ev.origin = this.wdata.hero.reference;
+		ev.dataString = skill.id;
 		if(mp <= 0) {
 			mp = 0;
 			actor.attributesCalculated.h["MPRechargeCount"] = 0;
+			var ev = this.AddEvent(EventTypes.MPRunOut);
+			ev.origin = this.wdata.hero.reference;
 		}
 		actor.attributesCalculated.h["MP"] = mp;
 		var _g = 0;
@@ -524,40 +530,6 @@ BattleManager.prototype = {
 				value = max;
 			}
 			this.wdata.hero.attributesCalculated.h[valueK] = value;
-			var valueK = "Life";
-			var valueMaxK = "LifeMax";
-			valueK = "MP";
-			valueMaxK = "MPMax";
-			var value = this.wdata.hero.attributesCalculated.h[valueK];
-			if(valueMaxK != null) {
-				max = this.wdata.hero.attributesCalculated.h[valueMaxK];
-			}
-			value += 2 * restMultiplier;
-			if(this.wdata.sleeping) {
-				value += max * 0.3 | 0;
-			}
-			if(value > max) {
-				value = max;
-			}
-			this.wdata.hero.attributesCalculated.h[valueK] = value;
-			var valueK = "Life";
-			var valueMaxK = "LifeMax";
-			valueK = "MPRechargeCount";
-			valueMaxK = null;
-			max = 10000;
-			restMultiplier = 500;
-			var value = this.wdata.hero.attributesCalculated.h[valueK];
-			if(valueMaxK != null) {
-				max = this.wdata.hero.attributesCalculated.h[valueMaxK];
-			}
-			value += 2 * restMultiplier;
-			if(this.wdata.sleeping) {
-				value += max * 0.3 | 0;
-			}
-			if(value > max) {
-				value = max;
-			}
-			this.wdata.hero.attributesCalculated.h[valueK] = value;
 		}
 		var _g = 0;
 		while(_g < 2) {
@@ -646,10 +618,10 @@ BattleManager.prototype = {
 			var defense = 0;
 			if(magicAttack) {
 				attack = attacker.attributesCalculated.h["MagicAttack"];
-				var this1 = defender.attributesCalculated;
+				defense = defender.attributesCalculated.h["MagicDefense"];
 			} else {
 				attack = attacker.attributesCalculated.h["Attack"];
-				var this1 = defender.attributesCalculated;
+				defense = defender.attributesCalculated.h["Defense"];
 			}
 			attack = attackRate * attack / 100 + attackBonus;
 			var damage = attack - defense * defenseRate / 100 | 0;
@@ -965,13 +937,23 @@ BattleManager.prototype = {
 			var buttonId = i;
 			var lu = this.wdata.playerActions.h["battleaction_" + i];
 			var skillUsable = false;
+			var skillVisible = false;
+			var skillButtonMode = 0;
 			if(this.wdata.hero.usableSkills[i] != null) {
 				if(this.wdata.hero.attributesCalculated.h["MPRechargeCount"] >= 10000) {
-					skillUsable = true;
+					if(this.wdata.hero.level >= this.skillSlotUnlocklevel[i]) {
+						skillUsable = true;
+					} else {
+						skillButtonMode = 1;
+					}
+				}
+				if(i == 0 || this.wdata.hero.level >= this.skillSlotUnlocklevel[i - 1]) {
+					skillVisible = true;
 				}
 			}
 			lu.enabled = skillUsable;
-			lu.visible = this.wdata.hero.usableSkills[i] != null;
+			lu.visible = skillVisible;
+			lu.mode = skillButtonMode;
 		}
 		var lu = this.wdata.playerActions.h["advance"];
 		lu.visible = this.canAdvance || lu.visible;
@@ -998,7 +980,7 @@ BattleManager.prototype = {
 		}
 		var mrc = this.wdata.hero.attributesCalculated.h["MPRechargeCount"];
 		if(mrc < 10000) {
-			mrc += this.wdata.hero.attributesCalculated.h["MPRecharge"] * delta * 3 | 0;
+			mrc += this.wdata.hero.attributesCalculated.h["MPRecharge"] * delta * 5 | 0;
 			this.wdata.hero.attributesCalculated.h["MPRechargeCount"] = mrc;
 			if(mrc >= 10000) {
 				var v = this.wdata.hero.attributesCalculated.h["MPMax"];
@@ -1992,8 +1974,10 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,GetXP: {_hx_name:"GetXP",_hx_index:10,__enum__:"EventTypes",toString:$estr}
 	,PermanentStatUpgrade: {_hx_name:"PermanentStatUpgrade",_hx_index:11,__enum__:"EventTypes",toString:$estr}
 	,statUpgrade: {_hx_name:"statUpgrade",_hx_index:12,__enum__:"EventTypes",toString:$estr}
+	,SkillUse: {_hx_name:"SkillUse",_hx_index:13,__enum__:"EventTypes",toString:$estr}
+	,MPRunOut: {_hx_name:"MPRunOut",_hx_index:14,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;

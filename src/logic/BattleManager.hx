@@ -41,6 +41,7 @@ class BattleManager {
 	public var itemBases:Array<ItemBase>;
 	public var modBases:Array<ModBase>;
 	public var skillBases:Array<Skill>;
+	public var skillSlotUnlocklevel = [2, 5, 12];
 	public var volatileAttributeList = ["MP", "Life", "MPRechargeCount", "SpeedCount"];
 	public var volatileAttributeAux = new Array<Int>();
 
@@ -56,9 +57,14 @@ class BattleManager {
 		var skillBase = GetSkillBase(id);
 		var mp = actor.attributesCalculated["MP"];
 		mp -= skillBase.mpCost;
+		var ev = AddEvent(SkillUse);
+		ev.origin = wdata.hero.reference;
+		ev.dataString = skill.id;
 		if (mp <= 0) {
 			mp = 0;
 			actor.attributesCalculated["MPRechargeCount"] = 0;
+			var ev = AddEvent(MPRunOut);
+			ev.origin = wdata.hero.reference;
 		}
 		actor.attributesCalculated["MP"] = mp;
 		for (ef in skillBase.effects) {
@@ -74,6 +80,7 @@ class BattleManager {
 			}
 			ef.effectExecution(this, skill.level, actor, targets);
 		}
+
 		// skillBase.effects
 	}
 
@@ -538,7 +545,9 @@ class BattleManager {
 			var chargeMultiplier = 3;
 			var max = 99999;
 			var restMultiplier = 1;
-			for (i in 0...3) {
+
+			// do not do MP for now
+			for (i in 0...1) {
 				var valueK = "Life";
 				var valueMaxK = "LifeMax";
 				if (i == 1) {
@@ -643,10 +652,10 @@ class BattleManager {
 			var defense:Float = 0;
 			if (magicAttack) {
 				attack = attacker.attributesCalculated["MagicAttack"];
-				defender.attributesCalculated["MagicDefense"];
+				defense = defender.attributesCalculated["MagicDefense"];
 			} else {
 				attack = attacker.attributesCalculated["Attack"];
-				defender.attributesCalculated["Defense"];
+				defense = defender.attributesCalculated["Defense"];
 			}
 			attack = (attackRate * attack / 100) + attackBonus;
 			var damage:Int = Std.int(attack - defense * defenseRate / 100);
@@ -966,13 +975,24 @@ $baseInfo';
 				var buttonId = i;
 				var lu = wdata.playerActions["battleaction_" + i];
 				var skillUsable = false;
+				var skillVisible = false;
+				var skillButtonMode = 0;
 				if (wdata.hero.usableSkills[i] != null) {
 					if (wdata.hero.attributesCalculated["MPRechargeCount"] >= 10000) {
-						skillUsable = true;
+						if (wdata.hero.level >= skillSlotUnlocklevel[i]) {
+							skillUsable = true;
+						} else {
+							skillButtonMode = 1;
+						}
+					}
+
+					if (i == 0 || wdata.hero.level >= skillSlotUnlocklevel[i - 1]) {
+						skillVisible = true;
 					}
 				}
 				lu.enabled = skillUsable;
-				lu.visible = wdata.hero.usableSkills[i] != null;
+				lu.visible = skillVisible;
+				lu.mode = skillButtonMode;
 			}
 		}
 		{
@@ -1013,7 +1033,7 @@ $baseInfo';
 
 		var mrc = wdata.hero.attributesCalculated["MPRechargeCount"];
 		if (mrc < 10000) {
-			mrc += Std.int(wdata.hero.attributesCalculated["MPRecharge"] * delta * 3);
+			mrc += Std.int(wdata.hero.attributesCalculated["MPRecharge"] * delta * 5);
 			wdata.hero.attributesCalculated["MPRechargeCount"] = mrc;
 			if (mrc >= 10000) {
 				wdata.hero.attributesCalculated["MP"] = wdata.hero.attributesCalculated["MPMax"];

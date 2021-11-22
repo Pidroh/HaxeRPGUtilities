@@ -824,7 +824,7 @@ class View {
 		label.verticalAlign = "center";
 
 		var lifeView:ValueView = null;
-		lifeView = CreateValueView(box, true, "Life: ");
+		lifeView = CreateValueView(box, true, "Life: ", "#88AA88");
 
 		
 
@@ -833,7 +833,7 @@ class View {
 			life: lifeView,
 			attack: CreateValueView(box, false, "Attack: "),
 			parent: box,
-			mp: CreateValueView(box, false, "MP: "),
+			mp: CreateValueView(box, true, "MP: ", "#8888AA"),
 			defaultName: name
 		};
 	}
@@ -868,7 +868,7 @@ class View {
 		return {parent: boxh, dropdown: dd, labelText: nameLabel};
 	}
 
-	function CreateValueView(parent:Component, withBar:Bool, label:String):ValueView {
+	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor : String = "#999999"):ValueView {
 		var boxh = new Box();
 		boxh.width = 180;
 		parent.addComponent(boxh);
@@ -894,7 +894,7 @@ class View {
 		if (addLabel)
 			progress.horizontalAlign = "right";
 		if (withBar) {
-			progress.getComponentAt(0).backgroundColor = "#999999";
+			progress.getComponentAt(0).backgroundColor = barColor;
 			progress.pos = 100;
 		} else {
 			progress.borderSize = 0;

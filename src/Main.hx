@@ -137,7 +137,7 @@ class Main {
 		for (i in 0...7) {
 			CreateButtonFromAction("battleaction_" + i, "Action " + i);
 		}
-		//CreateButtonFromAction("repeat", "Restart");
+		// CreateButtonFromAction("repeat", "Restart");
 		var prestigeWarn = "Your experience awards will increase by "
 			+ Std.int(bm.GetXPBonusOnPrestige() * 100)
 			+ "%. Your max level will increase by "
@@ -191,11 +191,12 @@ class Main {
 		}
 
 		bm.wdata.hero.usableSkills = [
+
+			{id: "Fire Edge", level: 1},
 			{
 				id: "Regen",
 				level: 1
-			},
-			{id: "Fire Edge", level: 1}
+			}
 		];
 		// bm.wdata.hero.usableSkills.push();
 
@@ -247,11 +248,24 @@ class Main {
 						name += " " + buffToIcon[b.uniqueId];
 					}
 				}
-				if(name != actorView.name.text){
+				if (name != actorView.name.text) {
 					actorView.name.text = name;
 				}
 				view.UpdateValues(actorView.life, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
-				view.UpdateValues(actorView.mp, bm.GetAttribute(actor, "MP"), bm.GetAttribute(actor, "MPMax"));
+
+				var mp = bm.GetAttribute(actor, "MP");
+				var mpmax = bm.GetAttribute(actor, "MPMax");
+
+				var rc = bm.GetAttribute(actor, "MPRechargeCount");
+				if (rc < 10000) {
+					mp = rc;
+					mpmax = 10000;
+					actorView.mp.labelText.text = "Charge";
+				} else {
+					actorView.mp.labelText.text = "MP";
+				}
+
+				view.UpdateValues(actorView.mp, mp, mpmax);
 				view.UpdateValues(actorView.attack, bm.GetAttribute(actor, "Attack"), -1);
 			}
 			view.UpdateVisibility(actorView, actor != null);
@@ -364,6 +378,7 @@ class Main {
 			while (bm.events.length > eventShown) {
 				var e = bm.events[eventShown];
 				var data = e.data;
+				var dataString = e.dataString;
 				var battle = true;
 				var originText = "XX";
 				if (e.origin != null) {
@@ -396,6 +411,12 @@ class Main {
 						if (e.target.type == 0) // hero died
 							GameAnalyticsIntegration.SendProgressFailEvent("world0", "stage" + bm.wdata.battleAreaRegion, "area" + bm.wdata.battleArea);
 					}
+				}
+				if (e.type == MPRunOut) {
+					ev = '$originText ran out of MP';
+				}
+				if (e.type == SkillUse) {
+					ev = '$originText used $dataString';
 				}
 				if (e.type == ActorLevelUp) {
 					battle = false;
@@ -467,12 +488,16 @@ class Main {
 
 			for (i in 0...7) {
 				var id = "battleaction_" + i;
-				buttonToAction(id,id);
+				buttonToAction(id, id);
 				var skills = bm.wdata.hero.usableSkills;
-				if(skills[i] != null){
-					view.ButtonLabel(id, bm.GetSkillBase(skills[i].id).id);
+				if (skills[i] != null) {
+					var action = bm.wdata.playerActions[id];
+					if (action.mode == 0)
+						view.ButtonLabel(id, bm.GetSkillBase(skills[i].id).id);
+					if (action.mode == 1) {
+						view.ButtonLabel(id, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
+					}
 				}
-				
 			}
 
 			{
