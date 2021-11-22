@@ -380,7 +380,6 @@ class View {
 				log.horizontalAlign = "center";
 				logContainer.horizontalAlign = "center";
 			}
-			
 		}
 
 		if (false) {
@@ -581,7 +580,7 @@ class View {
 					element.parent.addComponentAt(element.component, element.desiredPosition);
 				}
 			} else {
-				if(element.desiredPosition >= 0)
+				if (element.desiredPosition >= 0)
 					tabMaster.removePage(element.desiredPosition);
 
 				// tabMaster.removeAllPages();
@@ -689,11 +688,11 @@ class View {
 		}
 	}
 
-	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool,rarity = 0, numberOfValues:Int = -1) {
+	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1) {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
 		var color = "#000000";
-		if(rarity == 1){
+		if (rarity == 1) {
 			color = "#002299";
 		}
 		equipments[pos].name.color = color;
@@ -717,8 +716,8 @@ class View {
 		equipments[pos].parent.hidden = true;
 	}
 
-	public function FinishFeedingEquipmentValue(pos, vid){
-		for(i in vid...equipments[pos].values.length){
+	public function FinishFeedingEquipmentValue(pos, vid) {
+		for (i in vid...equipments[pos].values.length) {
 			equipments[pos].values[i].parent.hidden = true;
 		}
 	}
@@ -797,6 +796,7 @@ class View {
 		if (label != null) {
 			res.labelText.text = label;
 		}
+		res.parent.hidden = current >= 0 == false;
 		if (max > 0) {
 			res.bar.pos = current * 100 / max;
 			res.centeredText.text = current + " / " + max;
@@ -816,17 +816,25 @@ class View {
 		var box:VBox = new VBox();
 		box.width = 180;
 		parent.addComponent(box);
+
 		var label:Label = new Label();
-		var lifeView:ValueView = null;
 		box.addComponent(label);
 		label.text = name;
+		label.height = 20;
+		label.verticalAlign = "center";
+
+		var lifeView:ValueView = null;
 		lifeView = CreateValueView(box, true, "Life: ");
+
+		
 
 		return {
 			name: label,
 			life: lifeView,
 			attack: CreateValueView(box, false, "Attack: "),
-			parent: box
+			parent: box,
+			mp: CreateValueView(box, false, "MP: "),
+			defaultName: name
 		};
 	}
 
@@ -929,8 +937,10 @@ typedef DropDownView = {
 typedef ActorView = {
 	var name:Label;
 	var life:ValueView;
+	var mp:ValueView;
 	var attack:ValueView;
 	var parent:Component;
+	var defaultName : String;
 };
 
 typedef EquipmentView = {

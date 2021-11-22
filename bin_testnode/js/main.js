@@ -118,6 +118,7 @@ BattleManager.prototype = {
 			mp = 0;
 			actor.attributesCalculated.h["MPRechargeCount"] = 0;
 		}
+		actor.attributesCalculated.h["MP"] = mp;
 		var _g = 0;
 		var _g1 = skillBase.effects;
 		while(_g < _g1.length) {
@@ -1959,7 +1960,7 @@ AttributeLogic.AddOld = function(attributes,attributeAddition,quantityOfAddition
 	}
 };
 AttributeLogic.Add = function(attributes,attributeAddition,quantityOfAddition,result) {
-	var h = attributeAddition.h;
+	var h = attributes.h;
 	var _g_h = h;
 	var _g_keys = Object.keys(h);
 	var _g_length = _g_keys.length;
@@ -1970,11 +1971,11 @@ AttributeLogic.Add = function(attributes,attributeAddition,quantityOfAddition,re
 		var _g1_value = _g_h[key];
 		var key1 = _g1_key;
 		var value = _g1_value;
-		var originalValue = attributes.h[key1];
-		if(originalValue >= 0 == false && originalValue < 0 == false) {
-			originalValue = 0;
+		var addedValue = attributeAddition.h[key1];
+		if(addedValue >= 0 == false && addedValue < 0 == false) {
+			addedValue = 0;
 		}
-		var v = originalValue + (value * quantityOfAddition | 0);
+		var v = value + (addedValue * quantityOfAddition | 0);
 		result.h[key1] = v;
 	}
 };

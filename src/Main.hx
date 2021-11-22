@@ -87,7 +87,7 @@ class Main {
 			proto.init();
 			bm.skillBases = proto.skills;
 		}
-		
+
 		var view:View = new View();
 
 		var enemyRegionNames = [
@@ -134,8 +134,8 @@ class Main {
 
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart");
-		for (i in 0...7){
-			CreateButtonFromAction("battleaction_"+i, "Action "+i);
+		for (i in 0...7) {
+			CreateButtonFromAction("battleaction_" + i, "Action " + i);
 		}
 		CreateButtonFromAction("repeat", "Restart");
 		var prestigeWarn = "Your experience awards will increase by "
@@ -190,11 +190,14 @@ class Main {
 			bm.SendJsonPersistentData(persistenceMaster.jsonGameplay);
 		}
 
-		bm.wdata.hero.usableSkills = [{
-			id: "Regen",
-			level: 1
-		}, {id: "Fire Edge", level: 1}];
-		//bm.wdata.hero.usableSkills.push();
+		bm.wdata.hero.usableSkills = [
+			{
+				id: "Regen",
+				level: 1
+			},
+			{id: "Fire Edge", level: 1}
+		];
+		// bm.wdata.hero.usableSkills.push();
 
 		var storyRuntime:StoryRuntimeData = {
 			currentStoryProgression: null,
@@ -234,9 +237,21 @@ class Main {
 
 		var update = null;
 
+		var buffToIcon:Map<String, String> = ["regen" => "&#127807;", "enchant-fire" => "&#128293;"];
+
 		var ActorToView = function(actor:Actor, actorView:ActorView) {
 			if (actor != null) {
+				var name = actorView.defaultName;
+				for (b in actor.buffs) {
+					if (b != null && b.uniqueId != null) {
+						name += " " + buffToIcon[b.uniqueId];
+					}
+				}
+				if(name != actorView.name.text){
+					actorView.name.text = name;
+				}
 				view.UpdateValues(actorView.life, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
+				view.UpdateValues(actorView.mp, bm.GetAttribute(actor, "MP"), bm.GetAttribute(actor, "MPMax"));
 				view.UpdateValues(actorView.attack, bm.GetAttribute(actor, "Attack"), -1);
 			}
 			view.UpdateVisibility(actorView, actor != null);
@@ -316,7 +331,7 @@ class Main {
 						var equipName = GetEquipName(e, bm.itemBases, bm.modBases);
 						hide = false;
 						var rarity = 0;
-						if(e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0)
+						if (e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0)
 							rarity = 1;
 						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity);
 						var vid = 0;
@@ -450,9 +465,8 @@ class Main {
 			buttonToAction("prestige", "prestige");
 			view.ButtonVisibility("prestige", storyRuntime.persistence.progressionData[storyRuntime.cutscenes[2].title].timesCompleted > 0);
 
-			for (i in 0...7){
-				buttonToAction("battleaction_"+i, "battleaction_"+i);
-				
+			for (i in 0...7) {
+				buttonToAction("battleaction_" + i, "battleaction_" + i);
 			}
 
 			{
@@ -514,14 +528,13 @@ class Main {
 	}
 
 	static function GetEquipName(e:Equipment, itemBases:Array<ItemBase>, modBases:Array<ModBase>):String {
-
 		if (e.generationBaseItem >= 0) {
 			var name = itemBases[e.generationBaseItem].name;
-			if(e.generationPrefixMod >= 0){
-				name = modBases[e.generationPrefixMod].prefix + " "+name;
+			if (e.generationPrefixMod >= 0) {
+				name = modBases[e.generationPrefixMod].prefix + " " + name;
 			}
-			if(e.generationSuffixMod >= 0){
-				name = name + " "+modBases[e.generationSuffixMod].suffix;
+			if (e.generationSuffixMod >= 0) {
+				name = name + " " + modBases[e.generationSuffixMod].suffix;
 			}
 			return name;
 		}

@@ -60,6 +60,7 @@ class BattleManager {
 			mp = 0;
 			actor.attributesCalculated["MPRechargeCount"] = 0;
 		}
+		actor.attributesCalculated["MP"] = mp;
 		for (ef in skillBase.effects) {
 			var targets = new Array<Actor>();
 			if (ef.target == SELF) {
