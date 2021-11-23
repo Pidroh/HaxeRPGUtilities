@@ -9,7 +9,7 @@ function $extend(from, fields) {
 var BattleManager = function() {
 	this.volatileAttributeAux = [];
 	this.volatileAttributeList = ["MP","Life","MPRechargeCount","SpeedCount"];
-	this.skillSlotUnlocklevel = [2,5,12];
+	this.skillSlotUnlocklevel = [2,7,22,35];
 	this.regionPrizes = [{ statBonus : null, xpPrize : true}];
 	this.regionRequirements = [0];
 	this.playerActions = new haxe_ds_StringMap();

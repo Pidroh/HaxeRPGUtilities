@@ -41,7 +41,7 @@ class BattleManager {
 	public var itemBases:Array<ItemBase>;
 	public var modBases:Array<ModBase>;
 	public var skillBases:Array<Skill>;
-	public var skillSlotUnlocklevel = [2, 5, 12];
+	public var skillSlotUnlocklevel = [2, 7, 22, 35];
 	public var volatileAttributeList = ["MP", "Life", "MPRechargeCount", "SpeedCount"];
 	public var volatileAttributeAux = new Array<Int>();
 

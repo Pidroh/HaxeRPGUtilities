@@ -194,6 +194,7 @@ class Main {
 
 			{id: "Slash", level: 1},
 			{id: "Cure", level: 1},
+			{id: "Protect", level: 3},
 			//{id: "Fire Edge", level: 2},
 			/*{
 				id: "Regen",

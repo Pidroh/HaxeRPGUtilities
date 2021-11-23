@@ -76,5 +76,45 @@ class PrototypeSkillMaker {
 			],
 			mpCost: 15
 		});
+		skills.push({
+			id: "Haste",
+			effects: [
+				{
+					target: SELF,
+					effectExecution: (bm, level, actor, array) -> {
+						var bonus = 20;
+						var multiplier = 90+level *10;
+                        bm.AddBuff({
+							uniqueId: "haste",
+							addStats: ["Speed" => bonus],
+							mulStats: ["Speed" => multiplier],
+							strength: level,
+							duration: 8
+						}, actor);						
+					}
+				}
+			],
+			mpCost: 45
+		});
+		skills.push({
+			id: "Protect",
+			effects: [
+				{
+					target: SELF,
+					effectExecution: (bm, level, actor, array) -> {
+						var bonus = level*5;
+						var multiplier = 110;
+                        bm.AddBuff({
+							uniqueId: "protect",
+							addStats: ["Defense" => bonus],
+							mulStats: ["Defense" => multiplier],
+							strength: level,
+							duration: 8
+						}, actor);						
+					}
+				}
+			],
+			mpCost: 35
+		});
 	}
 }
