@@ -9,6 +9,8 @@ import PrototypeItemMaker;
 
 using PrototypeItemMaker.RandomExtender;
 
+// using ArrayExtender;
+
 typedef PlayerActionExecution = {
 	public var actualAction:PlayerAction->Void;
 }
@@ -16,6 +18,18 @@ typedef PlayerActionExecution = {
 typedef RegionPrize = {
 	var statBonus:Map<String, Int>;
 	var xpPrize:Bool;
+}
+
+class ArrayHelper {
+	public static function InsertOnEmpty<T>(ele:T, array:Array<T>):Int {
+		if (array.contains(null)) {
+			var id = array.indexOf(null);
+			array[id] = ele;
+			return id;
+		}
+		array.push(ele);
+		return array.length - 1;
+	}
 }
 
 class BattleManager {
@@ -44,6 +58,9 @@ class BattleManager {
 	public var skillSlotUnlocklevel = [2, 7, 22, 35];
 	public var volatileAttributeList = ["MP", "Life", "MPRechargeCount", "SpeedCount"];
 	public var volatileAttributeAux = new Array<Int>();
+	public var equipmentToDiscard = new Array<Equipment>();
+
+	// var arrayhelperSkillSet = new ArrayHelper<SkillSet>();
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -144,94 +161,8 @@ class BattleManager {
 			}
 			#end
 			killedInArea[battleArea]++;
-			if (random.randomInt(0, 100) < equipDropChance) {
-				var baseItem = random.randomInt(0, itemBases.length - 1);
-				var itemB = itemBases[baseItem];
-				var e:Equipment = null;
-				var stat:Map<String, Int> = [];
-				var statVar:Map<String, Int> = [];
-				var mul:Map<String, Int> = [];
-				var mulVar:Map<String, Int> = [];
-				var minLevel = Std.int((enemy.level + 1) / 2 - 3);
-				if (minLevel < 1)
-					minLevel = 1;
-				var maxLevel = Std.int(enemy.level / 2 + 2);
-				var level = random.randomInt(minLevel, maxLevel);
-				var prefixPos = -1;
-				var prefixSeed = -1;
-				var suffixPos = -1;
-				var suffixSeed = -1;
 
-				for (s in itemB.scalingStats.keyValueIterator()) {
-					var vari = random.randomInt(80, 100);
-					statVar[s.key] = vari;
-					var value = s.value * vari * level;
-					if (value < 100)
-						value = 100;
-					stat[s.key] = Std.int(value / 100);
-				}
-				if (itemB.statMultipliers != null)
-					for (s in itemB.statMultipliers.keyValueIterator()) {
-						var vari = random.randomInt(0, 100);
-						mulVar[s.key] = vari;
-						var min = s.value.min;
-						var max = s.value.max;
-						var range = max - min;
-						mul[s.key] = Std.int(min + (range * vari) / 100);
-					}
-				if (random.randomInt(0, 100) < equipDropChance_Rare) {
-					var modType = random.randomInt(0, 2);
-					var prefixExist = modType == 0 || modType == 2;
-					var suffixExist = modType == 1 || modType == 2;
-					if (prefixExist) {
-						prefixPos = random.randomInt(0, modBases.length - 1);
-						prefixSeed = random.nextInt();
-						AddMod(modBases[prefixPos], mul, prefixSeed);
-					}
-					if (suffixExist) {
-						suffixPos = random.randomInt(0, modBases.length - 1);
-						suffixSeed = random.nextInt();
-						AddMod(modBases[suffixPos], mul, suffixSeed);
-					}
-				}
-				for (m in mul.keyValueIterator()) {
-					if (m.value % 5 != 0) {
-						mul[m.key] = (Std.int((m.value + 4) / 5) * 5);
-					}
-				}
-				e = {
-					type: itemB.type,
-					seen: false,
-					requiredAttributes: null,
-					attributes: stat,
-					generationVariations: statVar,
-					generationLevel: level,
-					generationBaseItem: baseItem,
-					attributeMultiplier: mul,
-					generationVariationsMultiplier: mulVar,
-					generationSuffixMod: suffixPos,
-					generationPrefixMod: prefixPos,
-					generationSuffixModSeed: suffixSeed,
-					generationPrefixModSeed: prefixSeed,
-				};
-
-				var addedIndex = -1;
-				for (i in 0...wdata.hero.equipment.length) {
-					if (wdata.hero.equipment[i] == null) {
-						wdata.hero.equipment[i] = e;
-						addedIndex = i;
-						break;
-					}
-				}
-				if (addedIndex < 0) {
-					wdata.hero.equipment.push(e);
-					addedIndex = wdata.hero.equipment.length - 1;
-				}
-
-				var e = AddEvent(EquipDrop);
-				e.data = addedIndex;
-				e.origin = enemy.reference;
-			}
+			DropItemOrSkillSet(equipDropChance, 1, enemy.level, enemy.reference);
 
 			var e = AddEvent(ActorDead);
 			e.origin = enemy.reference;
@@ -272,6 +203,149 @@ class BattleManager {
 			var e = AddEvent(ActorDead);
 			e.origin = hero.reference;
 			wdata.playerTimesKilled++;
+		}
+	}
+
+	public function ForceSkillSetDrop(enemyLevel:Int, dropperReference = null, ss:SkillSet, event = true) {
+		var itemB = {
+			type: 2,
+			statMultipliers: null,
+			scalingStats: null,
+			name: null
+		};
+		if (wdata.skillSets == null)
+			wdata.skillSets = new Array<SkillSet>();
+		var skillSetPos = ArrayHelper.InsertOnEmpty(ss, wdata.skillSets);
+		DropItem(itemB, -1, skillSetPos, enemyLevel, dropperReference, event);
+	}
+
+	public function DropItemOrSkillSet(itemDropProbability:Int, skillSetDropProbability:Int = 2, enemyLevel:Int, dropperReference = null) {
+		var baseItem = -1;
+		var itemB = null;
+
+		if (random.randomInt(0, 1000) < skillSetDropProbability*10) {
+			var numberOfSkills = random.randomInt(2, 3);
+			var skillPosArray:Array<Int> = [];
+			for (s in 0...numberOfSkills) {
+				var skill = random.randomInt(0, skillBases.length - 1 - s);
+				while (skillPosArray.contains(skill)) {
+					skill++;
+				}
+				skillPosArray[s] = skill;
+			}
+			var ss:SkillSet = {skills: new Array<SkillUsable>()};
+			for (sp in skillPosArray) {
+				ss.skills.push({
+					id: skillBases[sp].id,
+					level: 1
+				});
+			}
+			ForceSkillSetDrop(enemyLevel, dropperReference, ss);
+			return;
+		}
+
+		if (random.randomInt(0, 100) < itemDropProbability) {
+			baseItem = random.randomInt(0, itemBases.length - 1);
+			itemB = itemBases[baseItem];
+			DropItem(itemB, baseItem, -1, enemyLevel, dropperReference);
+		}
+	}
+
+	public function DropItem(itemB:ItemBase, baseItem:Int, skillSetPos:Int, enemyLevel:Int, dropperReference = null, event = true) {
+		var e:Equipment = null;
+		var stat:Map<String, Int> = [];
+		var statVar:Map<String, Int> = [];
+		var mul:Map<String, Int> = [];
+		var mulVar:Map<String, Int> = [];
+
+		var minLevel = Std.int((enemyLevel + 1) / 2 - 3);
+		if (minLevel < 1)
+			minLevel = 1;
+		var maxLevel = Std.int(enemyLevel / 2 + 2);
+		var level = random.randomInt(minLevel, maxLevel);
+		var prefixPos = -1;
+		var prefixSeed = -1;
+		var suffixPos = -1;
+		var suffixSeed = -1;
+
+		if (itemB.scalingStats != null)
+			for (s in itemB.scalingStats.keyValueIterator()) {
+				var vari = random.randomInt(80, 100);
+				statVar[s.key] = vari;
+				var value = s.value * vari * level;
+				if (value < 100)
+					value = 100;
+				stat[s.key] = Std.int(value / 100);
+			}
+		if (itemB.statMultipliers != null)
+			for (s in itemB.statMultipliers.keyValueIterator()) {
+				var vari = random.randomInt(0, 100);
+				mulVar[s.key] = vari;
+				var min = s.value.min;
+				var max = s.value.max;
+				var range = max - min;
+				mul[s.key] = Std.int(min + (range * vari) / 100);
+			}
+		if (random.randomInt(0, 100) < equipDropChance_Rare) {
+			var modType = random.randomInt(0, 2);
+			var prefixExist = modType == 0 || modType == 2;
+			var suffixExist = modType == 1 || modType == 2;
+			if (prefixExist) {
+				prefixPos = random.randomInt(0, modBases.length - 1);
+				prefixSeed = random.nextInt();
+				AddMod(modBases[prefixPos], mul, prefixSeed);
+			}
+			if (suffixExist) {
+				suffixPos = random.randomInt(0, modBases.length - 1);
+				suffixSeed = random.nextInt();
+				AddMod(modBases[suffixPos], mul, suffixSeed);
+			}
+		}
+		for (m in mul.keyValueIterator()) {
+			if (m.value % 5 != 0) {
+				mul[m.key] = (Std.int((m.value + 4) / 5) * 5);
+			}
+		}
+		var outsideSystem = null;
+		if (skillSetPos >= 0) {
+			outsideSystem = new Map<String, Int>();
+			outsideSystem["skillset"] = skillSetPos;
+		}
+
+		e = {
+			type: itemB.type,
+			seen: false,
+			requiredAttributes: null,
+			attributes: stat,
+			generationVariations: statVar,
+			generationLevel: level,
+			generationBaseItem: baseItem,
+			attributeMultiplier: mul,
+			generationVariationsMultiplier: mulVar,
+			generationSuffixMod: suffixPos,
+			generationPrefixMod: prefixPos,
+			generationSuffixModSeed: suffixSeed,
+			generationPrefixModSeed: prefixSeed,
+			outsideSystems: outsideSystem
+		};
+
+		var addedIndex = -1;
+		for (i in 0...wdata.hero.equipment.length) {
+			if (wdata.hero.equipment[i] == null) {
+				wdata.hero.equipment[i] = e;
+				addedIndex = i;
+				break;
+			}
+		}
+		if (addedIndex < 0) {
+			wdata.hero.equipment.push(e);
+			addedIndex = wdata.hero.equipment.length - 1;
+		}
+
+		if (event) {
+			var e = AddEvent(EquipDrop);
+			e.data = addedIndex;
+			e.origin = dropperReference;
 		}
 	}
 
@@ -854,9 +928,14 @@ class BattleManager {
 		}
 	}
 
-	public function DiscardEquipment(pos) {
+	function DiscardSingleEquipment(pos) {
+		var e = wdata.hero.equipment[pos];
 		wdata.hero.equipment[pos] = null;
-		// wdata.hero.equipment.remove(wdata.hero.equipment[pos]);
+		equipmentToDiscard.push(e);
+	}
+
+	public function DiscardEquipment(pos) {
+		DiscardSingleEquipment(pos);
 		RecalculateAttributes(wdata.hero);
 	}
 
@@ -921,6 +1000,14 @@ $baseInfo';
 
 	public function update(delta:Float):String {
 		wdata.timeCount += delta;
+
+		for (e in equipmentToDiscard) {
+			if (e.outsideSystems != null) {
+				var skillsetpos = e.outsideSystems["skillset"];
+				wdata.skillSets[skillsetpos] = null;
+			}
+		}
+		equipmentToDiscard.resize(0);
 
 		if (wdata.regionProgress == null) {
 			wdata.regionProgress = [];
@@ -1102,6 +1189,12 @@ $baseInfo';
 				volatileAttributeAux[i] = 0;
 		}
 
+		var skillSetPos = wdata.hero.equipmentSlots[2];
+		if (skillSetPos >= 0) {
+			var skillSet = wdata.skillSets[wdata.hero.equipment[skillSetPos].outsideSystems["skillset"]];
+			wdata.hero.usableSkills = skillSet.skills;
+		}
+
 		actor.attributesCalculated.clear();
 		AttributeLogic.Add(actor.attributesBase, [
 			"Attack" => 1,
@@ -1182,6 +1275,9 @@ $baseInfo';
 			var e = wdata.hero.equipment[i];
 			if (e == null)
 				continue;
+			if(e.type == 2){
+				continue;
+			}
 			for (j in (i + 1)...wdata.hero.equipment.length) {
 				var e2 = wdata.hero.equipment[j];
 				if (e2 == null)
@@ -1192,13 +1288,13 @@ $baseInfo';
 				if (r == 1 || r == 0) { // if they are exactly the same or r1 is better
 					if (wdata.hero.equipmentSlots.contains(j))
 						continue;
-					wdata.hero.equipment[j] = null;
+					DiscardSingleEquipment(j);
 					continue;
 				}
 				if (r == 2) {
 					if (wdata.hero.equipmentSlots.contains(i))
 						continue;
-					wdata.hero.equipment[i] = null;
+					DiscardSingleEquipment(i);
 					break;
 				}
 			}

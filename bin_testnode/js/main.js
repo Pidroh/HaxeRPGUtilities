@@ -6,7 +6,19 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var ArrayHelper = function() { };
+ArrayHelper.__name__ = true;
+ArrayHelper.InsertOnEmpty = function(ele,array) {
+	if(array.indexOf(null) != -1) {
+		var id = array.indexOf(null);
+		array[id] = ele;
+		return id;
+	}
+	array.push(ele);
+	return array.length - 1;
+};
 var BattleManager = function() {
+	this.equipmentToDiscard = [];
 	this.volatileAttributeAux = [];
 	this.volatileAttributeList = ["MP","Life","MPRechargeCount","SpeedCount"];
 	this.skillSlotUnlocklevel = [2,7,22,35];
@@ -217,114 +229,7 @@ BattleManager.prototype = {
 				killedInArea[battleArea] = 0;
 			}
 			killedInArea[battleArea]++;
-			if(this.random.randomInt(0,100) < this.equipDropChance) {
-				var baseItem = this.random.randomInt(0,this.itemBases.length - 1);
-				var itemB = this.itemBases[baseItem];
-				var e = null;
-				var stat = new haxe_ds_StringMap();
-				var statVar = new haxe_ds_StringMap();
-				var mul = new haxe_ds_StringMap();
-				var mulVar = new haxe_ds_StringMap();
-				var minLevel = (enemy.level + 1) / 2 - 3 | 0;
-				if(minLevel < 1) {
-					minLevel = 1;
-				}
-				var maxLevel = enemy.level / 2 + 2 | 0;
-				var level = this.random.randomInt(minLevel,maxLevel);
-				var prefixPos = -1;
-				var prefixSeed = -1;
-				var suffixPos = -1;
-				var suffixSeed = -1;
-				var h = itemB.scalingStats.h;
-				var s_h = h;
-				var s_keys = Object.keys(h);
-				var s_length = s_keys.length;
-				var s_current = 0;
-				while(s_current < s_length) {
-					var key = s_keys[s_current++];
-					var s_key = key;
-					var s_value = s_h[key];
-					var vari = this.random.randomInt(80,100);
-					statVar.h[s_key] = vari;
-					var value = s_value * vari * level;
-					if(value < 100) {
-						value = 100;
-					}
-					var v = value / 100 | 0;
-					stat.h[s_key] = v;
-				}
-				if(itemB.statMultipliers != null) {
-					var h = itemB.statMultipliers.h;
-					var s_h = h;
-					var s_keys = Object.keys(h);
-					var s_length = s_keys.length;
-					var s_current = 0;
-					while(s_current < s_length) {
-						var key = s_keys[s_current++];
-						var s_key = key;
-						var s_value = s_h[key];
-						var vari = this.random.randomInt(0,100);
-						mulVar.h[s_key] = vari;
-						var min = s_value.min;
-						var max = s_value.max;
-						var range = max - min;
-						var v = min + range * vari / 100 | 0;
-						mul.h[s_key] = v;
-					}
-				}
-				if(this.random.randomInt(0,100) < this.equipDropChance_Rare) {
-					var modType = this.random.randomInt(0,2);
-					var prefixExist = modType == 0 || modType == 2;
-					var suffixExist = modType == 1 || modType == 2;
-					if(prefixExist) {
-						prefixPos = this.random.randomInt(0,this.modBases.length - 1);
-						prefixSeed = this.random.nextInt();
-						var tmp = this.modBases[prefixPos];
-						var this1 = new haxe__$Int64__$_$_$Int64(prefixSeed >> 31,prefixSeed);
-						this.AddMod(tmp,mul,this1);
-					}
-					if(suffixExist) {
-						suffixPos = this.random.randomInt(0,this.modBases.length - 1);
-						suffixSeed = this.random.nextInt();
-						var tmp = this.modBases[suffixPos];
-						var this1 = new haxe__$Int64__$_$_$Int64(suffixSeed >> 31,suffixSeed);
-						this.AddMod(tmp,mul,this1);
-					}
-				}
-				var h = mul.h;
-				var m_h = h;
-				var m_keys = Object.keys(h);
-				var m_length = m_keys.length;
-				var m_current = 0;
-				while(m_current < m_length) {
-					var key = m_keys[m_current++];
-					var m_key = key;
-					var m_value = m_h[key];
-					if(m_value % 5 != 0) {
-						var v = ((m_value + 4) / 5 | 0) * 5;
-						mul.h[m_key] = v;
-					}
-				}
-				e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed};
-				var addedIndex = -1;
-				var _g = 0;
-				var _g1 = this.wdata.hero.equipment.length;
-				while(_g < _g1) {
-					var i = _g++;
-					if(this.wdata.hero.equipment[i] == null) {
-						this.wdata.hero.equipment[i] = e;
-						addedIndex = i;
-						break;
-					}
-				}
-				if(addedIndex < 0) {
-					this.wdata.hero.equipment.push(e);
-					addedIndex = this.wdata.hero.equipment.length - 1;
-				}
-				var e = this.AddEvent(EventTypes.EquipDrop);
-				e.data = addedIndex;
-				e.origin = enemy.reference;
-			}
+			this.DropItemOrSkillSet(this.equipDropChance,1,enemy.level,enemy.reference);
 			var e = this.AddEvent(EventTypes.ActorDead);
 			e.origin = enemy.reference;
 			var xpGain = enemy.level;
@@ -366,6 +271,168 @@ BattleManager.prototype = {
 			var e = this.AddEvent(EventTypes.ActorDead);
 			e.origin = hero.reference;
 			this.wdata.playerTimesKilled++;
+		}
+	}
+	,ForceSkillSetDrop: function(enemyLevel,dropperReference,ss,event) {
+		if(event == null) {
+			event = true;
+		}
+		var itemB = { type : 2, statMultipliers : null, scalingStats : null, name : null};
+		if(this.wdata.skillSets == null) {
+			this.wdata.skillSets = [];
+		}
+		var skillSetPos = ArrayHelper.InsertOnEmpty(ss,this.wdata.skillSets);
+		this.DropItem(itemB,-1,skillSetPos,enemyLevel,dropperReference,event);
+	}
+	,DropItemOrSkillSet: function(itemDropProbability,skillSetDropProbability,enemyLevel,dropperReference) {
+		if(skillSetDropProbability == null) {
+			skillSetDropProbability = 2;
+		}
+		var baseItem = -1;
+		var itemB = null;
+		if(this.random.randomInt(0,1000) < skillSetDropProbability * 10) {
+			var numberOfSkills = this.random.randomInt(2,3);
+			var skillPosArray = [];
+			var _g = 0;
+			var _g1 = numberOfSkills;
+			while(_g < _g1) {
+				var s = _g++;
+				var skill = this.random.randomInt(0,this.skillBases.length - 1 - s);
+				while(skillPosArray.indexOf(skill) != -1) ++skill;
+				skillPosArray[s] = skill;
+			}
+			var ss = { skills : []};
+			var _g = 0;
+			while(_g < skillPosArray.length) {
+				var sp = skillPosArray[_g];
+				++_g;
+				ss.skills.push({ id : this.skillBases[sp].id, level : 1});
+			}
+			this.ForceSkillSetDrop(enemyLevel,dropperReference,ss);
+			return;
+		}
+		if(this.random.randomInt(0,100) < itemDropProbability) {
+			baseItem = this.random.randomInt(0,this.itemBases.length - 1);
+			itemB = this.itemBases[baseItem];
+			this.DropItem(itemB,baseItem,-1,enemyLevel,dropperReference);
+		}
+	}
+	,DropItem: function(itemB,baseItem,skillSetPos,enemyLevel,dropperReference,event) {
+		if(event == null) {
+			event = true;
+		}
+		var e = null;
+		var stat = new haxe_ds_StringMap();
+		var statVar = new haxe_ds_StringMap();
+		var mul = new haxe_ds_StringMap();
+		var mulVar = new haxe_ds_StringMap();
+		var minLevel = (enemyLevel + 1) / 2 - 3 | 0;
+		if(minLevel < 1) {
+			minLevel = 1;
+		}
+		var maxLevel = enemyLevel / 2 + 2 | 0;
+		var level = this.random.randomInt(minLevel,maxLevel);
+		var prefixPos = -1;
+		var prefixSeed = -1;
+		var suffixPos = -1;
+		var suffixSeed = -1;
+		if(itemB.scalingStats != null) {
+			var h = itemB.scalingStats.h;
+			var s_h = h;
+			var s_keys = Object.keys(h);
+			var s_length = s_keys.length;
+			var s_current = 0;
+			while(s_current < s_length) {
+				var key = s_keys[s_current++];
+				var s_key = key;
+				var s_value = s_h[key];
+				var vari = this.random.randomInt(80,100);
+				statVar.h[s_key] = vari;
+				var value = s_value * vari * level;
+				if(value < 100) {
+					value = 100;
+				}
+				var v = value / 100 | 0;
+				stat.h[s_key] = v;
+			}
+		}
+		if(itemB.statMultipliers != null) {
+			var h = itemB.statMultipliers.h;
+			var s_h = h;
+			var s_keys = Object.keys(h);
+			var s_length = s_keys.length;
+			var s_current = 0;
+			while(s_current < s_length) {
+				var key = s_keys[s_current++];
+				var s_key = key;
+				var s_value = s_h[key];
+				var vari = this.random.randomInt(0,100);
+				mulVar.h[s_key] = vari;
+				var min = s_value.min;
+				var max = s_value.max;
+				var range = max - min;
+				var v = min + range * vari / 100 | 0;
+				mul.h[s_key] = v;
+			}
+		}
+		if(this.random.randomInt(0,100) < this.equipDropChance_Rare) {
+			var modType = this.random.randomInt(0,2);
+			var prefixExist = modType == 0 || modType == 2;
+			var suffixExist = modType == 1 || modType == 2;
+			if(prefixExist) {
+				prefixPos = this.random.randomInt(0,this.modBases.length - 1);
+				prefixSeed = this.random.nextInt();
+				var tmp = this.modBases[prefixPos];
+				var this1 = new haxe__$Int64__$_$_$Int64(prefixSeed >> 31,prefixSeed);
+				this.AddMod(tmp,mul,this1);
+			}
+			if(suffixExist) {
+				suffixPos = this.random.randomInt(0,this.modBases.length - 1);
+				suffixSeed = this.random.nextInt();
+				var tmp = this.modBases[suffixPos];
+				var this1 = new haxe__$Int64__$_$_$Int64(suffixSeed >> 31,suffixSeed);
+				this.AddMod(tmp,mul,this1);
+			}
+		}
+		var h = mul.h;
+		var m_h = h;
+		var m_keys = Object.keys(h);
+		var m_length = m_keys.length;
+		var m_current = 0;
+		while(m_current < m_length) {
+			var key = m_keys[m_current++];
+			var m_key = key;
+			var m_value = m_h[key];
+			if(m_value % 5 != 0) {
+				var v = ((m_value + 4) / 5 | 0) * 5;
+				mul.h[m_key] = v;
+			}
+		}
+		var outsideSystem = null;
+		if(skillSetPos >= 0) {
+			outsideSystem = new haxe_ds_StringMap();
+			outsideSystem.h["skillset"] = skillSetPos;
+		}
+		e = { type : itemB.type, seen : false, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed, outsideSystems : outsideSystem};
+		var addedIndex = -1;
+		var _g = 0;
+		var _g1 = this.wdata.hero.equipment.length;
+		while(_g < _g1) {
+			var i = _g++;
+			if(this.wdata.hero.equipment[i] == null) {
+				this.wdata.hero.equipment[i] = e;
+				addedIndex = i;
+				break;
+			}
+		}
+		if(addedIndex < 0) {
+			this.wdata.hero.equipment.push(e);
+			addedIndex = this.wdata.hero.equipment.length - 1;
+		}
+		if(event) {
+			var e = this.AddEvent(EventTypes.EquipDrop);
+			e.data = addedIndex;
+			e.origin = dropperReference;
 		}
 	}
 	,AddBuff: function(buff,actor) {
@@ -864,8 +931,13 @@ BattleManager.prototype = {
 			}
 		}
 	}
-	,DiscardEquipment: function(pos) {
+	,DiscardSingleEquipment: function(pos) {
+		var e = this.wdata.hero.equipment[pos];
 		this.wdata.hero.equipment[pos] = null;
+		this.equipmentToDiscard.push(e);
+	}
+	,DiscardEquipment: function(pos) {
+		this.DiscardSingleEquipment(pos);
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,ToggleEquipped: function(pos) {
@@ -914,6 +986,17 @@ BattleManager.prototype = {
 	}
 	,update: function(delta) {
 		this.wdata.timeCount += delta;
+		var _g = 0;
+		var _g1 = this.equipmentToDiscard;
+		while(_g < _g1.length) {
+			var e = _g1[_g];
+			++_g;
+			if(e.outsideSystems != null) {
+				var skillsetpos = e.outsideSystems.h["skillset"];
+				this.wdata.skillSets[skillsetpos] = null;
+			}
+		}
+		this.equipmentToDiscard.length = 0;
 		if(this.wdata.regionProgress == null) {
 			this.wdata.regionProgress = [];
 		}
@@ -1062,6 +1145,11 @@ BattleManager.prototype = {
 				this.volatileAttributeAux[i] = 0;
 			}
 		}
+		var skillSetPos = this.wdata.hero.equipmentSlots[2];
+		if(skillSetPos >= 0) {
+			var skillSet = this.wdata.skillSets[this.wdata.hero.equipment[skillSetPos].outsideSystems.h["skillset"]];
+			this.wdata.hero.usableSkills = skillSet.skills;
+		}
 		actor.attributesCalculated.h = Object.create(null);
 		var actor1 = actor.attributesBase;
 		var _g = new haxe_ds_StringMap();
@@ -1182,6 +1270,9 @@ BattleManager.prototype = {
 			if(e == null) {
 				continue;
 			}
+			if(e.type == 2) {
+				continue;
+			}
 			var _g2 = i + 1;
 			var _g3 = this.wdata.hero.equipment.length;
 			while(_g2 < _g3) {
@@ -1198,14 +1289,14 @@ BattleManager.prototype = {
 					if(this.wdata.hero.equipmentSlots.indexOf(j) != -1) {
 						continue;
 					}
-					this.wdata.hero.equipment[j] = null;
+					this.DiscardSingleEquipment(j);
 					continue;
 				}
 				if(r == 2) {
 					if(this.wdata.hero.equipmentSlots.indexOf(i) != -1) {
 						continue;
 					}
-					this.wdata.hero.equipment[i] = null;
+					this.DiscardSingleEquipment(i);
 					break;
 				}
 			}
@@ -1408,9 +1499,12 @@ MainTest.GetBattleManager = function() {
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var proto = new PrototypeItemMaker();
+	var skills = new PrototypeSkillMaker();
+	skills.init();
 	proto.MakeItems();
 	bm.itemBases = proto.items;
 	bm.modBases = proto.mods;
+	bm.skillBases = skills.skills;
 	return bm;
 };
 MainTest.main = function() {
@@ -1638,7 +1732,7 @@ MainTest.main = function() {
 	while(_g < _g1.length) {
 		var file = _g1[_g];
 		++_g;
-		console.log("test/MainTest.hx:174:",file);
+		console.log("test/MainTest.hx:177:",file);
 		var path = haxe_io_Path.join(["saves/",file]);
 		var json = js_node_Fs.readFileSync(path,{ encoding : "utf8"});
 		var bm = MainTest.GetBattleManager();
@@ -1826,14 +1920,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:304:","  _____ ");
-		console.log("test/MainTest.hx:305:","  _____ ");
-		console.log("test/MainTest.hx:306:","  _____ ");
-		console.log("test/MainTest.hx:307:",json);
+		console.log("test/MainTest.hx:307:","  _____ ");
 		console.log("test/MainTest.hx:308:","  _____ ");
 		console.log("test/MainTest.hx:309:","  _____ ");
-		console.log("test/MainTest.hx:310:","  _____ ");
-		console.log("test/MainTest.hx:311:",json2);
+		console.log("test/MainTest.hx:310:",json);
+		console.log("test/MainTest.hx:311:","  _____ ");
+		console.log("test/MainTest.hx:312:","  _____ ");
+		console.log("test/MainTest.hx:313:","  _____ ");
+		console.log("test/MainTest.hx:314:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
@@ -1924,6 +2018,57 @@ var RandomExtender = function() { };
 RandomExtender.__name__ = true;
 RandomExtender.Range = function(random,range) {
 	return random.randomInt(range.min,range.max);
+};
+var PrototypeSkillMaker = function() {
+	this.skills = [];
+};
+PrototypeSkillMaker.__name__ = true;
+PrototypeSkillMaker.prototype = {
+	AddSkill: function(id,mpCost) {
+	}
+	,init: function() {
+		this.skills.push({ id : "Regen", profession : "Priest", word : "Nature", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var strength = level * 5;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Regen"] = strength;
+			bm.AddBuff({ uniqueId : "regen", addStats : _g, mulStats : null, strength : strength, duration : 5},actor);
+		}}], mpCost : 20});
+		this.skills.push({ id : "Light Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			var strength = level * 5;
+			bm.AttackExecute(actor,array[0],50,5 + level,100);
+		}}], mpCost : 5});
+		this.skills.push({ id : "Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			var strength = level * 10;
+			bm.AttackExecute(actor,array[0],90 + strength,10,100);
+		}}], mpCost : 15});
+		this.skills.push({ id : "Heavy Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			var strength = level * 30;
+			bm.AttackExecute(actor,array[0],100 + strength,15,100);
+		}}], mpCost : 40});
+		this.skills.push({ id : "Cure", profession : "Mage", word : "White", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var bonus = 5 + level * 10;
+			var strength = level * bonus;
+			bm.Heal(array[0],10,bonus);
+		}}], mpCost : 15});
+		this.skills.push({ id : "Haste", profession : "Wizard", word : "Time", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var bonus = 20;
+			var multiplier = 90 + level * 10;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Speed"] = bonus;
+			var _g1 = new haxe_ds_StringMap();
+			_g1.h["Speed"] = multiplier;
+			bm.AddBuff({ uniqueId : "haste", addStats : _g, mulStats : _g1, strength : level, duration : 8},actor);
+		}}], mpCost : 45});
+		this.skills.push({ id : "Protect", profession : "Defender", word : "Defense", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var bonus = level * 5;
+			var multiplier = 110;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Defense"] = bonus;
+			var _g1 = new haxe_ds_StringMap();
+			_g1.h["Defense"] = multiplier;
+			bm.AddBuff({ uniqueId : "protect", addStats : _g, mulStats : _g1, strength : level, duration : 8},actor);
+		}}], mpCost : 25});
+	}
 };
 var ResourceLogic = function() { };
 ResourceLogic.__name__ = true;

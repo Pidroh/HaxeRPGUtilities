@@ -170,6 +170,11 @@ class Main {
 
 		var saveCount:Float = 0.3;
 
+		bm.ForceSkillSetDrop(-1, null, {
+			skills: [{id: "Slash", level: 1}, {id: "Cure", level: 1}, {id: "Protect", level: 3}]
+		}, false);
+		bm.wdata.hero.equipmentSlots[2] = 0;
+
 		var storyPersistence:StoryPersistence = {progressionData: [], worldVersion: bm.wdata.worldVersion, currentStoryId: null};
 		var jsonData = ls.getItem(key);
 
@@ -189,19 +194,6 @@ class Main {
 		if (persistenceMaster.jsonGameplay != null) {
 			bm.SendJsonPersistentData(persistenceMaster.jsonGameplay);
 		}
-
-		bm.wdata.hero.usableSkills = [
-
-			{id: "Slash", level: 1},
-			{id: "Cure", level: 1},
-			{id: "Protect", level: 3},
-			//{id: "Fire Edge", level: 2},
-			/*{
-				id: "Regen",
-				level: 2
-			}*/
-		];
-		// bm.wdata.hero.usableSkills.push();
 
 		var storyRuntime:StoryRuntimeData = {
 			currentStoryProgression: null,
@@ -241,14 +233,22 @@ class Main {
 
 		var update = null;
 
-		var buffToIcon:Map<String, String> = ["regen" => "&#127807;", "enchant-fire" => "&#128293;"];
+		var buffToIcon:Map<String, String> = [
+			"regen" => "&#127807;",
+			"enchant-fire" => "&#128293;",
+			"protect" => "&#128737;",
+			"haste" => "&#128094;"
+		];
 
 		var ActorToView = function(actor:Actor, actorView:ActorView) {
 			if (actor != null) {
 				var name = actorView.defaultName;
 				for (b in actor.buffs) {
 					if (b != null && b.uniqueId != null) {
-						name += " " + buffToIcon[b.uniqueId];
+						if (buffToIcon.exists(b.uniqueId))
+							name += " " + buffToIcon[b.uniqueId];
+						else
+							name += " &#x2191;";
 					}
 				}
 				if (name != actorView.name.text) {
@@ -281,7 +281,7 @@ class Main {
 
 		var itemsInEquipmentWindowSeen = 0;
 		var equipmentWindowTypeAlert = [false, false]; // have same amount
-		view.FeedEquipmentTypes(["Weapons", "Armor"]);
+		view.FeedEquipmentTypes(["Weapons", "Armor", "Skill Set"]);
 
 		var saveFileImporterSetup = false;
 
@@ -334,6 +334,7 @@ class Main {
 				}
 			 */
 			var typeToShow = view.GetEquipmentType();
+			view.buttonDiscardBad.hidden = typeToShow == 2;
 			view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
 			var equipmentViewPos = 0;
 			for (i in 0...equipmentWindowTypeAlert.length) {
@@ -345,12 +346,12 @@ class Main {
 				if (e != null) {
 					if (e.type == typeToShow) {
 						e.seen = view.IsTabSelected(view.equipTab.component) || e.seen;
-						var equipName = GetEquipName(e, bm.itemBases, bm.modBases);
+						var equipName = GetEquipName(e, bm);
 						hide = false;
 						var rarity = 0;
 						if (e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0)
 							rarity = 1;
-						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity);
+						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2);
 						var vid = 0;
 						for (v in e.attributes.keyValueIterator()) {
 							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value);
@@ -361,6 +362,23 @@ class Main {
 								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, true);
 								vid++;
 							}
+						if (e.outsideSystems != null) {
+							var ss = e.outsideSystems["skillset"];
+							var ssd = bm.wdata.skillSets[ss];
+							for (s in 0...ssd.skills.length) {
+								var actionId = "battleaction_" + s;
+								var action = bm.wdata.playerActions[actionId];
+								if (action.mode == 0)
+									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, ssd.skills[s].id);
+								if (action.mode == 1) {
+									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, "Unlock at Level " + bm.skillSlotUnlocklevel[s]);
+									//view.ButtonLabel(actionId, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
+								}
+
+								
+								vid++;
+							}
+						}
 						view.FinishFeedingEquipmentValue(equipmentViewPos, vid);
 					}
 					if (!e.seen) {
@@ -456,7 +474,7 @@ class Main {
 					// GameAnalyticsIntegration.SendDesignEvent("AreaUnlock", e.data);
 				}
 				if (e.type == EquipDrop) {
-					var equipName = GetEquipName(bm.wdata.hero.equipment[e.data], bm.itemBases, bm.modBases);
+					var equipName = GetEquipName(bm.wdata.hero.equipment[e.data], bm);
 					ev = '<b>Enemy dropped $equipName</b>';
 				}
 
@@ -561,7 +579,10 @@ class Main {
 		update(0);
 	}
 
-	static function GetEquipName(e:Equipment, itemBases:Array<ItemBase>, modBases:Array<ModBase>):String {
+	static function GetEquipName(e:Equipment, bm:BattleManager):String {
+		var itemBases:Array<ItemBase> = bm.itemBases;
+		var modBases:Array<ModBase> = bm.modBases;
+		var skillSets:Array<SkillSet> = bm.wdata.skillSets;
 		if (e.generationBaseItem >= 0) {
 			var name = itemBases[e.generationBaseItem].name;
 			if (e.generationPrefixMod >= 0) {
@@ -571,6 +592,34 @@ class Main {
 				name = name + " " + modBases[e.generationSuffixMod].suffix;
 			}
 			return name;
+		}
+		if (e.outsideSystems != null) {
+			if (e.outsideSystems.exists("skillset")) {
+				var skillSet = e.outsideSystems["skillset"];
+				var ss = skillSets[skillSet];
+				var main = ss.skills[0];
+				var sbMain = bm.GetSkillBase(main.id);
+				
+				var profession = "Corrupter";
+				if(sbMain !=null ) profession = bm.GetSkillBase(main.id).profession;
+				var word1 = null;
+				var word2 = null;
+				if (ss.skills.length > 1) {
+					var skillBase1 = bm.GetSkillBase(ss.skills[1].id);
+					word1 = bm.GetSkillBase(ss.skills[0].id).word;
+					if(skillBase1 != null)
+						profession = bm.GetSkillBase(ss.skills[1].id).profession;
+					
+				}
+
+				if (ss.skills.length > 2)
+					word2 = bm.GetSkillBase(ss.skills[2].id).word;
+				if (word2 != null)
+					return '$word1 $profession of $word2';
+				if (word1 != null)
+					return '$word1 $profession';
+				return profession;
+			}
 		}
 		var equipName = "Sword";
 		if (e.type == 1)

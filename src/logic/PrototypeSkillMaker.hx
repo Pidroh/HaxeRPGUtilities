@@ -12,6 +12,8 @@ class PrototypeSkillMaker {
 
 		skills.push({
 			id: "Regen",
+			profession: "Priest",
+			word: "Nature",
 			effects: [
 				{
 					target: SELF,
@@ -29,8 +31,10 @@ class PrototypeSkillMaker {
 			],
 			mpCost: 20
 		});
-		skills.push({
+/*		skills.push({
 			id: "Fire Edge",
+			profession: "Enchanter",
+			word: "Flame",
 			effects: [
 				{
 					target: SELF,
@@ -48,8 +52,11 @@ class PrototypeSkillMaker {
 			],
 			mpCost: 20
 		});
+		*/
 		skills.push({
-			id: "Slash",
+			id: "Light Slash",
+			profession: "Warrior",
+			word: "Red",
 			effects: [
 				{
 					target: ENEMY,
@@ -59,10 +66,42 @@ class PrototypeSkillMaker {
 					}
 				}
 			],
-			mpCost: 10
+			mpCost: 5
+		});
+		skills.push({
+			id: "Slash",
+			profession: "Warrior",
+			word: "Red",
+			effects: [
+				{
+					target: ENEMY,
+					effectExecution: (bm, level, actor, array) -> {
+						var strength = level * 10;
+						bm.AttackExecute(actor, array[0], 90+strength, 10, 100);
+					}
+				}
+			],
+			mpCost: 15
+		});
+		skills.push({
+			id: "Heavy Slash",
+			profession: "Warrior",
+			word: "Red",
+			effects: [
+				{
+					target: ENEMY,
+					effectExecution: (bm, level, actor, array) -> {
+						var strength = level * 30;
+						bm.AttackExecute(actor, array[0], 100+strength, 15, 100);
+					}
+				}
+			],
+			mpCost: 40
 		});
 		skills.push({
 			id: "Cure",
+			profession: "Mage",
+			word: "White",
 			effects: [
 				{
 					target: SELF,
@@ -78,6 +117,8 @@ class PrototypeSkillMaker {
 		});
 		skills.push({
 			id: "Haste",
+			profession: "Wizard",
+			word: "Time",
 			effects: [
 				{
 					target: SELF,
@@ -98,6 +139,8 @@ class PrototypeSkillMaker {
 		});
 		skills.push({
 			id: "Protect",
+			profession: "Defender",
+			word: "Defense",
 			effects: [
 				{
 					target: SELF,
@@ -114,7 +157,7 @@ class PrototypeSkillMaker {
 					}
 				}
 			],
-			mpCost: 35
+			mpCost: 25
 		});
 	}
 }

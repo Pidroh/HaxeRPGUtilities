@@ -73,6 +73,8 @@ class View {
 	public var levelContainer:Component;
 	public var battleView:Component;
 
+	public var buttonDiscardBad:Button;
+
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
 
@@ -434,7 +436,7 @@ class View {
 			tabBar.percentWidth = 100;
 			equipmentTypeSelectionTabbar = tabBar;
 			equipTabChild.addComponent(tabBar);
-			var buttonDiscardBad = new Button();
+			buttonDiscardBad = new Button();
 			buttonDiscardBad.text = "Discard worse equipment";
 			buttonDiscardBad.onClick = event -> {
 				equipmentMainAction(-1, View.equipmentAction_DiscardBad);
@@ -688,9 +690,10 @@ class View {
 		}
 	}
 
-	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1) {
+	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1, unequipable = false) {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
+		
 		var color = "#000000";
 		if (rarity == 1) {
 			color = "#002299";
@@ -698,9 +701,11 @@ class View {
 		equipments[pos].name.color = color;
 		if (equipped) {
 			equipments[pos].actionButtons[0].text = "Unequip";
+			equipments[pos].actionButtons[0].hidden = unequipable;
 			equipments[pos].parent.borderSize = 2;
 			equipments[pos].parent.backgroundColor = "#FAEBD7";
 		} else {
+			equipments[pos].actionButtons[0].hidden = false;
 			equipments[pos].actionButtons[0].text = "Equip";
 			equipments[pos].parent.borderSize = 1;
 			equipments[pos].parent.backgroundColor = "white";
@@ -722,12 +727,12 @@ class View {
 		}
 	}
 
-	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false) {
+	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false, valueString:String = null) {
 		while (equipments[pos].values.length <= valuePos) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
 		}
-		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName, percent);
+		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName, percent, valueString);
 		equipments[pos].values[valuePos].parent.hidden = false;
 	}
 
@@ -792,19 +797,23 @@ class View {
 		valueView.parent.hidden = !visibility;
 	}
 
-	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null, percent = false) {
+	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null, percent = false, valueAsString:String = null) {
 		if (label != null) {
 			res.labelText.text = label;
 		}
 		res.parent.hidden = current >= 0 == false;
-		if (max > 0) {
-			res.bar.pos = current * 100 / max;
-			res.centeredText.text = current + " / " + max;
-		} else {
-			if (percent)
-				res.centeredText.text = current + "%";
-			else
-				res.centeredText.text = current + "";
+		if (valueAsString == null) {
+			if (max > 0) {
+				res.bar.pos = current * 100 / max;
+				res.centeredText.text = current + " / " + max;
+			} else {
+				if (percent)
+					res.centeredText.text = current + "%";
+				else
+					res.centeredText.text = current + "";
+			}
+		} else{
+			res.centeredText.text = valueAsString;
 		}
 	}
 
@@ -825,8 +834,6 @@ class View {
 
 		var lifeView:ValueView = null;
 		lifeView = CreateValueView(box, true, "Life: ", "#88AA88");
-
-		
 
 		return {
 			name: label,
@@ -868,7 +875,7 @@ class View {
 		return {parent: boxh, dropdown: dd, labelText: nameLabel};
 	}
 
-	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor : String = "#999999"):ValueView {
+	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor:String = "#999999"):ValueView {
 		var boxh = new Box();
 		boxh.width = 180;
 		parent.addComponent(boxh);
@@ -940,7 +947,7 @@ typedef ActorView = {
 	var mp:ValueView;
 	var attack:ValueView;
 	var parent:Component;
-	var defaultName : String;
+	var defaultName:String;
 };
 
 typedef EquipmentView = {

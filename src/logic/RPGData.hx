@@ -104,6 +104,7 @@ typedef Equipment = {
 	var type:Int;
 	var requiredAttributes:Map<String, Int>;
 	var attributes:Map<String, Int>;
+	var ?outsideSystems:Map<String, Int>;
 	var ?attributeMultiplier:Map<String, Int>;
 	var ?generationVariations:Map<String, Int>;
 	var ?generationVariationsMultiplier:Map<String, Int>;
@@ -153,6 +154,8 @@ typedef WorldData = {
 	var recovering:Bool;
 	var sleeping:Bool;
 	var prestigeTimes:Int;
+
+	var ?skillSets:Array<SkillSet>;
 
 	// Easier access for the data in region progress. Has to copy the data back in update.
 	var battleArea:Int;
@@ -225,6 +228,12 @@ typedef SkillUsable = {
 
 typedef Skill = {
 	var id:String;
+	var word:String;
+	var profession:String;
 	var effects:Array<Effect>;
 	var mpCost:Int;
+}
+
+typedef SkillSet = {
+    var skills:Array<SkillUsable>;
 }

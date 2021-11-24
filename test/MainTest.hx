@@ -9,9 +9,12 @@ class MainTest {
 		var bm = new BattleManager();
 		bm.DefaultConfiguration();
 		var proto = new PrototypeItemMaker();
+		var skills = new PrototypeSkillMaker();
+		skills.init();
 		proto.MakeItems();
 		bm.itemBases = proto.items;
 		bm.modBases = proto.mods;
+		bm.skillBases = skills.skills;
 		return bm;
 	}
 
