@@ -18,13 +18,13 @@ class PrototypeSkillMaker {
 				{
 					target: SELF,
 					effectExecution: (bm, level, actor, array) -> {
-						var strength = level * 5;
+						var strength = level * 4;
 						bm.AddBuff({
 							uniqueId: "regen",
 							addStats: ["Regen" => strength],
 							mulStats: null,
 							strength: strength,
-							duration: 5
+							duration: 8
 						}, actor);
 					}
 				}

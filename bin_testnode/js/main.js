@@ -106,7 +106,7 @@ var BattleManager = function() {
 	_g.h["Speed"] = 20;
 	_g.h["SpeedCount"] = 0;
 	var stats = _g;
-	var w = { worldVersion : 602, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], prestigeTimes : 0, timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
+	var w = { worldVersion : 904, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], prestigeTimes : 0, timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -122,21 +122,30 @@ BattleManager.prototype = {
 		}
 		return i;
 	}
-	,UseSkill: function(skill,actor) {
-		var id = skill.id;
-		var skillBase = this.GetSkillBase(id);
+	,UseMP: function(actor,mpCost,event) {
+		if(event == null) {
+			event = true;
+		}
 		var mp = actor.attributesCalculated.h["MP"];
-		mp -= skillBase.mpCost;
-		var ev = this.AddEvent(EventTypes.SkillUse);
-		ev.origin = this.wdata.hero.reference;
-		ev.dataString = skill.id;
+		mp -= mpCost;
 		if(mp <= 0) {
 			mp = 0;
 			actor.attributesCalculated.h["MPRechargeCount"] = 0;
-			var ev = this.AddEvent(EventTypes.MPRunOut);
-			ev.origin = this.wdata.hero.reference;
+			if(event) {
+				var ev = this.AddEvent(EventTypes.MPRunOut);
+				ev.origin = this.wdata.hero.reference;
+			}
 		}
 		actor.attributesCalculated.h["MP"] = mp;
+	}
+	,UseSkill: function(skill,actor) {
+		var id = skill.id;
+		var skillBase = this.GetSkillBase(id);
+		var mpCost = skillBase.mpCost;
+		this.UseMP(actor,mpCost);
+		var ev = this.AddEvent(EventTypes.SkillUse);
+		ev.origin = this.wdata.hero.reference;
+		ev.dataString = skill.id;
 		var _g = 0;
 		var _g1 = skillBase.effects;
 		while(_g < _g1.length) {
@@ -436,7 +445,27 @@ BattleManager.prototype = {
 		}
 	}
 	,AddBuff: function(buff,actor) {
-		actor.buffs.push(buff);
+		var addBuff = true;
+		var _g = 0;
+		var _g1 = actor.buffs.length;
+		while(_g < _g1) {
+			var bi = _g++;
+			var b = actor.buffs[bi];
+			if(b.uniqueId == buff.uniqueId) {
+				addBuff = false;
+				if(b.strength < buff.strength) {
+					actor.buffs[bi] = buff;
+					break;
+				}
+				if(b.strength == buff.strength && b.duration < buff.duration) {
+					actor.buffs[bi] = buff;
+					break;
+				}
+			}
+		}
+		if(addBuff) {
+			actor.buffs.push(buff);
+		}
 		this.RecalculateAttributes(actor);
 	}
 	,GetSkillBase: function(id) {
@@ -947,6 +976,7 @@ BattleManager.prototype = {
 		} else {
 			this.wdata.hero.equipmentSlots[slot] = pos;
 		}
+		this.UseMP(this.wdata.hero,9999,false);
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,IsEquipped: function(pos) {
@@ -1033,7 +1063,7 @@ BattleManager.prototype = {
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
 		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
-		var hasEquipment = this.wdata.hero.equipment.length > 0;
+		var hasEquipment = this.wdata.hero.equipment.length > 1;
 		var lu = this.wdata.playerActions.h["tabequipment"];
 		lu.enabled = hasEquipment;
 		lu.visible = lu.enabled || lu.visible;
@@ -1051,16 +1081,30 @@ BattleManager.prototype = {
 			var skillUsable = false;
 			var skillVisible = false;
 			var skillButtonMode = 0;
+			if(this.wdata.hero.level < this.skillSlotUnlocklevel[i]) {
+				skillButtonMode = 1;
+			}
 			if(this.wdata.hero.usableSkills[i] != null) {
 				if(this.wdata.hero.level >= this.skillSlotUnlocklevel[i]) {
 					if(this.wdata.hero.attributesCalculated.h["MPRechargeCount"] >= 10000) {
 						skillUsable = true;
 					}
-				} else {
-					skillButtonMode = 1;
 				}
 				if(i == 0 || this.wdata.hero.level >= this.skillSlotUnlocklevel[i - 1]) {
 					skillVisible = true;
+				}
+				if(skillUsable && skillVisible && (this.wdata.enemy == null || this.wdata.enemy.attributesCalculated.h["Life"] == 0)) {
+					var sb = this.GetSkillBase(this.wdata.hero.usableSkills[i].id);
+					var _g1 = 0;
+					var _g2 = sb.effects;
+					while(_g1 < _g2.length) {
+						var e = _g2[_g1];
+						++_g1;
+						if(e.target == Target.ENEMY) {
+							skillUsable = false;
+							break;
+						}
+					}
 				}
 			}
 			lu.enabled = skillUsable;
@@ -1134,6 +1178,7 @@ BattleManager.prototype = {
 		hero.attributesCalculated.h["Life"] = v;
 		var v = hero.attributesCalculated.h["MPMax"];
 		hero.attributesCalculated.h["MP"] = v;
+		hero.attributesCalculated.h["MPRechargeCount"] = 10000;
 	}
 	,RecalculateAttributes: function(actor) {
 		var _g = 0;
@@ -1162,6 +1207,7 @@ BattleManager.prototype = {
 		_g.h["MagicDefense"] = 0;
 		_g.h["SpeedCount"] = 0;
 		_g.h["Piercing"] = 0;
+		_g.h["MPMax"] = 2;
 		AttributeLogic.Add(actor1,_g,actor.level,actor.attributesCalculated);
 		if(actor == this.wdata.hero) {
 			var _g = 0;
@@ -2028,10 +2074,10 @@ PrototypeSkillMaker.prototype = {
 	}
 	,init: function() {
 		this.skills.push({ id : "Regen", profession : "Priest", word : "Nature", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
-			var strength = level * 5;
+			var strength = level * 4;
 			var _g = new haxe_ds_StringMap();
 			_g.h["Regen"] = strength;
-			bm.AddBuff({ uniqueId : "regen", addStats : _g, mulStats : null, strength : strength, duration : 5},actor);
+			bm.AddBuff({ uniqueId : "regen", addStats : _g, mulStats : null, strength : strength, duration : 8},actor);
 		}}], mpCost : 20});
 		this.skills.push({ id : "Light Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 5;

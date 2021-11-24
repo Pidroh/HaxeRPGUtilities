@@ -69,21 +69,30 @@ class BattleManager {
 		return i;
 	}
 
-	public function UseSkill(skill:SkillUsable, actor:Actor) {
-		var id = skill.id;
-		var skillBase = GetSkillBase(id);
+	public function UseMP(actor:Actor, mpCost, event = true) {
 		var mp = actor.attributesCalculated["MP"];
-		mp -= skillBase.mpCost;
-		var ev = AddEvent(SkillUse);
-		ev.origin = wdata.hero.reference;
-		ev.dataString = skill.id;
+		mp -= mpCost;
+
 		if (mp <= 0) {
 			mp = 0;
 			actor.attributesCalculated["MPRechargeCount"] = 0;
-			var ev = AddEvent(MPRunOut);
-			ev.origin = wdata.hero.reference;
+			if (event) {
+				var ev = AddEvent(MPRunOut);
+				ev.origin = wdata.hero.reference;
+			}
 		}
 		actor.attributesCalculated["MP"] = mp;
+	}
+
+	public function UseSkill(skill:SkillUsable, actor:Actor) {
+		var id = skill.id;
+		var skillBase = GetSkillBase(id);
+		var mpCost = skillBase.mpCost;
+		UseMP(actor, mpCost);
+		var ev = AddEvent(SkillUse);
+		ev.origin = wdata.hero.reference;
+		ev.dataString = skill.id;
+
 		for (ef in skillBase.effects) {
 			var targets = new Array<Actor>();
 			if (ef.target == SELF) {
@@ -223,7 +232,7 @@ class BattleManager {
 		var baseItem = -1;
 		var itemB = null;
 
-		if (random.randomInt(0, 1000) < skillSetDropProbability*10) {
+		if (random.randomInt(0, 1000) < skillSetDropProbability * 10) {
 			var numberOfSkills = random.randomInt(2, 3);
 			var skillPosArray:Array<Int> = [];
 			for (s in 0...numberOfSkills) {
@@ -350,7 +359,24 @@ class BattleManager {
 	}
 
 	public function AddBuff(buff:Buff, actor:Actor) {
-		actor.buffs.push(buff);
+		var addBuff = true;
+		for (bi in 0...actor.buffs.length) {
+			var b = actor.buffs[bi];
+			if (b.uniqueId == buff.uniqueId) {
+				addBuff = false;
+				if (b.strength < buff.strength) {
+					actor.buffs[bi] = buff;
+					break;
+				}
+				if (b.strength == buff.strength && b.duration < buff.duration) {
+					actor.buffs[bi] = buff;
+					break;
+				}
+				
+			}
+		}
+		if (addBuff)
+			actor.buffs.push(buff);
 		RecalculateAttributes(actor);
 	}
 
@@ -554,7 +580,7 @@ class BattleManager {
 		// var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
 		var w:WorldData = {
-			worldVersion: 602,
+			worldVersion: 904,
 			hero: {
 				level: 1,
 				attributesBase: null,
@@ -946,6 +972,7 @@ class BattleManager {
 		} else {
 			wdata.hero.equipmentSlots[slot] = pos;
 		}
+		UseMP(wdata.hero, 9999, false);
 		RecalculateAttributes(wdata.hero);
 	}
 
@@ -1053,7 +1080,7 @@ $baseInfo';
 		canAdvance = wdata.battleArea < wdata.maxArea;
 		canRetreat = wdata.battleArea > 0;
 		canLevelUp = wdata.hero.xp.value >= wdata.hero.xp.calculatedMax;
-		var hasEquipment = wdata.hero.equipment.length > 0;
+		var hasEquipment = wdata.hero.equipment.length > 1; //to account for initial skill set
 
 		{
 			var lu = wdata.playerActions["tabequipment"];
@@ -1078,17 +1105,28 @@ $baseInfo';
 				var skillUsable = false;
 				var skillVisible = false;
 				var skillButtonMode = 0;
+				if (wdata.hero.level >= skillSlotUnlocklevel[i]) {} else {
+					skillButtonMode = 1;
+				}
 				if (wdata.hero.usableSkills[i] != null) {
 					if (wdata.hero.level >= skillSlotUnlocklevel[i]) {
 						if (wdata.hero.attributesCalculated["MPRechargeCount"] >= 10000) {
 							skillUsable = true;
 						}
-					} else {
-						skillButtonMode = 1;
 					}
 
 					if (i == 0 || wdata.hero.level >= skillSlotUnlocklevel[i - 1]) {
 						skillVisible = true;
+					}
+
+					if (skillUsable && skillVisible && (wdata.enemy == null || wdata.enemy.attributesCalculated["Life"] == 0)) {
+						var sb = GetSkillBase(wdata.hero.usableSkills[i].id);
+						for (e in sb.effects) {
+							if (e.target == ENEMY) {
+								skillUsable = false;
+								break;
+							}
+						}
 					}
 				}
 				lu.enabled = skillUsable;
@@ -1180,6 +1218,7 @@ $baseInfo';
 
 		hero.attributesCalculated["Life"] = hero.attributesCalculated["LifeMax"];
 		hero.attributesCalculated["MP"] = hero.attributesCalculated["MPMax"];
+		hero.attributesCalculated["MPRechargeCount"] = 10000;
 	}
 
 	public function RecalculateAttributes(actor:Actor) {
@@ -1206,6 +1245,7 @@ $baseInfo';
 			"MagicDefense" => 0,
 			"SpeedCount" => 0,
 			"Piercing" => 0,
+			"MPMax" => 2
 		], actor.level, actor.attributesCalculated);
 
 		// var muls = new Map<String, Int>();
@@ -1275,7 +1315,7 @@ $baseInfo';
 			var e = wdata.hero.equipment[i];
 			if (e == null)
 				continue;
-			if(e.type == 2){
+			if (e.type == 2) {
 				continue;
 			}
 			for (j in (i + 1)...wdata.hero.equipment.length) {

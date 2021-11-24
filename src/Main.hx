@@ -258,17 +258,21 @@ class Main {
 
 				var mp = bm.GetAttribute(actor, "MP");
 				var mpmax = bm.GetAttribute(actor, "MPMax");
+				if (bm.wdata.hero.level > 1) {
+					var rc = bm.GetAttribute(actor, "MPRechargeCount");
+					if (rc < 10000) {
+						mp = rc;
+						mpmax = 10000;
+						actorView.mp.labelText.text = "Charge";
+					} else {
+						actorView.mp.labelText.text = "MP";
+					}
 
-				var rc = bm.GetAttribute(actor, "MPRechargeCount");
-				if (rc < 10000) {
-					mp = rc;
-					mpmax = 10000;
-					actorView.mp.labelText.text = "Charge";
+					view.UpdateValues(actorView.mp, mp, mpmax);
 				} else {
-					actorView.mp.labelText.text = "MP";
+					view.UpdateValues(actorView.mp, mp, mpmax, "??", false, "???");
 				}
 
-				view.UpdateValues(actorView.mp, mp, mpmax);
 				view.UpdateValues(actorView.attack, bm.GetAttribute(actor, "Attack"), -1);
 			}
 			view.UpdateVisibility(actorView, actor != null);
@@ -371,11 +375,10 @@ class Main {
 								if (action.mode == 0)
 									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, ssd.skills[s].id);
 								if (action.mode == 1) {
-									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, "Unlock at Level " + bm.skillSlotUnlocklevel[s]);
-									//view.ButtonLabel(actionId, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
+									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, "???");
+									// view.ButtonLabel(actionId, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
 								}
 
-								
 								vid++;
 							}
 						}
@@ -599,17 +602,17 @@ class Main {
 				var ss = skillSets[skillSet];
 				var main = ss.skills[0];
 				var sbMain = bm.GetSkillBase(main.id);
-				
+
 				var profession = "Corrupter";
-				if(sbMain !=null ) profession = bm.GetSkillBase(main.id).profession;
+				if (sbMain != null)
+					profession = bm.GetSkillBase(main.id).profession;
 				var word1 = null;
 				var word2 = null;
 				if (ss.skills.length > 1) {
 					var skillBase1 = bm.GetSkillBase(ss.skills[1].id);
 					word1 = bm.GetSkillBase(ss.skills[0].id).word;
-					if(skillBase1 != null)
+					if (skillBase1 != null)
 						profession = bm.GetSkillBase(ss.skills[1].id).profession;
-					
 				}
 
 				if (ss.skills.length > 2)
