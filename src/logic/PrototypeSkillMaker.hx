@@ -18,7 +18,7 @@ class PrototypeSkillMaker {
 				{
 					target: SELF,
 					effectExecution: (bm, level, actor, array) -> {
-						var strength = level * 4;
+						var strength = level * 3;
 						bm.AddBuff({
 							uniqueId: "regen",
 							addStats: ["Regen" => strength],
@@ -158,6 +158,96 @@ class PrototypeSkillMaker {
 				}
 			],
 			mpCost: 25
+		});
+		skills.push({
+			id: "Sharpen",
+			profession: "Smith",
+			word: "Sharpness",
+			effects: [
+				{
+					target: SELF,
+					effectExecution: (bm, level, actor, array) -> {
+						var bonus = 100;
+						var multiplier = 100+5*level;
+                        bm.AddBuff({
+							uniqueId: "pierce",
+							addStats: ["Pierce" => bonus],
+							mulStats: ["Attack" => multiplier],
+							strength: level,
+							duration: 9
+						}, actor);						
+					}
+				}
+			],
+			mpCost: 20
+		});
+		skills.push({
+			id: "Sharpen",
+			profession: "Smith",
+			word: "Sharpness",
+			effects: [
+				{
+					target: SELF,
+					effectExecution: (bm, level, actor, array) -> {
+						var bonus = 100;
+						var multiplier = 100+5*level;
+                        bm.AddBuff({
+							uniqueId: "pierce",
+							addStats: ["Pierce" => bonus],
+							mulStats: ["Attack" => multiplier],
+							strength: level,
+							duration: 9
+						}, actor);						
+					}
+				}
+			],
+			mpCost: 20
+		});
+
+		skills.push({
+			id: "Armor Break",
+			profession: "Breaker",
+			word: "Destruction",
+			effects: [
+				{
+					target: SELF,
+					effectExecution: (bm, level, actor, array) -> {
+						
+                        bm.AddBuff({
+							uniqueId: "Armor Break",
+							addStats: ["Defense" => -level*10],
+							mulStats: ["Defense" => 50],
+							strength: level,
+							duration: 5,
+							debuff: true
+						}, actor);				
+					}
+				}
+			],
+			mpCost: 10
+		});
+
+		skills.push({
+			id: "Attack Break",
+			profession: "Breaker",
+			word: "Destruction",
+			effects: [
+				{
+					target: SELF,
+					effectExecution: (bm, level, actor, array) -> {
+						
+                        bm.AddBuff({
+							uniqueId: "Attack Break",
+							addStats: ["Attack" => -level*10],
+							mulStats: ["Attack" => 50],
+							strength: level,
+							duration: 5,
+							debuff: true
+						}, actor);				
+					}
+				}
+			],
+			mpCost: 10
 		});
 	}
 }

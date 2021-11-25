@@ -95,9 +95,10 @@ class Main {
 			"Wolf Fields",
 			"Tonberry's Lair",
 			"Altar Cave",
-			"Bikanel Island"
+			"Bikanel Island",
+			"Tartarus",
 		];
-		var enemyNames = ["Enemy", "Wolf", "Tonberry", "Land Turtle", "Cactuar"];
+		var enemyNames = ["Enemy", "Wolf", "Tonberry", "Land Turtle", "Cactuar", "Reaper"];
 
 		var eventShown = 0;
 
@@ -435,6 +436,9 @@ class Main {
 						if (e.target.type == 0) // hero died
 							GameAnalyticsIntegration.SendProgressFailEvent("world0", "stage" + bm.wdata.battleAreaRegion, "area" + bm.wdata.battleArea);
 					}
+				}
+				if (e.type == BuffRemoval) {
+					ev = '$originText buffs lost!';
 				}
 				if (e.type == MPRunOut) {
 					ev = '$originText ran out of MP';

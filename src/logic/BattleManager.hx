@@ -128,6 +128,12 @@ class BattleManager {
 			attackBonus += enchant;
 		}
 
+		if(attacker.attributesCalculated["Antibuff"] > 0){
+			defender.buffs.resize(0);
+			RecalculateAttributes(defender);
+			AddEvent(BuffRemoval).origin = defender.reference;
+		}
+
 		if (magicAttack == false) {
 			if (attacker.attributesCalculated["Piercing"] > 0 == true) {
 				defenseRate = defenseRate - attacker.attributesCalculated["Piercing"];
@@ -216,10 +222,20 @@ class BattleManager {
 	}
 
 	public function ForceSkillSetDrop(enemyLevel:Int, dropperReference = null, ss:SkillSet, event = true) {
-		var itemB = {
+		var scalingStats:Map<String, Float> = []; 
+		switch random.randomInt(0, 2) {
+			case 0:
+				scalingStats["Attack"] = 0.3;
+			case 1:
+				scalingStats["Defense"] = 0.3;
+			case 2:
+				scalingStats["Speed"] = 0.1;
+		}
+
+		var itemB:ItemBase = {
 			type: 2,
 			statMultipliers: null,
-			scalingStats: null,
+			scalingStats: scalingStats,
 			name: null
 		};
 		if (wdata.skillSets == null)
@@ -233,8 +249,23 @@ class BattleManager {
 		var itemB = null;
 
 		if (random.randomInt(0, 1000) < skillSetDropProbability * 10) {
-			var numberOfSkills = random.randomInt(2, 3);
 			var skillPosArray:Array<Int> = [];
+			var baseLevel = 1;
+			var maxLevel = 1;
+			var maxNSkills = 2;
+			if (wdata.enemy.level > 5) {
+				maxNSkills = 3;
+			}
+			if (wdata.enemy.level > 10) {
+				maxLevel = 2;
+			}
+			if (wdata.enemy.level > 25) {
+				maxNSkills = 4;
+			}
+			if (wdata.enemy.level > 35) {
+				maxLevel = 4;
+			}
+			var numberOfSkills = random.randomInt(1, maxNSkills);
 			for (s in 0...numberOfSkills) {
 				var skill = random.randomInt(0, skillBases.length - 1 - s);
 				while (skillPosArray.contains(skill)) {
@@ -243,10 +274,19 @@ class BattleManager {
 				skillPosArray[s] = skill;
 			}
 			var ss:SkillSet = {skills: new Array<SkillUsable>()};
-			for (sp in skillPosArray) {
+			for (j in 0...skillPosArray.length) {
+				var level = baseLevel;
+				level = random.randomInt(baseLevel, maxLevel);
+				if (j >= 2) { // third skill always stronger
+					level = maxLevel + 1;
+				}
+				if (j >= 3) { // third skill always stronger
+					level = maxLevel + 1;
+				}
+				var sp = skillPosArray[j];
 				ss.skills.push({
 					id: skillBases[sp].id,
-					level: 1
+					level: level
 				});
 			}
 			ForceSkillSetDrop(enemyLevel, dropperReference, ss);
@@ -372,7 +412,6 @@ class BattleManager {
 					actor.buffs[bi] = buff;
 					break;
 				}
-				
 			}
 		}
 		if (addBuff)
@@ -574,7 +613,29 @@ class BattleManager {
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Speed" => 1, "LifeMax" => 3]});
 
-		bm.regionRequirements = [0, 5, 10, 15, 20];
+		// Reaper
+		bm.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 10, "Speed" => 3.5, "LifeMax" => 0.1]
+			},
+			speciesAdd: null,
+			speciesLevelStats: {attributesBase: ["Defense" => 0.2, "Speed" => 0.1]}
+		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 3, "Speed" => 2]});
+
+
+
+		// Debuffer
+		bm.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 2, "Speed" => 1.4, "LifeMax" => 3, "Defense" => 0.3]
+			},
+			speciesAdd: ["Antibuff" => 1],
+			speciesLevelStats: {attributesBase: ["Defense" => 0.2, "Speed" => 0.1]}
+		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 2, "LifeMax" => 3]});
+		
+		bm.regionRequirements = [0, 5, 10, 15, 20, 35];
 
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0];
 		// var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
@@ -1080,7 +1141,7 @@ $baseInfo';
 		canAdvance = wdata.battleArea < wdata.maxArea;
 		canRetreat = wdata.battleArea > 0;
 		canLevelUp = wdata.hero.xp.value >= wdata.hero.xp.calculatedMax;
-		var hasEquipment = wdata.hero.equipment.length > 1; //to account for initial skill set
+		var hasEquipment = wdata.hero.equipment.length > 1; // to account for initial skill set
 
 		{
 			var lu = wdata.playerActions["tabequipment"];
@@ -1236,16 +1297,8 @@ $baseInfo';
 
 		actor.attributesCalculated.clear();
 		AttributeLogic.Add(actor.attributesBase, [
-			"Attack" => 1,
-			"LifeMax" => 5,
-			"Life" => 5,
-			"Speed" => 0,
-			"Defense" => 0,
-			"MagicAttack" => 1,
-			"MagicDefense" => 0,
-			"SpeedCount" => 0,
-			"Piercing" => 0,
-			"MPMax" => 2
+			"Attack" => 1, "LifeMax" => 5, "Life" => 5, "Speed" => 0, "Defense" => 0, "MagicAttack" => 1, "MagicDefense" => 0, "SpeedCount" => 0,
+			"Piercing" => 0, "MPMax" => 2
 		], actor.level, actor.attributesCalculated);
 
 		// var muls = new Map<String, Int>();

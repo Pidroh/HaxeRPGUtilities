@@ -178,6 +178,7 @@ enum EventTypes {
 	statUpgrade;
 	SkillUse;
 	MPRunOut;
+	BuffRemoval;
 }
 
 class ActorReference {
@@ -214,6 +215,7 @@ typedef Buff = {
 	var duration:Int;
 	var addStats:Map<String, Int>;
 	var mulStats:Map<String, Int>;
+	var ?debuff:Bool;
 }
 
 typedef Effect = {

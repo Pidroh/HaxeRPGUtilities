@@ -98,7 +98,38 @@ var BattleManager = function() {
 	_g.h["Speed"] = 1;
 	_g.h["LifeMax"] = 3;
 	bm1.push({ xpPrize : false, statBonus : _g});
-	bm.regionRequirements = [0,5,10,15,20];
+	var bm1 = bm.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 10;
+	_g.h["Speed"] = 3.5;
+	_g.h["LifeMax"] = 0.1;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Defense"] = 0.2;
+	_g1.h["Speed"] = 0.1;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
+	var bm1 = bm.regionPrizes;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 3;
+	_g.h["Speed"] = 2;
+	bm1.push({ xpPrize : false, statBonus : _g});
+	var bm1 = bm.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 2;
+	_g.h["Speed"] = 1.4;
+	_g.h["LifeMax"] = 3;
+	_g.h["Defense"] = 0.3;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Antibuff"] = 1;
+	var _g2 = new haxe_ds_StringMap();
+	_g2.h["Defense"] = 0.2;
+	_g2.h["Speed"] = 0.1;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
+	var bm1 = bm.regionPrizes;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 2;
+	_g.h["LifeMax"] = 3;
+	bm1.push({ xpPrize : false, statBonus : _g});
+	bm.regionRequirements = [0,5,10,15,20,35];
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Life"] = 20;
@@ -197,6 +228,11 @@ BattleManager.prototype = {
 			magicAttack = true;
 			attackBonus += enchant;
 		}
+		if(attacker.attributesCalculated.h["Antibuff"] > 0) {
+			defender.buffs.length = 0;
+			this.RecalculateAttributes(defender);
+			this.AddEvent(EventTypes.BuffRemoval).origin = defender.reference;
+		}
 		if(magicAttack == false) {
 			if(attacker.attributesCalculated.h["Piercing"] > 0 == true) {
 				defenseRate -= attacker.attributesCalculated.h["Piercing"];
@@ -286,7 +322,19 @@ BattleManager.prototype = {
 		if(event == null) {
 			event = true;
 		}
-		var itemB = { type : 2, statMultipliers : null, scalingStats : null, name : null};
+		var scalingStats = new haxe_ds_StringMap();
+		switch(this.random.randomInt(0,2)) {
+		case 0:
+			scalingStats.h["Attack"] = 0.3;
+			break;
+		case 1:
+			scalingStats.h["Defense"] = 0.3;
+			break;
+		case 2:
+			scalingStats.h["Speed"] = 0.1;
+			break;
+		}
+		var itemB = { type : 2, statMultipliers : null, scalingStats : scalingStats, name : null};
 		if(this.wdata.skillSets == null) {
 			this.wdata.skillSets = [];
 		}
@@ -300,8 +348,23 @@ BattleManager.prototype = {
 		var baseItem = -1;
 		var itemB = null;
 		if(this.random.randomInt(0,1000) < skillSetDropProbability * 10) {
-			var numberOfSkills = this.random.randomInt(2,3);
 			var skillPosArray = [];
+			var baseLevel = 1;
+			var maxLevel = 1;
+			var maxNSkills = 2;
+			if(this.wdata.enemy.level > 5) {
+				maxNSkills = 3;
+			}
+			if(this.wdata.enemy.level > 10) {
+				maxLevel = 2;
+			}
+			if(this.wdata.enemy.level > 25) {
+				maxNSkills = 4;
+			}
+			if(this.wdata.enemy.level > 35) {
+				maxLevel = 4;
+			}
+			var numberOfSkills = this.random.randomInt(1,maxNSkills);
 			var _g = 0;
 			var _g1 = numberOfSkills;
 			while(_g < _g1) {
@@ -312,10 +375,19 @@ BattleManager.prototype = {
 			}
 			var ss = { skills : []};
 			var _g = 0;
-			while(_g < skillPosArray.length) {
-				var sp = skillPosArray[_g];
-				++_g;
-				ss.skills.push({ id : this.skillBases[sp].id, level : 1});
+			var _g1 = skillPosArray.length;
+			while(_g < _g1) {
+				var j = _g++;
+				var level = baseLevel;
+				level = this.random.randomInt(baseLevel,maxLevel);
+				if(j >= 2) {
+					level = maxLevel + 1;
+				}
+				if(j >= 3) {
+					level = maxLevel + 1;
+				}
+				var sp = skillPosArray[j];
+				ss.skills.push({ id : this.skillBases[sp].id, level : level});
 			}
 			this.ForceSkillSetDrop(enemyLevel,dropperReference,ss);
 			return;
@@ -2074,7 +2146,7 @@ PrototypeSkillMaker.prototype = {
 	}
 	,init: function() {
 		this.skills.push({ id : "Regen", profession : "Priest", word : "Nature", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
-			var strength = level * 4;
+			var strength = level * 3;
 			var _g = new haxe_ds_StringMap();
 			_g.h["Regen"] = strength;
 			bm.AddBuff({ uniqueId : "regen", addStats : _g, mulStats : null, strength : strength, duration : 8},actor);
@@ -2114,6 +2186,38 @@ PrototypeSkillMaker.prototype = {
 			_g1.h["Defense"] = multiplier;
 			bm.AddBuff({ uniqueId : "protect", addStats : _g, mulStats : _g1, strength : level, duration : 8},actor);
 		}}], mpCost : 25});
+		this.skills.push({ id : "Sharpen", profession : "Smith", word : "Sharpness", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var bonus = 100;
+			var multiplier = 100 + 5 * level;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Pierce"] = bonus;
+			var _g1 = new haxe_ds_StringMap();
+			_g1.h["Attack"] = multiplier;
+			bm.AddBuff({ uniqueId : "pierce", addStats : _g, mulStats : _g1, strength : level, duration : 9},actor);
+		}}], mpCost : 20});
+		this.skills.push({ id : "Sharpen", profession : "Smith", word : "Sharpness", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var bonus = 100;
+			var multiplier = 100 + 5 * level;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Pierce"] = bonus;
+			var _g1 = new haxe_ds_StringMap();
+			_g1.h["Attack"] = multiplier;
+			bm.AddBuff({ uniqueId : "pierce", addStats : _g, mulStats : _g1, strength : level, duration : 9},actor);
+		}}], mpCost : 20});
+		this.skills.push({ id : "Armor Break", profession : "Breaker", word : "Destruction", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var _g = new haxe_ds_StringMap();
+			_g.h["Defense"] = -level * 10;
+			var _g1 = new haxe_ds_StringMap();
+			_g1.h["Defense"] = 50;
+			bm.AddBuff({ uniqueId : "Armor Break", addStats : _g, mulStats : _g1, strength : level, duration : 5, debuff : true},actor);
+		}}], mpCost : 10});
+		this.skills.push({ id : "Attack Break", profession : "Breaker", word : "Destruction", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var _g = new haxe_ds_StringMap();
+			_g.h["Attack"] = -level * 10;
+			var _g1 = new haxe_ds_StringMap();
+			_g1.h["Attack"] = 50;
+			bm.AddBuff({ uniqueId : "Attack Break", addStats : _g, mulStats : _g1, strength : level, duration : 5, debuff : true},actor);
+		}}], mpCost : 10});
 	}
 };
 var ResourceLogic = function() { };
@@ -2196,8 +2300,9 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,statUpgrade: {_hx_name:"statUpgrade",_hx_index:12,__enum__:"EventTypes",toString:$estr}
 	,SkillUse: {_hx_name:"SkillUse",_hx_index:13,__enum__:"EventTypes",toString:$estr}
 	,MPRunOut: {_hx_name:"MPRunOut",_hx_index:14,__enum__:"EventTypes",toString:$estr}
+	,BuffRemoval: {_hx_name:"BuffRemoval",_hx_index:15,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut,EventTypes.BuffRemoval];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;
