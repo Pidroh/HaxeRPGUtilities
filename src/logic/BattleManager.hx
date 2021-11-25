@@ -400,6 +400,15 @@ class BattleManager {
 
 	public function AddBuff(buff:Buff, actor:Actor) {
 		var addBuff = true;
+		if(buff.debuff == true){
+			var debpro = actor.attributesCalculated["DebuffProtection"];
+			if(debpro > 0){
+				if(random.randomInt(1, 100) > debpro){
+					AddEvent(DebuffBlock).origin = actor.reference;
+					return;
+				}
+			}
+		}
 		for (bi in 0...actor.buffs.length) {
 			var b = actor.buffs[bi];
 			if (b.uniqueId == buff.uniqueId) {
@@ -623,17 +632,25 @@ class BattleManager {
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 3, "Speed" => 2]});
 
-
-
 		// Debuffer
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 2, "Speed" => 1.4, "LifeMax" => 3, "Defense" => 0.3]
+				attributesBase: ["Attack" => 2, "Speed" => 1.4, "LifeMax" => 2, "Defense" => 0.3]
 			},
 			speciesAdd: ["Antibuff" => 1],
 			speciesLevelStats: {attributesBase: ["Defense" => 0.2, "Speed" => 0.1]}
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 2, "LifeMax" => 3]});
+
+		// Debuff immunity
+		bm.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 1.8, "Speed" => 1.4, "LifeMax" => 2, "Defense" => 0.5]
+			},
+			speciesAdd: ["DebuffProtection" => 100],
+			speciesLevelStats: {attributesBase: ["Defense" => 0.2, "Speed" => 0.1]}
+		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Defense"=>1, "LifeMax" => 3]});
 		
 		bm.regionRequirements = [0, 5, 10, 15, 20, 35];
 

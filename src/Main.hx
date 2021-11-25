@@ -438,7 +438,10 @@ class Main {
 					}
 				}
 				if (e.type == BuffRemoval) {
-					ev = '$originText buffs lost!';
+					ev = '$originText lost their positive status!';
+				}
+				if (e.type == BuffRemoval) {
+					ev = '$originText blocked the negative status!';
 				}
 				if (e.type == MPRunOut) {
 					ev = '$originText ran out of MP';

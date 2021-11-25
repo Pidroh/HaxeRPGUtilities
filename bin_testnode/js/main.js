@@ -116,7 +116,7 @@ var BattleManager = function() {
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
 	_g.h["Speed"] = 1.4;
-	_g.h["LifeMax"] = 3;
+	_g.h["LifeMax"] = 2;
 	_g.h["Defense"] = 0.3;
 	var _g1 = new haxe_ds_StringMap();
 	_g1.h["Antibuff"] = 1;
@@ -127,6 +127,24 @@ var BattleManager = function() {
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
+	_g.h["LifeMax"] = 3;
+	bm1.push({ xpPrize : false, statBonus : _g});
+	var bm1 = bm.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1.8;
+	_g.h["Speed"] = 1.4;
+	_g.h["LifeMax"] = 2;
+	_g.h["Defense"] = 0.5;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["DebuffProtection"] = 100;
+	var _g2 = new haxe_ds_StringMap();
+	_g2.h["Defense"] = 0.2;
+	_g2.h["Speed"] = 0.1;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
+	var bm1 = bm.regionPrizes;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1;
+	_g.h["Defense"] = 1;
 	_g.h["LifeMax"] = 3;
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,10,15,20,35];
@@ -518,6 +536,15 @@ BattleManager.prototype = {
 	}
 	,AddBuff: function(buff,actor) {
 		var addBuff = true;
+		if(buff.debuff == true) {
+			var debpro = actor.attributesCalculated.h["DebuffProtection"];
+			if(debpro > 0) {
+				if(this.random.randomInt(1,100) > debpro) {
+					this.AddEvent(EventTypes.DebuffBlock).origin = actor.reference;
+					return;
+				}
+			}
+		}
 		var _g = 0;
 		var _g1 = actor.buffs.length;
 		while(_g < _g1) {
@@ -2301,8 +2328,9 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,SkillUse: {_hx_name:"SkillUse",_hx_index:13,__enum__:"EventTypes",toString:$estr}
 	,MPRunOut: {_hx_name:"MPRunOut",_hx_index:14,__enum__:"EventTypes",toString:$estr}
 	,BuffRemoval: {_hx_name:"BuffRemoval",_hx_index:15,__enum__:"EventTypes",toString:$estr}
+	,DebuffBlock: {_hx_name:"DebuffBlock",_hx_index:16,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut,EventTypes.BuffRemoval];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut,EventTypes.BuffRemoval,EventTypes.DebuffBlock];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;

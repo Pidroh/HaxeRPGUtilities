@@ -179,6 +179,7 @@ enum EventTypes {
 	SkillUse;
 	MPRunOut;
 	BuffRemoval;
+	DebuffBlock;
 }
 
 class ActorReference {
