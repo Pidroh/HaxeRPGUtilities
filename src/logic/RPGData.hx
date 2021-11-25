@@ -65,6 +65,7 @@ typedef ActorSheet = {
 	var speciesMultiplier:LevelGrowth;
 	var speciesAdd:Map<String, Int>;
 	var speciesLevelStats:LevelGrowth;
+	var ?initialBuff:Buff;
 }
 
 typedef Actor = {

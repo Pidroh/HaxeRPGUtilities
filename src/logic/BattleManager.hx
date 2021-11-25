@@ -119,6 +119,26 @@ class BattleManager {
 		target.attributesCalculated["Life"] = life;
 	}
 
+	public function RemoveBuffs(defender:Actor, keepDebuffs = true) {
+		if(keepDebuffs == false)
+			defender.buffs.resize(0);
+		else{
+			var i = 0;
+			while (i < defender.buffs.length) {
+				
+				
+				if(defender.buffs[i].debuff == true){
+					i++;
+					continue;
+				}
+				defender.buffs.remove(defender.buffs[i]);
+			}
+		}
+
+		RecalculateAttributes(defender);
+		AddEvent(BuffRemoval).origin = defender.reference;
+	}
+
 	public function AttackExecute(attacker:Actor, defender:Actor, attackRate = 100, attackBonus = 0, defenseRate = 100) {
 		var gEvent = AddEvent(ActorAttack);
 		var magicAttack = false;
@@ -128,10 +148,8 @@ class BattleManager {
 			attackBonus += enchant;
 		}
 
-		if(attacker.attributesCalculated["Antibuff"] > 0){
-			defender.buffs.resize(0);
-			RecalculateAttributes(defender);
-			AddEvent(BuffRemoval).origin = defender.reference;
+		if (attacker.attributesCalculated["Antibuff"] > 0) {
+			RemoveBuffs(defender);
 		}
 
 		if (magicAttack == false) {
@@ -222,7 +240,7 @@ class BattleManager {
 	}
 
 	public function ForceSkillSetDrop(enemyLevel:Int, dropperReference = null, ss:SkillSet, event = true) {
-		var scalingStats:Map<String, Float> = []; 
+		var scalingStats:Map<String, Float> = [];
 		switch random.randomInt(0, 2) {
 			case 0:
 				scalingStats["Attack"] = 0.3;
@@ -400,10 +418,10 @@ class BattleManager {
 
 	public function AddBuff(buff:Buff, actor:Actor) {
 		var addBuff = true;
-		if(buff.debuff == true){
+		if (buff.debuff == true) {
 			var debpro = actor.attributesCalculated["DebuffProtection"];
-			if(debpro > 0){
-				if(random.randomInt(1, 100) > debpro){
+			if (debpro > 0) {
+				if (random.randomInt(1, 100) > debpro) {
 					AddEvent(DebuffBlock).origin = actor.reference;
 					return;
 				}
@@ -568,6 +586,9 @@ class BattleManager {
 						wdata.enemy.attributesBase[p.key] = value;
 						wdata.enemy.attributesCalculated[p.key] = value;
 					}
+				if (sheet.initialBuff != null) {
+					AddBuff(sheet.initialBuff, wdata.enemy);
+				}
 			}
 			wdata.enemy.attributesCalculated["Life"] = wdata.enemy.attributesCalculated["LifeMax"];
 			// trace('Enemy speed ' + wdata.enemy.attributesCalculated["Speed"]);
@@ -642,6 +663,23 @@ class BattleManager {
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 2, "LifeMax" => 3]});
 
+		// Buffed
+		bm.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 1.4, "Speed" => 1, "LifeMax" => 2, "Defense" => 0.4]
+			},
+			speciesAdd: null,
+			initialBuff: {
+				uniqueId: "Power Up",
+				mulStats: ["Attack" => 500, "Defense" => 500],
+				duration: 3,
+				addStats: null,
+				strength: 100
+			},
+			speciesLevelStats: {attributesBase: ["Defense" => 0.2, "Speed" => 0.1]}
+		});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "LifeMax" => 3]});
+
 		// Debuff immunity
 		bm.enemySheets.push({
 			speciesMultiplier: {
@@ -650,8 +688,8 @@ class BattleManager {
 			speciesAdd: ["DebuffProtection" => 100],
 			speciesLevelStats: {attributesBase: ["Defense" => 0.2, "Speed" => 0.1]}
 		});
-		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Defense"=>1, "LifeMax" => 3]});
-		
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Defense" => 1, "LifeMax" => 3]});
+
 		bm.regionRequirements = [0, 5, 10, 15, 20, 35];
 
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0];

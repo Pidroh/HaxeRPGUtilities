@@ -131,6 +131,24 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	var bm1 = bm.enemySheets;
 	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1.4;
+	_g.h["Speed"] = 1;
+	_g.h["LifeMax"] = 2;
+	_g.h["Defense"] = 0.4;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Attack"] = 500;
+	_g1.h["Defense"] = 500;
+	var _g2 = new haxe_ds_StringMap();
+	_g2.h["Defense"] = 0.2;
+	_g2.h["Speed"] = 0.1;
+	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, initialBuff : { uniqueId : "Power Up", mulStats : _g1, duration : 3, addStats : null, strength : 100}, speciesLevelStats : { attributesBase : _g2}});
+	var bm1 = bm.regionPrizes;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1;
+	_g.h["LifeMax"] = 3;
+	bm1.push({ xpPrize : false, statBonus : _g});
+	var bm1 = bm.enemySheets;
+	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1.8;
 	_g.h["Speed"] = 1.4;
 	_g.h["LifeMax"] = 2;
@@ -229,6 +247,25 @@ BattleManager.prototype = {
 		}
 		target.attributesCalculated.h["Life"] = life;
 	}
+	,RemoveBuffs: function(defender,keepDebuffs) {
+		if(keepDebuffs == null) {
+			keepDebuffs = true;
+		}
+		if(keepDebuffs == false) {
+			defender.buffs.length = 0;
+		} else {
+			var i = 0;
+			while(i < defender.buffs.length) {
+				if(defender.buffs[i].debuff == true) {
+					++i;
+					continue;
+				}
+				HxOverrides.remove(defender.buffs,defender.buffs[i]);
+			}
+		}
+		this.RecalculateAttributes(defender);
+		this.AddEvent(EventTypes.BuffRemoval).origin = defender.reference;
+	}
 	,AttackExecute: function(attacker,defender,attackRate,attackBonus,defenseRate) {
 		if(defenseRate == null) {
 			defenseRate = 100;
@@ -247,9 +284,7 @@ BattleManager.prototype = {
 			attackBonus += enchant;
 		}
 		if(attacker.attributesCalculated.h["Antibuff"] > 0) {
-			defender.buffs.length = 0;
-			this.RecalculateAttributes(defender);
-			this.AddEvent(EventTypes.BuffRemoval).origin = defender.reference;
+			this.RemoveBuffs(defender);
 		}
 		if(magicAttack == false) {
 			if(attacker.attributesCalculated.h["Piercing"] > 0 == true) {
@@ -717,6 +752,9 @@ BattleManager.prototype = {
 					this.wdata.enemy.attributesBase.h[p_key] = value;
 					this.wdata.enemy.attributesCalculated.h[p_key] = value;
 				}
+			}
+			if(sheet.initialBuff != null) {
+				this.AddBuff(sheet.initialBuff,this.wdata.enemy);
 			}
 		}
 		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
@@ -2190,6 +2228,10 @@ PrototypeSkillMaker.prototype = {
 			var strength = level * 30;
 			bm.AttackExecute(actor,array[0],100 + strength,15,100);
 		}}], mpCost : 40});
+		this.skills.push({ id : "DeSpell", profession : "Unbuffer", word : "Witchhunt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			var strength = level * 30;
+			bm.RemoveBuffs(array[0]);
+		}}], mpCost : 10});
 		this.skills.push({ id : "Cure", profession : "Mage", word : "White", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
 			var bonus = 5 + level * 10;
 			var strength = level * bonus;
@@ -2222,23 +2264,14 @@ PrototypeSkillMaker.prototype = {
 			_g1.h["Attack"] = multiplier;
 			bm.AddBuff({ uniqueId : "pierce", addStats : _g, mulStats : _g1, strength : level, duration : 9},actor);
 		}}], mpCost : 20});
-		this.skills.push({ id : "Sharpen", profession : "Smith", word : "Sharpness", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
-			var bonus = 100;
-			var multiplier = 100 + 5 * level;
-			var _g = new haxe_ds_StringMap();
-			_g.h["Pierce"] = bonus;
-			var _g1 = new haxe_ds_StringMap();
-			_g1.h["Attack"] = multiplier;
-			bm.AddBuff({ uniqueId : "pierce", addStats : _g, mulStats : _g1, strength : level, duration : 9},actor);
-		}}], mpCost : 20});
-		this.skills.push({ id : "Armor Break", profession : "Breaker", word : "Destruction", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+		this.skills.push({ id : "Armor Break", profession : "Breaker", word : "Destruction", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var _g = new haxe_ds_StringMap();
 			_g.h["Defense"] = -level * 10;
 			var _g1 = new haxe_ds_StringMap();
 			_g1.h["Defense"] = 50;
 			bm.AddBuff({ uniqueId : "Armor Break", addStats : _g, mulStats : _g1, strength : level, duration : 5, debuff : true},actor);
 		}}], mpCost : 10});
-		this.skills.push({ id : "Attack Break", profession : "Breaker", word : "Destruction", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+		this.skills.push({ id : "Attack Break", profession : "Breaker", word : "Destruction", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var _g = new haxe_ds_StringMap();
 			_g.h["Attack"] = -level * 10;
 			var _g1 = new haxe_ds_StringMap();

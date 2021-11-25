@@ -99,6 +99,21 @@ class PrototypeSkillMaker {
 			mpCost: 40
 		});
 		skills.push({
+			id: "DeSpell",
+			profession: "Unbuffer",
+			word: "Witchhunt",
+			effects: [
+				{
+					target: ENEMY,
+					effectExecution: (bm, level, actor, array) -> {
+						var strength = level * 30;
+						bm.RemoveBuffs(array[0]);
+					}
+				}
+			],
+			mpCost: 10
+		});
+		skills.push({
 			id: "Cure",
 			profession: "Mage",
 			word: "White",
@@ -181,28 +196,6 @@ class PrototypeSkillMaker {
 			],
 			mpCost: 20
 		});
-		skills.push({
-			id: "Sharpen",
-			profession: "Smith",
-			word: "Sharpness",
-			effects: [
-				{
-					target: SELF,
-					effectExecution: (bm, level, actor, array) -> {
-						var bonus = 100;
-						var multiplier = 100+5*level;
-                        bm.AddBuff({
-							uniqueId: "pierce",
-							addStats: ["Pierce" => bonus],
-							mulStats: ["Attack" => multiplier],
-							strength: level,
-							duration: 9
-						}, actor);						
-					}
-				}
-			],
-			mpCost: 20
-		});
 
 		skills.push({
 			id: "Armor Break",
@@ -210,7 +203,7 @@ class PrototypeSkillMaker {
 			word: "Destruction",
 			effects: [
 				{
-					target: SELF,
+					target: ENEMY,
 					effectExecution: (bm, level, actor, array) -> {
 						
                         bm.AddBuff({
@@ -233,7 +226,7 @@ class PrototypeSkillMaker {
 			word: "Destruction",
 			effects: [
 				{
-					target: SELF,
+					target: ENEMY,
 					effectExecution: (bm, level, actor, array) -> {
 						
                         bm.AddBuff({
