@@ -186,7 +186,7 @@ class PrototypeSkillMaker {
 						var multiplier = 100+5*level;
                         bm.AddBuff({
 							uniqueId: "pierce",
-							addStats: ["Pierce" => bonus],
+							addStats: ["Piercing" => bonus],
 							mulStats: ["Attack" => multiplier],
 							strength: level,
 							duration: 9

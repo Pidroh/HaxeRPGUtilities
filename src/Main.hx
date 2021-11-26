@@ -319,6 +319,10 @@ class Main {
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
+			
+			
+
+
 
 			var showLocked = 0;
 			if(bm.wdata.battleAreaRegionMax < enemyRegionNames.length){

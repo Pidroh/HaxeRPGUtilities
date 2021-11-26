@@ -195,6 +195,7 @@ class MainTest {
 				bm.update(0.9);
 			}
 		}
+		
 		{
 			Sys.println("Hard area death test");
 			var bm:BattleManager = GetBattleManager();
@@ -218,6 +219,36 @@ class MainTest {
 			var fileName = "saves/basic" + bm.wdata.worldVersion + ".json";
 			var pm:PersistenceMaster = {worldVersion: bm.wdata.worldVersion, jsonGameplay: json, jsonStory: null};
 			sys.io.File.saveContent(fileName, Json.stringify(pm));
+		}
+		{
+			Sys.println("Pierce test");
+			
+			var bm:BattleManager = GetBattleManager();
+			bm.ChangeBattleArea(8);
+			bm.update(0.9);
+
+			var oldLife = bm.wdata.enemy.attributesCalculated["Life"];
+			bm.wdata.enemy.attributesCalculated["Defense"] = 6;
+			bm.wdata.hero.attributesCalculated["Attack"] = 5;
+			bm.AttackExecute(bm.wdata.hero, bm.wdata.enemy, 100, 0, 100);
+			bm.AttackExecute(bm.wdata.hero, bm.wdata.enemy, 100, 0, 100);
+			if(oldLife != bm.wdata.enemy.attributesCalculated["Life"]){
+				Sys.println("ERROR: Pierce 1");
+				//ERROR
+			}
+			bm.wdata.hero.attributesCalculated["Piercing"] = 50;
+			bm.AttackExecute(bm.wdata.hero, bm.wdata.enemy, 100, 0, 100);
+			if(oldLife - bm.wdata.enemy.attributesCalculated["Life"] != 2){
+				Sys.println("ERROR: Pierce 2");
+			}
+			var oldLife = bm.wdata.enemy.attributesCalculated["Life"];
+			bm.wdata.hero.attributesCalculated["Piercing"] = 0;
+			bm.UseSkill({id: "Sharpen", level: 1}, bm.wdata.hero);
+			bm.AttackExecute(bm.wdata.hero, bm.wdata.enemy, 100, 0, 100);
+			if(oldLife - bm.wdata.enemy.attributesCalculated["Life"] != 2){
+				Sys.println("ERROR: Pierce 3");
+			}
+
 		}
 		{
 			Sys.println("Easy area no death");

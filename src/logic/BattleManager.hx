@@ -85,6 +85,9 @@ class BattleManager {
 	}
 
 	public function UseSkill(skill:SkillUsable, actor:Actor) {
+		if(actor == wdata.hero){
+			wdata.timeCount = 0;
+		}
 		var id = skill.id;
 		var skillBase = GetSkillBase(id);
 

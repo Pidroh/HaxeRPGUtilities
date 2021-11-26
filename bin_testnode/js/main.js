@@ -167,7 +167,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,35];
 	if(bm.regionPrizes.length < bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:700:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:703:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -209,6 +209,9 @@ BattleManager.prototype = {
 		actor.attributesCalculated.h["MP"] = mp;
 	}
 	,UseSkill: function(skill,actor) {
+		if(actor == this.wdata.hero) {
+			this.wdata.timeCount = 0;
+		}
 		var id = skill.id;
 		var skillBase = this.GetSkillBase(id);
 		var executedEffects = 0;
@@ -1978,6 +1981,34 @@ MainTest.main = function() {
 	var fileName = "saves/basic" + bm.wdata.worldVersion + ".json";
 	var pm = { worldVersion : bm.wdata.worldVersion, jsonGameplay : json, jsonStory : null};
 	js_node_Fs.writeFileSync(fileName,JSON.stringify(pm));
+	process.stdout.write("Pierce test");
+	process.stdout.write("\n");
+	var bm = MainTest.GetBattleManager();
+	bm.ChangeBattleArea(8);
+	bm.update(0.9);
+	var oldLife = bm.wdata.enemy.attributesCalculated.h["Life"];
+	bm.wdata.enemy.attributesCalculated.h["Defense"] = 6;
+	bm.wdata.hero.attributesCalculated.h["Attack"] = 5;
+	bm.AttackExecute(bm.wdata.hero,bm.wdata.enemy,100,0,100);
+	bm.AttackExecute(bm.wdata.hero,bm.wdata.enemy,100,0,100);
+	if(oldLife != bm.wdata.enemy.attributesCalculated.h["Life"]) {
+		process.stdout.write("ERROR: Pierce 1");
+		process.stdout.write("\n");
+	}
+	bm.wdata.hero.attributesCalculated.h["Piercing"] = 50;
+	bm.AttackExecute(bm.wdata.hero,bm.wdata.enemy,100,0,100);
+	if(oldLife - bm.wdata.enemy.attributesCalculated.h["Life"] != 2) {
+		process.stdout.write("ERROR: Pierce 2");
+		process.stdout.write("\n");
+	}
+	var oldLife = bm.wdata.enemy.attributesCalculated.h["Life"];
+	bm.wdata.hero.attributesCalculated.h["Piercing"] = 0;
+	bm.UseSkill({ id : "Sharpen", level : 1},bm.wdata.hero);
+	bm.AttackExecute(bm.wdata.hero,bm.wdata.enemy,100,0,100);
+	if(oldLife - bm.wdata.enemy.attributesCalculated.h["Life"] != 2) {
+		process.stdout.write("ERROR: Pierce 3");
+		process.stdout.write("\n");
+	}
 	process.stdout.write("Easy area no death");
 	process.stdout.write("\n");
 	var bm = MainTest.GetBattleManager();
@@ -2113,14 +2144,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:307:","  _____ ");
-		console.log("test/MainTest.hx:308:","  _____ ");
-		console.log("test/MainTest.hx:309:","  _____ ");
-		console.log("test/MainTest.hx:310:",json);
-		console.log("test/MainTest.hx:311:","  _____ ");
-		console.log("test/MainTest.hx:312:","  _____ ");
-		console.log("test/MainTest.hx:313:","  _____ ");
-		console.log("test/MainTest.hx:314:",json2);
+		console.log("test/MainTest.hx:338:","  _____ ");
+		console.log("test/MainTest.hx:339:","  _____ ");
+		console.log("test/MainTest.hx:340:","  _____ ");
+		console.log("test/MainTest.hx:341:",json);
+		console.log("test/MainTest.hx:342:","  _____ ");
+		console.log("test/MainTest.hx:343:","  _____ ");
+		console.log("test/MainTest.hx:344:","  _____ ");
+		console.log("test/MainTest.hx:345:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
@@ -2269,7 +2300,7 @@ PrototypeSkillMaker.prototype = {
 			var bonus = 100;
 			var multiplier = 100 + 5 * level;
 			var _g = new haxe_ds_StringMap();
-			_g.h["Pierce"] = bonus;
+			_g.h["Piercing"] = bonus;
 			var _g1 = new haxe_ds_StringMap();
 			_g1.h["Attack"] = multiplier;
 			bm.AddBuff({ uniqueId : "pierce", addStats : _g, mulStats : _g1, strength : level, duration : 9},actor);
