@@ -97,8 +97,17 @@ class Main {
 			"Altar Cave",
 			"Bikanel Island",
 			"Tartarus",
+			"Witchhunter Base",
+			"Highsalem",
+			"Witchhunter Guild"
+
 		];
 		var enemyNames = ["Enemy", "Wolf", "Tonberry", "Land Turtle", "Cactuar", "Reaper"];
+
+		if(enemyRegionNames.length < bm.regionRequirements.length){
+			trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " 
+			+ enemyRegionNames.length + " " +bm.regionRequirements.length);
+		}
 
 		var eventShown = 0;
 
@@ -311,7 +320,11 @@ class Main {
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
 
-			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax, bm.wdata.battleAreaRegion);
+			var showLocked = 0;
+			if(bm.wdata.battleAreaRegionMax < enemyRegionNames.length){
+				showLocked = 1;
+			}
+			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax, bm.wdata.battleAreaRegion, showLocked, "Unreached");
 
 			var imp = Browser.document.getElementById("import__");
 			if (imp != null && saveFileImporterSetup == false) {
@@ -373,8 +386,13 @@ class Main {
 							for (s in 0...ssd.skills.length) {
 								var actionId = "battleaction_" + s;
 								var action = bm.wdata.playerActions[actionId];
-								if (action.mode == 0)
+								if (action.mode == 0) {
+									var skillName = ssd.skills[s].id;
+									if(ssd.skills[s].level > 1){
+										skillName += " " + String.fromCharCode('P'.code+ssd.skills[s].level);
+									}
 									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, ssd.skills[s].id);
+								}
 								if (action.mode == 1) {
 									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, "???");
 									// view.ButtonLabel(actionId, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);

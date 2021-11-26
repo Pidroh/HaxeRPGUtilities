@@ -533,9 +533,12 @@ class View {
 		}
 	}
 
-	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion) {
+	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion,showLocked = 0, lockedMessage = null) {
+		
+		//feed the current region view
 		regionLabel.centeredText.text = regionNames[currentRegion];
-		var buttonAmount = regionAmount;
+
+		var buttonAmount = regionAmount+showLocked;
 		var children = regionButtonParent.childComponents;
 		if (children.length < buttonAmount) {
 			var b = new Button();
@@ -553,8 +556,15 @@ class View {
 			if (hide == false) {
 				children[i].text = regionNames[i];
 			}
+			var b : Button = cast(children[i], Button);
+			b.disabled = i >= regionAmount;
+			if(b.disabled && hide == false){
+				b.text = lockedMessage;
+			}
 		}
 	}
+
+
 
 	public function FeedSave(saveDataContent:String) {
 		// saveDataContent = StringTools.htmlEscape(saveDataContent);

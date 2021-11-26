@@ -165,7 +165,10 @@ var BattleManager = function() {
 	_g.h["Defense"] = 1;
 	_g.h["LifeMax"] = 3;
 	bm1.push({ xpPrize : false, statBonus : _g});
-	bm.regionRequirements = [0,5,10,15,20,35];
+	bm.regionRequirements = [0,5,9,14,18,22,30,35];
+	if(bm.regionPrizes.length < bm.regionRequirements.length) {
+		console.log("src/logic/BattleManager.hx:700:","PROBLEM: Tell developer to add more region requirements!!!");
+	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Life"] = 20;
@@ -208,11 +211,7 @@ BattleManager.prototype = {
 	,UseSkill: function(skill,actor) {
 		var id = skill.id;
 		var skillBase = this.GetSkillBase(id);
-		var mpCost = skillBase.mpCost;
-		this.UseMP(actor,mpCost);
-		var ev = this.AddEvent(EventTypes.SkillUse);
-		ev.origin = this.wdata.hero.reference;
-		ev.dataString = skill.id;
+		var executedEffects = 0;
 		var _g = 0;
 		var _g1 = skillBase.effects;
 		while(_g < _g1.length) {
@@ -224,12 +223,23 @@ BattleManager.prototype = {
 			}
 			if(ef.target == Target.ENEMY) {
 				if(this.wdata.hero == actor) {
+					if(this.wdata.enemy.attributesCalculated.h["LifeMax"] == 0) {
+						this.CreateAreaEnemy();
+					}
 					targets.push(this.wdata.enemy);
 				} else {
 					targets.push(this.wdata.hero);
 				}
 			}
+			++executedEffects;
 			ef.effectExecution(this,skill.level,actor,targets);
+		}
+		if(executedEffects > 0) {
+			var mpCost = skillBase.mpCost;
+			this.UseMP(actor,mpCost);
+			var ev = this.AddEvent(EventTypes.SkillUse);
+			ev.origin = this.wdata.hero.reference;
+			ev.dataString = skill.id;
 		}
 	}
 	,Heal: function(target,lifeMaxPercentage,rawBonus) {
@@ -1230,7 +1240,7 @@ BattleManager.prototype = {
 				if(i == 0 || this.wdata.hero.level >= this.skillSlotUnlocklevel[i - 1]) {
 					skillVisible = true;
 				}
-				if(skillUsable && skillVisible && (this.wdata.enemy == null || this.wdata.enemy.attributesCalculated.h["Life"] == 0)) {
+				if(skillUsable && skillVisible && this.wdata.enemy == null) {
 					var sb = this.GetSkillBase(this.wdata.hero.usableSkills[i].id);
 					var _g1 = 0;
 					var _g2 = sb.effects;

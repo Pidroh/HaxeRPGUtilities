@@ -87,26 +87,32 @@ class BattleManager {
 	public function UseSkill(skill:SkillUsable, actor:Actor) {
 		var id = skill.id;
 		var skillBase = GetSkillBase(id);
-		var mpCost = skillBase.mpCost;
-		UseMP(actor, mpCost);
-		var ev = AddEvent(SkillUse);
-		ev.origin = wdata.hero.reference;
-		ev.dataString = skill.id;
 
+		var executedEffects = 0;
 		for (ef in skillBase.effects) {
 			var targets = new Array<Actor>();
 			if (ef.target == SELF) {
 				targets.push(actor);
 			}
 			if (ef.target == ENEMY) {
-				if (wdata.hero == actor)
+				if (wdata.hero == actor) {
+					if (wdata.enemy.attributesCalculated["LifeMax"] == 0) {
+						CreateAreaEnemy();
+					}
 					targets.push(wdata.enemy);
-				else
+				} else
 					targets.push(wdata.hero);
 			}
+			executedEffects++;
 			ef.effectExecution(this, skill.level, actor, targets);
 		}
-
+		if (executedEffects > 0) {
+			var mpCost = skillBase.mpCost;
+			UseMP(actor, mpCost);
+			var ev = AddEvent(SkillUse);
+			ev.origin = wdata.hero.reference;
+			ev.dataString = skill.id;
+		}
 		// skillBase.effects
 	}
 
@@ -120,14 +126,12 @@ class BattleManager {
 	}
 
 	public function RemoveBuffs(defender:Actor, keepDebuffs = true) {
-		if(keepDebuffs == false)
+		if (keepDebuffs == false)
 			defender.buffs.resize(0);
-		else{
+		else {
 			var i = 0;
 			while (i < defender.buffs.length) {
-				
-				
-				if(defender.buffs[i].debuff == true){
+				if (defender.buffs[i].debuff == true) {
 					i++;
 					continue;
 				}
@@ -653,7 +657,7 @@ class BattleManager {
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 3, "Speed" => 2]});
 
-		// Debuffer
+		// Antibuffer
 		bm.enemySheets.push({
 			speciesMultiplier: {
 				attributesBase: ["Attack" => 2, "Speed" => 1.4, "LifeMax" => 2, "Defense" => 0.3]
@@ -690,7 +694,11 @@ class BattleManager {
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Defense" => 1, "LifeMax" => 3]});
 
-		bm.regionRequirements = [0, 5, 10, 15, 20, 35];
+		bm.regionRequirements = [0, 5, 9, 14, 18, 22, 30, 35];
+
+		if (bm.regionPrizes.length < bm.regionRequirements.length) {
+			trace("PROBLEM: Tell developer to add more region requirements!!!");
+		}
 
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0];
 		// var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
@@ -1235,14 +1243,16 @@ $baseInfo';
 						skillVisible = true;
 					}
 
-					if (skillUsable && skillVisible && (wdata.enemy == null || wdata.enemy.attributesCalculated["Life"] == 0)) {
-						var sb = GetSkillBase(wdata.hero.usableSkills[i].id);
-						for (e in sb.effects) {
-							if (e.target == ENEMY) {
-								skillUsable = false;
-								break;
+					if (skillUsable && skillVisible // && wdata.killedInArea[wdata.battleArea] >= wdata.necessaryToKillInArea
+						&& (wdata.enemy == null // || wdata.enemy.attributesCalculated["Life"] == 0
+						)) {
+							var sb = GetSkillBase(wdata.hero.usableSkills[i].id);
+							for (e in sb.effects) {
+								if (e.target == ENEMY) {
+									skillUsable = false;
+									break;
+								}
 							}
-						}
 					}
 				}
 				lu.enabled = skillUsable;
