@@ -253,17 +253,20 @@ class Main {
 		var ActorToView = function(actor:Actor, actorView:ActorView) {
 			if (actor != null) {
 				var name = actorView.defaultName;
-				for (b in actor.buffs) {
-					if (b != null && b.uniqueId != null) {
-						if (buffToIcon.exists(b.uniqueId))
-							name += " " + buffToIcon[b.uniqueId];
-						else
-							name += " &#x2191;";
-					}
-				}
 				if (name != actorView.name.text) {
 					actorView.name.text = name;
 				}
+				var buffText = "";
+				for (b in actor.buffs) {
+					if (b != null && b.uniqueId != null) {
+						if (buffToIcon.exists(b.uniqueId))
+							buffText += " " + buffToIcon[b.uniqueId];
+						else
+							buffText += " &#x2191;";
+					}
+				}
+				actorView.buffText.text = buffText;
+				
 				view.UpdateValues(actorView.life, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
 
 				var mp = bm.GetAttribute(actor, "MP");

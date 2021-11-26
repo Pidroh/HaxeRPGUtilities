@@ -423,9 +423,11 @@ class View {
 		mDefView = CreateValueView(levelContainer, false, "mDef: ");
 
 		battleView = CreateContainer(verticalBox, false);
-
-		battleView.width = 400;
+		battleView.width = 440;
 		heroView = GetActorView("You", battleView);
+		var box = new Box();
+		box.width = 40;
+		battleView.addComponent(box);
 		enemyView = GetActorView("Enemy", battleView);
 
 		var battleButtonView = CreateContainer(verticalBox, false);
@@ -651,9 +653,30 @@ class View {
 			// viewParent.borderRadius = 10;
 			viewParent.borderSize = 1;
 			viewParent.padding = 6;
+
+			var header = new Box();
+			header.percentWidth = 100;
+			header.height = 32;
 			var name = new Label();
 			name.text = "Sword";
-			viewParent.addComponent(name);
+			//name.percentHeight = 100;
+			name.percentWidth = 80;
+			name.verticalAlign = "Center";
+			header.addComponent(name);
+			var rightLabelBox = new VBox();
+			//rightLabelBox.percentWidth = 20;
+			//rightLabelBox.percentHeight = 100;
+			rightLabelBox.paddingLeft = 5;
+			rightLabelBox.paddingRight = 5;
+			rightLabelBox.horizontalAlign = "right";
+			var rightLabel = new Label();
+			rightLabel.text = "New";
+			rightLabel.horizontalAlign = "right";
+			//rightLabel.verticalAlign = "center";
+			rightLabelBox.backgroundColor = "#FFAAAA";
+			rightLabelBox.addComponent(rightLabel);
+			header.addComponent(rightLabelBox);
+			viewParent.addComponent(header);
 
 			var buttonsAct = new Vector<Button>(2);
 
@@ -680,7 +703,8 @@ class View {
 				name: name,
 				parent: viewParent,
 				values: [],
-				actionButtons: buttonsAct
+				actionButtons: buttonsAct,
+				rightLabelBox: rightLabelBox
 			};
 			equipTabChild.addComponent(viewParent);
 			equipments.push(ev);
@@ -700,7 +724,7 @@ class View {
 		}
 	}
 
-	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1, unequipable = false) {
+	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1, unequipable = false, firstTimeSee = false) {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
 		
@@ -836,11 +860,23 @@ class View {
 		box.width = 180;
 		parent.addComponent(box);
 
+		var header = new Box();
+		header.percentWidth = 100;
+		header.height = 20;
+		box.addComponent(header);
+
 		var label:Label = new Label();
-		box.addComponent(label);
 		label.text = name;
-		label.height = 20;
+		//label.height = 20;
 		label.verticalAlign = "center";
+
+		var rightLabel:Label = new Label();
+		rightLabel.styleString = "font-weight: bold; font-size: 16px;";
+		rightLabel.horizontalAlign = "right";
+
+		header.addComponent(rightLabel);
+		header.addComponent(label);
+		
 
 		var lifeView:ValueView = null;
 		lifeView = CreateValueView(box, true, "Life: ", "#88AA88");
@@ -851,7 +887,8 @@ class View {
 			attack: CreateValueView(box, false, "Attack: "),
 			parent: box,
 			mp: CreateValueView(box, true, "MP: ", "#8888AA"),
-			defaultName: name
+			defaultName: name,
+			buffText: rightLabel
 		};
 	}
 
@@ -953,6 +990,7 @@ typedef DropDownView = {
 
 typedef ActorView = {
 	var name:Label;
+	var buffText:Label;
 	var life:ValueView;
 	var mp:ValueView;
 	var attack:ValueView;
@@ -965,6 +1003,7 @@ typedef EquipmentView = {
 	var values:Array<ValueView>;
 	var parent:Component;
 	var actionButtons:Vector<Button>;
+	var rightLabelBox:Component;
 	// var actionButton:Button;
 	// var actionButton2:Button;
 };
