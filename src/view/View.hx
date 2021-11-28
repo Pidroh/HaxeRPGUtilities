@@ -789,10 +789,12 @@ class View {
 		if (warningMessage == null) {
 			button.onClick = onClick;
 		} else {
+			
 			button.onClick = function whatever(e) {
 				// trace("lol");
 				Screen.instance.messageBox(warningMessage, label, MessageBoxType.TYPE_QUESTION, true, function(button) {
 					// trace(button);
+					
 					if (button.toString().indexOf("yes") >= 0) {
 						onClick(null);
 					}

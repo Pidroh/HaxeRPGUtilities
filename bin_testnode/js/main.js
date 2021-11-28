@@ -905,6 +905,7 @@ BattleManager.prototype = {
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,PrestigeExecute: function() {
+		this.wdata.enemy = null;
 		this.wdata.hero.level = 1;
 		this.wdata.hero.xp.value = 0;
 		var hero = this.wdata.hero;

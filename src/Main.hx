@@ -1,3 +1,6 @@
+import js.lib.Function;
+import js.html.KeyboardEvent;
+import js.html.Document;
 import SaveAssistant.PersistenceMaster;
 import StoryModel.StoryPersistence;
 import hscript.Interp;
@@ -104,9 +107,11 @@ class Main {
 		];
 		var enemyNames = ["Enemy", "Wolf", "Tonberry", "Land Turtle", "Cactuar", "Reaper"];
 
-		if(enemyRegionNames.length < bm.regionRequirements.length){
-			trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " 
-			+ enemyRegionNames.length + " " +bm.regionRequirements.length);
+		if (enemyRegionNames.length < bm.regionRequirements.length) {
+			trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! "
+				+ enemyRegionNames.length
+				+ " "
+				+ bm.regionRequirements.length);
 		}
 
 		var eventShown = 0;
@@ -121,10 +126,23 @@ class Main {
 		// var keyStory = "save data masterStory";
 		var keyBackup = "save backup";
 
-		var CreateButtonFromAction = function(actionId:String, buttonLabel:String, warning:String = null) {
+		var keyMappings = new Map<String, Void->Void>();
+		Browser.document.addEventListener("keydown", e -> {
+			var ke = cast(e, KeyboardEvent);
+			if (keyMappings.exists(ke.key)) {
+				keyMappings[ke.key]();
+			}
+		});
+
+		var CreateButtonFromAction = function(actionId:String, buttonLabel:String, warning:String = null, key:String = null) {
 			// var action = bm.wdata.playerActions[actionId];
 			var action = bm.playerActions[actionId];
 			var actionData = bm.wdata.playerActions[actionId];
+			if (key != null) {
+				keyMappings[key] = () -> {
+					action.actualAction(actionData);	
+				}
+			}
 			view.AddButton(actionId, buttonLabel, function(e) {
 				action.actualAction(actionData);
 			}, warning);
@@ -145,7 +163,7 @@ class Main {
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart");
 		for (i in 0...7) {
-			CreateButtonFromAction("battleaction_" + i, "Action " + i);
+			CreateButtonFromAction("battleaction_" + i, "Action " + i, null, ""+(1+i));
 		}
 		// CreateButtonFromAction("repeat", "Restart");
 		var prestigeWarn = "Your experience awards will increase by "
@@ -266,7 +284,7 @@ class Main {
 					}
 				}
 				actorView.buffText.text = buffText;
-				
+
 				view.UpdateValues(actorView.life, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
 
 				var mp = bm.GetAttribute(actor, "MP");
@@ -322,13 +340,9 @@ class Main {
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
-			
-			
-
-
 
 			var showLocked = 0;
-			if(bm.wdata.battleAreaRegionMax < enemyRegionNames.length){
+			if (bm.wdata.battleAreaRegionMax < enemyRegionNames.length) {
 				showLocked = 1;
 			}
 			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax, bm.wdata.battleAreaRegion, showLocked, "Unreached");
@@ -395,8 +409,8 @@ class Main {
 								var action = bm.wdata.playerActions[actionId];
 								if (action.mode == 0) {
 									var skillName = ssd.skills[s].id;
-									if(ssd.skills[s].level > 1){
-										skillName += " " + String.fromCharCode('P'.code+ssd.skills[s].level);
+									if (ssd.skills[s].level > 1) {
+										skillName += " " + String.fromCharCode('P'.code + ssd.skills[s].level);
 									}
 									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, ssd.skills[s].id);
 								}
@@ -548,8 +562,10 @@ class Main {
 				var skills = bm.wdata.hero.usableSkills;
 				if (skills[i] != null) {
 					var action = bm.wdata.playerActions[id];
-					if (action.mode == 0)
-						view.ButtonLabel(id, bm.GetSkillBase(skills[i].id).id);
+					if (action.mode == 0) {
+						var sb = bm.GetSkillBase(skills[i].id);
+						view.ButtonLabel(id, sb.id + " - " + sb.mpCost + "MP");
+					}
 					if (action.mode == 1) {
 						view.ButtonLabel(id, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
 					}

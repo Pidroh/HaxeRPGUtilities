@@ -883,6 +883,7 @@ class BattleManager {
 	}
 
 	public function PrestigeExecute() {
+		wdata.enemy = null;
 		wdata.hero.level = 1;
 		wdata.hero.xp.value = 0;
 		var hero = wdata.hero;
