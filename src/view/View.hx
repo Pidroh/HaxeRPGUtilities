@@ -1,3 +1,6 @@
+import haxe.ui.styles.elements.AnimationKeyFrame;
+import haxe.ui.styles.elements.AnimationKeyFrames;
+import haxe.ui.styles.animation.Animation;
 import haxe.ui.components.TextArea;
 import js.html.Text;
 import haxe.ui.layouts.HorizontalGridLayout;
@@ -535,12 +538,11 @@ class View {
 		}
 	}
 
-	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion,showLocked = 0, lockedMessage = null) {
-		
-		//feed the current region view
+	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion, showLocked = 0, lockedMessage = null) {
+		// feed the current region view
 		regionLabel.centeredText.text = regionNames[currentRegion];
 
-		var buttonAmount = regionAmount+showLocked;
+		var buttonAmount = regionAmount + showLocked;
 		var children = regionButtonParent.childComponents;
 		if (children.length < buttonAmount) {
 			var b = new Button();
@@ -558,15 +560,13 @@ class View {
 			if (hide == false) {
 				children[i].text = regionNames[i];
 			}
-			var b : Button = cast(children[i], Button);
+			var b:Button = cast(children[i], Button);
 			b.disabled = i >= regionAmount;
-			if(b.disabled && hide == false){
+			if (b.disabled && hide == false) {
 				b.text = lockedMessage;
 			}
 		}
 	}
-
-
 
 	public function FeedSave(saveDataContent:String) {
 		// saveDataContent = StringTools.htmlEscape(saveDataContent);
@@ -659,20 +659,20 @@ class View {
 			header.height = 32;
 			var name = new Label();
 			name.text = "Sword";
-			//name.percentHeight = 100;
+			// name.percentHeight = 100;
 			name.percentWidth = 80;
 			name.verticalAlign = "Center";
 			header.addComponent(name);
 			var rightLabelBox = new VBox();
-			//rightLabelBox.percentWidth = 20;
-			//rightLabelBox.percentHeight = 100;
+			// rightLabelBox.percentWidth = 20;
+			// rightLabelBox.percentHeight = 100;
 			rightLabelBox.paddingLeft = 5;
 			rightLabelBox.paddingRight = 5;
 			rightLabelBox.horizontalAlign = "right";
 			var rightLabel = new Label();
 			rightLabel.text = "New";
 			rightLabel.horizontalAlign = "right";
-			//rightLabel.verticalAlign = "center";
+			// rightLabel.verticalAlign = "center";
 			rightLabelBox.backgroundColor = "#FFAAAA";
 			rightLabelBox.addComponent(rightLabel);
 			header.addComponent(rightLabelBox);
@@ -727,7 +727,8 @@ class View {
 	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1, unequipable = false, firstTimeSee = false) {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
-		
+		equipments[pos].rightLabelBox.hidden = firstTimeSee == false;
+
 		var color = "#000000";
 		if (rarity == 1) {
 			color = "#002299";
@@ -770,8 +771,22 @@ class View {
 		equipments[pos].values[valuePos].parent.hidden = false;
 	}
 
+	public function AnimateButtonPress(key) {
+		var comp = buttonMap[key];
+		var f = new AnimationKeyFrame();
+		//f.time = 0;
+		
+		f.directives = [];
+		var frames = new AnimationKeyFrames("press", [f]);
+
+		var a = new Animation(comp);
+
+		buttonMap[key].componentAnimation = a;
+	}
+
 	public function AddButton(id:String, label:String, onClick, warningMessage = null, position = -1, secondArea = false) {
 		var button = new Button();
+
 		button.text = label;
 		button.repeater = true;
 		button.repeatInterval = 300;
@@ -789,12 +804,11 @@ class View {
 		if (warningMessage == null) {
 			button.onClick = onClick;
 		} else {
-			
 			button.onClick = function whatever(e) {
 				// trace("lol");
 				Screen.instance.messageBox(warningMessage, label, MessageBoxType.TYPE_QUESTION, true, function(button) {
 					// trace(button);
-					
+
 					if (button.toString().indexOf("yes") >= 0) {
 						onClick(null);
 					}
@@ -848,7 +862,7 @@ class View {
 				else
 					res.centeredText.text = current + "";
 			}
-		} else{
+		} else {
 			res.centeredText.text = valueAsString;
 		}
 	}
@@ -869,7 +883,7 @@ class View {
 
 		var label:Label = new Label();
 		label.text = name;
-		//label.height = 20;
+		// label.height = 20;
 		label.verticalAlign = "center";
 
 		var rightLabel:Label = new Label();
@@ -878,7 +892,6 @@ class View {
 
 		header.addComponent(rightLabel);
 		header.addComponent(label);
-		
 
 		var lifeView:ValueView = null;
 		lifeView = CreateValueView(box, true, "Life: ", "#88AA88");

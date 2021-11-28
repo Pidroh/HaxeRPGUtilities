@@ -115,7 +115,7 @@ typedef Equipment = {
 	var ?generationSuffixMod:Int;
 	var ?generationPrefixModSeed:Int;
 	var ?generationSuffixModSeed:Int;
-	var seen:Bool;
+	var seen:Int; //0: unseen 1: fresh 2: seen
 }
 
 typedef PlayerAction = {

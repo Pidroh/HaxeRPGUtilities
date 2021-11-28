@@ -388,7 +388,7 @@ class BattleManager {
 
 		e = {
 			type: itemB.type,
-			seen: false,
+			seen: 0,
 			requiredAttributes: null,
 			attributes: stat,
 			generationVariations: statVar,

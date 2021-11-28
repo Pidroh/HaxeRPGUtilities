@@ -140,7 +140,10 @@ class Main {
 			var actionData = bm.wdata.playerActions[actionId];
 			if (key != null) {
 				keyMappings[key] = () -> {
-					action.actualAction(actionData);	
+					if (actionData.enabled) {
+						action.actualAction(actionData);
+						view.AnimateButtonPress(buttonLabel);
+					}
 				}
 			}
 			view.AddButton(actionId, buttonLabel, function(e) {
@@ -163,7 +166,7 @@ class Main {
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart");
 		for (i in 0...7) {
-			CreateButtonFromAction("battleaction_" + i, "Action " + i, null, ""+(1+i));
+			CreateButtonFromAction("battleaction_" + i, "Action " + i, null, "" + (1 + i));
 		}
 		// CreateButtonFromAction("repeat", "Restart");
 		var prestigeWarn = "Your experience awards will increase by "
@@ -384,13 +387,20 @@ class Main {
 				var hide = true;
 				if (e != null) {
 					if (e.type == typeToShow) {
-						e.seen = view.IsTabSelected(view.equipTab.component) || e.seen;
+						if(e.seen >= 0 == false){
+							e.seen = 2;
+						}
+						if(e.seen == 0){ //seen == 0 is unseen
+							if(view.IsTabSelected(view.equipTab.component)){
+								e.seen = 1; //this is fresh, first time seeing it
+							}
+						}
 						var equipName = GetEquipName(e, bm);
 						hide = false;
 						var rarity = 0;
 						if (e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0)
 							rarity = 1;
-						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2);
+						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1);
 						var vid = 0;
 						for (v in e.attributes.keyValueIterator()) {
 							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value);
@@ -423,8 +433,12 @@ class Main {
 							}
 						}
 						view.FinishFeedingEquipmentValue(equipmentViewPos, vid);
+					} else{
+						if(e.seen == 1){ //player saw it and it became fresh but cannot see it anymore
+							e.seen = 2; //seen
+						}
 					}
-					if (!e.seen) {
+					if (e.seen == 0) {
 						equipmentWindowTypeAlert[e.type] = true;
 					}
 				}
