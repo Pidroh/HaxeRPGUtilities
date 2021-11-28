@@ -790,6 +790,8 @@ class View {
 		button.text = label;
 		button.repeater = true;
 		button.repeatInterval = 300;
+		button.width = 180;
+		button.height = 40;
 
 		// button.onClick = onClick;
 		var paren = buttonBox;
