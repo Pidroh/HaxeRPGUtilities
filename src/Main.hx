@@ -404,15 +404,6 @@ class Main {
 							rarity = 1;
 						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1);
 						var vid = 0;
-						for (v in e.attributes.keyValueIterator()) {
-							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value);
-							vid++;
-						}
-						if (e.attributeMultiplier != null)
-							for (v in e.attributeMultiplier.keyValueIterator()) {
-								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, true);
-								vid++;
-							}
 						if (e.outsideSystems != null) {
 							var ss = e.outsideSystems["skillset"];
 							var ssd = bm.wdata.skillSets[ss];
@@ -433,7 +424,19 @@ class Main {
 
 								vid++;
 							}
+							view.FeedEquipmentSeparation(equipmentViewPos, vid-1);
 						}
+
+						for (v in e.attributes.keyValueIterator()) {
+							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, false, null);
+							vid++;
+						}
+						if (e.attributeMultiplier != null)
+							for (v in e.attributeMultiplier.keyValueIterator()) {
+								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, true);
+								vid++;
+							}
+						
 						view.FinishFeedingEquipmentValue(equipmentViewPos, vid);
 					} else {
 						if (e.seen == 1) { // player saw it and it became fresh but cannot see it anymore

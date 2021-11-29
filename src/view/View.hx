@@ -655,7 +655,7 @@ class View {
 			viewParent.borderSize = 1;
 			viewParent.padding = 6;
 
-			var header = new VBox();
+			var header = new Box();
 			header.percentWidth = 100;
 			header.height = 32;
 			var name = new Label();
@@ -763,11 +763,20 @@ class View {
 		}
 	}
 
-	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false, valueString:String = null) {
+	public function FeedEquipmentSeparation(pos:Int, valuePos:Int) {
+		equipments[pos].values[valuePos].parent.height = 35;
+	}
+
+	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false, valueString:String = null, separationNext=false) {
 		while (equipments[pos].values.length <= valuePos) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
+			vv.parent.marginBottom = 30;
+			vv.parent.paddingBottom = 30;
+			//vv.parent.height = 40;
 			equipments[pos].values.push(vv);
 		}
+		if(separationNext)
+			equipments[pos].values[valuePos].parent.paddingBottom = 30;
 		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName, percent, valueString);
 		equipments[pos].values[valuePos].parent.hidden = false;
 	}
@@ -940,9 +949,10 @@ class View {
 		return {parent: boxh, dropdown: dd, labelText: nameLabel};
 	}
 
-	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor:String = "#999999"):ValueView {
+	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor:String = "#999999", extraHeight = 0):ValueView {
 		var boxh = new Box();
 		boxh.width = 180;
+		boxh.height = 20+extraHeight;
 		parent.addComponent(boxh);
 
 		var addLabel = label != null && label != "";
@@ -950,9 +960,11 @@ class View {
 		if (addLabel) {
 			var l = new Label();
 			l.text = label;
+			l.top = 20;
+			l.paddingTop = 2;
 			// l.percentHeight = 100;
 
-			l.verticalAlign = "center";
+			//l.verticalAlign = "center";
 			boxh.addComponent(l);
 
 			nameLabel = l;
@@ -978,8 +990,8 @@ class View {
 		l.text = "32/32";
 		l.textAlign = "center";
 		l.styleString = "font-size:14px; text-align: center;
-			vertical-align: middle; width:100%;";
-		l.verticalAlign = "middle";
+			vertical-align: center; width:100%;";
+		l.verticalAlign = "center";
 		progress.addComponent(l);
 		return {
 			centeredText: l,
