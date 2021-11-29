@@ -318,7 +318,6 @@ class Main {
 			view.ButtonEnabled(buttonId, action.enabled);
 		}
 
-		var itemsInEquipmentWindowSeen = 0;
 		var equipmentWindowTypeAlert = [false, false]; // have same amount
 		view.FeedEquipmentTypes(["Weapons", "Armor", "Skill Set"]);
 
@@ -327,11 +326,6 @@ class Main {
 		update = function(timeStamp:Float):Bool {
 			global["maxarea"] = bm.wdata.maxArea;
 			global["herolevel"] = bm.wdata.hero.level;
-
-			if (view.IsTabSelected(view.equipTab.component)) {
-				itemsInEquipmentWindowSeen = bm.wdata.hero.equipment.length;
-			}
-			view.SetTabNotification(itemsInEquipmentWindowSeen != bm.wdata.hero.equipment.length, view.equipTab);
 
 			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
@@ -380,6 +374,8 @@ class Main {
 			view.buttonDiscardBad.hidden = typeToShow == 2;
 			view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
 			var equipmentViewPos = 0;
+			var anyNewEquip = false;
+
 			for (i in 0...equipmentWindowTypeAlert.length) {
 				equipmentWindowTypeAlert[i] = false;
 			}
@@ -445,6 +441,7 @@ class Main {
 					}
 					if (e.seen == 0) {
 						equipmentWindowTypeAlert[e.type] = true;
+						anyNewEquip = true;
 					}
 				}
 				if (hide) {
@@ -453,6 +450,7 @@ class Main {
 				equipmentViewPos++;
 			}
 			View.TabBarAlert(view.equipmentTypeSelectionTabbar, equipmentWindowTypeAlert, view.equipmentTypeNames);
+			view.SetTabNotification(anyNewEquip, view.equipTab);
 
 			var levelUpSystem = bm.wdata.hero.level > 1;
 			view.UpdateVisibilityOfValueView(view.level, levelUpSystem);
