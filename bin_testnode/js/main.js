@@ -775,6 +775,9 @@ BattleManager.prototype = {
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
+		if(this.wdata.hero.equipment != null) {
+			while(this.wdata.hero.equipment.indexOf(null) != -1) this.DiscardSingleEquipment(this.wdata.hero.equipment.indexOf(null));
+		}
 		if(this.wdata.regionProgress == null) {
 			this.wdata.regionProgress = [];
 		}
@@ -1113,8 +1116,18 @@ BattleManager.prototype = {
 	}
 	,DiscardSingleEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
-		this.wdata.hero.equipment[pos] = null;
-		this.equipmentToDiscard.push(e);
+		HxOverrides.remove(this.wdata.hero.equipment,e);
+		var _g = 0;
+		var _g1 = this.wdata.hero.equipmentSlots.length;
+		while(_g < _g1) {
+			var i = _g++;
+			if(this.wdata.hero.equipmentSlots[i] >= pos) {
+				this.wdata.hero.equipmentSlots[i]--;
+			}
+		}
+		if(e != null) {
+			this.equipmentToDiscard.push(e);
+		}
 	}
 	,DiscardEquipment: function(pos) {
 		this.DiscardSingleEquipment(pos);
@@ -1459,31 +1472,44 @@ BattleManager.prototype = {
 		this.ChangeBattleArea(this.wdata.battleArea + 1);
 	}
 	,DiscardWorseEquipment: function() {
-		var _g = 0;
-		var _g1 = this.wdata.hero.equipment.length;
-		while(_g < _g1) {
-			var i = _g++;
+		var i = 0;
+		var times = 0;
+		while(i < this.wdata.hero.equipment.length) {
+			++times;
+			if(times > 500) {
+				console.log("src/logic/BattleManager.hx:1453:","LOOP SCAPE");
+				break;
+			}
 			var e = this.wdata.hero.equipment[i];
 			if(e == null) {
+				++i;
 				continue;
 			}
 			if(e.type == 2) {
+				++i;
 				continue;
 			}
-			var _g2 = i + 1;
-			var _g3 = this.wdata.hero.equipment.length;
-			while(_g2 < _g3) {
-				var j = _g2++;
+			var j = i + 1;
+			var times2 = 0;
+			while(j < this.wdata.hero.equipment.length) {
+				++times2;
+				if(times2 > 500) {
+					console.log("src/logic/BattleManager.hx:1470:","LOOP SCAPE 2");
+					break;
+				}
 				var e2 = this.wdata.hero.equipment[j];
 				if(e2 == null) {
+					++j;
 					continue;
 				}
 				if(e.type != e2.type) {
+					++j;
 					continue;
 				}
 				var r = this.CompareEquipmentStrength(e,e2);
 				if(r == 1 || r == 0) {
 					if(this.wdata.hero.equipmentSlots.indexOf(j) != -1) {
+						++j;
 						continue;
 					}
 					this.DiscardSingleEquipment(j);
@@ -1491,12 +1517,16 @@ BattleManager.prototype = {
 				}
 				if(r == 2) {
 					if(this.wdata.hero.equipmentSlots.indexOf(i) != -1) {
+						++j;
 						continue;
 					}
 					this.DiscardSingleEquipment(i);
+					--i;
 					break;
 				}
+				++j;
 			}
+			++i;
 		}
 	}
 	,CompareEquipmentStrength: function(e1,e2) {
@@ -1709,6 +1739,34 @@ MainTest.main = function() {
 	process.stdout.write("\n");
 	var sj = haxe_Resource.getString("storyjson");
 	JSON.parse(sj);
+	process.stdout.write("Discard equip slot consistency");
+	process.stdout.write("\n");
+	var bm = MainTest.GetBattleManager();
+	var bm1 = bm.wdata.hero.equipment;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 2;
+	bm1.push({ seen : 0, type : 0, requiredAttributes : null, attributes : _g});
+	var bm1 = bm.wdata.hero.equipment;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1;
+	bm1.push({ seen : 0, type : 0, requiredAttributes : null, attributes : _g});
+	var bm1 = bm.wdata.hero.equipment;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Life"] = 3;
+	bm1.push({ seen : 0, type : 0, requiredAttributes : null, attributes : _g});
+	bm.wdata.hero.equipmentSlots[0] = 2;
+	bm.wdata.hero.equipmentSlots[1] = 0;
+	var attributes0 = haxe_ds_StringMap.createCopy(bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes.h);
+	var attributes1 = haxe_ds_StringMap.createCopy(bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes.h);
+	bm.DiscardEquipment(1);
+	if(attributes0.h["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes.h["Attack"]) {
+		process.stdout.write("Error0");
+		process.stdout.write("\n");
+	}
+	if(attributes1.h["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes.h["Attack"]) {
+		process.stdout.write("Error1");
+		process.stdout.write("\n");
+	}
 	process.stdout.write("Discard worse equip tests");
 	process.stdout.write("\n");
 	var bm = MainTest.GetBattleManager();
@@ -1716,19 +1774,12 @@ MainTest.main = function() {
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 2;
 	bm1.push({ seen : 0, type : 0, requiredAttributes : null, attributes : _g});
+	var oldEquipN = bm.wdata.hero.equipment.length;
 	bm.DiscardWorseEquipment();
-	var numberOfNullEquipment = 0;
-	var _g = 0;
-	var _g1 = bm.wdata.hero.equipment;
-	while(_g < _g1.length) {
-		var e = _g1[_g];
-		++_g;
-		if(e == null) {
-			++numberOfNullEquipment;
-		}
-	}
+	var equipN = bm.wdata.hero.equipment.length;
+	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0"));
+		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)"));
 		process.stdout.write("\n");
 	}
 	var bm1 = bm.wdata.hero.equipment;
@@ -1743,35 +1794,14 @@ MainTest.main = function() {
 	var _g = new haxe_ds_StringMap();
 	_g.h["Life"] = 3;
 	bm1.push({ seen : 0, type : 0, requiredAttributes : null, attributes : _g});
+	oldEquipN = bm.wdata.hero.equipment.length;
 	bm.DiscardWorseEquipment();
-	numberOfNullEquipment = 0;
-	var _g = 0;
-	var _g1 = bm.wdata.hero.equipment;
-	while(_g < _g1.length) {
-		var e = _g1[_g];
-		++_g;
-		if(e == null) {
-			++numberOfNullEquipment;
-		}
-	}
+	equipN = bm.wdata.hero.equipment.length;
+	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2"));
+		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)"));
 		process.stdout.write("\n");
-	}
-	if(bm.wdata.hero.equipment[0] == null) {
-		process.stdout.write("ERROR: discard worse equipment problem 0");
-		process.stdout.write("\n");
-	}
-	if(bm.wdata.hero.equipment[1] != null) {
-		process.stdout.write("ERROR: discard worse equipment problem 1");
-		process.stdout.write("\n");
-	}
-	if(bm.wdata.hero.equipment[2] != null) {
-		process.stdout.write("ERROR: discard worse equipment problem 2");
-		process.stdout.write("\n");
-	}
-	if(bm.wdata.hero.equipment[3] == null) {
-		process.stdout.write("ERROR: discard worse equipment problem 3");
+		process.stdout.write(Std.string("" + oldEquipN + " " + equipN));
 		process.stdout.write("\n");
 	}
 	var bm1 = bm.wdata.hero.equipment;
@@ -1784,19 +1814,14 @@ MainTest.main = function() {
 	_g.h["Attack"] = 1;
 	_g.h["Defense"] = 1;
 	bm1.push({ seen : 0, type : 0, requiredAttributes : null, attributes : _g});
+	var oldEquipN = bm.wdata.hero.equipment.length;
 	bm.DiscardWorseEquipment();
-	numberOfNullEquipment = 0;
-	var _g = 0;
-	var _g1 = bm.wdata.hero.equipment;
-	while(_g < _g1.length) {
-		var e = _g1[_g];
-		++_g;
-		if(e == null) {
-			++numberOfNullEquipment;
-		}
-	}
-	if(numberOfNullEquipment != 2) {
-		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (b)"));
+	var equipN = bm.wdata.hero.equipment.length;
+	numberOfNullEquipment = oldEquipN - equipN;
+	if(numberOfNullEquipment != 0) {
+		process.stdout.write(Std.string("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (b)"));
+		process.stdout.write("\n");
+		process.stdout.write(Std.string("" + oldEquipN + " " + equipN));
 		process.stdout.write("\n");
 	}
 	process.stdout.write("Prestige unlock test");
@@ -1929,7 +1954,7 @@ MainTest.main = function() {
 	while(_g < _g1.length) {
 		var file = _g1[_g];
 		++_g;
-		console.log("test/MainTest.hx:177:",file);
+		console.log("test/MainTest.hx:230:",file);
 		var path = haxe_io_Path.join(["saves/",file]);
 		var json = js_node_Fs.readFileSync(path,{ encoding : "utf8"});
 		var bm = MainTest.GetBattleManager();
@@ -2145,14 +2170,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:338:","  _____ ");
-		console.log("test/MainTest.hx:339:","  _____ ");
-		console.log("test/MainTest.hx:340:","  _____ ");
-		console.log("test/MainTest.hx:341:",json);
-		console.log("test/MainTest.hx:342:","  _____ ");
-		console.log("test/MainTest.hx:343:","  _____ ");
-		console.log("test/MainTest.hx:344:","  _____ ");
-		console.log("test/MainTest.hx:345:",json2);
+		console.log("test/MainTest.hx:390:","  _____ ");
+		console.log("test/MainTest.hx:391:","  _____ ");
+		console.log("test/MainTest.hx:392:","  _____ ");
+		console.log("test/MainTest.hx:393:",json);
+		console.log("test/MainTest.hx:394:","  _____ ");
+		console.log("test/MainTest.hx:395:","  _____ ");
+		console.log("test/MainTest.hx:396:","  _____ ");
+		console.log("test/MainTest.hx:397:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}

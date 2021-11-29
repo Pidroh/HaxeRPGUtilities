@@ -85,7 +85,7 @@ class BattleManager {
 	}
 
 	public function UseSkill(skill:SkillUsable, actor:Actor) {
-		if(actor == wdata.hero){
+		if (actor == wdata.hero) {
 			wdata.timeCount = 0;
 		}
 		var id = skill.id;
@@ -745,6 +745,10 @@ class BattleManager {
 	// currently everything gets saved, even stuff that shouldn't
 	// This method will reinit some of those values when loading or creating a new game
 	public function ReinitGameValues() {
+		if (wdata.hero.equipment != null)
+			while (wdata.hero.equipment.contains(null)) {
+				DiscardSingleEquipment(wdata.hero.equipment.indexOf(null));
+			}
 		if (wdata.regionProgress == null) {
 			wdata.regionProgress = [];
 		}
@@ -1084,8 +1088,16 @@ class BattleManager {
 
 	function DiscardSingleEquipment(pos) {
 		var e = wdata.hero.equipment[pos];
-		wdata.hero.equipment[pos] = null;
-		equipmentToDiscard.push(e);
+		wdata.hero.equipment.remove(e);
+		for (i in 0...wdata.hero.equipmentSlots.length) {
+			if (wdata.hero.equipmentSlots[i] >= pos) {
+				wdata.hero.equipmentSlots[i]--; // adjust position of higher slots
+			}
+		}
+		// wdata.hero.equipment[pos] = null;
+
+		if (e != null)
+			equipmentToDiscard.push(e);
 	}
 
 	public function DiscardEquipment(pos) {
@@ -1433,33 +1445,64 @@ $baseInfo';
 	}
 
 	public function DiscardWorseEquipment() {
-		for (i in 0...wdata.hero.equipment.length) {
+		var i = 0;
+		var times = 0;
+		while (i < wdata.hero.equipment.length) {
+			times++;
+			if (times > 500) {
+				trace("LOOP SCAPE");
+				break;
+			}
 			var e = wdata.hero.equipment[i];
-			if (e == null)
-				continue;
-			if (e.type == 2) {
+			if (e == null) {
+				i++;
 				continue;
 			}
-			for (j in (i + 1)...wdata.hero.equipment.length) {
-				var e2 = wdata.hero.equipment[j];
-				if (e2 == null)
-					continue;
-				if (e.type != e2.type)
-					continue;
-				var r = CompareEquipmentStrength(e, e2);
-				if (r == 1 || r == 0) { // if they are exactly the same or r1 is better
-					if (wdata.hero.equipmentSlots.contains(j))
-						continue;
-					DiscardSingleEquipment(j);
-					continue;
-				}
-				if (r == 2) {
-					if (wdata.hero.equipmentSlots.contains(i))
-						continue;
-					DiscardSingleEquipment(i);
+			if (e.type == 2) {
+				i++;
+				continue;
+			}
+			var j = i + 1;
+			var times2 = 0;
+			while (j < wdata.hero.equipment.length) {
+				times2++;
+				if (times2 > 500) {
+					trace("LOOP SCAPE 2");
 					break;
 				}
+				{
+					var e2 = wdata.hero.equipment[j];
+					if (e2 == null) {
+						j++;
+						continue;
+					}
+					if (e.type != e2.type) {
+						j++;
+						continue;
+					}
+					var r = CompareEquipmentStrength(e, e2);
+					if (r == 1 || r == 0) { // if they are exactly the same or r1 is better
+						if (wdata.hero.equipmentSlots.contains(j)) {
+							j++;
+							continue;
+						}
+						DiscardSingleEquipment(j);
+						// j--; //should not decrement because increment wont happen
+						continue;
+					}
+					if (r == 2) {
+						if (wdata.hero.equipmentSlots.contains(i)) {
+							j++;
+							continue;
+						}
+						DiscardSingleEquipment(i);
+						i--; //needs to decrement because it is a break, not a continue
+						break;
+					}
+				}
+				j++;
 			}
+			i++;
 		}
 	}
 

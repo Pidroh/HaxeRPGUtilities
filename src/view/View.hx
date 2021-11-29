@@ -607,6 +607,7 @@ class View {
 	public function CreateScrollable(parent:Component) {
 		var container:Component;
 		container = new ScrollView();
+		//container = new Box();
 		if (parent != null)
 			parent.addComponent(container);
 		return container;
@@ -654,7 +655,7 @@ class View {
 			viewParent.borderSize = 1;
 			viewParent.padding = 6;
 
-			var header = new Box();
+			var header = new VBox();
 			header.percentWidth = 100;
 			header.height = 32;
 			var name = new Label();

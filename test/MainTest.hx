@@ -4,8 +4,7 @@ import haxe.Json;
 import SaveAssistant.PersistenceMaster;
 
 class MainTest {
-
-	static function GetBattleManager():BattleManager{
+	static function GetBattleManager():BattleManager {
 		var bm = new BattleManager();
 		bm.DefaultConfiguration();
 		var proto = new PrototypeItemMaker();
@@ -22,65 +21,119 @@ class MainTest {
 		{
 			Sys.println("resource load text");
 			var sj = haxe.Resource.getString("storyjson");
-			//Sys.println(sj);
+			// Sys.println(sj);
 			Json.parse(sj);
+		}
+		{
+			Sys.println("Discard equip slot consistency");
+			var bm:BattleManager = GetBattleManager();
+			bm.wdata.hero.equipment.push({
+				seen: 0,
+				type: 0,
+				requiredAttributes: null,
+				attributes: ["Attack" => 2]
+			});
+			bm.wdata.hero.equipment.push({
+				seen: 0,
+				type: 0,
+				requiredAttributes: null,
+				attributes: ["Attack" => 1]
+			});
+			bm.wdata.hero.equipment.push({
+				seen: 0,
+				type: 0,
+				requiredAttributes: null,
+				attributes: ["Life" => 3]
+			});
+			bm.wdata.hero.equipmentSlots[0] = 2;
+			bm.wdata.hero.equipmentSlots[1] = 0;
+			var attributes0 = bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes.copy();
+			var attributes1 = bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes.copy();
+			bm.DiscardEquipment(1);
+			if (attributes0["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes["Attack"]) {
+				Sys.println("Error0");
+			}
+			if (attributes1["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes["Attack"]) {
+				Sys.println("Error1");
+			}
 		}
 		{
 			Sys.println("Discard worse equip tests");
 			var bm:BattleManager = GetBattleManager();
-			bm.wdata.hero.equipment.push({seen: 0,type: 0, requiredAttributes: null, attributes: ["Attack" => 2]});
+
+			bm.wdata.hero.equipment.push({
+				seen: 0,
+				type: 0,
+				requiredAttributes: null,
+				attributes: ["Attack" => 2]
+			});
+			
+			var oldEquipN = bm.wdata.hero.equipment.length;
 			bm.DiscardWorseEquipment();
-			var numberOfNullEquipment = 0;
-			for (e in bm.wdata.hero.equipment) {
-				if (e == null)
-					numberOfNullEquipment++;
-			}
+			var equipN = bm.wdata.hero.equipment.length;
+
+			var numberOfNullEquipment = oldEquipN - equipN;
 			if (numberOfNullEquipment != 0) {
-				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 0');
+				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 0 (aa)');
 			}
 
-			bm.wdata.hero.equipment.push({seen: 0,type: 0, requiredAttributes: null, attributes: ["Attack" => 2]});
-			bm.wdata.hero.equipment.push({seen: 0,type: 0, requiredAttributes: null, attributes: ["Attack" => 1]});
-			bm.wdata.hero.equipment.push({seen: 0,type: 0, requiredAttributes: null, attributes: ["Life" => 3]});
+			bm.wdata.hero.equipment.push({
+				seen: 0,
+				type: 0,
+				requiredAttributes: null,
+				attributes: ["Attack" => 2]
+			});
+			bm.wdata.hero.equipment.push({
+				seen: 0,
+				type: 0,
+				requiredAttributes: null,
+				attributes: ["Attack" => 1]
+			});
+			bm.wdata.hero.equipment.push({
+				seen: 0,
+				type: 0,
+				requiredAttributes: null,
+				attributes: ["Life" => 3]
+			});
 
+			oldEquipN = bm.wdata.hero.equipment.length;
 			bm.DiscardWorseEquipment();
+			equipN = bm.wdata.hero.equipment.length;
 
-			numberOfNullEquipment = 0;
-			for (e in bm.wdata.hero.equipment) {
-				if (e == null)
-					numberOfNullEquipment++;
-			}
+			numberOfNullEquipment = oldEquipN - equipN;
 			if (numberOfNullEquipment != 2) {
-				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 2');
+				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 2 (a)');
+				Sys.println('$oldEquipN $equipN');
 			}
 
-			if (bm.wdata.hero.equipment[0] == null)
-				Sys.println('ERROR: discard worse equipment problem 0');
-			if (bm.wdata.hero.equipment[1] != null)
-				Sys.println('ERROR: discard worse equipment problem 1');
-			if (bm.wdata.hero.equipment[2] != null)
-				Sys.println('ERROR: discard worse equipment problem 2');
-			if (bm.wdata.hero.equipment[3] == null)
-				Sys.println('ERROR: discard worse equipment problem 3');
+			bm.wdata.hero.equipment.push({
+				seen: 0,
+				type: 0,
+				requiredAttributes: null,
+				attributes: ["Attack" => 1, "Life" => 2]
+			});
+			bm.wdata.hero.equipment.push({
+				seen: 0,
+				type: 0,
+				requiredAttributes: null,
+				attributes: ["Attack" => 1, "Defense" => 1]
+			});
 
-			bm.wdata.hero.equipment.push({seen: 0,type: 0, requiredAttributes: null, attributes: ["Attack" => 1, "Life" => 2]});
-			bm.wdata.hero.equipment.push({seen: 0,type: 0, requiredAttributes: null, attributes: ["Attack" => 1, "Defense" => 1]});
-
+			var oldEquipN = bm.wdata.hero.equipment.length; //use old value this time
 			bm.DiscardWorseEquipment();
+			var equipN = bm.wdata.hero.equipment.length;
 
-			numberOfNullEquipment = 0;
-			for (e in bm.wdata.hero.equipment) {
-				if (e == null)
-					numberOfNullEquipment++;
-			}
-			if (numberOfNullEquipment != 2) {
-				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 2 (b)');
+			numberOfNullEquipment = oldEquipN - equipN;
+
+			if (numberOfNullEquipment != 0) {
+				Sys.println('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 0 (b)');
+				Sys.println('$oldEquipN $equipN');
 			}
 		}
 		{
 			Sys.println("Prestige unlock test");
 			var bm:BattleManager = GetBattleManager();
-			
+
 			var a = bm.wdata.playerActions["prestige"];
 			if (a.enabled == true) {
 				Sys.println("Error: prestige wrong 1");
@@ -97,7 +150,7 @@ class MainTest {
 			bm.update(0.9);
 			if (a.enabled == true) {
 				Sys.println("Error: prestige wrong 3");
-				Sys.println("Level Requirement for prestige "+bm.GetLevelRequirementForPrestige());
+				Sys.println("Level Requirement for prestige " + bm.GetLevelRequirementForPrestige());
 			}
 			bm.wdata.hero.level = 15;
 			for (i in 1...400) {
@@ -114,11 +167,11 @@ class MainTest {
 				Sys.println("Error: prestige wrong 5");
 			}
 		}
-		//if(false)
+		// if(false)
 		{
 			Sys.println("Prestige permanent stat test");
 			var bm:BattleManager = GetBattleManager();
-			
+
 			bm.wdata.hero.level = 200;
 			bm.RecalculateAttributes(bm.wdata.hero);
 
@@ -141,7 +194,7 @@ class MainTest {
 			Sys.println("Accessing Speed 2");
 			if (bm.wdata.hero.attributesCalculated["Speed"] != 22) {
 				Sys.println("Error: wrong speed 2");
-				Sys.println("speed is: "+ bm.wdata.hero.attributesCalculated["Speed"]);
+				Sys.println("speed is: " + bm.wdata.hero.attributesCalculated["Speed"]);
 			}
 
 			bm.wdata.hero.level = 200;
@@ -153,10 +206,10 @@ class MainTest {
 				bm.update(0.9);
 			}
 			Sys.println("Accessing Speed 3");
-			if(bm.wdata.hero.attributesCalculated["Speed"] != 24){
+			if (bm.wdata.hero.attributesCalculated["Speed"] != 24) {
 				Sys.println("Error: wrong speed 3");
-				Sys.println("speed is: "+ bm.wdata.hero.attributesCalculated["Speed"]);
-				Sys.println("max area in region 1 is: "+bm.wdata.regionProgress[1].maxArea);
+				Sys.println("speed is: " + bm.wdata.hero.attributesCalculated["Speed"]);
+				Sys.println("max area in region 1 is: " + bm.wdata.regionProgress[1].maxArea);
 				Sys.println(bm.wdata.hero);
 				return;
 			}
@@ -166,9 +219,9 @@ class MainTest {
 				bm.update(0.9);
 			}
 			Sys.println("Accessing Speed 4");
-			if(bm.wdata.hero.attributesCalculated["Speed"] != 26){
+			if (bm.wdata.hero.attributesCalculated["Speed"] != 26) {
 				Sys.println("Error: wrong speed 4");
-				Sys.println("speed is: "+ bm.wdata.hero.attributesCalculated["Speed"]);
+				Sys.println("speed is: " + bm.wdata.hero.attributesCalculated["Speed"]);
 			}
 		}
 		{
@@ -187,7 +240,7 @@ class MainTest {
 		{
 			Sys.println("Test region progress");
 			var bm:BattleManager = GetBattleManager();
-			
+
 			for (i in 0...bm.wdata.regionProgress.length) {
 				bm.wdata.regionProgress[i].maxArea = 20;
 			}
@@ -195,11 +248,11 @@ class MainTest {
 				bm.update(0.9);
 			}
 		}
-		
+
 		{
 			Sys.println("Hard area death test");
 			var bm:BattleManager = GetBattleManager();
-			
+
 			bm.ChangeBattleArea(100);
 			for (i in 1...400) {
 				bm.update(0.9);
@@ -222,7 +275,7 @@ class MainTest {
 		}
 		{
 			Sys.println("Pierce test");
-			
+
 			var bm:BattleManager = GetBattleManager();
 			bm.ChangeBattleArea(8);
 			bm.update(0.9);
@@ -232,28 +285,27 @@ class MainTest {
 			bm.wdata.hero.attributesCalculated["Attack"] = 5;
 			bm.AttackExecute(bm.wdata.hero, bm.wdata.enemy, 100, 0, 100);
 			bm.AttackExecute(bm.wdata.hero, bm.wdata.enemy, 100, 0, 100);
-			if(oldLife != bm.wdata.enemy.attributesCalculated["Life"]){
+			if (oldLife != bm.wdata.enemy.attributesCalculated["Life"]) {
 				Sys.println("ERROR: Pierce 1");
-				//ERROR
+				// ERROR
 			}
 			bm.wdata.hero.attributesCalculated["Piercing"] = 50;
 			bm.AttackExecute(bm.wdata.hero, bm.wdata.enemy, 100, 0, 100);
-			if(oldLife - bm.wdata.enemy.attributesCalculated["Life"] != 2){
+			if (oldLife - bm.wdata.enemy.attributesCalculated["Life"] != 2) {
 				Sys.println("ERROR: Pierce 2");
 			}
 			var oldLife = bm.wdata.enemy.attributesCalculated["Life"];
 			bm.wdata.hero.attributesCalculated["Piercing"] = 0;
 			bm.UseSkill({id: "Sharpen", level: 1}, bm.wdata.hero);
 			bm.AttackExecute(bm.wdata.hero, bm.wdata.enemy, 100, 0, 100);
-			if(oldLife - bm.wdata.enemy.attributesCalculated["Life"] != 2){
+			if (oldLife - bm.wdata.enemy.attributesCalculated["Life"] != 2) {
 				Sys.println("ERROR: Pierce 3");
 			}
-
 		}
 		{
 			Sys.println("Easy area no death");
 			var bm:BattleManager = GetBattleManager();
-			
+
 			bm.ChangeBattleArea(1);
 			for (i in 1...4) {
 				bm.update(0.9);
@@ -303,7 +355,7 @@ class MainTest {
 		{
 			Sys.println("Json parsing save data tests");
 			var bm:BattleManager = GetBattleManager();
-			
+
 			var json0 = bm.GetJsonPersistentData();
 			bm.ChangeBattleArea(1);
 			for (i in 1...20) {

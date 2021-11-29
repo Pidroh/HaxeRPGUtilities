@@ -77,6 +77,7 @@ class Main {
 		if (privacyView != null) {
 			Screen.instance.removeComponent(privacyView);
 		}
+		runTest();
 
 		var bm:BattleManager = new BattleManager();
 		{
@@ -164,7 +165,7 @@ class Main {
 		});
 
 		CreateButtonFromAction("sleep", "Sleep");
-		CreateButtonFromAction("repeat", "Restart");
+		CreateButtonFromAction("repeat", "Restart Area");
 		for (i in 0...7) {
 			CreateButtonFromAction("battleaction_" + i, "Action " + i, null, "" + (1 + i));
 		}
@@ -387,14 +388,15 @@ class Main {
 				var hide = true;
 				if (e != null) {
 					if (e.type == typeToShow) {
-						if(e.seen >= 0 == false){
+						if (e.seen >= 0 == false) {
 							e.seen = 2;
 						}
-						if(e.seen == 0){ //seen == 0 is unseen
-							if(view.IsTabSelected(view.equipTab.component)){
-								e.seen = 1; //this is fresh, first time seeing it
+						if (e.seen == 0) { // seen == 0 is unseen
+							if (view.IsTabSelected(view.equipTab.component)) {
+								e.seen = 1; // this is fresh, first time seeing it
 							}
 						}
+
 						var equipName = GetEquipName(e, bm);
 						hide = false;
 						var rarity = 0;
@@ -433,9 +435,9 @@ class Main {
 							}
 						}
 						view.FinishFeedingEquipmentValue(equipmentViewPos, vid);
-					} else{
-						if(e.seen == 1){ //player saw it and it became fresh but cannot see it anymore
-							e.seen = 2; //seen
+					} else {
+						if (e.seen == 1) { // player saw it and it became fresh but cannot see it anymore
+							e.seen = 2; // seen
 						}
 					}
 					if (e.seen == 0) {
@@ -642,6 +644,57 @@ class Main {
 			return true;
 		}
 		update(0);
+	}
+
+	static function runTest() {
+		trace("Discard worse equip tests");
+		var bm:BattleManager = new BattleManager();
+		bm.DefaultConfiguration();
+
+		bm.wdata.hero.equipment.push({
+			seen: 0,
+			type: 0,
+			requiredAttributes: null,
+			attributes: ["Attack" => 2]
+		});
+
+		var oldEquipN = bm.wdata.hero.equipment.length;
+		bm.DiscardWorseEquipment();
+		var equipN = bm.wdata.hero.equipment.length;
+
+		var numberOfNullEquipment = oldEquipN - equipN;
+		if (numberOfNullEquipment != 0) {
+			trace('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 0 (aa)');
+		}
+
+		bm.wdata.hero.equipment.push({
+			seen: 0,
+			type: 0,
+			requiredAttributes: null,
+			attributes: ["Attack" => 2]
+		});
+		bm.wdata.hero.equipment.push({
+			seen: 0,
+			type: 0,
+			requiredAttributes: null,
+			attributes: ["Attack" => 1]
+		});
+		bm.wdata.hero.equipment.push({
+			seen: 0,
+			type: 0,
+			requiredAttributes: null,
+			attributes: ["Life" => 3]
+		});
+
+		oldEquipN = bm.wdata.hero.equipment.length;
+		bm.DiscardWorseEquipment();
+		equipN = bm.wdata.hero.equipment.length;
+
+		numberOfNullEquipment = oldEquipN - equipN;
+		if (numberOfNullEquipment != 2) {
+			trace('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 2 (a)');
+			trace('$oldEquipN $equipN');
+		}
 	}
 
 	static function GetEquipName(e:Equipment, bm:BattleManager):String {
