@@ -284,7 +284,7 @@ class Main {
 						if (buffToIcon.exists(b.uniqueId))
 							buffText += " " + buffToIcon[b.uniqueId];
 						else
-							buffText += " &#x2191;";
+							buffText += " &#129093;";
 					}
 				}
 				if(bm.wdata.sleeping){

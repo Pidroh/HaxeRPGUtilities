@@ -53,7 +53,7 @@ class View {
 
 	public var enemyToAdvance:ValueView;
 	public var areaLabel:ValueView;
-	public var regionLabel:ValueView;
+	//public var regionLabel:ValueView;
 	public var mainComponent:Component;
 	public var mainComponentB:Component;
 	public var equipTabChild:Component;
@@ -394,7 +394,7 @@ class View {
 			// new Box
 		}
 
-		areaContainer = CreateContainer(verticalBox, false);
+		areaContainer = CreateContainer(verticalBox, true);
 		// areaContainer.percentHeight = 60;
 
 		// areaLabel = CreateValueView(areaContainer, false, "Area: ");
@@ -406,16 +406,24 @@ class View {
 			dropDownRegion = ddv;
 		 */
 		{
-			var container = new VBox();
-			areaContainer.addComponent(container);
-			regionLabel = CreateValueView(container, false, "Region: ");
-			areaLabel = CreateValueView(container, false, "Area: ");
-			enemyToAdvance = CreateValueView(container, true, "Progress: ");
-		}
-		{
 			var container = new ContinuousHBox();
+			container.percentWidth = 100;
 			areaContainer.addComponent(container);
 			regionButtonParent = container;
+		}
+		{
+			var container = CreateContainer(areaContainer, false);
+			//container.marginLeft = 20;
+			//areaContainer.addComponent(container);
+			//regionLabel = CreateValueView(container, false, "Region: ");
+			
+			areaLabel = CreateValueView(container, false, "Area: ");
+
+			var b = new Box();
+			b.width = 30;
+			container.addComponent(b);
+			//areaLabel.parent.width += 40;
+			enemyToAdvance = CreateValueView(container, true, "Progress: ");
 		}
 
 		levelContainer = CreateContainer(verticalBox, true);
@@ -540,7 +548,7 @@ class View {
 
 	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion, showLocked = 0, lockedMessage = null) {
 		// feed the current region view
-		regionLabel.centeredText.text = regionNames[currentRegion];
+		//regionLabel.centeredText.text = regionNames[currentRegion];
 
 		var buttonAmount = regionAmount + showLocked;
 		var children = regionButtonParent.childComponents;
@@ -551,20 +559,27 @@ class View {
 
 			b.onClick = event -> regionChangeAction(regionPos);
 			b.width = 100;
+			b.height = 40;
+			b.toggle = true;
 		}
 		for (i in 0...children.length) {
 			var hide = i >= buttonAmount;
-			if (currentRegion == i)
-				hide = true;
+			var b:Button = cast(children[i], Button);
+			if (currentRegion == i){
+				
+			}
+			b.selected = currentRegion == i;
+				//hide = true;
 			children[i].hidden = hide;
 			if (hide == false) {
 				children[i].text = regionNames[i];
 			}
-			var b:Button = cast(children[i], Button);
+			
 			b.disabled = i >= regionAmount;
 			if (b.disabled && hide == false) {
 				b.text = lockedMessage;
 			}
+			
 		}
 	}
 
@@ -607,7 +622,7 @@ class View {
 	public function CreateScrollable(parent:Component) {
 		var container:Component;
 		container = new ScrollView();
-		//container = new Box();
+		// container = new Box();
 		if (parent != null)
 			parent.addComponent(container);
 		return container;
@@ -627,7 +642,7 @@ class View {
 
 		// container.percentWidth = 100;
 		// container.borderRadius = 1;
-		container.borderColor = "#333333";
+		container.borderColor = "#AAAAAA";
 		container.borderSize = 1;
 		container.padding = 15;
 		parent.addComponent(container);
@@ -767,15 +782,16 @@ class View {
 		equipments[pos].values[valuePos].parent.height = 35;
 	}
 
-	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false, valueString:String = null, separationNext=false) {
+	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false, valueString:String = null,
+			separationNext = false) {
 		while (equipments[pos].values.length <= valuePos) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			vv.parent.marginBottom = 30;
 			vv.parent.paddingBottom = 30;
-			//vv.parent.height = 40;
+			// vv.parent.height = 40;
 			equipments[pos].values.push(vv);
 		}
-		if(separationNext)
+		if (separationNext)
 			equipments[pos].values[valuePos].parent.paddingBottom = 30;
 		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName, percent, valueString);
 		equipments[pos].values[valuePos].parent.hidden = false;
@@ -784,8 +800,8 @@ class View {
 	public function AnimateButtonPress(key) {
 		var comp = buttonMap[key];
 		var f = new AnimationKeyFrame();
-		//f.time = 0;
-		
+		// f.time = 0;
+
 		f.directives = [];
 		var frames = new AnimationKeyFrames("press", [f]);
 
@@ -906,14 +922,14 @@ class View {
 		header.addComponent(label);
 
 		var lifeView:ValueView = null;
-		lifeView = CreateValueView(box, true, "Life: ", "#88AA88");
+		lifeView = CreateValueView(box, true, "Life: ", "#BBFFBB");
 
 		return {
 			name: label,
 			life: lifeView,
 			attack: CreateValueView(box, false, "Attack: "),
 			parent: box,
-			mp: CreateValueView(box, true, "MP: ", "#8888AA"),
+			mp: CreateValueView(box, true, "MP: ", "#BBBBFF"),
 			defaultName: name,
 			buffText: rightLabel
 		};
@@ -949,10 +965,10 @@ class View {
 		return {parent: boxh, dropdown: dd, labelText: nameLabel};
 	}
 
-	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor:String = "#999999", extraHeight = 0):ValueView {
+	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor:String = "#CCCCDD", extraHeight = 0):ValueView {
 		var boxh = new Box();
 		boxh.width = 180;
-		boxh.height = 20+extraHeight;
+		boxh.height = 20 + extraHeight;
 		parent.addComponent(boxh);
 
 		var addLabel = label != null && label != "";
@@ -964,7 +980,7 @@ class View {
 			l.paddingTop = 2;
 			// l.percentHeight = 100;
 
-			//l.verticalAlign = "center";
+			// l.verticalAlign = "center";
 			boxh.addComponent(l);
 
 			nameLabel = l;
