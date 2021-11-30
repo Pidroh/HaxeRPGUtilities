@@ -202,7 +202,9 @@ class BattleManager {
 			#end
 			killedInArea[battleArea]++;
 
-			DropItemOrSkillSet(equipDropChance, 1, enemy.level, enemy.reference);
+			//only lagrima drops for now
+			if (wdata.battleAreaRegion == 0)
+				DropItemOrSkillSet(equipDropChance, 1, enemy.level, enemy.reference);
 
 			var e = AddEvent(ActorDead);
 			e.origin = enemy.reference;
@@ -485,8 +487,8 @@ class BattleManager {
 			}
 			random.seed = area;
 			if (area > 4) {
-				var mul = random.random() * 0.5+1;
-				wdata.necessaryToKillInArea = Std.int(wdata.necessaryToKillInArea*mul);
+				var mul = random.random() * 0.5 + 1;
+				wdata.necessaryToKillInArea = Std.int(wdata.necessaryToKillInArea * mul);
 			}
 
 			if (wdata.battleAreaRegion > 0)

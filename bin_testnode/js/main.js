@@ -167,7 +167,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,35];
 	if(bm.regionPrizes.length < bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:713:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:715:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -340,7 +340,9 @@ BattleManager.prototype = {
 				killedInArea[battleArea] = 0;
 			}
 			killedInArea[battleArea]++;
-			this.DropItemOrSkillSet(this.equipDropChance,1,enemy.level,enemy.reference);
+			if(this.wdata.battleAreaRegion == 0) {
+				this.DropItemOrSkillSet(this.equipDropChance,1,enemy.level,enemy.reference);
+			}
 			var e = this.AddEvent(EventTypes.ActorDead);
 			e.origin = enemy.reference;
 			var xpGain = enemy.level;
@@ -1487,7 +1489,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1463:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1465:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1504,7 +1506,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1480:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1482:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
