@@ -167,7 +167,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,35];
 	if(bm.regionPrizes.length < bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:703:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:713:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -638,7 +638,17 @@ BattleManager.prototype = {
 		}
 		var initialEnemyToKill = this.balancing.timeForFirstAreaProgress / this.balancing.timeToKillFirstEnemy | 0;
 		if(area > 0) {
-			this.wdata.necessaryToKillInArea = initialEnemyToKill * area;
+			this.wdata.necessaryToKillInArea = initialEnemyToKill + ((area - 1) * initialEnemyToKill * 0.3 | 0);
+			if(this.wdata.necessaryToKillInArea > initialEnemyToKill * 14) {
+				this.wdata.necessaryToKillInArea = initialEnemyToKill * 14;
+			}
+			var tmp = this.random;
+			var this1 = new haxe__$Int64__$_$_$Int64(area >> 31,area);
+			tmp.set_seed(this1);
+			if(area > 4) {
+				var mul = this.random.random() * 0.5 + 1;
+				this.wdata.necessaryToKillInArea = this.wdata.necessaryToKillInArea * mul | 0;
+			}
 			if(this.wdata.battleAreaRegion > 0) {
 				this.wdata.necessaryToKillInArea = 3;
 			}
@@ -1477,7 +1487,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1453:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1463:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1494,7 +1504,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1470:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1480:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

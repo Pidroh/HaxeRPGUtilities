@@ -478,7 +478,17 @@ class BattleManager {
 		var initialEnemyToKill = Std.int(balancing.timeForFirstAreaProgress / balancing.timeToKillFirstEnemy);
 
 		if (area > 0) {
-			wdata.necessaryToKillInArea = initialEnemyToKill * area;
+			// wdata.necessaryToKillInArea = initialEnemyToKill * area;
+			wdata.necessaryToKillInArea = initialEnemyToKill + Std.int((area - 1) * initialEnemyToKill * 0.3);
+			if (wdata.necessaryToKillInArea > initialEnemyToKill * 14) {
+				wdata.necessaryToKillInArea = initialEnemyToKill * 14;
+			}
+			random.seed = area;
+			if (area > 4) {
+				var mul = random.random() * 0.5+1;
+				wdata.necessaryToKillInArea = Std.int(wdata.necessaryToKillInArea*mul);
+			}
+
 			if (wdata.battleAreaRegion > 0)
 				wdata.necessaryToKillInArea = 3;
 
@@ -1496,7 +1506,7 @@ $baseInfo';
 							continue;
 						}
 						DiscardSingleEquipment(i);
-						i--; //needs to decrement because it is a break, not a continue
+						i--; // needs to decrement because it is a break, not a continue
 						break;
 					}
 				}
