@@ -287,6 +287,12 @@ class Main {
 							buffText += " &#x2191;";
 					}
 				}
+				if(bm.wdata.sleeping){
+					buffText += " zZz";
+				}
+				if(bm.wdata.recovering){
+					buffText += " &#x2620;";
+				}
 				actorView.buffText.text = buffText;
 
 				view.UpdateValues(actorView.life, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));

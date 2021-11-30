@@ -922,7 +922,7 @@ class BattleManager {
 				var e = wdata.hero.equipment[i];
 				if (e != null) {
 					for (s in e.attributes.keys()) {
-						e.attributes[s] = Std.int(e.attributes[s] * 0.7);
+						e.attributes[s] = Std.int(e.attributes[s] * 0.2);
 					}
 				}
 			} else {

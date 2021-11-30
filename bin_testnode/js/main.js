@@ -955,7 +955,7 @@ BattleManager.prototype = {
 					var s_current = 0;
 					while(s_current < s_length) {
 						var s = s_keys[s_current++];
-						var v = e.attributes.h[s] * 0.7 | 0;
+						var v = e.attributes.h[s] * 0.2 | 0;
 						e.attributes.h[s] = v;
 					}
 				}
