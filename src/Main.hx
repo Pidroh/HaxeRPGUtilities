@@ -287,10 +287,10 @@ class Main {
 							buffText += " &#129093;";
 					}
 				}
-				if(bm.wdata.sleeping){
+				if (bm.wdata.sleeping) {
 					buffText += " zZz";
 				}
-				if(bm.wdata.recovering){
+				if (bm.wdata.recovering) {
 					buffText += " &#x2620;";
 				}
 				actorView.buffText.text = buffText;
@@ -426,7 +426,7 @@ class Main {
 
 								vid++;
 							}
-							view.FeedEquipmentSeparation(equipmentViewPos, vid-1);
+							view.FeedEquipmentSeparation(equipmentViewPos, vid - 1);
 						}
 
 						for (v in e.attributes.keyValueIterator()) {
@@ -438,7 +438,7 @@ class Main {
 								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, true);
 								vid++;
 							}
-						
+
 						view.FinishFeedingEquipmentValue(equipmentViewPos, vid);
 					} else {
 						if (e.seen == 1) { // player saw it and it became fresh but cannot see it anymore
@@ -585,10 +585,19 @@ class Main {
 				var skills = bm.wdata.hero.usableSkills;
 				if (skills[i] != null) {
 					var action = bm.wdata.playerActions[id];
-					if (action.mode == 0) {
+					if (action.mode == 0 || action.mode == 2) {
 						var sb = bm.GetSkillBase(skills[i].id);
 						view.ButtonLabel(id, sb.id + " - " + sb.mpCost + "MP");
 					}
+					// if (action.enabled) {
+					if (action.mode == 2 && action.enabled == false) {
+						view.ButtonAttackColor(id);
+					} else {
+						if(action.enabled){
+							view.ButtonNormalColor(id);
+						}
+					}
+					// }
 					if (action.mode == 1) {
 						view.ButtonLabel(id, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
 					}

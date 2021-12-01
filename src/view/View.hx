@@ -861,6 +861,16 @@ class View {
 			lab.htmlText = label;
 	}
 
+	public function ButtonAttackColor(id:String) {
+		var b = buttonMap[id];
+		b.backgroundColor = "#FF6666";
+	}
+
+	public function ButtonNormalColor(id:String) {
+		var b = buttonMap[id];
+		b.backgroundColor = "#EEEEFF";
+	}
+
 	public function ButtonEnabled(id:String, enabled:Bool) {
 		var b = buttonMap[id];
 		// b.allowInteraction = visible;

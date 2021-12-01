@@ -236,6 +236,7 @@ typedef Skill = {
 	var profession:String;
 	var effects:Array<Effect>;
 	var ?activeEffect:Array<Effect>;
+	var ?turnRecharge : Int;
 	var mpCost:Int;
 }
 

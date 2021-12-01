@@ -59,7 +59,7 @@ class BattleManager {
 	public var volatileAttributeList = ["MP", "Life", "MPRechargeCount", "SpeedCount"];
 	public var volatileAttributeAux = new Array<Int>();
 	public var equipmentToDiscard = new Array<Equipment>();
-	public var scheduledSkill : SkillUsable;
+	public var scheduledSkill:SkillUsable;
 
 	// var arrayhelperSkillSet = new ArrayHelper<SkillSet>();
 
@@ -1072,13 +1072,12 @@ class BattleManager {
 				}
 			}
 
-			if(attacker == wdata.hero && scheduledSkill != null){
+			if (attacker == wdata.hero && scheduledSkill != null) {
 				UseSkill(scheduledSkill, attacker, true);
 				scheduledSkill = null;
-			} else{
+			} else {
 				AttackExecute(attacker, defender);
 			}
-			
 
 			var attackerBuffChanged = false;
 			for (b in 0...attacker.buffs.length) {
@@ -1292,13 +1291,20 @@ $baseInfo';
 						)) {
 							var sb = GetSkillBase(wdata.hero.usableSkills[i].id);
 							var efs = sb.effects;
-							if(efs == null) efs = sb.activeEffect;
+							if (efs == null)
+								efs = sb.activeEffect;
 							for (e in efs) {
 								if (e.target == ENEMY) {
 									skillUsable = false;
 									break;
 								}
 							}
+					}
+				}
+				if (scheduledSkill != null) {
+					skillUsable = false;
+					if(scheduledSkill == wdata.hero.usableSkills[i]){
+						skillButtonMode = 2;
 					}
 				}
 				lu.enabled = skillUsable;
