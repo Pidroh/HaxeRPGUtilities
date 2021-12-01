@@ -417,7 +417,7 @@ class Main {
 									if (ssd.skills[s].level > 1) {
 										skillName += " " + String.fromCharCode('P'.code + ssd.skills[s].level);
 									}
-									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, ssd.skills[s].id);
+									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, skillName);
 								}
 								if (action.mode == 1) {
 									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, "???");
@@ -587,13 +587,17 @@ class Main {
 					var action = bm.wdata.playerActions[id];
 					if (action.mode == 0 || action.mode == 2) {
 						var sb = bm.GetSkillBase(skills[i].id);
-						view.ButtonLabel(id, sb.id + " - " + sb.mpCost + "MP");
+						var skillName = sb.id;
+						if (skills[i].level > 1) {
+							skillName += " " + String.fromCharCode('P'.code + skills[i].level);
+						}
+						view.ButtonLabel(id, skillName + " - " + sb.mpCost + "MP");
 					}
 					// if (action.enabled) {
 					if (action.mode == 2 && action.enabled == false) {
 						view.ButtonAttackColor(id);
 					} else {
-						if(action.enabled){
+						if (action.enabled) {
 							view.ButtonNormalColor(id);
 						}
 					}

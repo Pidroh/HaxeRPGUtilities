@@ -82,6 +82,7 @@ class PrototypeSkillMaker {
 					}
 				}
 			],
+			turnRecharge: 1,
 			//effects: null,
 			mpCost: 15
 		});

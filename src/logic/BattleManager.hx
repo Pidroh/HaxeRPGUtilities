@@ -89,6 +89,14 @@ class BattleManager {
 		var id = skill.id;
 		var skillBase = GetSkillBase(id);
 
+		if (skillBase.turnRecharge > 0) {
+			if (actor.turnRecharge == null) 
+			{
+				actor.turnRecharge = new Array<Int>();
+			}
+			actor.turnRecharge[actor.usableSkills.indexOf(skill)] = skillBase.turnRecharge;
+		}
+
 		if (activeStep == false && skillBase.activeEffect != null) {
 			scheduledSkill = skill;
 			return;
@@ -317,8 +325,8 @@ class BattleManager {
 				if (j >= 2) { // third skill always stronger
 					level = maxLevel + 1;
 				}
-				if (j >= 3) { // third skill always stronger
-					level = maxLevel + 1;
+				if (j >= 3) { // fourth skill always stronger
+					level = maxLevel + 2;
 				}
 				var sp = skillPosArray[j];
 				ss.skills.push({
@@ -1078,6 +1086,12 @@ class BattleManager {
 			} else {
 				AttackExecute(attacker, defender);
 			}
+			if(attacker.turnRecharge != null){
+				for (i in 0...attacker.turnRecharge.length) {
+					if(attacker.turnRecharge[i] > 0)
+						attacker.turnRecharge[i]--;
+				}
+			}
 
 			var attackerBuffChanged = false;
 			for (b in 0...attacker.buffs.length) {
@@ -1286,10 +1300,22 @@ $baseInfo';
 						skillVisible = true;
 					}
 
+					var sb = GetSkillBase(wdata.hero.usableSkills[i].id);
+
+					if(sb.turnRecharge > 0){
+						if(wdata.hero.turnRecharge == null){
+							wdata.hero.turnRecharge = new Array<Int>();
+						}
+						if(wdata.hero.turnRecharge[i] > 0){
+							skillUsable = false;
+						}
+					}
+
 					if (skillUsable && skillVisible // && wdata.killedInArea[wdata.battleArea] >= wdata.necessaryToKillInArea
 						&& (wdata.enemy == null // || wdata.enemy.attributesCalculated["Life"] == 0
 						)) {
-							var sb = GetSkillBase(wdata.hero.usableSkills[i].id);
+							
+							
 							var efs = sb.effects;
 							if (efs == null)
 								efs = sb.activeEffect;
@@ -1303,7 +1329,7 @@ $baseInfo';
 				}
 				if (scheduledSkill != null) {
 					skillUsable = false;
-					if(scheduledSkill == wdata.hero.usableSkills[i]){
+					if (scheduledSkill == wdata.hero.usableSkills[i]) {
 						skillButtonMode = 2;
 					}
 				}

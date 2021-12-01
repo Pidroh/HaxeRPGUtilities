@@ -75,6 +75,7 @@ typedef Actor = {
 	var attributesCalculated:Map<String, Int>;
 	var equipment:Array<Equipment>;
 	var equipmentSlots:Array<Int>;
+	var ?turnRecharge:Array<Int>;
 	var reference:ActorReference;
 	var ?buffs:Array<Buff>;
 	var ?usableSkills:Array<SkillUsable>;

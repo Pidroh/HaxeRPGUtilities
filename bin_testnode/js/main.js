@@ -167,7 +167,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,35];
 	if(bm.regionPrizes.length < bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:725:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:733:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -214,6 +214,12 @@ BattleManager.prototype = {
 		}
 		var id = skill.id;
 		var skillBase = this.GetSkillBase(id);
+		if(skillBase.turnRecharge > 0) {
+			if(actor.turnRecharge == null) {
+				actor.turnRecharge = [];
+			}
+			actor.turnRecharge[actor.usableSkills.indexOf(skill)] = skillBase.turnRecharge;
+		}
 		if(activeStep == false && skillBase.activeEffect != null) {
 			this.scheduledSkill = skill;
 			return;
@@ -462,7 +468,7 @@ BattleManager.prototype = {
 					level = maxLevel + 1;
 				}
 				if(j >= 3) {
-					level = maxLevel + 1;
+					level = maxLevel + 2;
 				}
 				var sp = skillPosArray[j];
 				ss.skills.push({ id : this.skillBases[sp].id, level : level});
@@ -1099,6 +1105,16 @@ BattleManager.prototype = {
 			} else {
 				this.AttackExecute(attacker,defender);
 			}
+			if(attacker.turnRecharge != null) {
+				var _g = 0;
+				var _g1 = attacker.turnRecharge.length;
+				while(_g < _g1) {
+					var i = _g++;
+					if(attacker.turnRecharge[i] > 0) {
+						attacker.turnRecharge[i]--;
+					}
+				}
+			}
 			var attackerBuffChanged = false;
 			var _g = 0;
 			var _g1 = attacker.buffs.length;
@@ -1285,8 +1301,16 @@ BattleManager.prototype = {
 				if(i == 0 || this.wdata.hero.level >= this.skillSlotUnlocklevel[i - 1]) {
 					skillVisible = true;
 				}
+				var sb = this.GetSkillBase(this.wdata.hero.usableSkills[i].id);
+				if(sb.turnRecharge > 0) {
+					if(this.wdata.hero.turnRecharge == null) {
+						this.wdata.hero.turnRecharge = [];
+					}
+					if(this.wdata.hero.turnRecharge[i] > 0) {
+						skillUsable = false;
+					}
+				}
 				if(skillUsable && skillVisible && this.wdata.enemy == null) {
-					var sb = this.GetSkillBase(this.wdata.hero.usableSkills[i].id);
 					var efs = sb.effects;
 					if(efs == null) {
 						efs = sb.activeEffect;
@@ -1300,6 +1324,12 @@ BattleManager.prototype = {
 							break;
 						}
 					}
+				}
+			}
+			if(this.scheduledSkill != null) {
+				skillUsable = false;
+				if(this.scheduledSkill == this.wdata.hero.usableSkills[i]) {
+					skillButtonMode = 2;
 				}
 			}
 			lu.enabled = skillUsable;
@@ -1508,7 +1538,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1483:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1515:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1525,7 +1555,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1500:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1532:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2318,10 +2348,10 @@ PrototypeSkillMaker.prototype = {
 			var strength = level * 5;
 			bm.AttackExecute(actor,array[0],50,5 + level,100);
 		}}], mpCost : 5});
-		this.skills.push({ id : "Slash", profession : "Warrior", word : "Red", activeEffect : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+		this.skills.push({ id : "Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 10;
 			bm.AttackExecute(actor,array[0],90 + strength,10,100);
-		}}], effects : null, mpCost : 15});
+		}}], turnRecharge : 1, mpCost : 15});
 		this.skills.push({ id : "Heavy Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 30;
 			bm.AttackExecute(actor,array[0],100 + strength,15,100);
