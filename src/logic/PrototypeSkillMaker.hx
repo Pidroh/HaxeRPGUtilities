@@ -67,6 +67,7 @@ class PrototypeSkillMaker {
 					}
 				}
 			],
+			turnRecharge: 1,
 			mpCost: 5
 		});
 		skills.push({
@@ -78,7 +79,7 @@ class PrototypeSkillMaker {
 					target: ENEMY,
 					effectExecution: (bm, level, actor, array) -> {
 						var strength = level * 10;
-						bm.AttackExecute(actor, array[0], 90+strength, 10, 100);
+						bm.AttackExecute(actor, array[0], 90+strength, strength, 100);
 					}
 				}
 			],
@@ -94,11 +95,11 @@ class PrototypeSkillMaker {
 				{
 					target: ENEMY,
 					effectExecution: (bm, level, actor, array) -> {
-						var strength = level * 30;
-						bm.AttackExecute(actor, array[0], 100+strength, 15, 100);
+						bm.AttackExecute(actor, array[0], 100+level*30, level*15, 100);
 					}
 				}
 			],
+			turnRecharge: 1,
 			mpCost: 40
 		});
 		skills.push({

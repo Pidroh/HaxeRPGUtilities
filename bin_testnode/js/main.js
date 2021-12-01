@@ -2347,15 +2347,14 @@ PrototypeSkillMaker.prototype = {
 		this.skills.push({ id : "Light Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 5;
 			bm.AttackExecute(actor,array[0],50,5 + level,100);
-		}}], mpCost : 5});
+		}}], turnRecharge : 1, mpCost : 5});
 		this.skills.push({ id : "Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 10;
-			bm.AttackExecute(actor,array[0],90 + strength,10,100);
+			bm.AttackExecute(actor,array[0],90 + strength,strength,100);
 		}}], turnRecharge : 1, mpCost : 15});
 		this.skills.push({ id : "Heavy Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
-			var strength = level * 30;
-			bm.AttackExecute(actor,array[0],100 + strength,15,100);
-		}}], mpCost : 40});
+			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15,100);
+		}}], turnRecharge : 1, mpCost : 40});
 		this.skills.push({ id : "DeSpell", profession : "Unbuffer", word : "Witchhunt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 30;
 			bm.RemoveBuffs(array[0]);
