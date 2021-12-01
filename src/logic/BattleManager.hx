@@ -59,6 +59,7 @@ class BattleManager {
 	public var volatileAttributeList = ["MP", "Life", "MPRechargeCount", "SpeedCount"];
 	public var volatileAttributeAux = new Array<Int>();
 	public var equipmentToDiscard = new Array<Equipment>();
+	public var scheduledSkill : SkillUsable;
 
 	// var arrayhelperSkillSet = new ArrayHelper<SkillSet>();
 
@@ -84,15 +85,24 @@ class BattleManager {
 		actor.attributesCalculated["MP"] = mp;
 	}
 
-	public function UseSkill(skill:SkillUsable, actor:Actor) {
-		if (actor == wdata.hero) {
-			wdata.timeCount = 0;
-		}
+	public function UseSkill(skill:SkillUsable, actor:Actor, activeStep = false) {
 		var id = skill.id;
 		var skillBase = GetSkillBase(id);
 
+		if (activeStep == false && skillBase.activeEffect != null) {
+			scheduledSkill = skill;
+			return;
+		}
+		if (actor == wdata.hero) {
+			wdata.timeCount = 0;
+		}
+
 		var executedEffects = 0;
-		for (ef in skillBase.effects) {
+		var efs = skillBase.effects;
+		if (activeStep) {
+			efs = skillBase.activeEffect;
+		}
+		for (ef in efs) {
 			var targets = new Array<Actor>();
 			if (ef.target == SELF) {
 				targets.push(actor);
@@ -202,7 +212,7 @@ class BattleManager {
 			#end
 			killedInArea[battleArea]++;
 
-			//only lagrima drops for now
+			// only lagrima drops for now
 			if (wdata.battleAreaRegion == 0)
 				DropItemOrSkillSet(equipDropChance, 1, enemy.level, enemy.reference);
 
@@ -485,9 +495,9 @@ class BattleManager {
 			if (wdata.necessaryToKillInArea > initialEnemyToKill * 14) {
 				wdata.necessaryToKillInArea = initialEnemyToKill * 14;
 			}
-			random.seed = area;
+			random.seed = area + 1;
 			if (area > 4) {
-				var mul = random.random() * 0.5 + 1;
+				var mul = random.random() * 1.5 + 0.5;
 				wdata.necessaryToKillInArea = Std.int(wdata.necessaryToKillInArea * mul);
 			}
 
@@ -1062,7 +1072,13 @@ class BattleManager {
 				}
 			}
 
-			AttackExecute(attacker, defender);
+			if(attacker == wdata.hero && scheduledSkill != null){
+				UseSkill(scheduledSkill, attacker, true);
+				scheduledSkill = null;
+			} else{
+				AttackExecute(attacker, defender);
+			}
+			
 
 			var attackerBuffChanged = false;
 			for (b in 0...attacker.buffs.length) {
@@ -1275,7 +1291,9 @@ $baseInfo';
 						&& (wdata.enemy == null // || wdata.enemy.attributesCalculated["Life"] == 0
 						)) {
 							var sb = GetSkillBase(wdata.hero.usableSkills[i].id);
-							for (e in sb.effects) {
+							var efs = sb.effects;
+							if(efs == null) efs = sb.activeEffect;
+							for (e in efs) {
 								if (e.target == ENEMY) {
 									skillUsable = false;
 									break;

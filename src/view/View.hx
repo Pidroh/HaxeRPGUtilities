@@ -922,14 +922,14 @@ class View {
 		header.addComponent(label);
 
 		var lifeView:ValueView = null;
-		lifeView = CreateValueView(box, true, "Life: ", "#BBFFBB");
+		lifeView = CreateValueView(box, true, "Life: ", "#FF8888");
 
 		return {
 			name: label,
 			life: lifeView,
 			attack: CreateValueView(box, false, "Attack: "),
 			parent: box,
-			mp: CreateValueView(box, true, "MP: ", "#BBBBFF"),
+			mp: CreateValueView(box, true, "MP: ", "#CC88FF"),
 			defaultName: name,
 			buffText: rightLabel
 		};

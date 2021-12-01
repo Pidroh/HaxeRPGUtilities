@@ -235,6 +235,7 @@ typedef Skill = {
 	var word:String;
 	var profession:String;
 	var effects:Array<Effect>;
+	var ?activeEffect:Array<Effect>;
 	var mpCost:Int;
 }
 

@@ -72,7 +72,7 @@ class PrototypeSkillMaker {
 			id: "Slash",
 			profession: "Warrior",
 			word: "Red",
-			effects: [
+			activeEffect: [
 				{
 					target: ENEMY,
 					effectExecution: (bm, level, actor, array) -> {
@@ -81,6 +81,7 @@ class PrototypeSkillMaker {
 					}
 				}
 			],
+			effects: null,
 			mpCost: 15
 		});
 		skills.push({
