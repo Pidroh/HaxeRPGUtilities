@@ -500,9 +500,9 @@ class Main {
 					}
 				}
 				if (e.type == BuffRemoval) {
-					ev = '$originText lost their positive status!';
+					ev = '$originText lost  all positive status!';
 				}
-				if (e.type == BuffRemoval) {
+				if (e.type == DebuffBlock) {
 					ev = '$originText blocked the negative status!';
 				}
 				if (e.type == MPRunOut) {

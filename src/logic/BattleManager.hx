@@ -90,8 +90,7 @@ class BattleManager {
 		var skillBase = GetSkillBase(id);
 
 		if (skillBase.turnRecharge > 0) {
-			if (actor.turnRecharge == null) 
-			{
+			if (actor.turnRecharge == null) {
 				actor.turnRecharge = new Array<Int>();
 			}
 			actor.turnRecharge[actor.usableSkills.indexOf(skill)] = skillBase.turnRecharge;
@@ -127,8 +126,8 @@ class BattleManager {
 			}
 			executedEffects++;
 
-			// use the skill before the first effect, 
-		    // but only if ANY effects are bound to happen
+			// use the skill before the first effect,
+			// but only if ANY effects are bound to happen
 			if (skillUsed == false) {
 				skillUsed = true;
 				var mpCost = skillBase.mpCost;
@@ -139,7 +138,7 @@ class BattleManager {
 			}
 			ef.effectExecution(this, skill.level, actor, targets);
 		}
-		
+
 		// skillBase.effects
 	}
 
@@ -619,8 +618,13 @@ class BattleManager {
 				if (sheet.speciesAdd != null)
 					for (p in sheet.speciesAdd.keyValueIterator()) {
 						var add = p.value;
-						wdata.enemy.attributesBase[p.key] += add;
-						wdata.enemy.attributesCalculated[p.key] += add;
+						if (wdata.enemy.attributesBase.exists(p.key) == false) {
+							wdata.enemy.attributesBase[p.key] = add;
+							wdata.enemy.attributesCalculated[p.key] = add;
+						} else {
+							wdata.enemy.attributesBase[p.key] += add;
+							wdata.enemy.attributesCalculated[p.key] += add;
+						}
 					}
 				if (sheet.speciesLevelStats != null)
 					for (p in sheet.speciesLevelStats.attributesBase.keyValueIterator()) {
@@ -1092,9 +1096,9 @@ class BattleManager {
 			} else {
 				AttackExecute(attacker, defender);
 			}
-			if(attacker.turnRecharge != null){
+			if (attacker.turnRecharge != null) {
 				for (i in 0...attacker.turnRecharge.length) {
-					if(attacker.turnRecharge[i] > 0)
+					if (attacker.turnRecharge[i] > 0)
 						attacker.turnRecharge[i]--;
 				}
 			}
@@ -1308,11 +1312,11 @@ $baseInfo';
 
 					var sb = GetSkillBase(wdata.hero.usableSkills[i].id);
 
-					if(sb.turnRecharge > 0){
-						if(wdata.hero.turnRecharge == null){
+					if (sb.turnRecharge > 0) {
+						if (wdata.hero.turnRecharge == null) {
 							wdata.hero.turnRecharge = new Array<Int>();
 						}
-						if(wdata.hero.turnRecharge[i] > 0){
+						if (wdata.hero.turnRecharge[i] > 0) {
 							skillUsable = false;
 						}
 					}
@@ -1320,8 +1324,6 @@ $baseInfo';
 					if (skillUsable && skillVisible // && wdata.killedInArea[wdata.battleArea] >= wdata.necessaryToKillInArea
 						&& (wdata.enemy == null // || wdata.enemy.attributesCalculated["Life"] == 0
 						)) {
-							
-							
 							var efs = sb.effects;
 							if (efs == null)
 								efs = sb.activeEffect;

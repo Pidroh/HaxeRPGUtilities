@@ -167,7 +167,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,35];
 	if(bm.regionPrizes.length < bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:739:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:743:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -771,14 +771,19 @@ BattleManager.prototype = {
 					var p_key = key;
 					var p_value = p_h[key];
 					var add = p_value;
-					var _g = p_key;
-					var _g1 = this.wdata.enemy.attributesBase;
-					var v = _g1.h[_g] + add;
-					_g1.h[_g] = v;
-					var _g2 = p_key;
-					var _g3 = this.wdata.enemy.attributesCalculated;
-					var v1 = _g3.h[_g2] + add;
-					_g3.h[_g2] = v1;
+					if(Object.prototype.hasOwnProperty.call(this.wdata.enemy.attributesBase.h,p_key) == false) {
+						this.wdata.enemy.attributesBase.h[p_key] = add;
+						this.wdata.enemy.attributesCalculated.h[p_key] = add;
+					} else {
+						var _g = p_key;
+						var _g1 = this.wdata.enemy.attributesBase;
+						var v = _g1.h[_g] + add;
+						_g1.h[_g] = v;
+						var _g2 = p_key;
+						var _g3 = this.wdata.enemy.attributesCalculated;
+						var v1 = _g3.h[_g2] + add;
+						_g3.h[_g2] = v1;
+					}
 				}
 			}
 			if(sheet.speciesLevelStats != null) {
@@ -1540,7 +1545,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1521:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1523:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1557,7 +1562,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1538:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1540:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
