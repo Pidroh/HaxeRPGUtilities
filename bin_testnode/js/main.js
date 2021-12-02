@@ -167,7 +167,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,35];
 	if(bm.regionPrizes.length < bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:733:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:739:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -232,6 +232,7 @@ BattleManager.prototype = {
 		if(activeStep) {
 			efs = skillBase.activeEffect;
 		}
+		var skillUsed = false;
 		var _g = 0;
 		while(_g < efs.length) {
 			var ef = efs[_g];
@@ -251,14 +252,15 @@ BattleManager.prototype = {
 				}
 			}
 			++executedEffects;
+			if(skillUsed == false) {
+				skillUsed = true;
+				var mpCost = skillBase.mpCost;
+				this.UseMP(actor,mpCost);
+				var ev = this.AddEvent(EventTypes.SkillUse);
+				ev.origin = this.wdata.hero.reference;
+				ev.dataString = skill.id;
+			}
 			ef.effectExecution(this,skill.level,actor,targets);
-		}
-		if(executedEffects > 0) {
-			var mpCost = skillBase.mpCost;
-			this.UseMP(actor,mpCost);
-			var ev = this.AddEvent(EventTypes.SkillUse);
-			ev.origin = this.wdata.hero.reference;
-			ev.dataString = skill.id;
 		}
 	}
 	,Heal: function(target,lifeMaxPercentage,rawBonus) {
@@ -1538,7 +1540,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1515:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1521:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1555,7 +1557,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1532:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1538:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2342,7 +2344,7 @@ PrototypeSkillMaker.prototype = {
 			var strength = level * 3;
 			var _g = new haxe_ds_StringMap();
 			_g.h["Regen"] = strength;
-			bm.AddBuff({ uniqueId : "regen", addStats : _g, mulStats : null, strength : strength, duration : 8},actor);
+			bm.AddBuff({ uniqueId : "regen", addStats : _g, mulStats : null, strength : strength, duration : 8},array[0]);
 		}}], mpCost : 20});
 		this.skills.push({ id : "Light Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 5;
@@ -2371,7 +2373,7 @@ PrototypeSkillMaker.prototype = {
 			_g.h["Speed"] = bonus;
 			var _g1 = new haxe_ds_StringMap();
 			_g1.h["Speed"] = multiplier;
-			bm.AddBuff({ uniqueId : "haste", addStats : _g, mulStats : _g1, strength : level, duration : 8},actor);
+			bm.AddBuff({ uniqueId : "haste", addStats : _g, mulStats : _g1, strength : level, duration : 8},array[0]);
 		}}], mpCost : 45});
 		this.skills.push({ id : "Protect", profession : "Defender", word : "Defense", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
 			var bonus = level * 5;
@@ -2380,7 +2382,7 @@ PrototypeSkillMaker.prototype = {
 			_g.h["Defense"] = bonus;
 			var _g1 = new haxe_ds_StringMap();
 			_g1.h["Defense"] = multiplier;
-			bm.AddBuff({ uniqueId : "protect", addStats : _g, mulStats : _g1, strength : level, duration : 8},actor);
+			bm.AddBuff({ uniqueId : "protect", addStats : _g, mulStats : _g1, strength : level, duration : 8},array[0]);
 		}}], mpCost : 25});
 		this.skills.push({ id : "Sharpen", profession : "Smith", word : "Sharpness", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
 			var bonus = 100;
@@ -2389,21 +2391,21 @@ PrototypeSkillMaker.prototype = {
 			_g.h["Piercing"] = bonus;
 			var _g1 = new haxe_ds_StringMap();
 			_g1.h["Attack"] = multiplier;
-			bm.AddBuff({ uniqueId : "pierce", addStats : _g, mulStats : _g1, strength : level, duration : 9},actor);
+			bm.AddBuff({ uniqueId : "pierce", addStats : _g, mulStats : _g1, strength : level, duration : 9},array[0]);
 		}}], mpCost : 20});
 		this.skills.push({ id : "Armor Break", profession : "Breaker", word : "Destruction", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var _g = new haxe_ds_StringMap();
 			_g.h["Defense"] = -level * 10;
 			var _g1 = new haxe_ds_StringMap();
 			_g1.h["Defense"] = 50;
-			bm.AddBuff({ uniqueId : "Armor Break", addStats : _g, mulStats : _g1, strength : level, duration : 5, debuff : true},actor);
+			bm.AddBuff({ uniqueId : "Armor Break", addStats : _g, mulStats : _g1, strength : level, duration : 5, debuff : true},array[0]);
 		}}], mpCost : 10});
 		this.skills.push({ id : "Attack Break", profession : "Breaker", word : "Destruction", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var _g = new haxe_ds_StringMap();
 			_g.h["Attack"] = -level * 10;
 			var _g1 = new haxe_ds_StringMap();
 			_g1.h["Attack"] = 50;
-			bm.AddBuff({ uniqueId : "Attack Break", addStats : _g, mulStats : _g1, strength : level, duration : 5, debuff : true},actor);
+			bm.AddBuff({ uniqueId : "Attack Break", addStats : _g, mulStats : _g1, strength : level, duration : 5, debuff : true},array[0]);
 		}}], mpCost : 10});
 	}
 };

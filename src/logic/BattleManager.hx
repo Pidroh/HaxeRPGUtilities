@@ -110,6 +110,7 @@ class BattleManager {
 		if (activeStep) {
 			efs = skillBase.activeEffect;
 		}
+		var skillUsed = false;
 		for (ef in efs) {
 			var targets = new Array<Actor>();
 			if (ef.target == SELF) {
@@ -125,15 +126,20 @@ class BattleManager {
 					targets.push(wdata.hero);
 			}
 			executedEffects++;
+
+			// use the skill before the first effect, 
+		    // but only if ANY effects are bound to happen
+			if (skillUsed == false) {
+				skillUsed = true;
+				var mpCost = skillBase.mpCost;
+				UseMP(actor, mpCost);
+				var ev = AddEvent(SkillUse);
+				ev.origin = wdata.hero.reference;
+				ev.dataString = skill.id;
+			}
 			ef.effectExecution(this, skill.level, actor, targets);
 		}
-		if (executedEffects > 0) {
-			var mpCost = skillBase.mpCost;
-			UseMP(actor, mpCost);
-			var ev = AddEvent(SkillUse);
-			ev.origin = wdata.hero.reference;
-			ev.dataString = skill.id;
-		}
+		
 		// skillBase.effects
 	}
 

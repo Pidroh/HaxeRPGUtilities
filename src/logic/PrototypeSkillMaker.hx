@@ -25,7 +25,7 @@ class PrototypeSkillMaker {
 							mulStats: null,
 							strength: strength,
 							duration: 8
-						}, actor);
+						}, array[0]);
 					}
 				}
 			],
@@ -150,7 +150,7 @@ class PrototypeSkillMaker {
 							mulStats: ["Speed" => multiplier],
 							strength: level,
 							duration: 8
-						}, actor);						
+						}, array[0]);						
 					}
 				}
 			],
@@ -172,7 +172,7 @@ class PrototypeSkillMaker {
 							mulStats: ["Defense" => multiplier],
 							strength: level,
 							duration: 8
-						}, actor);						
+						}, array[0]);						
 					}
 				}
 			],
@@ -194,7 +194,7 @@ class PrototypeSkillMaker {
 							mulStats: ["Attack" => multiplier],
 							strength: level,
 							duration: 9
-						}, actor);						
+						}, array[0]);						
 					}
 				}
 			],
@@ -217,7 +217,7 @@ class PrototypeSkillMaker {
 							strength: level,
 							duration: 5,
 							debuff: true
-						}, actor);				
+						}, array[0]);				
 					}
 				}
 			],
@@ -240,7 +240,7 @@ class PrototypeSkillMaker {
 							strength: level,
 							duration: 5,
 							debuff: true
-						}, actor);				
+						}, array[0]);				
 					}
 				}
 			],
