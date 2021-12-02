@@ -713,19 +713,19 @@ class BattleManager {
 		// Buffed
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 1.4, "Speed" => 1, "LifeMax" => 2, "Defense" => 0.4]
+				attributesBase: ["Attack" => 1, "Speed" => 1, "LifeMax" => 2, "Defense" => 0.4]
 			},
 			speciesAdd: null,
 			initialBuff: {
 				uniqueId: "Power Up",
-				mulStats: ["Attack" => 500, "Defense" => 500],
+				mulStats: ["Attack" => 800, "Defense" => 800],
 				duration: 3,
 				addStats: null,
 				strength: 100
 			},
 			speciesLevelStats: {attributesBase: ["Defense" => 0.2, "Speed" => 0.1]}
 		});
-		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "LifeMax" => 3]});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 2, "LifeMax" => 3]});
 
 		// Debuff immunity
 		bm.enemySheets.push({
@@ -1440,17 +1440,29 @@ $baseInfo';
 				volatileAttributeAux[i] = 0;
 		}
 
-		var skillSetPos = wdata.hero.equipmentSlots[2];
-		if (skillSetPos >= 0) {
-			var skillSet = wdata.skillSets[wdata.hero.equipment[skillSetPos].outsideSystems["skillset"]];
-			wdata.hero.usableSkills = skillSet.skills;
+		if (actor == wdata.hero) {
+			var skillSetPos = wdata.hero.equipmentSlots[2];
+			if (skillSetPos >= 0) {
+				var skillSet = wdata.skillSets[wdata.hero.equipment[skillSetPos].outsideSystems["skillset"]];
+				wdata.hero.usableSkills = skillSet.skills;
+			}
 		}
 
+		if(actor.attributesBase == actor.attributesCalculated){
+			actor.attributesCalculated = new Map<String, Int>();
+		}
 		actor.attributesCalculated.clear();
-		AttributeLogic.Add(actor.attributesBase, [
-			"Attack" => 1, "LifeMax" => 5, "Life" => 5, "Speed" => 0, "Defense" => 0, "MagicAttack" => 1, "MagicDefense" => 0, "SpeedCount" => 0,
-			"Piercing" => 0, "MPMax" => 2
-		], actor.level, actor.attributesCalculated);
+		
+		if (actor == wdata.hero) {
+			AttributeLogic.Add(actor.attributesBase, [
+				"Attack" => 1, "LifeMax" => 5, "Life" => 5, "Speed" => 0, "Defense" => 0, "MagicAttack" => 1, "MagicDefense" => 0, "SpeedCount" => 0,
+				"Piercing" => 0, "MPMax" => 2
+			], actor.level, actor.attributesCalculated);
+		} else{
+			for (key => value in actor.attributesBase) {
+				actor.attributesCalculated[key] = value;
+			}
+		}
 
 		// var muls = new Map<String, Int>();
 
@@ -1476,10 +1488,12 @@ $baseInfo';
 		}
 
 		// first do adds
-		for (es in actor.equipmentSlots) {
-			var e = actor.equipment[es];
-			if (e != null) {
-				AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+		if (actor.equipmentSlots != null) {
+			for (es in actor.equipmentSlots) {
+				var e = actor.equipment[es];
+				if (e != null) {
+					AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+				}
 			}
 		}
 		for (b in actor.buffs) {
@@ -1488,12 +1502,14 @@ $baseInfo';
 		}
 
 		// then do multipliers
-		for (es in actor.equipmentSlots) {
-			var e = actor.equipment[es];
-			if (e != null) {
-				if (e.attributeMultiplier != null) {
-					for (a in e.attributeMultiplier.keyValueIterator()) {
-						actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+		if (actor.equipmentSlots != null) {
+			for (es in actor.equipmentSlots) {
+				var e = actor.equipment[es];
+				if (e != null) {
+					if (e.attributeMultiplier != null) {
+						for (a in e.attributeMultiplier.keyValueIterator()) {
+							actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+						}
 					}
 				}
 			}

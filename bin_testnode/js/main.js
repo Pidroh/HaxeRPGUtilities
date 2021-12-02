@@ -131,20 +131,20 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	var bm1 = bm.enemySheets;
 	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 1.4;
+	_g.h["Attack"] = 1;
 	_g.h["Speed"] = 1;
 	_g.h["LifeMax"] = 2;
 	_g.h["Defense"] = 0.4;
 	var _g1 = new haxe_ds_StringMap();
-	_g1.h["Attack"] = 500;
-	_g1.h["Defense"] = 500;
+	_g1.h["Attack"] = 800;
+	_g1.h["Defense"] = 800;
 	var _g2 = new haxe_ds_StringMap();
 	_g2.h["Defense"] = 0.2;
 	_g2.h["Speed"] = 0.1;
 	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, initialBuff : { uniqueId : "Power Up", mulStats : _g1, duration : 3, addStats : null, strength : 100}, speciesLevelStats : { attributesBase : _g2}});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 1;
+	_g.h["Attack"] = 2;
 	_g.h["LifeMax"] = 3;
 	bm1.push({ xpPrize : false, statBonus : _g});
 	var bm1 = bm.enemySheets;
@@ -1422,25 +1422,46 @@ BattleManager.prototype = {
 				this.volatileAttributeAux[i] = 0;
 			}
 		}
-		var skillSetPos = this.wdata.hero.equipmentSlots[2];
-		if(skillSetPos >= 0) {
-			var skillSet = this.wdata.skillSets[this.wdata.hero.equipment[skillSetPos].outsideSystems.h["skillset"]];
-			this.wdata.hero.usableSkills = skillSet.skills;
+		if(actor == this.wdata.hero) {
+			var skillSetPos = this.wdata.hero.equipmentSlots[2];
+			if(skillSetPos >= 0) {
+				var skillSet = this.wdata.skillSets[this.wdata.hero.equipment[skillSetPos].outsideSystems.h["skillset"]];
+				this.wdata.hero.usableSkills = skillSet.skills;
+			}
+		}
+		if(actor.attributesBase == actor.attributesCalculated) {
+			actor.attributesCalculated = new haxe_ds_StringMap();
 		}
 		actor.attributesCalculated.h = Object.create(null);
-		var actor1 = actor.attributesBase;
-		var _g = new haxe_ds_StringMap();
-		_g.h["Attack"] = 1;
-		_g.h["LifeMax"] = 5;
-		_g.h["Life"] = 5;
-		_g.h["Speed"] = 0;
-		_g.h["Defense"] = 0;
-		_g.h["MagicAttack"] = 1;
-		_g.h["MagicDefense"] = 0;
-		_g.h["SpeedCount"] = 0;
-		_g.h["Piercing"] = 0;
-		_g.h["MPMax"] = 2;
-		AttributeLogic.Add(actor1,_g,actor.level,actor.attributesCalculated);
+		if(actor == this.wdata.hero) {
+			var actor1 = actor.attributesBase;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Attack"] = 1;
+			_g.h["LifeMax"] = 5;
+			_g.h["Life"] = 5;
+			_g.h["Speed"] = 0;
+			_g.h["Defense"] = 0;
+			_g.h["MagicAttack"] = 1;
+			_g.h["MagicDefense"] = 0;
+			_g.h["SpeedCount"] = 0;
+			_g.h["Piercing"] = 0;
+			_g.h["MPMax"] = 2;
+			AttributeLogic.Add(actor1,_g,actor.level,actor.attributesCalculated);
+		} else {
+			var h = actor.attributesBase.h;
+			var _g2_h = h;
+			var _g2_keys = Object.keys(h);
+			var _g2_length = _g2_keys.length;
+			var _g2_current = 0;
+			while(_g2_current < _g2_length) {
+				var key = _g2_keys[_g2_current++];
+				var _g3_key = key;
+				var _g3_value = _g2_h[key];
+				var key1 = _g3_key;
+				var value = _g3_value;
+				actor.attributesCalculated.h[key1] = value;
+			}
+		}
 		if(actor == this.wdata.hero) {
 			var _g = 0;
 			var _g1 = this.wdata.regionProgress.length;
@@ -1466,14 +1487,16 @@ BattleManager.prototype = {
 				}
 			}
 		}
-		var _g = 0;
-		var _g1 = actor.equipmentSlots;
-		while(_g < _g1.length) {
-			var es = _g1[_g];
-			++_g;
-			var e = actor.equipment[es];
-			if(e != null) {
-				AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+		if(actor.equipmentSlots != null) {
+			var _g = 0;
+			var _g1 = actor.equipmentSlots;
+			while(_g < _g1.length) {
+				var es = _g1[_g];
+				++_g;
+				var e = actor.equipment[es];
+				if(e != null) {
+					AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+				}
 			}
 		}
 		var _g = 0;
@@ -1485,25 +1508,27 @@ BattleManager.prototype = {
 				AttributeLogic.Add(actor.attributesCalculated,b.addStats,1,actor.attributesCalculated);
 			}
 		}
-		var _g = 0;
-		var _g1 = actor.equipmentSlots;
-		while(_g < _g1.length) {
-			var es = _g1[_g];
-			++_g;
-			var e = actor.equipment[es];
-			if(e != null) {
-				if(e.attributeMultiplier != null) {
-					var h = e.attributeMultiplier.h;
-					var a_h = h;
-					var a_keys = Object.keys(h);
-					var a_length = a_keys.length;
-					var a_current = 0;
-					while(a_current < a_length) {
-						var key = a_keys[a_current++];
-						var a_key = key;
-						var a_value = a_h[key];
-						var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
-						actor.attributesCalculated.h[a_key] = v;
+		if(actor.equipmentSlots != null) {
+			var _g = 0;
+			var _g1 = actor.equipmentSlots;
+			while(_g < _g1.length) {
+				var es = _g1[_g];
+				++_g;
+				var e = actor.equipment[es];
+				if(e != null) {
+					if(e.attributeMultiplier != null) {
+						var h = e.attributeMultiplier.h;
+						var a_h = h;
+						var a_keys = Object.keys(h);
+						var a_length = a_keys.length;
+						var a_current = 0;
+						while(a_current < a_length) {
+							var key = a_keys[a_current++];
+							var a_key = key;
+							var a_value = a_h[key];
+							var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
+							actor.attributesCalculated.h[a_key] = v;
+						}
 					}
 				}
 			}
@@ -1545,7 +1570,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1523:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1539:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1562,7 +1587,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1540:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1556:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
