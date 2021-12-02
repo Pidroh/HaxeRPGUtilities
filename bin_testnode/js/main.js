@@ -165,8 +165,8 @@ var BattleManager = function() {
 	_g.h["Defense"] = 1;
 	_g.h["LifeMax"] = 3;
 	bm1.push({ xpPrize : false, statBonus : _g});
-	bm.regionRequirements = [0,5,9,14,18,22,30,35];
-	if(bm.regionPrizes.length < bm.regionRequirements.length) {
+	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
+	if(bm.regionPrizes.length > bm.regionRequirements.length) {
 		console.log("src/logic/BattleManager.hx:743:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();

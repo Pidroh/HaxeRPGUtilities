@@ -737,9 +737,9 @@ class BattleManager {
 		});
 		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 1, "Defense" => 1, "LifeMax" => 3]});
 
-		bm.regionRequirements = [0, 5, 9, 14, 18, 22, 30, 35];
+		bm.regionRequirements = [0, 5, 9, 14, 18, 22, 30, 42, 50];
 
-		if (bm.regionPrizes.length < bm.regionRequirements.length) {
+		if (bm.regionPrizes.length > bm.regionRequirements.length) {
 			trace("PROBLEM: Tell developer to add more region requirements!!!");
 		}
 
