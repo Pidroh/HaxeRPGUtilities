@@ -607,7 +607,7 @@ BattleManager.prototype = {
 		if(buff.debuff == true) {
 			var debpro = actor.attributesCalculated.h["DebuffProtection"];
 			if(debpro > 0) {
-				if(this.random.randomInt(1,100) > debpro) {
+				if(this.random.randomInt(1,100) < debpro) {
 					this.AddEvent(EventTypes.DebuffBlock).origin = actor.reference;
 					return;
 				}

@@ -268,7 +268,7 @@ class Main {
 		var buffToIcon:Map<String, String> = [
 			"regen" => "&#127807;",
 			"enchant-fire" => "&#128293;",
-			"protect" => "&#128737;",
+			"protect" => "&#9960;",
 			"haste" => "&#128094;"
 		];
 

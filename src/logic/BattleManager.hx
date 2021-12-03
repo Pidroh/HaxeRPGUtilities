@@ -453,7 +453,7 @@ class BattleManager {
 		if (buff.debuff == true) {
 			var debpro = actor.attributesCalculated["DebuffProtection"];
 			if (debpro > 0) {
-				if (random.randomInt(1, 100) > debpro) {
+				if (random.randomInt(1, 100) < debpro) {
 					AddEvent(DebuffBlock).origin = actor.reference;
 					return;
 				}
