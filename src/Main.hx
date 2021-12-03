@@ -283,8 +283,12 @@ class Main {
 					if (b != null && b.uniqueId != null) {
 						if (buffToIcon.exists(b.uniqueId))
 							buffText += " " + buffToIcon[b.uniqueId];
-						else
-							buffText += " &#129093;";
+						else {
+							if (b.debuff == true)
+								buffText += " &#129095;";
+							else
+								buffText += " &#129093;";
+						}
 					}
 				}
 				if (bm.wdata.sleeping) {
