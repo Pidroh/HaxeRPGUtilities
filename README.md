@@ -9,5 +9,5 @@ Experience management with configurable rates
 ### Inventory
 for things like potions and key items
 ### Equipment which enhances stats
-### Shops
+### Equipment Upgrade System
 ### Code for procedural generation of equipments
