@@ -114,8 +114,8 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	var bm1 = bm.enemySheets;
 	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 2;
-	_g.h["Speed"] = 1.4;
+	_g.h["Attack"] = 0.5;
+	_g.h["Speed"] = 2.9;
 	_g.h["LifeMax"] = 2;
 	_g.h["Defense"] = 0.3;
 	var _g1 = new haxe_ds_StringMap();
@@ -126,13 +126,13 @@ var BattleManager = function() {
 	bm1.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
 	var bm1 = bm.regionPrizes;
 	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 2;
+	_g.h["Speed"] = 2;
 	_g.h["LifeMax"] = 3;
 	bm1.push({ xpPrize : false, statBonus : _g});
 	var bm1 = bm.enemySheets;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
-	_g.h["Speed"] = 1;
+	_g.h["Speed"] = 0.8;
 	_g.h["LifeMax"] = 2;
 	_g.h["Defense"] = 0.4;
 	var _g1 = new haxe_ds_StringMap();
@@ -931,10 +931,10 @@ BattleManager.prototype = {
 		var timeLevelUpGrind = this.balancing.timeForFirstLevelUpGrind;
 		var initialEnemyXP = 2;
 		var initialXPToLevelUp = this.balancing.timeForFirstLevelUpGrind * initialEnemyXP / this.balancing.timeToKillFirstEnemy | 0;
-		this.wdata.hero.xp = ResourceLogic.getExponentialResource(1.5,1,initialXPToLevelUp);
+		this.wdata.hero.xp = ResourceLogic.getExponentialResource(1.2,1,initialXPToLevelUp);
 		this.wdata.hero.xp.value = valueXP;
 		ResourceLogic.recalculateScalingResource(this.wdata.hero.level,this.wdata.hero.xp);
-		this.areaBonus = ResourceLogic.getExponentialResource(1.5,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
+		this.areaBonus = ResourceLogic.getExponentialResource(1.2,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
 		if(this.wdata.hero.equipment == null) {
 			this.wdata.hero.equipment = [];
 		}
@@ -1016,9 +1016,7 @@ BattleManager.prototype = {
 			}
 			if(enemy.attributesCalculated.h["Life"] <= 0) {
 				attackHappen = false;
-				var v = enemy.attributesCalculated.h["LifeMax"];
-				enemy.attributesCalculated.h["Life"] = v;
-				enemy.attributesCalculated.h["SpeedCount"] = 0;
+				this.CreateAreaEnemy();
 			}
 		}
 		if(this.PlayerFightMode() == false || enemy == null) {
@@ -1032,7 +1030,7 @@ BattleManager.prototype = {
 			if(valueMaxK != null) {
 				max = this.wdata.hero.attributesCalculated.h[valueMaxK];
 			}
-			value += 2 * restMultiplier;
+			value += max * 0.05 | 0;
 			if(this.wdata.sleeping) {
 				value += max * 0.3 | 0;
 			}
@@ -1141,6 +1139,8 @@ BattleManager.prototype = {
 			if(attackerBuffChanged) {
 				this.RecalculateAttributes(attacker);
 			}
+		} else if(this.wdata.hero.turnRecharge != null) {
+			this.wdata.hero.turnRecharge.length = 0;
 		}
 		return "";
 	}
@@ -1570,7 +1570,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1539:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1544:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1587,7 +1587,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1556:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1561:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

@@ -703,17 +703,17 @@ class BattleManager {
 		// Antibuffer
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 2, "Speed" => 1.4, "LifeMax" => 2, "Defense" => 0.3]
+				attributesBase: ["Attack" => 0.5, "Speed" => 2.9, "LifeMax" => 2, "Defense" => 0.3]
 			},
 			speciesAdd: ["Antibuff" => 1],
 			speciesLevelStats: {attributesBase: ["Defense" => 0.2, "Speed" => 0.1]}
 		});
-		bm.regionPrizes.push({xpPrize: false, statBonus: ["Attack" => 2, "LifeMax" => 3]});
+		bm.regionPrizes.push({xpPrize: false, statBonus: ["Speed" => 2, "LifeMax" => 3]});
 
 		// Buffed
 		bm.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 1, "Speed" => 1, "LifeMax" => 2, "Defense" => 0.4]
+				attributesBase: ["Attack" => 1, "Speed" => 0.8, "LifeMax" => 2, "Defense" => 0.4]
 			},
 			speciesAdd: null,
 			initialBuff: {
@@ -910,12 +910,12 @@ class BattleManager {
 		var initialEnemyXP = 2; // this might need to be in balancing
 		var initialXPToLevelUp = Std.int(balancing.timeForFirstLevelUpGrind * initialEnemyXP / balancing.timeToKillFirstEnemy);
 
-		wdata.hero.xp = ResourceLogic.getExponentialResource(1.5, 1, initialXPToLevelUp);
+		wdata.hero.xp = ResourceLogic.getExponentialResource(1.2, 1, initialXPToLevelUp);
 		wdata.hero.xp.value = valueXP;
 
 		ResourceLogic.recalculateScalingResource(wdata.hero.level, wdata.hero.xp);
 
-		areaBonus = ResourceLogic.getExponentialResource(1.5, 1, Std.int(initialXPToLevelUp * balancing.areaBonusXPPercentOfFirstLevelUp / 100));
+		areaBonus = ResourceLogic.getExponentialResource(1.2, 1, Std.int(initialXPToLevelUp * balancing.areaBonusXPPercentOfFirstLevelUp / 100));
 
 		if (wdata.hero.equipment == null) {
 			wdata.hero.equipment = [];
@@ -997,8 +997,7 @@ class BattleManager {
 			if (enemy.attributesCalculated["Life"] <= 0) {
 				attackHappen = false;
 
-				enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
-				enemy.attributesCalculated["SpeedCount"] = 0;
+				CreateAreaEnemy();
 				// c = Sys.getChar(true);
 			}
 		}
@@ -1013,7 +1012,9 @@ class BattleManager {
 			for (i in 0...1) {
 				var valueK = "Life";
 				var valueMaxK = "LifeMax";
-				if (i == 1) {
+
+				//WARNING: old legacy code, not happening now
+				if (i == 1) { 
 					valueK = "MP";
 					valueMaxK = "MPMax";
 				}
@@ -1028,7 +1029,8 @@ class BattleManager {
 				if (valueMaxK != null)
 					max = wdata.hero.attributesCalculated[valueMaxK];
 
-				value += 2 * restMultiplier;
+				//value += 2 * restMultiplier;
+				value += Std.int(max * 0.05);
 				if (wdata.sleeping) {
 					value += Std.int(max * 0.3);
 				}
@@ -1119,6 +1121,9 @@ class BattleManager {
 			if (attackerBuffChanged) {
 				RecalculateAttributes(attacker);
 			}
+		} else{
+			if(wdata.hero.turnRecharge != null)
+				wdata.hero.turnRecharge.resize(0);
 		}
 
 		return "";
