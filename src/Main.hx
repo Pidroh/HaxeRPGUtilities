@@ -318,7 +318,8 @@ class Main {
 					view.UpdateValues(actorView.mp, mp, mpmax, "??", false, "???");
 				}
 
-				view.UpdateValues(actorView.attack, bm.GetAttribute(actor, "Attack"), -1);
+				//view.UpdateValues(actorView.attack, bm.GetAttribute(actor, "Attack"), -1);
+				actorView.attack.parent.hidden = true;
 			}
 			view.UpdateVisibility(actorView, actor != null);
 		};
@@ -340,9 +341,13 @@ class Main {
 			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
 			ActorToView(bm.wdata.enemy, view.enemyView);
+			var actor = bm.wdata.hero;
 			view.UpdateValues(view.level, bm.wdata.hero.level, -1);
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
 			view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
+			view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
+			//view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
+			view.UpdateValues(view.lifeView, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
 			view.UpdateValues(view.defView, bm.wdata.hero.attributesCalculated["Defense"], -1);
 			view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
@@ -569,6 +574,7 @@ class Main {
 			if (bm.wdata.regionProgress != null && bm.wdata.regionProgress[0] != null)
 				storyHappened = storyHappened || bm.wdata.regionProgress[0].maxArea > 1;
 
+			view.battleView.parentComponent.hidden = !storyHappened;
 			view.levelContainer.hidden = !storyHappened;
 			view.battleView.hidden = !storyHappened;
 			view.areaContainer.hidden = !storyHappened;

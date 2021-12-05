@@ -48,12 +48,14 @@ class View {
 	public var level:ValueView;
 	public var xpBar:ValueView;
 	public var speedView:ValueView;
+	public var attackView:ValueView;
+	public var lifeView:ValueView;
 	public var defView:ValueView;
 	public var mDefView:ValueView;
 
 	public var enemyToAdvance:ValueView;
 	public var areaLabel:ValueView;
-	//public var regionLabel:ValueView;
+	// public var regionLabel:ValueView;
 	public var mainComponent:Component;
 	public var mainComponentB:Component;
 	public var equipTabChild:Component;
@@ -111,6 +113,8 @@ class View {
 	}
 
 	public function LatestMessageUpdate(message:String, speaker:String, imageFile:String, messagePos:Int) {
+		if (speaker == null)
+			speaker = "";
 		if (messagePos >= amountOfStoryMessagesShown) {
 			amountOfStoryMessagesShown = messagePos + 1;
 			while (storyDialog.messages.length <= messagePos) {
@@ -334,7 +338,7 @@ class View {
 		battleParent.percentHeight = 100;
 		// mainComponent.addComponent(boxParent);
 		tabMaster.addComponent(battleParent);
-		battleParent.text = "Battle";
+		battleParent.text = "Main";
 		mainComponentB = battleParent;
 		// boxParent.horizontalAlign = "center";
 		battleParent.paddingLeft = 40;
@@ -349,7 +353,10 @@ class View {
 
 		battleParent.addComponent(verticalBox);
 
+		
+
 		buttonBox = CreateContainer(battleParent, true);
+		// buttonBox.hidden = true;
 		// buttonBox.percentHeight = 100;
 		// boxParent.addComponent(buttonBox);
 
@@ -366,6 +373,8 @@ class View {
 
 				var log = new Label();
 				logText = log; // make this battle log
+				logText.text = "You are safe in bed";
+				logText.htmlText = logText.text;
 				logContainer.addComponent(log);
 				log.width = 190;
 				log.horizontalAlign = "center";
@@ -380,6 +389,8 @@ class View {
 
 				var log = new Label();
 				logTextBattle = log;
+				logTextBattle.text = "You are healthy";
+				logTextBattle.htmlText = "You are healthy";
 				logContainer.addComponent(log);
 				log.width = 190;
 				log.horizontalAlign = "center";
@@ -395,6 +406,13 @@ class View {
 		}
 
 		areaContainer = CreateContainer(verticalBox, true);
+
+
+		{
+			levelContainer = CreateContainer(verticalBox, true);
+			level = CreateValueView(levelContainer, false, "Level: ");
+			xpBar = CreateValueView(levelContainer, true, "XP: ");
+		}
 		// areaContainer.percentHeight = 60;
 
 		// areaLabel = CreateValueView(areaContainer, false, "Area: ");
@@ -413,25 +431,18 @@ class View {
 		}
 		{
 			var container = CreateContainer(areaContainer, false);
-			//container.marginLeft = 20;
-			//areaContainer.addComponent(container);
-			//regionLabel = CreateValueView(container, false, "Region: ");
-			
+			// container.marginLeft = 20;
+			// areaContainer.addComponent(container);
+			// regionLabel = CreateValueView(container, false, "Region: ");
+
 			areaLabel = CreateValueView(container, false, "Area: ");
 
 			var b = new Box();
 			b.width = 30;
 			container.addComponent(b);
-			//areaLabel.parent.width += 40;
+			// areaLabel.parent.width += 40;
 			enemyToAdvance = CreateValueView(container, true, "Progress: ");
 		}
-
-		levelContainer = CreateContainer(verticalBox, true);
-		level = CreateValueView(levelContainer, false, "Level: ");
-		xpBar = CreateValueView(levelContainer, true, "XP: ");
-		speedView = CreateValueView(levelContainer, false, "Speed: ");
-		defView = CreateValueView(levelContainer, false, "Def: ");
-		mDefView = CreateValueView(levelContainer, false, "mDef: ");
 
 		battleView = CreateContainer(verticalBox, false);
 		battleView.width = 440;
@@ -441,7 +452,7 @@ class View {
 		battleView.addComponent(box);
 		enemyView = GetActorView("Enemy", battleView);
 
-		var battleButtonView = CreateContainer(verticalBox, false);
+		// var battleButtonView = CreateContainer(verticalBox, false);
 
 		{
 			equipTabChild = new ContinuousHBox();
@@ -449,6 +460,17 @@ class View {
 			tabBar.percentWidth = 100;
 			equipmentTypeSelectionTabbar = tabBar;
 			equipTabChild.addComponent(tabBar);
+
+			{
+				var statContainer = CreateContainer(equipTabChild, true);
+				lifeView = CreateValueView(statContainer, true, "Life: ");
+				attackView = CreateValueView(statContainer, false, "Attack: ");
+				speedView = CreateValueView(statContainer, false, "Speed: ");
+
+				defView = CreateValueView(statContainer, false, "Def: ");
+				mDefView = CreateValueView(statContainer, false, "mDef: ");
+			}
+
 			buttonDiscardBad = new Button();
 			buttonDiscardBad.text = "Discard worse equipment";
 			buttonDiscardBad.onClick = event -> {
@@ -548,7 +570,7 @@ class View {
 
 	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion, showLocked = 0, lockedMessage = null) {
 		// feed the current region view
-		//regionLabel.centeredText.text = regionNames[currentRegion];
+		// regionLabel.centeredText.text = regionNames[currentRegion];
 
 		var buttonAmount = regionAmount + showLocked;
 		var children = regionButtonParent.childComponents;
@@ -565,21 +587,18 @@ class View {
 		for (i in 0...children.length) {
 			var hide = i >= buttonAmount;
 			var b:Button = cast(children[i], Button);
-			if (currentRegion == i){
-				
-			}
+			if (currentRegion == i) {}
 			b.selected = currentRegion == i;
-				//hide = true;
+			// hide = true;
 			children[i].hidden = hide;
 			if (hide == false) {
 				children[i].text = regionNames[i];
 			}
-			
+
 			b.disabled = i >= regionAmount;
 			if (b.disabled && hide == false) {
 				b.text = lockedMessage;
 			}
-			
 		}
 	}
 
@@ -1089,7 +1108,7 @@ class StoryDialog extends Dialog {
 
 	public function new() {
 		super();
-		title = "Entry Form";
+		title = "Story Scene";
 		width = 400;
 		this.percentHeight = 80;
 

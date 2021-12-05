@@ -167,7 +167,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:743:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:745:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -662,6 +662,7 @@ BattleManager.prototype = {
 			if(this.wdata.necessaryToKillInArea > initialEnemyToKill * 14) {
 				this.wdata.necessaryToKillInArea = initialEnemyToKill * 14;
 			}
+			var oldSeed = this.random.get_seed();
 			var tmp = this.random;
 			var x = area + 1;
 			var this1 = new haxe__$Int64__$_$_$Int64(x >> 31,x);
@@ -670,6 +671,7 @@ BattleManager.prototype = {
 				var mul = this.random.random() * 1.5 + 0.5;
 				this.wdata.necessaryToKillInArea = this.wdata.necessaryToKillInArea * mul | 0;
 			}
+			this.random.set_seed(oldSeed);
 			if(this.wdata.battleAreaRegion > 0) {
 				this.wdata.necessaryToKillInArea = 3;
 			}
@@ -1146,6 +1148,7 @@ BattleManager.prototype = {
 	}
 	,AddMod: function(modBase,statMul,seed) {
 		var mulAdd = modBase.statMultipliers;
+		var oldSeed = this.random.get_seed();
 		this.random.set_seed(seed);
 		var h = mulAdd.h;
 		var m_h = h;
@@ -1164,6 +1167,7 @@ BattleManager.prototype = {
 				statMul.h[m_key] = val;
 			}
 		}
+		this.random.set_seed(oldSeed);
 	}
 	,DiscardSingleEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
@@ -1570,7 +1574,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1544:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1548:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1587,7 +1591,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1561:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1565:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
