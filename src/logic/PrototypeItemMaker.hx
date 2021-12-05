@@ -29,16 +29,18 @@ class PrototypeItemMaker {
 		AddMod("of the Thief", "Zidane's", ["Speed" => R(115, 130)]);
 		AddMod("of Nature", "Aerith's", ["LifeMax" => R(130, 150)]);
 		AddMod("of Rage", "Beserker's", ["Attack" => R(115, 125), "Defense" => R(70, 90)]);
+		AddMod("of Blood", "Sanguine", null, ["Blood" => R(1, 5)]);
 
 		// AddItem("Bastard Sword", itemType_Weapon, ["Attack" => 1], ["Attack"=>R(200,280), "Speed"=>R(30, 45)]);
 		// AddItem("Bastard Sword", itemType_Weapon, ["Attack" => 1.1], ["Speed"=>R(30, 40), "Power"=>(50,60)]);
 	}
 
-	public function AddMod(suffix, prefix, statMultipliers = null) {
+	public function AddMod(suffix, prefix, statMultipliers = null, statAdds = null) {
 		mods.push({
 			prefix: prefix,
 			suffix: suffix,
-			statMultipliers: statMultipliers
+			statMultipliers: statMultipliers,
+			statAdds: statAdds
 		});
 	}
 
@@ -74,4 +76,5 @@ typedef ModBase = {
 	var prefix:String;
 	var suffix:String;
 	var statMultipliers:Map<String, Range>;
+	var statAdds:Map<String, Range>;
 }

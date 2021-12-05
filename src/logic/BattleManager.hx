@@ -178,6 +178,23 @@ class BattleManager {
 			magicAttack = true;
 			attackBonus += enchant;
 		}
+		if (attacker.attributesCalculated["Blood"] > 0) {
+			var blood = attacker.attributesCalculated["Blood"];
+			var bloodMul = 100;
+			if (attacker.attributesCalculated["Bloodthirst"] > 0) {
+				bloodMul += attacker.attributesCalculated["Bloodthirst"];
+			}
+			attackBonus += Std.int((blood * 5 + 10) * bloodMul / 100);
+			var life = attacker.attributesCalculated["Life"];
+			var decrease = attacker.attributesCalculated["LifeMax"] * blood / 100;
+			if (decrease < 1)
+				decrease = 1;
+			if (decrease >= life - 1) {
+				decrease = life - 1;
+			}
+			life -= Std.int(decrease);
+			attacker.attributesCalculated["Life"] = life;
+		}
 
 		if (attacker.attributesCalculated["Antibuff"] > 0) {
 			RemoveBuffs(defender);
@@ -393,12 +410,12 @@ class BattleManager {
 			if (prefixExist) {
 				prefixPos = random.randomInt(0, modBases.length - 1);
 				prefixSeed = random.nextInt();
-				AddMod(modBases[prefixPos], mul, prefixSeed);
+				AddMod(modBases[prefixPos], stat, mul, prefixSeed);
 			}
 			if (suffixExist) {
 				suffixPos = random.randomInt(0, modBases.length - 1);
 				suffixSeed = random.nextInt();
-				AddMod(modBases[suffixPos], mul, suffixSeed);
+				AddMod(modBases[suffixPos], stat, mul, suffixSeed);
 			}
 		}
 		for (m in mul.keyValueIterator()) {
@@ -1015,8 +1032,8 @@ class BattleManager {
 				var valueK = "Life";
 				var valueMaxK = "LifeMax";
 
-				//WARNING: old legacy code, not happening now
-				if (i == 1) { 
+				// WARNING: old legacy code, not happening now
+				if (i == 1) {
 					valueK = "MP";
 					valueMaxK = "MPMax";
 				}
@@ -1031,7 +1048,7 @@ class BattleManager {
 				if (valueMaxK != null)
 					max = wdata.hero.attributesCalculated[valueMaxK];
 
-				//value += 2 * restMultiplier;
+				// value += 2 * restMultiplier;
 				value += Std.int(max * 0.05);
 				if (wdata.sleeping) {
 					value += Std.int(max * 0.3);
@@ -1123,26 +1140,36 @@ class BattleManager {
 			if (attackerBuffChanged) {
 				RecalculateAttributes(attacker);
 			}
-		} else{
-			if(wdata.hero.turnRecharge != null)
+		} else {
+			if (wdata.hero.turnRecharge != null)
 				wdata.hero.turnRecharge.resize(0);
 		}
 
 		return "";
 	}
 
-	public function AddMod(modBase:ModBase, statMul:Map<String, Int>, seed) {
+	public function AddMod(modBase:ModBase, statAdd:Map<String, Int>, statMul:Map<String, Int>, seed) {
 		var mulAdd = modBase.statMultipliers;
 		var rand = fixedRandom;
 		rand.seed = seed;
-		for (m in mulAdd.keyValueIterator()) {
-			var val = rand.Range(mulAdd[m.key]);
-			if (statMul.exists(m.key)) {
-				statMul[m.key] = Std.int(statMul[m.key] * val / 100);
-			} else {
-				statMul[m.key] = val;
+		if (mulAdd != null)
+			for (m in mulAdd.keyValueIterator()) {
+				var val = rand.Range(mulAdd[m.key]);
+				if (statMul.exists(m.key)) {
+					statMul[m.key] = Std.int(statMul[m.key] * val / 100);
+				} else {
+					statMul[m.key] = val;
+				}
 			}
-		}
+		if (modBase.statAdds != null)
+			for (m in modBase.statAdds.keyValueIterator()) {
+				var val = rand.Range(modBase.statAdds[m.key]);
+				if (statAdd.exists(m.key)) {
+					statAdd[m.key] = Std.int(statAdd[m.key] + val);
+				} else {
+					statAdd[m.key] = val;
+				}
+			}
 	}
 
 	function DiscardSingleEquipment(pos) {
@@ -1456,17 +1483,17 @@ $baseInfo';
 			}
 		}
 
-		if(actor.attributesBase == actor.attributesCalculated){
+		if (actor.attributesBase == actor.attributesCalculated) {
 			actor.attributesCalculated = new Map<String, Int>();
 		}
 		actor.attributesCalculated.clear();
-		
+
 		if (actor == wdata.hero) {
 			AttributeLogic.Add(actor.attributesBase, [
 				"Attack" => 1, "LifeMax" => 5, "Life" => 5, "Speed" => 0, "Defense" => 0, "MagicAttack" => 1, "MagicDefense" => 0, "SpeedCount" => 0,
 				"Piercing" => 0, "MPMax" => 2
 			], actor.level, actor.attributesCalculated);
-		} else{
+		} else {
 			for (key => value in actor.attributesBase) {
 				actor.attributesCalculated[key] = value;
 			}

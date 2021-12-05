@@ -169,7 +169,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 745, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 762, className : "BattleManager", methodName : "new"});
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -341,6 +341,24 @@ BattleManager.prototype = {
 		if(enchant > 0) {
 			magicAttack = true;
 			attackBonus += enchant;
+		}
+		if(attacker.attributesCalculated.h["Blood"] > 0) {
+			var blood = attacker.attributesCalculated.h["Blood"];
+			var bloodMul = 100;
+			if(attacker.attributesCalculated.h["Bloodthirst"] > 0) {
+				bloodMul += attacker.attributesCalculated.h["Bloodthirst"];
+			}
+			attackBonus += (blood * 5 + 10) * bloodMul / 100 | 0;
+			var life = attacker.attributesCalculated.h["Life"];
+			var decrease = attacker.attributesCalculated.h["LifeMax"] * blood / 100;
+			if(decrease < 1) {
+				decrease = 1;
+			}
+			if(decrease >= life - 1) {
+				decrease = life - 1;
+			}
+			life -= decrease | 0;
+			attacker.attributesCalculated.h["Life"] = life;
 		}
 		if(attacker.attributesCalculated.h["Antibuff"] > 0) {
 			this.RemoveBuffs(defender);
@@ -579,14 +597,14 @@ BattleManager.prototype = {
 				prefixSeed = this.random.nextInt();
 				var tmp = this.modBases[prefixPos];
 				var this1 = new haxe__$Int64__$_$_$Int64(prefixSeed >> 31,prefixSeed);
-				this.AddMod(tmp,mul,this1);
+				this.AddMod(tmp,stat,mul,this1);
 			}
 			if(suffixExist) {
 				suffixPos = this.random.randomInt(0,this.modBases.length - 1);
 				suffixSeed = this.random.nextInt();
 				var tmp = this.modBases[suffixPos];
 				var this1 = new haxe__$Int64__$_$_$Int64(suffixSeed >> 31,suffixSeed);
-				this.AddMod(tmp,mul,this1);
+				this.AddMod(tmp,stat,mul,this1);
 			}
 		}
 		var h = mul.h;
@@ -1172,25 +1190,46 @@ BattleManager.prototype = {
 		}
 		return "";
 	}
-	,AddMod: function(modBase,statMul,seed) {
+	,AddMod: function(modBase,statAdd,statMul,seed) {
 		var mulAdd = modBase.statMultipliers;
 		var rand = this.fixedRandom;
 		rand.set_seed(seed);
-		var h = mulAdd.h;
-		var m_h = h;
-		var m_keys = Object.keys(h);
-		var m_length = m_keys.length;
-		var m_current = 0;
-		while(m_current < m_length) {
-			var key = m_keys[m_current++];
-			var m_key = key;
-			var m_value = m_h[key];
-			var val = RandomExtender.Range(rand,mulAdd.h[m_key]);
-			if(Object.prototype.hasOwnProperty.call(statMul.h,m_key)) {
-				var v = statMul.h[m_key] * val / 100 | 0;
-				statMul.h[m_key] = v;
-			} else {
-				statMul.h[m_key] = val;
+		if(mulAdd != null) {
+			var h = mulAdd.h;
+			var m_h = h;
+			var m_keys = Object.keys(h);
+			var m_length = m_keys.length;
+			var m_current = 0;
+			while(m_current < m_length) {
+				var key = m_keys[m_current++];
+				var m_key = key;
+				var m_value = m_h[key];
+				var val = RandomExtender.Range(rand,mulAdd.h[m_key]);
+				if(Object.prototype.hasOwnProperty.call(statMul.h,m_key)) {
+					var v = statMul.h[m_key] * val / 100 | 0;
+					statMul.h[m_key] = v;
+				} else {
+					statMul.h[m_key] = val;
+				}
+			}
+		}
+		if(modBase.statAdds != null) {
+			var h = modBase.statAdds.h;
+			var m_h = h;
+			var m_keys = Object.keys(h);
+			var m_length = m_keys.length;
+			var m_current = 0;
+			while(m_current < m_length) {
+				var key = m_keys[m_current++];
+				var m_key = key;
+				var m_value = m_h[key];
+				var val = RandomExtender.Range(rand,modBase.statAdds.h[m_key]);
+				if(Object.prototype.hasOwnProperty.call(statAdd.h,m_key)) {
+					var v = statAdd.h[m_key] + val | 0;
+					statAdd.h[m_key] = v;
+				} else {
+					statAdd.h[m_key] = val;
+				}
 			}
 		}
 	}
@@ -1599,7 +1638,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1547, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1574, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1616,7 +1655,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1564, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1591, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2881,9 +2920,13 @@ PrototypeItemMaker.prototype = {
 		var value = this.R(70,90);
 		_g.h["Defense"] = value;
 		this.AddMod("of Rage","Beserker's",_g);
+		var _g = new haxe_ds_StringMap();
+		var value = this.R(1,5);
+		_g.h["Blood"] = value;
+		this.AddMod("of Blood","Sanguine",null,_g);
 	}
-	,AddMod: function(suffix,prefix,statMultipliers) {
-		this.mods.push({ prefix : prefix, suffix : suffix, statMultipliers : statMultipliers});
+	,AddMod: function(suffix,prefix,statMultipliers,statAdds) {
+		this.mods.push({ prefix : prefix, suffix : suffix, statMultipliers : statMultipliers, statAdds : statAdds});
 	}
 	,AddItem: function(name,type,scalingStats,statMultipliers) {
 		this.items.push({ name : name, type : type, scalingStats : scalingStats, statMultipliers : statMultipliers});
@@ -2941,6 +2984,13 @@ PrototypeSkillMaker.prototype = {
 			_g1.h["Speed"] = multiplier;
 			bm.AddBuff({ uniqueId : "haste", addStats : _g, mulStats : _g1, strength : level, duration : 8},array[0]);
 		}}], mpCost : 45});
+		this.skills.push({ id : "Bloodlust", profession : "Sanguiner", word : "Blood", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var multiplier = 90 + level * 10;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Blood"] = 3;
+			_g.h["Bloodthirst"] = multiplier;
+			bm.AddBuff({ uniqueId : "bloodlust", addStats : _g, mulStats : null, strength : level, duration : 3},array[0]);
+		}}], mpCost : 5});
 		this.skills.push({ id : "Protect", profession : "Defender", word : "Defense", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
 			var bonus = level * 5;
 			var multiplier = 110;

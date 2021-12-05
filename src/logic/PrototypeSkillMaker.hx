@@ -157,6 +157,27 @@ class PrototypeSkillMaker {
 			mpCost: 45
 		});
 		skills.push({
+			id: "Bloodlust",
+			profession: "Sanguiner",
+			word: "Blood",
+			effects: [
+				{
+					target: SELF,
+					effectExecution: (bm, level, actor, array) -> {
+						var multiplier = 90+level *10;
+                        bm.AddBuff({
+							uniqueId: "bloodlust",
+							addStats: ["Blood" => 3, "Bloodthirst"=> multiplier],
+							mulStats: null,
+							strength: level,
+							duration: 3
+						}, array[0]);						
+					}
+				}
+			],
+			mpCost: 5
+		});
+		skills.push({
 			id: "Protect",
 			profession: "Defender",
 			word: "Defense",
