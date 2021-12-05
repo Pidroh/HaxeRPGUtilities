@@ -99,8 +99,8 @@ class View {
 	public var storyDialog:StoryDialog;
 
 	public function Update() {
-		// equipTabChild.width = equipTabChild.parentComponent.width - 40;
-		equipTabChild.width = Screen.instance.width - 40 - 60;
+		//equipTabChild.width = equipTabChild.parentComponent.width - 40;
+		equipTabChild.width = Screen.instance.width - 40 - 60 - 200;
 	}
 
 	public static function TabBarAlert(tabBar:TabBar, alert:Array<Bool>, names:Array<String>) {
@@ -461,15 +461,6 @@ class View {
 			equipmentTypeSelectionTabbar = tabBar;
 			equipTabChild.addComponent(tabBar);
 
-			{
-				var statContainer = CreateContainer(equipTabChild, true);
-				lifeView = CreateValueView(statContainer, true, "Life: ");
-				attackView = CreateValueView(statContainer, false, "Attack: ");
-				speedView = CreateValueView(statContainer, false, "Speed: ");
-
-				defView = CreateValueView(statContainer, false, "Def: ");
-				mDefView = CreateValueView(statContainer, false, "mDef: ");
-			}
 
 			buttonDiscardBad = new Button();
 			buttonDiscardBad.text = "Discard worse equipment";
@@ -478,20 +469,37 @@ class View {
 			}
 			equipTabChild.addComponent(buttonDiscardBad);
 
-			var scroll = CreateScrollable(null);
+			var gridBox = new HBox();
+			//gridBox.columns =2;
+			gridBox.text = "Equipment";
+			equipTab = new UIElementWrapper(gridBox, tabMaster);
+			equipTab.desiredPosition = 1;
+			gridBox.percentHeight = 100;
+			gridBox.percentWidth = 100;
+
+						
+			{
+				var statContainer = CreateContainer(gridBox, true);
+				lifeView = CreateValueView(statContainer, true, "Life: ");
+				attackView = CreateValueView(statContainer, false, "Attack: ");
+				speedView = CreateValueView(statContainer, false, "Speed: ");
+
+				defView = CreateValueView(statContainer, false, "Def: ");
+				mDefView = CreateValueView(statContainer, false, "mDef: ");
+			}
+
+			var scroll = CreateScrollable(gridBox);
 
 			scroll.height = 300;
 			scroll.text = "Equipment";
+
 			scroll.addComponent(equipTabChild);
-			scroll.paddingLeft = 40;
-			scroll.paddingTop = 10;
+			gridBox.paddingLeft = 40;
+			gridBox.paddingTop = 10;
 			// scroll.width = 640;
 			scroll.percentWidth = 100;
 			// scroll.width = Screen.instance.width;
 			scroll.percentHeight = 100;
-
-			equipTab = new UIElementWrapper(scroll, tabMaster);
-			equipTab.desiredPosition = 1;
 		}
 		{
 			var storyTabComp = new ContinuousHBox();

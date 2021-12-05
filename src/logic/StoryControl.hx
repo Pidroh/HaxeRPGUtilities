@@ -104,10 +104,11 @@ class StoryControlLogic {
 			}
 		}
 		view.ButtonEnabled("cutscenestart", runtime.cutsceneStartable != null);
+		
 		if (runtime.cutsceneStartable != null) {
 			view.ButtonLabel("cutscenestart", runtime.cutsceneStartable.actionLabel + "\n<i>(Story)</i>");
 		} else {
-			// view.ButtonLabel("cutscenestart", "\n<i>(Story)</i>");
+			view.ButtonLabel("cutscenestart", "");
 		}
 
 		view.SetTabNotification(amountVisible > amountVisibleRecognized, view.storyTab);
