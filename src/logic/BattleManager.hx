@@ -226,6 +226,13 @@ class BattleManager {
 		if (defender.attributesCalculated["Life"] < 0) {
 			defender.attributesCalculated["Life"] = 0;
 		}
+		if(damage >= 1){
+			for (b in defender.buffs) {
+				if(b.noble == true){
+					b.duration = 0;
+				}
+			}
+		}
 		gEvent.origin = attacker.reference;
 		gEvent.target = defender.reference;
 		gEvent.data = damage;

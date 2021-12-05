@@ -178,6 +178,27 @@ class PrototypeSkillMaker {
 			mpCost: 5
 		});
 		skills.push({
+			id: "Noblesse",
+			profession: "Highborn",
+			word: "Honour",
+			effects: [
+				{
+					target: SELF,
+					effectExecution: (bm, level, actor, array) -> {
+                        bm.AddBuff({
+							uniqueId: "noblesse",
+							addStats: ["Defense" => 3+level*2],
+							mulStats: ["Attack" => 150+level*25],
+							strength: level,
+							duration: 99,
+							noble: true
+						}, array[0]);						
+					}
+				}
+			],
+			mpCost: 5
+		});
+		skills.push({
 			id: "Protect",
 			profession: "Defender",
 			word: "Defense",

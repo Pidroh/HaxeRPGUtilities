@@ -218,6 +218,7 @@ typedef Buff = {
 	var duration:Int;
 	var addStats:Map<String, Int>;
 	var mulStats:Map<String, Int>;
+	var ?noble:Bool;
 	var ?debuff:Bool;
 }
 

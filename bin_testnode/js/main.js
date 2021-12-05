@@ -168,7 +168,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:762:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:769:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -363,6 +363,17 @@ BattleManager.prototype = {
 		_g.h["Life"] = v;
 		if(defender.attributesCalculated.h["Life"] < 0) {
 			defender.attributesCalculated.h["Life"] = 0;
+		}
+		if(damage >= 1) {
+			var _g = 0;
+			var _g1 = defender.buffs;
+			while(_g < _g1.length) {
+				var b = _g1[_g];
+				++_g;
+				if(b.noble == true) {
+					b.duration = 0;
+				}
+			}
 		}
 		gEvent.origin = attacker.reference;
 		gEvent.target = defender.reference;
@@ -1611,7 +1622,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1574:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1581:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1628,7 +1639,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1591:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1598:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2456,6 +2467,13 @@ PrototypeSkillMaker.prototype = {
 			_g.h["Blood"] = 3;
 			_g.h["Bloodthirst"] = multiplier;
 			bm.AddBuff({ uniqueId : "bloodlust", addStats : _g, mulStats : null, strength : level, duration : 3},array[0]);
+		}}], mpCost : 5});
+		this.skills.push({ id : "Noblesse", profession : "Highborn", word : "Honour", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var _g = new haxe_ds_StringMap();
+			_g.h["Defense"] = 3 + level * 2;
+			var _g1 = new haxe_ds_StringMap();
+			_g1.h["Attack"] = 150 + level * 25;
+			bm.AddBuff({ uniqueId : "noblesse", addStats : _g, mulStats : _g1, strength : level, duration : 99, noble : true},array[0]);
 		}}], mpCost : 5});
 		this.skills.push({ id : "Protect", profession : "Defender", word : "Defense", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
 			var bonus = level * 5;
