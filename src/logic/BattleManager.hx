@@ -47,6 +47,7 @@ class BattleManager {
 	var equipDropChance = 30;
 	var equipDropChance_Rare = 15;
 	var random = new Random();
+	var fixedRandom = new Random();
 
 	public var events = new Array<GameEvent>();
 	public var playerActions:Map<String, PlayerActionExecution> = new Map<String, PlayerActionExecution>();
@@ -508,13 +509,12 @@ class BattleManager {
 			if (wdata.necessaryToKillInArea > initialEnemyToKill * 14) {
 				wdata.necessaryToKillInArea = initialEnemyToKill * 14;
 			}
-			var oldSeed = random.seed;
-			random.seed = area + 1;
+			var fRand = fixedRandom;
+			fRand.seed = area + 1;
 			if (area > 4) {
-				var mul = random.random() * 1.5 + 0.5;
+				var mul = fRand.random() * 1.5 + 0.5;
 				wdata.necessaryToKillInArea = Std.int(wdata.necessaryToKillInArea * mul);
 			}
-			random.seed = oldSeed;
 
 			if (wdata.battleAreaRegion > 0)
 				wdata.necessaryToKillInArea = 3;
@@ -1133,17 +1133,16 @@ class BattleManager {
 
 	public function AddMod(modBase:ModBase, statMul:Map<String, Int>, seed) {
 		var mulAdd = modBase.statMultipliers;
-		var oldSeed = random.seed;
-		random.seed = seed;
+		var rand = fixedRandom;
+		rand.seed = seed;
 		for (m in mulAdd.keyValueIterator()) {
-			var val = random.Range(mulAdd[m.key]);
+			var val = rand.Range(mulAdd[m.key]);
 			if (statMul.exists(m.key)) {
 				statMul[m.key] = Std.int(statMul[m.key] * val / 100);
 			} else {
 				statMul[m.key] = val;
 			}
 		}
-		random.seed = oldSeed;
 	}
 
 	function DiscardSingleEquipment(pos) {
