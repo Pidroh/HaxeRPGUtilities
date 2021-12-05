@@ -5,15 +5,21 @@
 -cp src/javascript
 -cp test
 -cp YarnSpinnerUtil/src/storydata
--D platform=dev
-
---resource assets/story.json@storyjson
--main Main
---library seedyrng
-
 -lib haxeui-core
 -lib haxeui-html5
 -lib hscript
 
--js bin_dev/js/main.js
+--resource assets/story.json@storyjson
+--library seedyrng
+-main Main
+
+--each
+
+-D platform=git
+-js bin/js/main.js
+
+--next
+
+-D platform=itch
+-js bin_itch/js/main.js
 

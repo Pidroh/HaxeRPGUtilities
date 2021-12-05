@@ -1,10 +1,19 @@
+import Macros.MyMacro;
+import js.html.webgl.ContextEvent;
+import haxe.macro.Context;
 import js.Syntax;
 
+
 class GameAnalyticsIntegration{
+
+
     
     public static function InitializeCheck(){
         var gameKey = "3465b32dba81c3effc66d8193e69e762";
         var secretKey = "0542cc0026b566e59c853ee0a8b7b67680858018";
+        //var platform = Context.definedValue("platform");
+
+        var platform = MyMacro.GetPlatform();
         Syntax.code('
         if(gameanalytics.GameAnalytics != null && gaInited == false){
             gaInited = true;
@@ -12,7 +21,7 @@ class GameAnalyticsIntegration{
             gameanalytics.GameAnalytics.initialize({0},{1}); 
             
         }
-        ', gameKey, secretKey, "0.10dev");
+        ', gameKey, secretKey, "0.11"+platform);
     }
 
     public static function SendDesignEvent(eventName:String, value:Int){

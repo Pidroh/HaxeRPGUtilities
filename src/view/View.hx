@@ -1,3 +1,4 @@
+import Macros.MyMacro;
 import haxe.ui.styles.elements.AnimationKeyFrame;
 import haxe.ui.styles.elements.AnimationKeyFrames;
 import haxe.ui.styles.animation.Animation;
@@ -302,7 +303,8 @@ class View {
 
 			{
 				var title = new Label();
-				title.htmlText = "Alpha 0.09D. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
+				var platform = MyMacro.GetPlatform();
+				title.htmlText = platform+" Alpha 0.10E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
 				title.percentWidth = 100;
 				title.textAlign = "right";
 				title.paddingRight = 20;
@@ -373,7 +375,7 @@ class View {
 
 				var log = new Label();
 				logText = log; // make this battle log
-				logText.text = "You are safe in bed";
+				logText.text = "You exist";
 				logText.htmlText = logText.text;
 				logContainer.addComponent(log);
 				log.width = 190;
@@ -648,7 +650,9 @@ class View {
 
 	public function CreateScrollable(parent:Component) {
 		var container:Component;
-		container = new ScrollView();
+		var sv = new ScrollView();
+		sv.percentContentWidth = 100;
+		container = sv;
 		// container = new Box();
 		if (parent != null)
 			parent.addComponent(container);
@@ -1129,6 +1133,7 @@ class StoryDialog extends Dialog {
 		scroll.addComponent(messageParent);
 		scroll.percentHeight = 90;
 		scroll.width = width - 10;
+		scroll.percentContentWidth  =100;
 		scroll.horizontalAlign = "center";
 		addComponent(scroll);
 
