@@ -147,6 +147,20 @@ typedef AreaPersistence = {
 	var amountEnemyKilledInArea:Int;
 }
 
+typedef CurrencyHolderRuntime = {
+	var maxValues : Map<String, Int>;
+}
+
+typedef CurrencyPersistent = {
+	var value:Int;
+	var visible:Bool;
+}
+
+typedef CurrencyHolderPersistent = {
+	public var currencies : Map<String, CurrencyPersistent>;
+	
+}
+
 typedef WorldData = {
 	var worldVersion:Int;
 	var hero:Actor;
