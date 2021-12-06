@@ -226,9 +226,9 @@ class BattleManager {
 		if (defender.attributesCalculated["Life"] < 0) {
 			defender.attributesCalculated["Life"] = 0;
 		}
-		if(damage >= 1){
+		if (damage >= 1) {
 			for (b in defender.buffs) {
-				if(b.noble == true){
+				if (b.noble == true) {
 					b.duration = 0;
 				}
 			}
@@ -430,11 +430,23 @@ class BattleManager {
 				mul[m.key] = (Std.int((m.value + 4) / 5) * 5);
 			}
 		}
-		var outsideSystem = null;
+		var outsideSystem = new Map<String, Int>();
+
+		if (wdata.equipLevels == null) {
+			wdata.equipLevels = new Array<EquipmentLevel>();
+		}
+		ArrayHelper.InsertOnEmpty({
+			level: 0,
+			limitbreak: 0,
+			ascension: 0
+		}, wdata.equipLevels);
+		//wdata.equipLevels.push();
+
 		if (skillSetPos >= 0) {
-			outsideSystem = new Map<String, Int>();
 			outsideSystem["skillset"] = skillSetPos;
 		}
+
+		outsideSystem["level"] = wdata.equipLevels.length - 1;
 
 		e = {
 			type: itemB.type,
@@ -1263,8 +1275,14 @@ $baseInfo';
 
 		for (e in equipmentToDiscard) {
 			if (e.outsideSystems != null) {
-				var skillsetpos = e.outsideSystems["skillset"];
-				wdata.skillSets[skillsetpos] = null;
+				if (e.outsideSystems.exists("skillset")) {
+					var skillsetpos = e.outsideSystems["skillset"];
+					wdata.skillSets[skillsetpos] = null;
+				}
+				if (e.outsideSystems.exists("level")) {
+					var level = e.outsideSystems["level"];
+					wdata.equipLevels[level] = null;
+				}
 			}
 		}
 		equipmentToDiscard.resize(0);

@@ -102,6 +102,12 @@ typedef Scaling = {
 	var initialMultiplication:Bool;
 }
 
+typedef EquipmentLevel = {
+	var level:Int;
+	var limitbreak:Int;
+	var ascension:Int;
+}
+
 typedef Equipment = {
 	var type:Int;
 	var requiredAttributes:Map<String, Int>;
@@ -158,6 +164,7 @@ typedef WorldData = {
 	var prestigeTimes:Int;
 
 	var ?skillSets:Array<SkillSet>;
+	var ?equipLevels:Array<EquipmentLevel>;
 
 	// Easier access for the data in region progress. Has to copy the data back in update.
 	var battleArea:Int;

@@ -169,7 +169,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 769, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 781, className : "BattleManager", methodName : "new"});
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -632,11 +632,16 @@ BattleManager.prototype = {
 				mul.h[m_key] = v;
 			}
 		}
-		var outsideSystem = null;
+		var outsideSystem = new haxe_ds_StringMap();
+		if(this.wdata.equipLevels == null) {
+			this.wdata.equipLevels = [];
+		}
+		ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
 		if(skillSetPos >= 0) {
-			outsideSystem = new haxe_ds_StringMap();
 			outsideSystem.h["skillset"] = skillSetPos;
 		}
+		var v = this.wdata.equipLevels.length - 1;
+		outsideSystem.h["level"] = v;
 		e = { type : itemB.type, seen : 0, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed, outsideSystems : outsideSystem};
 		var addedIndex = -1;
 		var _g = 0;
@@ -1316,8 +1321,14 @@ BattleManager.prototype = {
 			var e = _g1[_g];
 			++_g;
 			if(e.outsideSystems != null) {
-				var skillsetpos = e.outsideSystems.h["skillset"];
-				this.wdata.skillSets[skillsetpos] = null;
+				if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"skillset")) {
+					var skillsetpos = e.outsideSystems.h["skillset"];
+					this.wdata.skillSets[skillsetpos] = null;
+				}
+				if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"level")) {
+					var level = e.outsideSystems.h["level"];
+					this.wdata.equipLevels[level] = null;
+				}
 			}
 		}
 		this.equipmentToDiscard.length = 0;
@@ -1649,7 +1660,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1581, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1599, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1666,7 +1677,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1598, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1616, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
