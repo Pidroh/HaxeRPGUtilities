@@ -435,17 +435,16 @@ class BattleManager {
 		if (wdata.equipLevels == null) {
 			wdata.equipLevels = new Array<EquipmentLevel>();
 		}
-		ArrayHelper.InsertOnEmpty({
-			level: 0,
-			limitbreak: 0,
-			ascension: 0
-		}, wdata.equipLevels);
-		//wdata.equipLevels.push();
 
 		if (skillSetPos >= 0) {
 			outsideSystem["skillset"] = skillSetPos;
 		}
 
+		ArrayHelper.InsertOnEmpty({
+			level: 0,
+			limitbreak: 0,
+			ascension: 0
+		}, wdata.equipLevels);
 		outsideSystem["level"] = wdata.equipLevels.length - 1;
 
 		e = {
@@ -823,10 +822,26 @@ class BattleManager {
 	// currently everything gets saved, even stuff that shouldn't
 	// This method will reinit some of those values when loading or creating a new game
 	public function ReinitGameValues() {
-		if (wdata.hero.equipment != null)
+		if (wdata.hero.equipment != null) {
 			while (wdata.hero.equipment.contains(null)) {
 				DiscardSingleEquipment(wdata.hero.equipment.indexOf(null));
 			}
+			for (index => value in wdata.hero.equipment) {
+				if (value.outsideSystems == null) {
+					value.outsideSystems = new Map<String, Int>();
+				}
+				if(wdata.equipLevels == null)
+					wdata.equipLevels = new Array<EquipmentLevel>();
+				if (value.outsideSystems.exists("level") == false) {
+					ArrayHelper.InsertOnEmpty({
+						level: 0,
+						limitbreak: 0,
+						ascension: 0
+					}, wdata.equipLevels);
+					value.outsideSystems["level"] = wdata.equipLevels.length - 1;
+				}
+			}
+		}
 		if (wdata.regionProgress == null) {
 			wdata.regionProgress = [];
 		}

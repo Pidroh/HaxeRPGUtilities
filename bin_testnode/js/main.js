@@ -168,7 +168,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:781:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:780:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -609,10 +609,10 @@ BattleManager.prototype = {
 		if(this.wdata.equipLevels == null) {
 			this.wdata.equipLevels = [];
 		}
-		ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
 		if(skillSetPos >= 0) {
 			outsideSystem.h["skillset"] = skillSetPos;
 		}
+		ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
 		var v = this.wdata.equipLevels.length - 1;
 		outsideSystem.h["level"] = v;
 		e = { type : itemB.type, seen : 0, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed, outsideSystems : outsideSystem};
@@ -848,6 +848,25 @@ BattleManager.prototype = {
 		var _gthis = this;
 		if(this.wdata.hero.equipment != null) {
 			while(this.wdata.hero.equipment.indexOf(null) != -1) this.DiscardSingleEquipment(this.wdata.hero.equipment.indexOf(null));
+			var _g_current = 0;
+			var _g_array = this.wdata.hero.equipment;
+			while(_g_current < _g_array.length) {
+				var _g1_value = _g_array[_g_current];
+				var _g1_key = _g_current++;
+				var index = _g1_key;
+				var value = _g1_value;
+				if(value.outsideSystems == null) {
+					value.outsideSystems = new haxe_ds_StringMap();
+				}
+				if(this.wdata.equipLevels == null) {
+					this.wdata.equipLevels = [];
+				}
+				if(Object.prototype.hasOwnProperty.call(value.outsideSystems.h,"level") == false) {
+					ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
+					var v = this.wdata.equipLevels.length - 1;
+					value.outsideSystems.h["level"] = v;
+				}
+			}
 		}
 		if(this.wdata.regionProgress == null) {
 			this.wdata.regionProgress = [];
@@ -1633,7 +1652,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1599:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1614:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1650,7 +1669,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1616:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1631:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
