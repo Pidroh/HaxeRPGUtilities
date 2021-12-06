@@ -185,6 +185,49 @@ var BattleManager = function() {
 	this.wdata.hero.attributesCalculated.h["Life"] = v;
 };
 BattleManager.__name__ = true;
+BattleManager.CanLimitBreak = function(e,wdata) {
+	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
+	return level.limitbreak < 3;
+};
+BattleManager.CanUpgrade = function(e,wdata) {
+	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
+	var maxLevel = level.limitbreak * 3 + 3;
+	return level.level < maxLevel;
+};
+BattleManager.Upgrade = function(e,wdata) {
+	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
+	level.level++;
+	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
+		var tmp = "Attack";
+		var v = e.attributes.h[tmp] + 1;
+		e.attributes.h[tmp] = v;
+	}
+	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"MagicAttack")) {
+		var tmp = "MagicAttack";
+		var v = e.attributes.h[tmp] + 1;
+		e.attributes.h[tmp] = v;
+	}
+	if(e.type == 1) {
+		if(e.attributes.h["LifeMax"] >= 0 == false) {
+			e.attributes.h["LifeMax"] = 0;
+		}
+		var _g = e.attributes;
+		var v = _g.h["LifeMax"] + 2;
+		_g.h["LifeMax"] = v;
+	}
+	if(level.level % 3 != 0) {
+		if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Defense")) {
+			var tmp = "Defense";
+			var v = e.attributes.h[tmp] + 1;
+			e.attributes.h[tmp] = v;
+		}
+		if(Object.prototype.hasOwnProperty.call(e.attributes.h,"MagicDefense")) {
+			var tmp = "MagicDefense";
+			var v = e.attributes.h[tmp] + 1;
+			e.attributes.h[tmp] = v;
+		}
+	}
+};
 BattleManager.prototype = {
 	GetAttribute: function(actor,label) {
 		var i = actor.attributesCalculated.h[label];
@@ -1652,7 +1695,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1614:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1654:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1669,7 +1712,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1631:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1671:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

@@ -819,6 +819,46 @@ class BattleManager {
 		wdata.hero.attributesCalculated["Life"] = wdata.hero.attributesCalculated["LifeMax"];
 	}
 
+	public static function CanLimitBreak(e:Equipment, wdata:WorldData):Bool {
+		var level = wdata.equipLevels[e.outsideSystems["level"]];
+		return level.limitbreak < 3;
+	}
+
+	public static function CanUpgrade(e:Equipment, wdata:WorldData):Bool {
+		var level = wdata.equipLevels[e.outsideSystems["level"]];
+		var maxLevel = level.limitbreak * 3 + 3;
+		return level.level < maxLevel;
+	}
+
+	public static function Upgrade(e:Equipment, wdata:WorldData) {
+		var level = wdata.equipLevels[e.outsideSystems["level"]];
+		level.level++;
+		{
+			if (e.attributes.exists("Attack")) {
+				e.attributes["Attack"]++;
+			}
+			if (e.attributes.exists("MagicAttack")) {
+				e.attributes["MagicAttack"]++;
+			}
+
+			if (e.type == 1) {
+				if (e.attributes["LifeMax"] >= 0 == false) {
+					e.attributes["LifeMax"] = 0;
+				}
+				e.attributes["LifeMax"] += 2;
+			}
+
+			if (level.level % 3 != 0) {
+				if (e.attributes.exists("Defense")) {
+					e.attributes["Defense"]++;
+				}
+				if (e.attributes.exists("MagicDefense")) {
+					e.attributes["MagicDefense"]++;
+				}
+			}
+		}
+	}
+
 	// currently everything gets saved, even stuff that shouldn't
 	// This method will reinit some of those values when loading or creating a new game
 	public function ReinitGameValues() {
@@ -830,7 +870,7 @@ class BattleManager {
 				if (value.outsideSystems == null) {
 					value.outsideSystems = new Map<String, Int>();
 				}
-				if(wdata.equipLevels == null)
+				if (wdata.equipLevels == null)
 					wdata.equipLevels = new Array<EquipmentLevel>();
 				if (value.outsideSystems.exists("level") == false) {
 					ArrayHelper.InsertOnEmpty({
