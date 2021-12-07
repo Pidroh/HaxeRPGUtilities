@@ -826,7 +826,9 @@ class BattleManager {
 	public static function IsUpgradable(e:Equipment, wdata:WorldData):Bool {
 		var level = wdata.equipLevels[e.outsideSystems["level"]];
 		var maxLevel = level.limitbreak * 3 + 3;
-		return level.level < maxLevel;
+		var upgradable = level.level < maxLevel;
+
+		return upgradable;
 	}
 
 	public static function GetLimitBreakCost(e, wdata):Int {
@@ -882,7 +884,7 @@ class BattleManager {
 		level.level++;
 
 		// reached max level
-		if (IsUpgradable(e, wdata)) {
+		if (IsUpgradable(e, wdata) == false) {
 			wdata.currency.currencies["Lagrima Stone"].value += Std.int(GetLimitBreakCost(e, wdata) / 3);
 		}
 		{

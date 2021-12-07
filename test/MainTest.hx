@@ -49,7 +49,7 @@ class MainTest {
 			bm.wdata.hero.equipmentSlots[1] = 0;
 			var attributes0 = bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes.copy();
 			var attributes1 = bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes.copy();
-			bm.DiscardEquipment(1);
+			bm.SellEquipment(1);
 			if (attributes0["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes["Attack"]) {
 				Sys.println("Error0");
 			}

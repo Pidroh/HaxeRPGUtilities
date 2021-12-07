@@ -419,7 +419,7 @@ class Main {
 						var rarity = 0;
 						if (e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0)
 							rarity = 1;
-						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1, true,
+						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1, BattleManager.IsUpgradable(e, bm.wdata),
 							BattleManager.CanUpgrade(e, bm.wdata), BattleManager.GetCost(e, bm.wdata), BattleManager.GetSellPrize(e, bm.wdata));
 						var vid = 0;
 						if (e.outsideSystems != null) {
@@ -747,6 +747,13 @@ class Main {
 			}
 			if (e.generationSuffixMod >= 0) {
 				name = name + " " + modBases[e.generationSuffixMod].suffix;
+			}
+			var level = e.outsideSystems["level"];
+			var levelP = level / 3;
+			var levelS = level % 3;
+			var character = '+';
+			for (i in 0...levelS){
+				name += character;
 			}
 			return name;
 		}

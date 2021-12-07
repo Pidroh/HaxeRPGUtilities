@@ -194,7 +194,8 @@ BattleManager.IsLimitBreakable = function(e,wdata) {
 BattleManager.IsUpgradable = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	var maxLevel = level.limitbreak * 3 + 3;
-	return level.level < maxLevel;
+	var upgradable = level.level < maxLevel;
+	return upgradable;
 };
 BattleManager.GetLimitBreakCost = function(e,wdata) {
 	return ((BattleManager.GetCost(e,wdata) + 1) / 5 | 0) * 3;
@@ -238,7 +239,7 @@ BattleManager.Upgrade = function(e,wdata) {
 	wdata.currency.currencies.h["Lagrima"].value -= cost;
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.level++;
-	if(BattleManager.IsUpgradable(e,wdata)) {
+	if(BattleManager.IsUpgradable(e,wdata) == false) {
 		wdata.currency.currencies.h["Lagrima Stone"].value += BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
 	}
 	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
@@ -1781,7 +1782,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1735, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1737, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1798,7 +1799,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1752, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1754, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2655,7 +2656,7 @@ Main.gamemain = function() {
 					if(e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0) {
 						rarity = 1;
 					}
-					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1,true,BattleManager.CanUpgrade(e,bm.wdata),BattleManager.GetCost(e,bm.wdata),BattleManager.GetSellPrize(e,bm.wdata));
+					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1,BattleManager.IsUpgradable(e,bm.wdata),BattleManager.CanUpgrade(e,bm.wdata),BattleManager.GetCost(e,bm.wdata),BattleManager.GetSellPrize(e,bm.wdata));
 					var vid = 0;
 					if(e.outsideSystems != null) {
 						if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"skillset")) {
@@ -2953,6 +2954,16 @@ Main.GetEquipName = function(e,bm) {
 		}
 		if(e.generationSuffixMod >= 0) {
 			name = name + " " + modBases[e.generationSuffixMod].suffix;
+		}
+		var level = e.outsideSystems.h["level"];
+		var levelP = level / 3;
+		var levelS = level % 3;
+		var character = "+";
+		var _g = 0;
+		var _g1 = levelS;
+		while(_g < _g1) {
+			var i = _g++;
+			name += character;
 		}
 		return name;
 	}
@@ -4509,6 +4520,7 @@ View.prototype = {
 		this.equipments[pos].parent.set_hidden(false);
 		this.equipments[pos].name.set_text(name);
 		this.equipments[pos].rightLabelBox.set_hidden(firstTimeSee == false);
+		var upgradeVisible1 = upgradeVisible;
 		this.equipments[pos].actionButtons[2].set_hidden(!upgradeVisible);
 		this.equipments[pos].actionButtons[2].set_disabled(!upgradable);
 		var color = "#000000";
@@ -4529,7 +4541,6 @@ View.prototype = {
 		}
 		this.equipments[pos].actionButtons[1].set_hidden(equipped == true);
 		this.equipments[pos].actionButtons[1].set_text("Sell\n" + sellGain + " Lagrima");
-		this.equipments[pos].actionButtons[2].set_hidden(false);
 		this.equipments[pos].actionButtons[2].set_text("Upgrade\n-" + cost + " Lagrima");
 		while(this.equipments[pos].values.length < numberOfValues) {
 			var vv = this.CreateValueView(this.equipments[pos].parent,false,"Attr");

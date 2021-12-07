@@ -789,6 +789,9 @@ class View {
 		equipments[pos].name.text = name;
 		equipments[pos].rightLabelBox.hidden = firstTimeSee == false;
 
+		if(upgradeVisible){
+
+		}
 		equipments[pos].actionButtons[2].hidden = !upgradeVisible;
 		equipments[pos].actionButtons[2].disabled = !upgradable;
 
@@ -810,7 +813,6 @@ class View {
 		}
 		equipments[pos].actionButtons[1].hidden = equipped == true;
 		equipments[pos].actionButtons[1].text = "Sell\n" + sellGain + " Lagrima";
-		equipments[pos].actionButtons[2].hidden = false;
 		equipments[pos].actionButtons[2].text = "Upgrade\n-" + cost + " Lagrima";
 		while (equipments[pos].values.length < numberOfValues) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");

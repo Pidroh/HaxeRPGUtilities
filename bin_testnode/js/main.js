@@ -168,7 +168,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:780:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:779:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -185,14 +185,21 @@ var BattleManager = function() {
 	this.wdata.hero.attributesCalculated.h["Life"] = v;
 };
 BattleManager.__name__ = true;
-BattleManager.CanLimitBreak = function(e,wdata) {
+BattleManager.IsLimitBreakable = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	return level.limitbreak < 3;
 };
 BattleManager.IsUpgradable = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	var maxLevel = level.limitbreak * 3 + 3;
-	return level.level < maxLevel;
+	var upgradable = level.level < maxLevel;
+	return upgradable;
+};
+BattleManager.GetLimitBreakCost = function(e,wdata) {
+	return ((BattleManager.GetCost(e,wdata) + 1) / 5 | 0) * 3;
+};
+BattleManager.GetSellPrize = function(e,wdata) {
+	return BattleManager.GetCost(e,wdata) / 5 | 0;
 };
 BattleManager.GetCost = function(e,wdata) {
 	var genLevel = 1;
@@ -213,10 +220,26 @@ BattleManager.CanUpgrade = function(e,wdata) {
 	}
 	return BattleManager.GetCost(e,wdata) <= wdata.currency.currencies.h["Lagrima"].value;
 };
+BattleManager.CanLimitBreak = function(e,wdata) {
+	if(BattleManager.IsLimitBreakable(e,wdata) == false) {
+		return false;
+	}
+	return BattleManager.GetLimitBreakCost(e,wdata) <= wdata.currency.currencies.h["Lagrima Stone"].value;
+};
+BattleManager.LimitBreak = function(e,wdata) {
+	var cost = BattleManager.GetLimitBreakCost(e,wdata);
+	wdata.currency.currencies.h["Lagrima Stone"].value -= cost;
+	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
+	level.limitbreak++;
+};
 BattleManager.Upgrade = function(e,wdata) {
-	wdata.currency.currencies.h["Lagrima"].value -= BattleManager.GetCost(e,wdata);
+	var cost = BattleManager.GetCost(e,wdata);
+	wdata.currency.currencies.h["Lagrima"].value -= cost;
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.level++;
+	if(BattleManager.IsUpgradable(e,wdata) == false) {
+		wdata.currency.currencies.h["Lagrima Stone"].value += BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
+	}
 	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
 		var tmp = "Attack";
 		var v = e.attributes.h[tmp] + 1;
@@ -675,8 +698,7 @@ BattleManager.prototype = {
 		if(skillSetPos >= 0) {
 			outsideSystem.h["skillset"] = skillSetPos;
 		}
-		ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
-		var v = this.wdata.equipLevels.length - 1;
+		var v = ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
 		outsideSystem.h["level"] = v;
 		e = { type : itemB.type, seen : 0, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed, outsideSystems : outsideSystem};
 		var addedIndex = -1;
@@ -910,7 +932,10 @@ BattleManager.prototype = {
 	,ReinitGameValues: function() {
 		var _gthis = this;
 		if(this.wdata.currency == null) {
-			new haxe_ds_StringMap().h["Lagrima"] = { value : 0, visible : false};
+			var _g = new haxe_ds_StringMap();
+			_g.h["Lagrima"] = { value : 0, visible : false};
+			_g.h["Lagrima Stone"] = { value : 0, visible : false};
+			this.wdata.currency = { currencies : _g};
 		}
 		if(this.wdata.hero.equipment != null) {
 			while(this.wdata.hero.equipment.indexOf(null) != -1) this.DiscardSingleEquipment(this.wdata.hero.equipment.indexOf(null));
@@ -928,9 +953,8 @@ BattleManager.prototype = {
 					this.wdata.equipLevels = [];
 				}
 				if(Object.prototype.hasOwnProperty.call(value.outsideSystems.h,"level") == false) {
-					ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
-					var v = this.wdata.equipLevels.length - 1;
-					value.outsideSystems.h["level"] = v;
+					var index1 = ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
+					value.outsideSystems.h["level"] = index1;
 				}
 			}
 		}
@@ -1307,6 +1331,14 @@ BattleManager.prototype = {
 			}
 		}
 	}
+	,LimitBreakEquipment: function(pos) {
+		var e = this.wdata.hero.equipment[pos];
+		BattleManager.LimitBreak(e,this.wdata);
+	}
+	,UpgradeEquipment: function(pos) {
+		var e = this.wdata.hero.equipment[pos];
+		BattleManager.Upgrade(e,this.wdata);
+	}
 	,DiscardSingleEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
 		HxOverrides.remove(this.wdata.hero.equipment,e);
@@ -1322,8 +1354,13 @@ BattleManager.prototype = {
 			this.equipmentToDiscard.push(e);
 		}
 	}
-	,DiscardEquipment: function(pos) {
+	,SellSingleEquipment: function(pos) {
 		this.DiscardSingleEquipment(pos);
+		var prize = BattleManager.GetSellPrize(this.wdata.hero.equipment[pos],this.wdata);
+		this.wdata.currency.currencies.h["Lagrima"].value += prize;
+	}
+	,SellEquipment: function(pos) {
+		this.SellSingleEquipment(pos);
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,ToggleEquipped: function(pos) {
@@ -1718,7 +1755,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1690:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1737:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1735,7 +1772,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1707:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1754:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -1999,7 +2036,7 @@ MainTest.main = function() {
 	bm.wdata.hero.equipmentSlots[1] = 0;
 	var attributes0 = haxe_ds_StringMap.createCopy(bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes.h);
 	var attributes1 = haxe_ds_StringMap.createCopy(bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes.h);
-	bm.DiscardEquipment(1);
+	bm.SellEquipment(1);
 	if(attributes0.h["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes.h["Attack"]) {
 		process.stdout.write("Error0");
 		process.stdout.write("\n");
