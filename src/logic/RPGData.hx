@@ -176,7 +176,8 @@ typedef WorldData = {
 	var recovering:Bool;
 	var sleeping:Bool;
 	var prestigeTimes:Int;
-
+	
+	var ?currency:CurrencyHolderPersistent;
 	var ?skillSets:Array<SkillSet>;
 	var ?equipLevels:Array<EquipmentLevel>;
 

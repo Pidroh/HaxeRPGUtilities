@@ -824,13 +824,38 @@ class BattleManager {
 		return level.limitbreak < 3;
 	}
 
-	public static function CanUpgrade(e:Equipment, wdata:WorldData):Bool {
+	public static function IsUpgradable(e:Equipment, wdata:WorldData):Bool {
 		var level = wdata.equipLevels[e.outsideSystems["level"]];
 		var maxLevel = level.limitbreak * 3 + 3;
 		return level.level < maxLevel;
 	}
 
+	public static function GetCost(e:Equipment, wdata:WorldData):Int{
+		var genLevel:Float = 1;
+		if (e.generationLevel >= 0) {
+			genLevel = e.generationLevel;
+		}
+
+		// increases cost to upgrade every 5 levels, by 5. So 5, 10, 15, 20, etc
+		if (e.generationPrefixMod >= 0) {
+			genLevel *= 1.3;
+		}
+		if (e.generationSuffixMod >= 0) {
+			genLevel *= 1.3;
+		}
+
+		return Std.int(genLevel / 5) * 5 + 5;
+	}
+
+	public static function CanUpgrade(e:Equipment, wdata:WorldData):Bool {
+		if (IsUpgradable(e, wdata) == false)
+			return false;
+
+		return (GetCost(e, wdata) <= wdata.currency.currencies["Lagrima"].value); 
+	}
+
 	public static function Upgrade(e:Equipment, wdata:WorldData) {
+		wdata.currency.currencies["Lagrima"].value -=  GetCost(e, wdata);
 		var level = wdata.equipLevels[e.outsideSystems["level"]];
 		level.level++;
 		{
@@ -862,6 +887,17 @@ class BattleManager {
 	// currently everything gets saved, even stuff that shouldn't
 	// This method will reinit some of those values when loading or creating a new game
 	public function ReinitGameValues() {
+		if (wdata.currency == null)
+			{
+				currency: {
+					currencies: [
+						"Lagrima" => {
+							value: 0,
+							visible: false
+						}
+					]
+				},
+			}
 		if (wdata.hero.equipment != null) {
 			while (wdata.hero.equipment.contains(null)) {
 				DiscardSingleEquipment(wdata.hero.equipment.indexOf(null));

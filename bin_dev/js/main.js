@@ -191,12 +191,32 @@ BattleManager.CanLimitBreak = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	return level.limitbreak < 3;
 };
-BattleManager.CanUpgrade = function(e,wdata) {
+BattleManager.IsUpgradable = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	var maxLevel = level.limitbreak * 3 + 3;
 	return level.level < maxLevel;
 };
+BattleManager.GetCost = function(e,wdata) {
+	var genLevel = 1;
+	if(e.generationLevel >= 0) {
+		genLevel = e.generationLevel;
+	}
+	if(e.generationPrefixMod >= 0) {
+		genLevel *= 1.3;
+	}
+	if(e.generationSuffixMod >= 0) {
+		genLevel *= 1.3;
+	}
+	return (genLevel / 5 | 0) * 5 + 5;
+};
+BattleManager.CanUpgrade = function(e,wdata) {
+	if(BattleManager.IsUpgradable(e,wdata) == false) {
+		return false;
+	}
+	return BattleManager.GetCost(e,wdata) <= wdata.currency.currencies.h["Lagrima"].value;
+};
 BattleManager.Upgrade = function(e,wdata) {
+	wdata.currency.currencies.h["Lagrima"].value -= BattleManager.GetCost(e,wdata);
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.level++;
 	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
@@ -916,6 +936,9 @@ BattleManager.prototype = {
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
+		if(this.wdata.currency == null) {
+			new haxe_ds_StringMap().h["Lagrima"] = { value : 0, visible : false};
+		}
 		if(this.wdata.hero.equipment != null) {
 			while(this.wdata.hero.equipment.indexOf(null) != -1) this.DiscardSingleEquipment(this.wdata.hero.equipment.indexOf(null));
 			var _g_current = 0;
@@ -1722,7 +1745,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1654, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1690, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1739,7 +1762,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1671, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1707, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
