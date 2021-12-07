@@ -43,7 +43,7 @@ class Main {
 
 	static function main() {
 		Toolkit.init();
-		trace("sss");
+		trace("sssX");
 		var key = "privacymemory";
 
 		var privacyAcceptance:String = Browser.getLocalStorage().getItem(key);
@@ -183,7 +183,9 @@ class Main {
 				bm.ToggleEquipped(pos);
 			}
 			if (action == 1)
-				bm.DiscardEquipment(pos);
+				bm.SellEquipment(pos);
+			if (action == 2)
+				bm.UpgradeEquipment(pos);
 			if (action == View.equipmentAction_DiscardBad)
 				bm.DiscardWorseEquipment();
 		};
@@ -318,7 +320,7 @@ class Main {
 					view.UpdateValues(actorView.mp, mp, mpmax, "??", false, "???");
 				}
 
-				//view.UpdateValues(actorView.attack, bm.GetAttribute(actor, "Attack"), -1);
+				// view.UpdateValues(actorView.attack, bm.GetAttribute(actor, "Attack"), -1);
 				actorView.attack.parent.hidden = true;
 			}
 			view.UpdateVisibility(actorView, actor != null);
@@ -346,7 +348,7 @@ class Main {
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
 			view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
 			view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
-			//view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
+			// view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
 			view.UpdateValues(view.lifeView, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
 			view.UpdateValues(view.defView, bm.wdata.hero.attributesCalculated["Defense"], -1);
 			view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
@@ -413,29 +415,32 @@ class Main {
 						var rarity = 0;
 						if (e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0)
 							rarity = 1;
-						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1);
+						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1,
+						true, BattleManager.CanUpgrade(e, bm.wdata));
 						var vid = 0;
 						if (e.outsideSystems != null) {
-							var ss = e.outsideSystems["skillset"];
-							var ssd = bm.wdata.skillSets[ss];
-							for (s in 0...ssd.skills.length) {
-								var actionId = "battleaction_" + s;
-								var action = bm.wdata.playerActions[actionId];
-								if (action.mode == 0) {
-									var skillName = ssd.skills[s].id;
-									if (ssd.skills[s].level > 1) {
-										skillName += " " + String.fromCharCode('P'.code + ssd.skills[s].level);
+							if (e.outsideSystems.exists("skillset")) {
+								var ss = e.outsideSystems["skillset"];
+								var ssd = bm.wdata.skillSets[ss];
+								for (s in 0...ssd.skills.length) {
+									var actionId = "battleaction_" + s;
+									var action = bm.wdata.playerActions[actionId];
+									if (action.mode == 0) {
+										var skillName = ssd.skills[s].id;
+										if (ssd.skills[s].level > 1) {
+											skillName += " " + String.fromCharCode('P'.code + ssd.skills[s].level);
+										}
+										view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, skillName);
 									}
-									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, skillName);
-								}
-								if (action.mode == 1) {
-									view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, "???");
-									// view.ButtonLabel(actionId, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
-								}
+									if (action.mode == 1) {
+										view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, "???");
+										// view.ButtonLabel(actionId, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
+									}
 
-								vid++;
+									vid++;
+								}
+								view.FeedEquipmentSeparation(equipmentViewPos, vid - 1);
 							}
-							view.FeedEquipmentSeparation(equipmentViewPos, vid - 1);
 						}
 
 						for (v in e.attributes.keyValueIterator()) {

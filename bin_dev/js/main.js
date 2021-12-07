@@ -169,7 +169,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 780, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 779, className : "BattleManager", methodName : "new"});
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -187,7 +187,7 @@ var BattleManager = function() {
 };
 $hxClasses["BattleManager"] = BattleManager;
 BattleManager.__name__ = "BattleManager";
-BattleManager.CanLimitBreak = function(e,wdata) {
+BattleManager.IsLimitBreakable = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	return level.limitbreak < 3;
 };
@@ -195,6 +195,9 @@ BattleManager.IsUpgradable = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	var maxLevel = level.limitbreak * 3 + 3;
 	return level.level < maxLevel;
+};
+BattleManager.GetLimitBreakCost = function(e,wdata) {
+	return ((BattleManager.GetCost(e,wdata) + 1) / 5 | 0) * 3;
 };
 BattleManager.GetCost = function(e,wdata) {
 	var genLevel = 1;
@@ -215,10 +218,26 @@ BattleManager.CanUpgrade = function(e,wdata) {
 	}
 	return BattleManager.GetCost(e,wdata) <= wdata.currency.currencies.h["Lagrima"].value;
 };
+BattleManager.CanLimitBreak = function(e,wdata) {
+	if(BattleManager.IsLimitBreakable(e,wdata) == false) {
+		return false;
+	}
+	return BattleManager.GetLimitBreakCost(e,wdata) <= wdata.currency.currencies.h["Lagrima Stone"].value;
+};
+BattleManager.LimitBreak = function(e,wdata) {
+	var cost = BattleManager.GetLimitBreakCost(e,wdata);
+	wdata.currency.currencies.h["Lagrima Stone"].value -= cost;
+	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
+	level.limitbreak++;
+};
 BattleManager.Upgrade = function(e,wdata) {
-	wdata.currency.currencies.h["Lagrima"].value -= BattleManager.GetCost(e,wdata);
+	var cost = BattleManager.GetCost(e,wdata);
+	wdata.currency.currencies.h["Lagrima"].value -= cost;
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.level++;
+	if(BattleManager.IsUpgradable(e,wdata)) {
+		wdata.currency.currencies.h["Lagrima Stone"].value += BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
+	}
 	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
 		var tmp = "Attack";
 		var v = e.attributes.h[tmp] + 1;
@@ -702,8 +721,7 @@ BattleManager.prototype = {
 		if(skillSetPos >= 0) {
 			outsideSystem.h["skillset"] = skillSetPos;
 		}
-		ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
-		var v = this.wdata.equipLevels.length - 1;
+		var v = ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
 		outsideSystem.h["level"] = v;
 		e = { type : itemB.type, seen : 0, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed, outsideSystems : outsideSystem};
 		var addedIndex = -1;
@@ -937,7 +955,10 @@ BattleManager.prototype = {
 	,ReinitGameValues: function() {
 		var _gthis = this;
 		if(this.wdata.currency == null) {
-			new haxe_ds_StringMap().h["Lagrima"] = { value : 0, visible : false};
+			var _g = new haxe_ds_StringMap();
+			_g.h["Lagrima"] = { value : 0, visible : false};
+			_g.h["Lagrima Stone"] = { value : 0, visible : false};
+			this.wdata.currency = { currencies : _g};
 		}
 		if(this.wdata.hero.equipment != null) {
 			while(this.wdata.hero.equipment.indexOf(null) != -1) this.DiscardSingleEquipment(this.wdata.hero.equipment.indexOf(null));
@@ -955,9 +976,8 @@ BattleManager.prototype = {
 					this.wdata.equipLevels = [];
 				}
 				if(Object.prototype.hasOwnProperty.call(value.outsideSystems.h,"level") == false) {
-					ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
-					var v = this.wdata.equipLevels.length - 1;
-					value.outsideSystems.h["level"] = v;
+					var index1 = ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
+					value.outsideSystems.h["level"] = index1;
 				}
 			}
 		}
@@ -1334,6 +1354,14 @@ BattleManager.prototype = {
 			}
 		}
 	}
+	,LimitBreakEquipment: function(pos) {
+		var e = this.wdata.hero.equipment[pos];
+		BattleManager.LimitBreak(e,this.wdata);
+	}
+	,UpgradeEquipment: function(pos) {
+		var e = this.wdata.hero.equipment[pos];
+		BattleManager.Upgrade(e,this.wdata);
+	}
 	,DiscardSingleEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
 		HxOverrides.remove(this.wdata.hero.equipment,e);
@@ -1349,8 +1377,13 @@ BattleManager.prototype = {
 			this.equipmentToDiscard.push(e);
 		}
 	}
-	,DiscardEquipment: function(pos) {
+	,SellSingleEquipment: function(pos) {
 		this.DiscardSingleEquipment(pos);
+		var prize = BattleManager.GetCost(this.wdata.hero.equipment[pos],this.wdata) / 5 | 0;
+		this.wdata.currency.currencies.h["Lagrima"].value += prize;
+	}
+	,SellEquipment: function(pos) {
+		this.SellSingleEquipment(pos);
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,ToggleEquipped: function(pos) {
@@ -1745,7 +1778,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1690, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1732, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1762,7 +1795,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1707, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1749, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2335,7 +2368,7 @@ $hxClasses["Main"] = Main;
 Main.__name__ = "Main";
 Main.main = function() {
 	haxe_ui_Toolkit.init();
-	haxe_Log.trace("sss",{ fileName : "src/Main.hx", lineNumber : 46, className : "Main", methodName : "main"});
+	haxe_Log.trace("sssX",{ fileName : "src/Main.hx", lineNumber : 46, className : "Main", methodName : "main"});
 	var key = "privacymemory";
 	var privacyAcceptance = js_Browser.getLocalStorage().getItem(key);
 	if(privacyAcceptance == null) {
@@ -2431,7 +2464,10 @@ Main.gamemain = function() {
 			bm.ToggleEquipped(pos);
 		}
 		if(action == 1) {
-			bm.DiscardEquipment(pos);
+			bm.SellEquipment(pos);
+		}
+		if(action == 2) {
+			bm.UpgradeEquipment(pos);
 		}
 		if(action == View.equipmentAction_DiscardBad) {
 			bm.DiscardWorseEquipment();
@@ -2614,31 +2650,33 @@ Main.gamemain = function() {
 					if(e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0) {
 						rarity = 1;
 					}
-					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1);
+					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1,true,BattleManager.CanUpgrade(e,bm.wdata));
 					var vid = 0;
 					if(e.outsideSystems != null) {
-						var ss = e.outsideSystems.h["skillset"];
-						var ssd = bm.wdata.skillSets[ss];
-						var _g2 = 0;
-						var _g3 = ssd.skills.length;
-						while(_g2 < _g3) {
-							var s = _g2++;
-							var actionId = "battleaction_" + s;
-							var action = bm.wdata.playerActions.h[actionId];
-							if(action.mode == 0) {
-								var skillName = ssd.skills[s].id;
-								if(ssd.skills[s].level > 1) {
-									var code = 80 + ssd.skills[s].level;
-									skillName += " " + String.fromCodePoint(code);
+						if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"skillset")) {
+							var ss = e.outsideSystems.h["skillset"];
+							var ssd = bm.wdata.skillSets[ss];
+							var _g2 = 0;
+							var _g3 = ssd.skills.length;
+							while(_g2 < _g3) {
+								var s = _g2++;
+								var actionId = "battleaction_" + s;
+								var action = bm.wdata.playerActions.h[actionId];
+								if(action.mode == 0) {
+									var skillName = ssd.skills[s].id;
+									if(ssd.skills[s].level > 1) {
+										var code = 80 + ssd.skills[s].level;
+										skillName += " " + String.fromCodePoint(code);
+									}
+									view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,skillName);
 								}
-								view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,skillName);
+								if(action.mode == 1) {
+									view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,"???");
+								}
+								++vid;
 							}
-							if(action.mode == 1) {
-								view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,"???");
-							}
-							++vid;
+							view.FeedEquipmentSeparation(equipmentViewPos,vid - 1);
 						}
-						view.FeedEquipmentSeparation(equipmentViewPos,vid - 1);
 					}
 					var h = e.attributes.h;
 					var v_h = h;
@@ -2864,7 +2902,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 680, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 685, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2876,7 +2914,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 697, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 702, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -2895,8 +2933,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 725, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 726, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 730, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 731, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -4389,7 +4427,7 @@ View.prototype = {
 			rightLabelBox.addComponent(rightLabel);
 			header.addComponent(rightLabelBox);
 			viewParent.addComponent(header);
-			var this1 = new Array(2);
+			var this1 = new Array(3);
 			var buttonsAct = this1;
 			var _g = 0;
 			var _g1 = buttonsAct.length;
@@ -4398,7 +4436,10 @@ View.prototype = {
 				var button = new haxe_ui_components_Button();
 				button.set_text("Equip");
 				if(i == 1) {
-					button.set_text("Discard");
+					button.set_text("Sell");
+				}
+				if(i == 2) {
+					button.set_text("Upgrade");
 				}
 				button.set_percentWidth(100);
 				var equipmentPos = [this.equipments.length];
@@ -4426,7 +4467,13 @@ View.prototype = {
 			this.equipmentMainAction(equipmentPos,actionId);
 		}
 	}
-	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee) {
+	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee,upgradeVisible,upgradable) {
+		if(upgradable == null) {
+			upgradable = false;
+		}
+		if(upgradeVisible == null) {
+			upgradeVisible = false;
+		}
 		if(firstTimeSee == null) {
 			firstTimeSee = false;
 		}
@@ -4442,6 +4489,8 @@ View.prototype = {
 		this.equipments[pos].parent.set_hidden(false);
 		this.equipments[pos].name.set_text(name);
 		this.equipments[pos].rightLabelBox.set_hidden(firstTimeSee == false);
+		this.equipments[pos].actionButtons[2].set_hidden(!upgradeVisible);
+		this.equipments[pos].actionButtons[2].set_disabled(!upgradable);
 		var color = "#000000";
 		if(rarity == 1) {
 			color = "#002299";
@@ -4459,6 +4508,7 @@ View.prototype = {
 			this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("white"));
 		}
 		this.equipments[pos].actionButtons[1].set_hidden(equipped == true);
+		this.equipments[pos].actionButtons[2].set_hidden(false);
 		while(this.equipments[pos].values.length < numberOfValues) {
 			var vv = this.CreateValueView(this.equipments[pos].parent,false,"Attr");
 			this.equipments[pos].values.push(vv);
@@ -46694,8 +46744,8 @@ View.storyAction_AdvanceMessage = 2;
 View.storyAction_SkipStory = 3;
 View.storyAction_WatchLater = 4;
 View.storyAction_WatchLaterClose = 5;
-View.equipmentAction_DiscardBad = 2;
-View.equipmentAction_ChangeTypeToView = 3;
+View.equipmentAction_DiscardBad = 4;
+View.equipmentAction_ChangeTypeToView = 5;
 haxe_ui_core_ComponentEvents.INTERACTIVE_EVENTS = ["mousemove","mouseover","mouseout","mousedown","mouseup","mousewheel","click","doubleclick","keydown","keyup"];
 haxe_ui_core_ComponentBounds.__meta__ = { fields : { percentWidth : { clonable : null, bindable : null}, percentHeight : { clonable : null, bindable : null}, width : { bindable : null}, height : { bindable : null}}};
 haxe_ui_backend_ComponentImpl.elementToComponent = new haxe_ds_ObjectMap();

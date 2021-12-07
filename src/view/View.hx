@@ -40,8 +40,8 @@ class View {
 	public static final storyAction_WatchLater = 4;
 	public static final storyAction_WatchLaterClose = 5;
 
-	public static final equipmentAction_DiscardBad = 2;
-	public static final equipmentAction_ChangeTypeToView = 3;
+	public static final equipmentAction_DiscardBad = 4;
+	public static final equipmentAction_ChangeTypeToView = 5;
 
 	public var heroView:ActorView;
 	public var enemyView:ActorView;
@@ -100,7 +100,7 @@ class View {
 	public var storyDialog:StoryDialog;
 
 	public function Update() {
-		//equipTabChild.width = equipTabChild.parentComponent.width - 40;
+		// equipTabChild.width = equipTabChild.parentComponent.width - 40;
 		equipTabChild.width = Screen.instance.width - 40 - 60 - 200;
 	}
 
@@ -304,7 +304,9 @@ class View {
 			{
 				var title = new Label();
 				var platform = MyMacro.GetPlatform();
-				title.htmlText = platform+" Alpha 0.10E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
+				title.htmlText = platform
+					+
+					" Alpha 0.10E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
 				title.percentWidth = 100;
 				title.textAlign = "right";
 				title.paddingRight = 20;
@@ -354,8 +356,6 @@ class View {
 		// verticalBox.columns= 1;
 
 		battleParent.addComponent(verticalBox);
-
-		
 
 		buttonBox = CreateContainer(battleParent, true);
 		// buttonBox.hidden = true;
@@ -408,7 +408,6 @@ class View {
 		}
 
 		areaContainer = CreateContainer(verticalBox, true);
-
 
 		{
 			levelContainer = CreateContainer(verticalBox, true);
@@ -463,7 +462,6 @@ class View {
 			equipmentTypeSelectionTabbar = tabBar;
 			equipTabChild.addComponent(tabBar);
 
-
 			buttonDiscardBad = new Button();
 			buttonDiscardBad.text = "Discard worse equipment";
 			buttonDiscardBad.onClick = event -> {
@@ -472,14 +470,13 @@ class View {
 			equipTabChild.addComponent(buttonDiscardBad);
 
 			var gridBox = new HBox();
-			//gridBox.columns =2;
+			// gridBox.columns =2;
 			gridBox.text = "Equipment";
 			equipTab = new UIElementWrapper(gridBox, tabMaster);
 			equipTab.desiredPosition = 1;
 			gridBox.percentHeight = 100;
 			gridBox.percentWidth = 100;
 
-						
 			{
 				var statContainer = CreateContainer(gridBox, true);
 				lifeView = CreateValueView(statContainer, true, "Life: ");
@@ -725,13 +722,15 @@ class View {
 			header.addComponent(rightLabelBox);
 			viewParent.addComponent(header);
 
-			var buttonsAct = new Vector<Button>(2);
+			var buttonsAct = new Vector<Button>(3);
 
 			for (i in 0...buttonsAct.length) {
 				var button = new Button();
 				button.text = "Equip";
 				if (i == 1)
-					button.text = "Discard";
+					button.text = "Sell";
+				if (i == 2)
+					button.text = "Upgrade";
 				button.percentWidth = 100;
 				var equipmentPos = equipments.length;
 				var buttonId = i;
@@ -771,10 +770,14 @@ class View {
 		}
 	}
 
-	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1, unequipable = false, firstTimeSee = false) {
+	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1, unequipable = false, firstTimeSee = false,
+			upgradeVisible = false, upgradable = false) {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
 		equipments[pos].rightLabelBox.hidden = firstTimeSee == false;
+
+		equipments[pos].actionButtons[2].hidden = !upgradeVisible;
+		equipments[pos].actionButtons[2].disabled = !upgradable;
 
 		var color = "#000000";
 		if (rarity == 1) {
@@ -793,6 +796,7 @@ class View {
 			equipments[pos].parent.backgroundColor = "white";
 		}
 		equipments[pos].actionButtons[1].hidden = equipped == true;
+		equipments[pos].actionButtons[2].hidden = false;
 		while (equipments[pos].values.length < numberOfValues) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
@@ -1133,7 +1137,7 @@ class StoryDialog extends Dialog {
 		scroll.addComponent(messageParent);
 		scroll.percentHeight = 90;
 		scroll.width = width - 10;
-		scroll.percentContentWidth  =100;
+		scroll.percentContentWidth = 100;
 		scroll.horizontalAlign = "center";
 		addComponent(scroll);
 

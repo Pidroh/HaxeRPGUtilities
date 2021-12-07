@@ -440,12 +440,11 @@ class BattleManager {
 			outsideSystem["skillset"] = skillSetPos;
 		}
 
-		ArrayHelper.InsertOnEmpty({
+		outsideSystem["level"] = ArrayHelper.InsertOnEmpty({
 			level: 0,
 			limitbreak: 0,
 			ascension: 0
 		}, wdata.equipLevels);
-		outsideSystem["level"] = wdata.equipLevels.length - 1;
 
 		e = {
 			type: itemB.type,
@@ -819,7 +818,7 @@ class BattleManager {
 		wdata.hero.attributesCalculated["Life"] = wdata.hero.attributesCalculated["LifeMax"];
 	}
 
-	public static function CanLimitBreak(e:Equipment, wdata:WorldData):Bool {
+	public static function IsLimitBreakable(e:Equipment, wdata:WorldData):Bool {
 		var level = wdata.equipLevels[e.outsideSystems["level"]];
 		return level.limitbreak < 3;
 	}
@@ -830,7 +829,11 @@ class BattleManager {
 		return level.level < maxLevel;
 	}
 
-	public static function GetCost(e:Equipment, wdata:WorldData):Int{
+	public static function GetLimitBreakCost(e, wdata):Int {
+		return Std.int((GetCost(e, wdata) + 1) / 5) * 3;
+	}
+
+	public static function GetCost(e:Equipment, wdata:WorldData):Int {
 		var genLevel:Float = 1;
 		if (e.generationLevel >= 0) {
 			genLevel = e.generationLevel;
@@ -851,13 +854,33 @@ class BattleManager {
 		if (IsUpgradable(e, wdata) == false)
 			return false;
 
-		return (GetCost(e, wdata) <= wdata.currency.currencies["Lagrima"].value); 
+		return (GetCost(e, wdata) <= wdata.currency.currencies["Lagrima"].value);
+	}
+
+	public static function CanLimitBreak(e:Equipment, wdata:WorldData):Bool {
+		if (IsLimitBreakable(e, wdata) == false)
+			return false;
+
+		return (GetLimitBreakCost(e, wdata) <= wdata.currency.currencies["Lagrima Stone"].value);
+	}
+
+	public static function LimitBreak(e:Equipment, wdata:WorldData) {
+		var cost = GetLimitBreakCost(e, wdata);
+		wdata.currency.currencies["Lagrima Stone"].value -= cost;
+		var level = wdata.equipLevels[e.outsideSystems["level"]];
+		level.limitbreak++;
 	}
 
 	public static function Upgrade(e:Equipment, wdata:WorldData) {
-		wdata.currency.currencies["Lagrima"].value -=  GetCost(e, wdata);
+		var cost = GetCost(e, wdata);
+		wdata.currency.currencies["Lagrima"].value -= cost;
 		var level = wdata.equipLevels[e.outsideSystems["level"]];
 		level.level++;
+
+		// reached max level
+		if (IsUpgradable(e, wdata)) {
+			wdata.currency.currencies["Lagrima Stone"].value += Std.int(GetLimitBreakCost(e, wdata) / 3);
+		}
 		{
 			if (e.attributes.exists("Attack")) {
 				e.attributes["Attack"]++;
@@ -888,16 +911,19 @@ class BattleManager {
 	// This method will reinit some of those values when loading or creating a new game
 	public function ReinitGameValues() {
 		if (wdata.currency == null)
-			{
-				currency: {
-					currencies: [
-						"Lagrima" => {
-							value: 0,
-							visible: false
-						}
-					]
-				},
-			}
+			wdata.currency = {
+				currencies: [
+					"Lagrima" => {
+						value: 0,
+						visible: false
+					},
+					"Lagrima Stone" => {
+						value: 0,
+						visible: false
+					}
+				]
+			};
+
 		if (wdata.hero.equipment != null) {
 			while (wdata.hero.equipment.contains(null)) {
 				DiscardSingleEquipment(wdata.hero.equipment.indexOf(null));
@@ -909,12 +935,12 @@ class BattleManager {
 				if (wdata.equipLevels == null)
 					wdata.equipLevels = new Array<EquipmentLevel>();
 				if (value.outsideSystems.exists("level") == false) {
-					ArrayHelper.InsertOnEmpty({
+					var index = ArrayHelper.InsertOnEmpty({
 						level: 0,
 						limitbreak: 0,
 						ascension: 0
 					}, wdata.equipLevels);
-					value.outsideSystems["level"] = wdata.equipLevels.length - 1;
+					value.outsideSystems["level"] = index;
 				}
 			}
 		}
@@ -1282,6 +1308,16 @@ class BattleManager {
 			}
 	}
 
+	public function LimitBreakEquipment(pos) {
+		var e = wdata.hero.equipment[pos];
+		BattleManager.LimitBreak(e, wdata);
+	}
+
+	public function UpgradeEquipment(pos) {
+		var e = wdata.hero.equipment[pos];
+		BattleManager.Upgrade(e, wdata);
+	}
+
 	function DiscardSingleEquipment(pos) {
 		var e = wdata.hero.equipment[pos];
 		wdata.hero.equipment.remove(e);
@@ -1296,8 +1332,14 @@ class BattleManager {
 			equipmentToDiscard.push(e);
 	}
 
-	public function DiscardEquipment(pos) {
+	public function SellSingleEquipment(pos) {
 		DiscardSingleEquipment(pos);
+		var prize = Std.int(GetCost(wdata.hero.equipment[pos], wdata) / 5);
+		wdata.currency.currencies["Lagrima"].value += prize;
+	}
+
+	public function SellEquipment(pos) {
+		SellSingleEquipment(pos);
 		RecalculateAttributes(wdata.hero);
 	}
 
