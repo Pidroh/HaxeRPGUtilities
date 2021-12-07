@@ -348,6 +348,10 @@ class Main {
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
 			view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
 			view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
+			
+
+			view.UpdateValues(view.currencyViews[0], bm.wdata.currency.currencies["Lagrima"].value, -1);
+			view.UpdateValues(view.currencyViews[1], bm.wdata.currency.currencies["Lagrima Stone"].value, -1);
 			// view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
 			view.UpdateValues(view.lifeView, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
 			view.UpdateValues(view.defView, bm.wdata.hero.attributesCalculated["Defense"], -1);
@@ -415,8 +419,8 @@ class Main {
 						var rarity = 0;
 						if (e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0)
 							rarity = 1;
-						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1,
-						true, BattleManager.CanUpgrade(e, bm.wdata));
+						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1, true,
+							BattleManager.CanUpgrade(e, bm.wdata), BattleManager.GetCost(e, bm.wdata), BattleManager.GetSellPrize(e, bm.wdata));
 						var vid = 0;
 						if (e.outsideSystems != null) {
 							if (e.outsideSystems.exists("skillset")) {

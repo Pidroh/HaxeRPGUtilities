@@ -833,6 +833,10 @@ class BattleManager {
 		return Std.int((GetCost(e, wdata) + 1) / 5) * 3;
 	}
 
+	public static function GetSellPrize(e:Equipment, wdata:WorldData):Int {
+		return Std.int(GetCost(e, wdata) / 5);
+	}
+
 	public static function GetCost(e:Equipment, wdata:WorldData):Int {
 		var genLevel:Float = 1;
 		if (e.generationLevel >= 0) {
@@ -1326,7 +1330,6 @@ class BattleManager {
 				wdata.hero.equipmentSlots[i]--; // adjust position of higher slots
 			}
 		}
-		// wdata.hero.equipment[pos] = null;
 
 		if (e != null)
 			equipmentToDiscard.push(e);
@@ -1334,7 +1337,7 @@ class BattleManager {
 
 	public function SellSingleEquipment(pos) {
 		DiscardSingleEquipment(pos);
-		var prize = Std.int(GetCost(wdata.hero.equipment[pos], wdata) / 5);
+		var prize = GetSellPrize(wdata.hero.equipment[pos], wdata);
 		wdata.currency.currencies["Lagrima"].value += prize;
 	}
 

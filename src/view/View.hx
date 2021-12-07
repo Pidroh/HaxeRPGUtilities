@@ -54,6 +54,10 @@ class View {
 	public var defView:ValueView;
 	public var mDefView:ValueView;
 
+	public var currencyViews = new Array<ValueView>();
+
+	public var statEquipmentParent:Component;
+
 	public var enemyToAdvance:ValueView;
 	public var areaLabel:ValueView;
 	// public var regionLabel:ValueView;
@@ -479,12 +483,21 @@ class View {
 
 			{
 				var statContainer = CreateContainer(gridBox, true);
+
+				currencyViews.push(CreateValueView(statContainer, false, "Lagrima: "));
+				currencyViews.push(CreateValueView(statContainer, false, "Lagrima\nStone: "));
+
+				var box = new Box(); box.height = 40;
+				statContainer.addComponent(box);
+
 				lifeView = CreateValueView(statContainer, true, "Life: ");
 				attackView = CreateValueView(statContainer, false, "Attack: ");
 				speedView = CreateValueView(statContainer, false, "Speed: ");
 
 				defView = CreateValueView(statContainer, false, "Def: ");
 				mDefView = CreateValueView(statContainer, false, "mDef: ");
+
+				statEquipmentParent = statContainer;
 			}
 
 			var scroll = CreateScrollable(gridBox);
@@ -771,7 +784,7 @@ class View {
 	}
 
 	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1, unequipable = false, firstTimeSee = false,
-			upgradeVisible = false, upgradable = false) {
+			upgradeVisible = false, upgradable = false, cost = 0, sellGain = 0) {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
 		equipments[pos].rightLabelBox.hidden = firstTimeSee == false;
@@ -796,7 +809,9 @@ class View {
 			equipments[pos].parent.backgroundColor = "white";
 		}
 		equipments[pos].actionButtons[1].hidden = equipped == true;
+		equipments[pos].actionButtons[1].text = "Sell\n" + sellGain + " Lagrima";
 		equipments[pos].actionButtons[2].hidden = false;
+		equipments[pos].actionButtons[2].text = "Upgrade\n-" + cost + " Lagrima";
 		while (equipments[pos].values.length < numberOfValues) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);
@@ -1014,6 +1029,7 @@ class View {
 		var boxh = new Box();
 		boxh.width = 180;
 		boxh.height = 20 + extraHeight;
+
 		parent.addComponent(boxh);
 
 		var addLabel = label != null && label != "";

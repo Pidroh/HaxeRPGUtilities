@@ -199,6 +199,9 @@ BattleManager.IsUpgradable = function(e,wdata) {
 BattleManager.GetLimitBreakCost = function(e,wdata) {
 	return ((BattleManager.GetCost(e,wdata) + 1) / 5 | 0) * 3;
 };
+BattleManager.GetSellPrize = function(e,wdata) {
+	return BattleManager.GetCost(e,wdata) / 5 | 0;
+};
 BattleManager.GetCost = function(e,wdata) {
 	var genLevel = 1;
 	if(e.generationLevel >= 0) {
@@ -1379,7 +1382,7 @@ BattleManager.prototype = {
 	}
 	,SellSingleEquipment: function(pos) {
 		this.DiscardSingleEquipment(pos);
-		var prize = BattleManager.GetCost(this.wdata.hero.equipment[pos],this.wdata) / 5 | 0;
+		var prize = BattleManager.GetSellPrize(this.wdata.hero.equipment[pos],this.wdata);
 		this.wdata.currency.currencies.h["Lagrima"].value += prize;
 	}
 	,SellEquipment: function(pos) {
@@ -1778,7 +1781,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1732, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1735, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1795,7 +1798,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1749, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1752, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2591,6 +2594,8 @@ Main.gamemain = function() {
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
 		view.UpdateValues(view.speedView,bm.wdata.hero.attributesCalculated.h["Speed"],-1);
 		view.UpdateValues(view.attackView,bm.wdata.hero.attributesCalculated.h["Attack"],-1);
+		view.UpdateValues(view.currencyViews[0],bm.wdata.currency.currencies.h["Lagrima"].value,-1);
+		view.UpdateValues(view.currencyViews[1],bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
 		view.UpdateValues(view.lifeView,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
 		view.UpdateValues(view.defView,bm.wdata.hero.attributesCalculated.h["Defense"],-1);
 		view.UpdateValues(view.mDefView,bm.wdata.hero.attributesCalculated.h["Magic Defense"],-1);
@@ -2650,7 +2655,7 @@ Main.gamemain = function() {
 					if(e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0) {
 						rarity = 1;
 					}
-					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1,true,BattleManager.CanUpgrade(e,bm.wdata));
+					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1,true,BattleManager.CanUpgrade(e,bm.wdata),BattleManager.GetCost(e,bm.wdata),BattleManager.GetSellPrize(e,bm.wdata));
 					var vid = 0;
 					if(e.outsideSystems != null) {
 						if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"skillset")) {
@@ -2902,7 +2907,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 685, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 689, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2914,7 +2919,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 702, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 706, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -2933,8 +2938,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 730, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 731, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 734, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 735, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -3918,6 +3923,7 @@ var View = function() {
 	this.enemy1 = "slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog".split("@");
 	this.prefix = "normal@fire@ice@water@thunder@wind@earth@poison@grass".split("@");
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
+	this.currencyViews = [];
 	var _gthis = this;
 	var boxParentP = new haxe_ui_containers_Box();
 	boxParentP.set_percentHeight(100);
@@ -4047,11 +4053,17 @@ var View = function() {
 	gridBox.set_percentHeight(100);
 	gridBox.set_percentWidth(100);
 	var statContainer = this.CreateContainer(gridBox,true);
+	this.currencyViews.push(this.CreateValueView(statContainer,false,"Lagrima: "));
+	this.currencyViews.push(this.CreateValueView(statContainer,false,"Lagrima\nStone: "));
+	var box = new haxe_ui_containers_Box();
+	box.set_height(40);
+	statContainer.addComponent(box);
 	this.lifeView = this.CreateValueView(statContainer,true,"Life: ");
 	this.attackView = this.CreateValueView(statContainer,false,"Attack: ");
 	this.speedView = this.CreateValueView(statContainer,false,"Speed: ");
 	this.defView = this.CreateValueView(statContainer,false,"Def: ");
 	this.mDefView = this.CreateValueView(statContainer,false,"mDef: ");
+	this.statEquipmentParent = statContainer;
 	var scroll = this.CreateScrollable(gridBox);
 	scroll.set_height(300);
 	scroll.set_text("Equipment");
@@ -4130,6 +4142,8 @@ View.prototype = {
 	,lifeView: null
 	,defView: null
 	,mDefView: null
+	,currencyViews: null
+	,statEquipmentParent: null
 	,enemyToAdvance: null
 	,areaLabel: null
 	,mainComponent: null
@@ -4467,7 +4481,13 @@ View.prototype = {
 			this.equipmentMainAction(equipmentPos,actionId);
 		}
 	}
-	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee,upgradeVisible,upgradable) {
+	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee,upgradeVisible,upgradable,cost,sellGain) {
+		if(sellGain == null) {
+			sellGain = 0;
+		}
+		if(cost == null) {
+			cost = 0;
+		}
 		if(upgradable == null) {
 			upgradable = false;
 		}
@@ -4508,7 +4528,9 @@ View.prototype = {
 			this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("white"));
 		}
 		this.equipments[pos].actionButtons[1].set_hidden(equipped == true);
+		this.equipments[pos].actionButtons[1].set_text("Sell\n" + sellGain + " Lagrima");
 		this.equipments[pos].actionButtons[2].set_hidden(false);
+		this.equipments[pos].actionButtons[2].set_text("Upgrade\n-" + cost + " Lagrima");
 		while(this.equipments[pos].values.length < numberOfValues) {
 			var vv = this.CreateValueView(this.equipments[pos].parent,false,"Attr");
 			this.equipments[pos].values.push(vv);
