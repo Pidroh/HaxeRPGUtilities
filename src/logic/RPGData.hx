@@ -58,6 +58,13 @@ class AttributeLogic {
 			}
 			result[key] = value + Std.int(addedValue * quantityOfAddition);
 		}
+
+		// only do attributes not in original map
+		for (key => value in attributeAddition) {
+			if (attributes.exists(key) == false) {
+				result[key] = value;
+			}
+		}
 	}
 }
 
@@ -122,7 +129,7 @@ typedef Equipment = {
 	var ?generationSuffixMod:Int;
 	var ?generationPrefixModSeed:Int;
 	var ?generationSuffixModSeed:Int;
-	var seen:Int; //0: unseen 1: fresh 2: seen
+	var seen:Int; // 0: unseen 1: fresh 2: seen
 }
 
 typedef PlayerAction = {
@@ -148,7 +155,7 @@ typedef AreaPersistence = {
 }
 
 typedef CurrencyHolderRuntime = {
-	var maxValues : Map<String, Int>;
+	var maxValues:Map<String, Int>;
 }
 
 typedef CurrencyPersistent = {
@@ -157,8 +164,7 @@ typedef CurrencyPersistent = {
 }
 
 typedef CurrencyHolderPersistent = {
-	public var currencies : Map<String, CurrencyPersistent>;
-	
+	public var currencies:Map<String, CurrencyPersistent>;
 }
 
 typedef WorldData = {
@@ -176,11 +182,10 @@ typedef WorldData = {
 	var recovering:Bool;
 	var sleeping:Bool;
 	var prestigeTimes:Int;
-	
+
 	var ?currency:CurrencyHolderPersistent;
 	var ?skillSets:Array<SkillSet>;
 	var ?equipLevels:Array<EquipmentLevel>;
-
 	// Easier access for the data in region progress. Has to copy the data back in update.
 	var battleArea:Int;
 	var maxArea:Int;
@@ -204,7 +209,6 @@ enum EventTypes {
 	MPRunOut;
 	BuffRemoval;
 	DebuffBlock;
-	
 }
 
 class ActorReference {
@@ -261,10 +265,10 @@ typedef Skill = {
 	var profession:String;
 	var effects:Array<Effect>;
 	var ?activeEffect:Array<Effect>;
-	var ?turnRecharge : Int;
+	var ?turnRecharge:Int;
 	var mpCost:Int;
 }
 
 typedef SkillSet = {
-    var skills:Array<SkillUsable>;
+	var skills:Array<SkillUsable>;
 }

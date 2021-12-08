@@ -2583,7 +2583,8 @@ Main.gamemain = function() {
 	var equipmentWindowTypeAlert = [false,false];
 	view.FeedEquipmentTypes(["Weapons","Armor","Skill Set"]);
 	var saveFileImporterSetup = false;
-	var bossMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
+	var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
+	var bossMessage = originMessage;
 	update = function(timeStamp) {
 		var v = bm.wdata.maxArea;
 		global.h["maxarea"] = v;
@@ -2789,7 +2790,7 @@ Main.gamemain = function() {
 				ev = "<b>Your stats permanently increased!</b>";
 				GameAnalyticsIntegration.SendProgressCompleteEvent("Permanentupg","","");
 				view.ShowMessage("Area Clear",bossMessage);
-				bossMessage = "Hard Area Cleared!\nYour stats permanently increased!";
+				bossMessage = originMessage;
 			}
 			if(e.type == EventTypes.statUpgrade) {
 				battle = false;
@@ -2913,7 +2914,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 696, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 697, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2925,7 +2926,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 713, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 714, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -2944,8 +2945,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 741, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 742, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 742, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 743, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -3263,6 +3264,21 @@ AttributeLogic.Add = function(attributes,attributeAddition,quantityOfAddition,re
 		}
 		var v = value + (addedValue * quantityOfAddition | 0);
 		result.h[key1] = v;
+	}
+	var h = attributeAddition.h;
+	var _g_h = h;
+	var _g_keys = Object.keys(h);
+	var _g_length = _g_keys.length;
+	var _g_current = 0;
+	while(_g_current < _g_length) {
+		var key = _g_keys[_g_current++];
+		var _g1_key = key;
+		var _g1_value = _g_h[key];
+		var key1 = _g1_key;
+		var value = _g1_value;
+		if(Object.prototype.hasOwnProperty.call(attributes.h,key1) == false) {
+			result.h[key1] = value;
+		}
 	}
 };
 var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null

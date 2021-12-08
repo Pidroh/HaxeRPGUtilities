@@ -2706,6 +2706,21 @@ AttributeLogic.Add = function(attributes,attributeAddition,quantityOfAddition,re
 		var v = value + (addedValue * quantityOfAddition | 0);
 		result.h[key1] = v;
 	}
+	var h = attributeAddition.h;
+	var _g_h = h;
+	var _g_keys = Object.keys(h);
+	var _g_length = _g_keys.length;
+	var _g_current = 0;
+	while(_g_current < _g_length) {
+		var key = _g_keys[_g_current++];
+		var _g1_key = key;
+		var _g1_value = _g_h[key];
+		var key1 = _g1_key;
+		var value = _g1_value;
+		if(Object.prototype.hasOwnProperty.call(attributes.h,key1) == false) {
+			result.h[key1] = value;
+		}
+	}
 };
 var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,GameStart: {_hx_name:"GameStart",_hx_index:0,__enum__:"EventTypes",toString:$estr}

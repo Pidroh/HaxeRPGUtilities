@@ -336,7 +336,8 @@ class Main {
 
 		var saveFileImporterSetup = false;
 
-		var bossMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
+		var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
+		var bossMessage = originMessage;
 
 		update = function(timeStamp:Float):Bool {
 			global["maxarea"] = bm.wdata.maxArea;
@@ -542,7 +543,7 @@ class Main {
 					GameAnalyticsIntegration.SendProgressCompleteEvent("Permanentupg", "", "");
 					//bossMessage += ev;
 					view.ShowMessage("Area Clear", bossMessage);
-					bossMessage = "Hard Area Cleared!\nYour stats permanently increased!";
+					bossMessage = originMessage;
 
 				}
 				if (e.type == statUpgrade) {
