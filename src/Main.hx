@@ -336,6 +336,8 @@ class Main {
 
 		var saveFileImporterSetup = false;
 
+		var bossMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
+
 		update = function(timeStamp:Float):Bool {
 			global["maxarea"] = bm.wdata.maxArea;
 			global["herolevel"] = bm.wdata.hero.level;
@@ -538,12 +540,17 @@ class Main {
 					battle = false;
 					ev = '<b>Your stats permanently increased!</b>';
 					GameAnalyticsIntegration.SendProgressCompleteEvent("Permanentupg", "", "");
+					//bossMessage += ev;
+					view.ShowMessage("Area Clear", bossMessage);
+					bossMessage = "Hard Area Cleared!\nYour stats permanently increased!";
+
 				}
 				if (e.type == statUpgrade) {
 					battle = false;
 					var dataS = e.dataString;
 					var data = e.data;
 					ev = '<b>$dataS +$data</b>';
+					bossMessage += '$dataS +$data' +"\n";
 				}
 				if (e.type == AreaUnlock) {
 					battle = false;
@@ -748,9 +755,15 @@ class Main {
 			if (e.generationSuffixMod >= 0) {
 				name = name + " " + modBases[e.generationSuffixMod].suffix;
 			}
-			var level = e.outsideSystems["level"];
+			var level = bm.wdata.equipLevels[e.outsideSystems["level"]].level;
+			
 			var levelP = level / 3;
-			var levelS = level % 3;
+			var levelS = (level-1 % 3)+1;
+
+
+			
+			//0 - 0
+
 			var character = '+';
 			for (i in 0...levelS){
 				name += character;

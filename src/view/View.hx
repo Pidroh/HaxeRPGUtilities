@@ -487,7 +487,8 @@ class View {
 				currencyViews.push(CreateValueView(statContainer, false, "Lagrima: "));
 				currencyViews.push(CreateValueView(statContainer, false, "Lagrima\nStone: "));
 
-				var box = new Box(); box.height = 40;
+				var box = new Box();
+				box.height = 40;
 				statContainer.addComponent(box);
 
 				lifeView = CreateValueView(statContainer, true, "Life: ");
@@ -789,9 +790,7 @@ class View {
 		equipments[pos].name.text = name;
 		equipments[pos].rightLabelBox.hidden = firstTimeSee == false;
 
-		if(upgradeVisible){
-
-		}
+		if (upgradeVisible) {}
 		equipments[pos].actionButtons[2].hidden = !upgradeVisible;
 		equipments[pos].actionButtons[2].disabled = !upgradable;
 
@@ -860,6 +859,10 @@ class View {
 		var a = new Animation(comp);
 
 		buttonMap[key].componentAnimation = a;
+	}
+
+	public function ShowMessage(title, message) {
+		Screen.instance.messageBox(message, title, MessageBoxType.TYPE_INFO, true, function(button) {});
 	}
 
 	public function AddButton(id:String, label:String, onClick, warningMessage = null, position = -1, secondArea = false) {
