@@ -569,7 +569,7 @@ class BattleManager {
 		return wdata.recovering != true && wdata.sleeping != true;
 	}
 
-	function CalculateHeroMaxLevel():Int {
+	public function CalculateHeroMaxLevel():Int {
 		return wdata.prestigeTimes * GetMaxLevelBonusOnPrestige() + 20;
 	}
 
@@ -1475,7 +1475,7 @@ $baseInfo';
 
 		canAdvance = wdata.battleArea < wdata.maxArea;
 		canRetreat = wdata.battleArea > 0;
-		canLevelUp = wdata.hero.xp.value >= wdata.hero.xp.calculatedMax;
+		canLevelUp = wdata.hero.xp.value >= wdata.hero.xp.calculatedMax && wdata.hero.level < CalculateHeroMaxLevel();
 		var hasEquipment = wdata.hero.equipment.length > 1; // to account for initial skill set
 
 		{

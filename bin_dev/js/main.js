@@ -1500,7 +1500,7 @@ BattleManager.prototype = {
 		}
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
-		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
+		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax && this.wdata.hero.level < this.CalculateHeroMaxLevel();
 		var hasEquipment = this.wdata.hero.equipment.length > 1;
 		var lu = this.wdata.playerActions.h["tabequipment"];
 		lu.enabled = hasEquipment;
@@ -2741,7 +2741,7 @@ Main.gamemain = function() {
 		view.SetTabNotification(anyNewEquip,view.equipTab);
 		var levelUpSystem = bm.wdata.hero.level > 1;
 		view.UpdateVisibilityOfValueView(view.level,levelUpSystem);
-		view.UpdateVisibilityOfValueView(view.xpBar,true);
+		view.UpdateVisibilityOfValueView(view.xpBar,bm.wdata.hero.level < bm.CalculateHeroMaxLevel());
 		while(bm.events.length > eventShown) {
 			var e = bm.events[eventShown];
 			var data = e.data;

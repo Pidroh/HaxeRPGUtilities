@@ -1473,7 +1473,7 @@ BattleManager.prototype = {
 		}
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
-		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
+		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax && this.wdata.hero.level < this.CalculateHeroMaxLevel();
 		var hasEquipment = this.wdata.hero.equipment.length > 1;
 		var lu = this.wdata.playerActions.h["tabequipment"];
 		lu.enabled = hasEquipment;

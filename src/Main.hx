@@ -481,7 +481,7 @@ class Main {
 
 			var levelUpSystem = bm.wdata.hero.level > 1;
 			view.UpdateVisibilityOfValueView(view.level, levelUpSystem);
-			view.UpdateVisibilityOfValueView(view.xpBar, true);
+			view.UpdateVisibilityOfValueView(view.xpBar, bm.wdata.hero.level < bm.CalculateHeroMaxLevel());
 
 			while (bm.events.length > eventShown) {
 				var e = bm.events[eventShown];
