@@ -1338,6 +1338,7 @@ BattleManager.prototype = {
 	,UpgradeEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
 		BattleManager.Upgrade(e,this.wdata);
+		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,DiscardSingleEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
@@ -1755,7 +1756,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1737:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1738:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1772,7 +1773,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1754:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1755:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -1790,7 +1791,7 @@ BattleManager.prototype = {
 						++j;
 						continue;
 					}
-					this.DiscardSingleEquipment(j);
+					this.SellSingleEquipment(j);
 					continue;
 				}
 				if(r == 2) {
@@ -1798,7 +1799,7 @@ BattleManager.prototype = {
 						++j;
 						continue;
 					}
-					this.DiscardSingleEquipment(i);
+					this.SellSingleEquipment(i);
 					--i;
 					break;
 				}

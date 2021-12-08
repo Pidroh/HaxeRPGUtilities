@@ -1365,6 +1365,7 @@ BattleManager.prototype = {
 	,UpgradeEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
 		BattleManager.Upgrade(e,this.wdata);
+		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,DiscardSingleEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
@@ -1782,7 +1783,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1737, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1738, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1799,7 +1800,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1754, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1755, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -1817,7 +1818,7 @@ BattleManager.prototype = {
 						++j;
 						continue;
 					}
-					this.DiscardSingleEquipment(j);
+					this.SellSingleEquipment(j);
 					continue;
 				}
 				if(r == 2) {
@@ -1825,7 +1826,7 @@ BattleManager.prototype = {
 						++j;
 						continue;
 					}
-					this.DiscardSingleEquipment(i);
+					this.SellSingleEquipment(i);
 					--i;
 					break;
 				}

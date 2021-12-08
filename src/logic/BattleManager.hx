@@ -1322,6 +1322,7 @@ class BattleManager {
 	public function UpgradeEquipment(pos) {
 		var e = wdata.hero.equipment[pos];
 		BattleManager.Upgrade(e, wdata);
+		RecalculateAttributes(wdata.hero);
 	}
 
 	function DiscardSingleEquipment(pos) {
@@ -1770,7 +1771,8 @@ $baseInfo';
 							j++;
 							continue;
 						}
-						DiscardSingleEquipment(j);
+						//DiscardSingleEquipment(j);
+						SellSingleEquipment(j);
 						// j--; //should not decrement because increment wont happen
 						continue;
 					}
@@ -1779,7 +1781,8 @@ $baseInfo';
 							j++;
 							continue;
 						}
-						DiscardSingleEquipment(i);
+						//DiscardSingleEquipment(i);
+						SellSingleEquipment(i);
 						i--; // needs to decrement because it is a break, not a continue
 						break;
 					}
