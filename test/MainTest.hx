@@ -67,7 +67,7 @@ class MainTest {
 				requiredAttributes: null,
 				attributes: ["Attack" => 2]
 			});
-			
+
 			var oldEquipN = bm.wdata.hero.equipment.length;
 			bm.DiscardWorseEquipment();
 			var equipN = bm.wdata.hero.equipment.length;
@@ -119,7 +119,7 @@ class MainTest {
 				attributes: ["Attack" => 1, "Defense" => 1]
 			});
 
-			var oldEquipN = bm.wdata.hero.equipment.length; //use old value this time
+			var oldEquipN = bm.wdata.hero.equipment.length; // use old value this time
 			bm.DiscardWorseEquipment();
 			var equipN = bm.wdata.hero.equipment.length;
 
@@ -270,6 +270,40 @@ class MainTest {
 			var json = bm.GetJsonPersistentData();
 			// var content:String = sys.io.File.getContent('my_file.txt');
 			var fileName = "saves/basic" + bm.wdata.worldVersion + ".json";
+			var pm:PersistenceMaster = {worldVersion: bm.wdata.worldVersion, jsonGameplay: json, jsonStory: null};
+			sys.io.File.saveContent(fileName, Json.stringify(pm));
+		}
+		{
+			Sys.println("Add skillset for all skills");
+			var bm:BattleManager = GetBattleManager();
+		
+			for (sb in bm.skillBases) {
+				bm.ForceSkillSetDrop(1, null, {
+					skills: [{
+						id: sb.id,
+						level: 1
+					}]
+				});
+			}
+
+			bm.ChangeBattleArea(100);
+			for (i in 1...400) {
+				bm.update(0.9);
+			}
+			if (bm.getPlayerTimesKilled() < 5) {
+				Sys.println("ERROR: Did not die! " + bm.getPlayerTimesKilled());
+				// Sys.getChar(false);
+			}
+			for (i in 1...400) {
+				bm.ForceLevelUp();
+			}
+			for (i in 1...400) {
+				bm.update(0.9);
+			}
+
+			var json = bm.GetJsonPersistentData();
+			// var content:String = sys.io.File.getContent('my_file.txt');
+			var fileName = "saves/skilled" + bm.wdata.worldVersion + ".json";
 			var pm:PersistenceMaster = {worldVersion: bm.wdata.worldVersion, jsonGameplay: json, jsonStory: null};
 			sys.io.File.saveContent(fileName, Json.stringify(pm));
 		}

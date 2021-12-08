@@ -545,6 +545,9 @@ class Main {
 					view.ShowMessage("Area Clear", bossMessage);
 					bossMessage = originMessage;
 
+					
+					
+
 				}
 				if (e.type == statUpgrade) {
 					battle = false;

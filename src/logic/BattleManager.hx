@@ -1266,28 +1266,34 @@ class BattleManager {
 				}
 			}
 
-			var attackerBuffChanged = false;
 			for (b in 0...attacker.buffs.length) {
 				var bu = attacker.buffs[b];
 				if (attacker.buffs[b] != null) {
 					bu.duration -= 1;
-					if (bu.duration <= 0) {
-						attacker.buffs[b] = null;
-						// attacker.buffs.remove(bu);
-						attackerBuffChanged = true;
-					}
 				}
 			}
-			while (attacker.buffs.remove(null)) {};
-			if (attackerBuffChanged) {
-				RecalculateAttributes(attacker);
-			}
+			CheckRemoveMod(attacker);
+			CheckRemoveMod(defender);
 		} else {
 			if (wdata.hero.turnRecharge != null)
 				wdata.hero.turnRecharge.resize(0);
 		}
 
 		return "";
+	}
+
+	public function CheckRemoveMod(actor:Actor) {
+		var attackerBuffChanged = false;
+		for (b in 0...actor.buffs.length) {
+			var bu = actor.buffs[b];
+			if (bu.duration <= 0) {
+				attackerBuffChanged = true;
+				actor.buffs[b] = null;
+			}
+		}
+		while (actor.buffs.remove(null)) {};
+		if (attackerBuffChanged)
+			RecalculateAttributes(actor);
 	}
 
 	public function AddMod(modBase:ModBase, statAdd:Map<String, Int>, statMul:Map<String, Int>, seed) {
@@ -1771,7 +1777,7 @@ $baseInfo';
 							j++;
 							continue;
 						}
-						//DiscardSingleEquipment(j);
+						// DiscardSingleEquipment(j);
 						SellSingleEquipment(j);
 						// j--; //should not decrement because increment wont happen
 						continue;
@@ -1781,7 +1787,7 @@ $baseInfo';
 							j++;
 							continue;
 						}
-						//DiscardSingleEquipment(i);
+						// DiscardSingleEquipment(i);
 						SellSingleEquipment(i);
 						i--; // needs to decrement because it is a break, not a continue
 						break;

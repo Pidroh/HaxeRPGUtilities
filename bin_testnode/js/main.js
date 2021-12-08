@@ -1264,7 +1264,6 @@ BattleManager.prototype = {
 					}
 				}
 			}
-			var attackerBuffChanged = false;
 			var _g = 0;
 			var _g1 = attacker.buffs.length;
 			while(_g < _g1) {
@@ -1272,21 +1271,32 @@ BattleManager.prototype = {
 				var bu = attacker.buffs[b];
 				if(attacker.buffs[b] != null) {
 					bu.duration -= 1;
-					if(bu.duration <= 0) {
-						attacker.buffs[b] = null;
-						attackerBuffChanged = true;
-					}
 				}
 			}
-			while(HxOverrides.remove(attacker.buffs,null)) {
-			}
-			if(attackerBuffChanged) {
-				this.RecalculateAttributes(attacker);
-			}
+			this.CheckRemoveMod(attacker);
+			this.CheckRemoveMod(defender);
 		} else if(this.wdata.hero.turnRecharge != null) {
 			this.wdata.hero.turnRecharge.length = 0;
 		}
 		return "";
+	}
+	,CheckRemoveMod: function(actor) {
+		var attackerBuffChanged = false;
+		var _g = 0;
+		var _g1 = actor.buffs.length;
+		while(_g < _g1) {
+			var b = _g++;
+			var bu = actor.buffs[b];
+			if(bu.duration <= 0) {
+				attackerBuffChanged = true;
+				actor.buffs[b] = null;
+			}
+		}
+		while(HxOverrides.remove(actor.buffs,null)) {
+		}
+		if(attackerBuffChanged) {
+			this.RecalculateAttributes(actor);
+		}
 	}
 	,AddMod: function(modBase,statAdd,statMul,seed) {
 		var mulAdd = modBase.statMultipliers;
@@ -1756,7 +1766,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1738:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1744:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1773,7 +1783,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1755:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1761:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2286,6 +2296,41 @@ MainTest.main = function() {
 	var fileName = "saves/basic" + bm.wdata.worldVersion + ".json";
 	var pm = { worldVersion : bm.wdata.worldVersion, jsonGameplay : json, jsonStory : null};
 	js_node_Fs.writeFileSync(fileName,JSON.stringify(pm));
+	process.stdout.write("Add skillset for all skills");
+	process.stdout.write("\n");
+	var bm = MainTest.GetBattleManager();
+	var _g = 0;
+	var _g1 = bm.skillBases;
+	while(_g < _g1.length) {
+		var sb = _g1[_g];
+		++_g;
+		bm.ForceSkillSetDrop(1,null,{ skills : [{ id : sb.id, level : 1}]});
+	}
+	bm.ChangeBattleArea(100);
+	var _g = 1;
+	while(_g < 400) {
+		var i = _g++;
+		bm.update(0.9);
+	}
+	if(bm.getPlayerTimesKilled() < 5) {
+		var v = "ERROR: Did not die! " + bm.getPlayerTimesKilled();
+		process.stdout.write(Std.string(v));
+		process.stdout.write("\n");
+	}
+	var _g = 1;
+	while(_g < 400) {
+		var i = _g++;
+		bm.ForceLevelUp();
+	}
+	var _g = 1;
+	while(_g < 400) {
+		var i = _g++;
+		bm.update(0.9);
+	}
+	var json = bm.GetJsonPersistentData();
+	var fileName = "saves/skilled" + bm.wdata.worldVersion + ".json";
+	var pm = { worldVersion : bm.wdata.worldVersion, jsonGameplay : json, jsonStory : null};
+	js_node_Fs.writeFileSync(fileName,JSON.stringify(pm));
 	process.stdout.write("Pierce test");
 	process.stdout.write("\n");
 	var bm = MainTest.GetBattleManager();
@@ -2449,14 +2494,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:390:","  _____ ");
-		console.log("test/MainTest.hx:391:","  _____ ");
-		console.log("test/MainTest.hx:392:","  _____ ");
-		console.log("test/MainTest.hx:393:",json);
-		console.log("test/MainTest.hx:394:","  _____ ");
-		console.log("test/MainTest.hx:395:","  _____ ");
-		console.log("test/MainTest.hx:396:","  _____ ");
-		console.log("test/MainTest.hx:397:",json2);
+		console.log("test/MainTest.hx:424:","  _____ ");
+		console.log("test/MainTest.hx:425:","  _____ ");
+		console.log("test/MainTest.hx:426:","  _____ ");
+		console.log("test/MainTest.hx:427:",json);
+		console.log("test/MainTest.hx:428:","  _____ ");
+		console.log("test/MainTest.hx:429:","  _____ ");
+		console.log("test/MainTest.hx:430:","  _____ ");
+		console.log("test/MainTest.hx:431:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
