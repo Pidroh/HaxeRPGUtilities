@@ -207,10 +207,10 @@ BattleManager.GetCost = function(e,wdata) {
 		genLevel = e.generationLevel;
 	}
 	if(e.generationPrefixMod >= 0) {
-		genLevel *= 1.3;
+		genLevel += 5;
 	}
 	if(e.generationSuffixMod >= 0) {
-		genLevel *= 1.3;
+		genLevel += 5;
 	}
 	return (genLevel / 5 | 0) * 5 + 5;
 };
@@ -232,13 +232,16 @@ BattleManager.LimitBreak = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.limitbreak++;
 };
-BattleManager.Upgrade = function(e,wdata) {
+BattleManager.Upgrade = function(e,wdata,bm) {
 	var cost = BattleManager.GetCost(e,wdata);
 	wdata.currency.currencies.h["Lagrima"].value -= cost;
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.level++;
 	if(BattleManager.IsUpgradable(e,wdata) == false) {
-		wdata.currency.currencies.h["Lagrima Stone"].value += BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
+		var bonus = BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
+		wdata.currency.currencies.h["Lagrima Stone"].value += bonus;
+		bm.AddEvent(EventTypes.EquipMaxed).data = bonus;
+		bm.AddEvent(EventTypes.EquipMaxed).dataString = "Lagrima Stone";
 	}
 	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
 		var tmp = "Attack";
@@ -1348,7 +1351,7 @@ BattleManager.prototype = {
 	,UpgradeOrLimitBreakEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
 		if(BattleManager.IsUpgradable(e,this.wdata)) {
-			BattleManager.Upgrade(e,this.wdata);
+			BattleManager.Upgrade(e,this.wdata,this);
 		} else {
 			BattleManager.LimitBreak(e,this.wdata);
 		}
@@ -1370,8 +1373,8 @@ BattleManager.prototype = {
 		}
 	}
 	,SellSingleEquipment: function(pos) {
-		this.DiscardSingleEquipment(pos);
 		var prize = BattleManager.GetSellPrize(this.wdata.hero.equipment[pos],this.wdata);
+		this.DiscardSingleEquipment(pos);
 		this.wdata.currency.currencies.h["Lagrima"].value += prize;
 	}
 	,SellEquipment: function(pos) {
@@ -1770,7 +1773,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1749:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1754:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1787,7 +1790,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1766:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1771:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2789,8 +2792,9 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,MPRunOut: {_hx_name:"MPRunOut",_hx_index:14,__enum__:"EventTypes",toString:$estr}
 	,BuffRemoval: {_hx_name:"BuffRemoval",_hx_index:15,__enum__:"EventTypes",toString:$estr}
 	,DebuffBlock: {_hx_name:"DebuffBlock",_hx_index:16,__enum__:"EventTypes",toString:$estr}
+	,EquipMaxed: {_hx_name:"EquipMaxed",_hx_index:17,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut,EventTypes.BuffRemoval,EventTypes.DebuffBlock];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut,EventTypes.BuffRemoval,EventTypes.DebuffBlock,EventTypes.EquipMaxed];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;

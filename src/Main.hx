@@ -566,6 +566,9 @@ class Main {
 					view.ShowMessage("Area Clear", bossMessage);
 					bossMessage = originMessage;
 				}
+				if(e.type == EquipMaxed){
+					view.ShowMessage("Equipment reached Limit Level", 'Your equipment reached Limit Level. The energy materializes into $dataString x$data');
+				}
 				if (e.type == statUpgrade) {
 					battle = false;
 					var dataS = e.dataString;

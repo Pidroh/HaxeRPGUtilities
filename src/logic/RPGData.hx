@@ -209,6 +209,7 @@ enum EventTypes {
 	MPRunOut;
 	BuffRemoval;
 	DebuffBlock;
+	EquipMaxed;
 }
 
 class ActorReference {

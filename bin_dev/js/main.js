@@ -209,10 +209,10 @@ BattleManager.GetCost = function(e,wdata) {
 		genLevel = e.generationLevel;
 	}
 	if(e.generationPrefixMod >= 0) {
-		genLevel *= 1.3;
+		genLevel += 5;
 	}
 	if(e.generationSuffixMod >= 0) {
-		genLevel *= 1.3;
+		genLevel += 5;
 	}
 	return (genLevel / 5 | 0) * 5 + 5;
 };
@@ -234,13 +234,16 @@ BattleManager.LimitBreak = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.limitbreak++;
 };
-BattleManager.Upgrade = function(e,wdata) {
+BattleManager.Upgrade = function(e,wdata,bm) {
 	var cost = BattleManager.GetCost(e,wdata);
 	wdata.currency.currencies.h["Lagrima"].value -= cost;
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.level++;
 	if(BattleManager.IsUpgradable(e,wdata) == false) {
-		wdata.currency.currencies.h["Lagrima Stone"].value += BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
+		var bonus = BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
+		wdata.currency.currencies.h["Lagrima Stone"].value += bonus;
+		bm.AddEvent(EventTypes.EquipMaxed).data = bonus;
+		bm.AddEvent(EventTypes.EquipMaxed).dataString = "Lagrima Stone";
 	}
 	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
 		var tmp = "Attack";
@@ -1375,7 +1378,7 @@ BattleManager.prototype = {
 	,UpgradeOrLimitBreakEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
 		if(BattleManager.IsUpgradable(e,this.wdata)) {
-			BattleManager.Upgrade(e,this.wdata);
+			BattleManager.Upgrade(e,this.wdata,this);
 		} else {
 			BattleManager.LimitBreak(e,this.wdata);
 		}
@@ -1397,8 +1400,8 @@ BattleManager.prototype = {
 		}
 	}
 	,SellSingleEquipment: function(pos) {
-		this.DiscardSingleEquipment(pos);
 		var prize = BattleManager.GetSellPrize(this.wdata.hero.equipment[pos],this.wdata);
+		this.DiscardSingleEquipment(pos);
 		this.wdata.currency.currencies.h["Lagrima"].value += prize;
 	}
 	,SellEquipment: function(pos) {
@@ -1797,7 +1800,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1749, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1754, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1814,7 +1817,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1766, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1771, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2824,6 +2827,9 @@ Main.gamemain = function() {
 				view.ShowMessage("Area Clear",bossMessage);
 				bossMessage = originMessage;
 			}
+			if(e.type == EventTypes.EquipMaxed) {
+				view.ShowMessage("Equipment reached Limit Level","Your equipment reached Limit Level. The energy materializes into " + dataString + " x" + data);
+			}
 			if(e.type == EventTypes.statUpgrade) {
 				battle = false;
 				var dataS = e.dataString;
@@ -2946,7 +2952,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 717, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 720, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2958,7 +2964,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 734, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 737, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -2977,8 +2983,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 762, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 763, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 765, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 766, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -3332,8 +3338,9 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,MPRunOut: {_hx_name:"MPRunOut",_hx_index:14,__enum__:"EventTypes",toString:$estr}
 	,BuffRemoval: {_hx_name:"BuffRemoval",_hx_index:15,__enum__:"EventTypes",toString:$estr}
 	,DebuffBlock: {_hx_name:"DebuffBlock",_hx_index:16,__enum__:"EventTypes",toString:$estr}
+	,EquipMaxed: {_hx_name:"EquipMaxed",_hx_index:17,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut,EventTypes.BuffRemoval,EventTypes.DebuffBlock];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut,EventTypes.BuffRemoval,EventTypes.DebuffBlock,EventTypes.EquipMaxed];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;

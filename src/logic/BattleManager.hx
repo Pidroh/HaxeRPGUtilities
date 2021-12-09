@@ -847,10 +847,12 @@ class BattleManager {
 
 		// increases cost to upgrade every 5 levels, by 5. So 5, 10, 15, 20, etc
 		if (e.generationPrefixMod >= 0) {
-			genLevel *= 1.3;
+			//genLevel *= 1.5;
+			genLevel += 5;
 		}
 		if (e.generationSuffixMod >= 0) {
-			genLevel *= 1.3;
+			//genLevel *= 1.5;
+			genLevel += 5;
 		}
 
 		return Std.int(genLevel / 5) * 5 + 5;
@@ -877,7 +879,7 @@ class BattleManager {
 		level.limitbreak++;
 	}
 
-	public static function Upgrade(e:Equipment, wdata:WorldData) {
+	public static function Upgrade(e:Equipment, wdata:WorldData, bm:BattleManager) {
 		var cost = GetCost(e, wdata);
 		wdata.currency.currencies["Lagrima"].value -= cost;
 		var level = wdata.equipLevels[e.outsideSystems["level"]];
@@ -885,7 +887,10 @@ class BattleManager {
 
 		// reached max level
 		if (IsUpgradable(e, wdata) == false) {
-			wdata.currency.currencies["Lagrima Stone"].value += Std.int(GetLimitBreakCost(e, wdata) / 3);
+			var bonus = Std.int(GetLimitBreakCost(e, wdata) / 3);
+			wdata.currency.currencies["Lagrima Stone"].value += bonus;
+			bm.AddEvent(EquipMaxed).data = bonus;
+			bm.AddEvent(EquipMaxed).dataString = "Lagrima Stone";
 		}
 		{
 			if (e.attributes.exists("Attack")) {
@@ -1328,7 +1333,7 @@ class BattleManager {
 	public function UpgradeOrLimitBreakEquipment(pos) {
 		var e = wdata.hero.equipment[pos];
 		if(IsUpgradable(e, wdata)){
-			BattleManager.Upgrade(e, wdata);
+			BattleManager.Upgrade(e, wdata, this);
 		} else{
 			BattleManager.LimitBreak(e, wdata);
 		}
@@ -1350,8 +1355,8 @@ class BattleManager {
 	}
 
 	public function SellSingleEquipment(pos) {
-		DiscardSingleEquipment(pos);
 		var prize = GetSellPrize(wdata.hero.equipment[pos], wdata);
+		DiscardSingleEquipment(pos);
 		wdata.currency.currencies["Lagrima"].value += prize;
 	}
 
