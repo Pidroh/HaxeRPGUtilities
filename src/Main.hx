@@ -1,3 +1,4 @@
+import js.html.BatteryManager;
 import js.lib.Function;
 import js.html.KeyboardEvent;
 import js.html.Document;
@@ -184,8 +185,10 @@ class Main {
 			}
 			if (action == 1)
 				bm.SellEquipment(pos);
-			if (action == 2)
-				bm.UpgradeEquipment(pos);
+			if (action == 2) {
+				
+				bm.UpgradeOrLimitBreakEquipment(pos);
+			}
 			if (action == View.equipmentAction_DiscardBad)
 				bm.DiscardWorseEquipment();
 		};
@@ -351,7 +354,6 @@ class Main {
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
 			view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
 			view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
-			
 
 			view.UpdateValues(view.currencyViews[0], bm.wdata.currency.currencies["Lagrima"].value, -1);
 			view.UpdateValues(view.currencyViews[1], bm.wdata.currency.currencies["Lagrima Stone"].value, -1);
@@ -422,8 +424,27 @@ class Main {
 						var rarity = 0;
 						if (e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0)
 							rarity = 1;
-						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1, BattleManager.IsUpgradable(e, bm.wdata),
-							BattleManager.CanUpgrade(e, bm.wdata), BattleManager.GetCost(e, bm.wdata), BattleManager.GetSellPrize(e, bm.wdata));
+						var upgradeLabel = "Upgrade";
+						var upgradeCurrency = "Lagrima";
+						var canUpgrade = false;
+						var upgradeCost = 0;
+						var upgradable = BattleManager.IsUpgradable(e, bm.wdata);
+
+						if (upgradable) {
+							canUpgrade = BattleManager.CanUpgrade(e, bm.wdata);
+							upgradeCost = BattleManager.GetCost(e, bm.wdata);
+						} else {
+							var limitable = BattleManager.IsLimitBreakable(e, bm.wdata);
+							if (limitable) {
+								upgradable = limitable;
+								canUpgrade = BattleManager.CanLimitBreak(e, bm.wdata);
+								upgradeCost = BattleManager.GetLimitBreakCost(e, bm.wdata);
+								upgradeLabel = "Limit Break";
+								upgradeCurrency = "Lagrima Stone";
+							}
+						}
+						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1, upgradable, canUpgrade,
+							upgradeCost, BattleManager.GetSellPrize(e, bm.wdata), upgradeLabel, upgradeCurrency);
 						var vid = 0;
 						if (e.outsideSystems != null) {
 							if (e.outsideSystems.exists("skillset")) {
@@ -541,20 +562,16 @@ class Main {
 					battle = false;
 					ev = '<b>Your stats permanently increased!</b>';
 					GameAnalyticsIntegration.SendProgressCompleteEvent("Permanentupg", "", "");
-					//bossMessage += ev;
+					// bossMessage += ev;
 					view.ShowMessage("Area Clear", bossMessage);
 					bossMessage = originMessage;
-
-					
-					
-
 				}
 				if (e.type == statUpgrade) {
 					battle = false;
 					var dataS = e.dataString;
 					var data = e.data;
 					ev = '<b>$dataS +$data</b>';
-					bossMessage += '$dataS +$data' +"\n";
+					bossMessage += '$dataS +$data' + "\n";
 				}
 				if (e.type == AreaUnlock) {
 					battle = false;
@@ -760,16 +777,26 @@ class Main {
 				name = name + " " + modBases[e.generationSuffixMod].suffix;
 			}
 			var level = bm.wdata.equipLevels[e.outsideSystems["level"]].level;
-			
-			var levelP = level / 3;
-			var levelS = (level-1 % 3)+1;
+
+			var levelP = Std.int((level-1) / 3);
+			var levelS = ((level - 1) % 3) + 1;
 
 
-			
-			//0 - 0
-
+			name += " ";
+			// 0 - 0
 			var character = '+';
-			for (i in 0...levelS){
+			/*
+			if(levelP == 1){
+				character = 'X';
+			}
+			if(levelP == 2){
+				character = 'Y';
+			}
+			if(levelP == 3){
+				character = 'Z';
+			}
+			*/
+			for (i in 0...level) {
 				name += character;
 			}
 			return name;

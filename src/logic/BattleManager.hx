@@ -1325,9 +1325,14 @@ class BattleManager {
 		BattleManager.LimitBreak(e, wdata);
 	}
 
-	public function UpgradeEquipment(pos) {
+	public function UpgradeOrLimitBreakEquipment(pos) {
 		var e = wdata.hero.equipment[pos];
-		BattleManager.Upgrade(e, wdata);
+		if(IsUpgradable(e, wdata)){
+			BattleManager.Upgrade(e, wdata);
+		} else{
+			BattleManager.LimitBreak(e, wdata);
+		}
+		
 		RecalculateAttributes(wdata.hero);
 	}
 

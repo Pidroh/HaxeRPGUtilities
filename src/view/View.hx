@@ -785,7 +785,7 @@ class View {
 	}
 
 	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1, unequipable = false, firstTimeSee = false,
-			upgradeVisible = false, upgradable = false, cost = 0, sellGain = 0) {
+			upgradeVisible = false, upgradable = false, cost = 0, sellGain = 0, upgradeLabel = "Upgrade", upgradeCurrencyLabel = "Lagrima") {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
 		equipments[pos].rightLabelBox.hidden = firstTimeSee == false;
@@ -812,7 +812,7 @@ class View {
 		}
 		equipments[pos].actionButtons[1].hidden = equipped == true;
 		equipments[pos].actionButtons[1].text = "Sell\n" + sellGain + " Lagrima";
-		equipments[pos].actionButtons[2].text = "Upgrade\n-" + cost + " Lagrima";
+		equipments[pos].actionButtons[2].text = '$upgradeLabel\n-$cost $upgradeCurrencyLabel';
 		while (equipments[pos].values.length < numberOfValues) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			equipments[pos].values.push(vv);

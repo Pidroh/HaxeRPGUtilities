@@ -169,7 +169,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 745, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 779, className : "BattleManager", methodName : "new"});
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -187,6 +187,92 @@ var BattleManager = function() {
 };
 $hxClasses["BattleManager"] = BattleManager;
 BattleManager.__name__ = "BattleManager";
+BattleManager.IsLimitBreakable = function(e,wdata) {
+	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
+	return level.limitbreak < 3;
+};
+BattleManager.IsUpgradable = function(e,wdata) {
+	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
+	var maxLevel = level.limitbreak * 3 + 3;
+	var upgradable = level.level < maxLevel;
+	return upgradable;
+};
+BattleManager.GetLimitBreakCost = function(e,wdata) {
+	return ((BattleManager.GetCost(e,wdata) + 1) / 5 | 0) * 3;
+};
+BattleManager.GetSellPrize = function(e,wdata) {
+	return BattleManager.GetCost(e,wdata) / 5 | 0;
+};
+BattleManager.GetCost = function(e,wdata) {
+	var genLevel = 1;
+	if(e.generationLevel >= 0) {
+		genLevel = e.generationLevel;
+	}
+	if(e.generationPrefixMod >= 0) {
+		genLevel *= 1.3;
+	}
+	if(e.generationSuffixMod >= 0) {
+		genLevel *= 1.3;
+	}
+	return (genLevel / 5 | 0) * 5 + 5;
+};
+BattleManager.CanUpgrade = function(e,wdata) {
+	if(BattleManager.IsUpgradable(e,wdata) == false) {
+		return false;
+	}
+	return BattleManager.GetCost(e,wdata) <= wdata.currency.currencies.h["Lagrima"].value;
+};
+BattleManager.CanLimitBreak = function(e,wdata) {
+	if(BattleManager.IsLimitBreakable(e,wdata) == false) {
+		return false;
+	}
+	return BattleManager.GetLimitBreakCost(e,wdata) <= wdata.currency.currencies.h["Lagrima Stone"].value;
+};
+BattleManager.LimitBreak = function(e,wdata) {
+	var cost = BattleManager.GetLimitBreakCost(e,wdata);
+	wdata.currency.currencies.h["Lagrima Stone"].value -= cost;
+	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
+	level.limitbreak++;
+};
+BattleManager.Upgrade = function(e,wdata) {
+	var cost = BattleManager.GetCost(e,wdata);
+	wdata.currency.currencies.h["Lagrima"].value -= cost;
+	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
+	level.level++;
+	if(BattleManager.IsUpgradable(e,wdata) == false) {
+		wdata.currency.currencies.h["Lagrima Stone"].value += BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
+	}
+	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
+		var tmp = "Attack";
+		var v = e.attributes.h[tmp] + 1;
+		e.attributes.h[tmp] = v;
+	}
+	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"MagicAttack")) {
+		var tmp = "MagicAttack";
+		var v = e.attributes.h[tmp] + 1;
+		e.attributes.h[tmp] = v;
+	}
+	if(e.type == 1) {
+		if(e.attributes.h["LifeMax"] >= 0 == false) {
+			e.attributes.h["LifeMax"] = 0;
+		}
+		var _g = e.attributes;
+		var v = _g.h["LifeMax"] + 2;
+		_g.h["LifeMax"] = v;
+	}
+	if(level.level % 3 != 0) {
+		if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Defense")) {
+			var tmp = "Defense";
+			var v = e.attributes.h[tmp] + 1;
+			e.attributes.h[tmp] = v;
+		}
+		if(Object.prototype.hasOwnProperty.call(e.attributes.h,"MagicDefense")) {
+			var tmp = "MagicDefense";
+			var v = e.attributes.h[tmp] + 1;
+			e.attributes.h[tmp] = v;
+		}
+	}
+};
 BattleManager.prototype = {
 	wdata: null
 	,dirty: null
@@ -342,6 +428,24 @@ BattleManager.prototype = {
 			magicAttack = true;
 			attackBonus += enchant;
 		}
+		if(attacker.attributesCalculated.h["Blood"] > 0) {
+			var blood = attacker.attributesCalculated.h["Blood"];
+			var bloodMul = 100;
+			if(attacker.attributesCalculated.h["Bloodthirst"] > 0) {
+				bloodMul += attacker.attributesCalculated.h["Bloodthirst"];
+			}
+			attackBonus += (blood * 5 + 10) * bloodMul / 100 | 0;
+			var life = attacker.attributesCalculated.h["Life"];
+			var decrease = attacker.attributesCalculated.h["LifeMax"] * blood / 100;
+			if(decrease < 1) {
+				decrease = 1;
+			}
+			if(decrease >= life - 1) {
+				decrease = life - 1;
+			}
+			life -= decrease | 0;
+			attacker.attributesCalculated.h["Life"] = life;
+		}
 		if(attacker.attributesCalculated.h["Antibuff"] > 0) {
 			this.RemoveBuffs(defender);
 		}
@@ -372,6 +476,17 @@ BattleManager.prototype = {
 		_g.h["Life"] = v;
 		if(defender.attributesCalculated.h["Life"] < 0) {
 			defender.attributesCalculated.h["Life"] = 0;
+		}
+		if(damage >= 1) {
+			var _g = 0;
+			var _g1 = defender.buffs;
+			while(_g < _g1.length) {
+				var b = _g1[_g];
+				++_g;
+				if(b.noble == true) {
+					b.duration = 0;
+				}
+			}
 		}
 		gEvent.origin = attacker.reference;
 		gEvent.target = defender.reference;
@@ -579,14 +694,14 @@ BattleManager.prototype = {
 				prefixSeed = this.random.nextInt();
 				var tmp = this.modBases[prefixPos];
 				var this1 = new haxe__$Int64__$_$_$Int64(prefixSeed >> 31,prefixSeed);
-				this.AddMod(tmp,mul,this1);
+				this.AddMod(tmp,stat,mul,this1);
 			}
 			if(suffixExist) {
 				suffixPos = this.random.randomInt(0,this.modBases.length - 1);
 				suffixSeed = this.random.nextInt();
 				var tmp = this.modBases[suffixPos];
 				var this1 = new haxe__$Int64__$_$_$Int64(suffixSeed >> 31,suffixSeed);
-				this.AddMod(tmp,mul,this1);
+				this.AddMod(tmp,stat,mul,this1);
 			}
 		}
 		var h = mul.h;
@@ -603,11 +718,15 @@ BattleManager.prototype = {
 				mul.h[m_key] = v;
 			}
 		}
-		var outsideSystem = null;
+		var outsideSystem = new haxe_ds_StringMap();
+		if(this.wdata.equipLevels == null) {
+			this.wdata.equipLevels = [];
+		}
 		if(skillSetPos >= 0) {
-			outsideSystem = new haxe_ds_StringMap();
 			outsideSystem.h["skillset"] = skillSetPos;
 		}
+		var v = ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
+		outsideSystem.h["level"] = v;
 		e = { type : itemB.type, seen : 0, requiredAttributes : null, attributes : stat, generationVariations : statVar, generationLevel : level, generationBaseItem : baseItem, attributeMultiplier : mul, generationVariationsMultiplier : mulVar, generationSuffixMod : suffixPos, generationPrefixMod : prefixPos, generationSuffixModSeed : suffixSeed, generationPrefixModSeed : prefixSeed, outsideSystems : outsideSystem};
 		var addedIndex = -1;
 		var _g = 0;
@@ -839,8 +958,32 @@ BattleManager.prototype = {
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
+		if(this.wdata.currency == null) {
+			var _g = new haxe_ds_StringMap();
+			_g.h["Lagrima"] = { value : 0, visible : false};
+			_g.h["Lagrima Stone"] = { value : 0, visible : false};
+			this.wdata.currency = { currencies : _g};
+		}
 		if(this.wdata.hero.equipment != null) {
 			while(this.wdata.hero.equipment.indexOf(null) != -1) this.DiscardSingleEquipment(this.wdata.hero.equipment.indexOf(null));
+			var _g_current = 0;
+			var _g_array = this.wdata.hero.equipment;
+			while(_g_current < _g_array.length) {
+				var _g1_value = _g_array[_g_current];
+				var _g1_key = _g_current++;
+				var index = _g1_key;
+				var value = _g1_value;
+				if(value.outsideSystems == null) {
+					value.outsideSystems = new haxe_ds_StringMap();
+				}
+				if(this.wdata.equipLevels == null) {
+					this.wdata.equipLevels = [];
+				}
+				if(Object.prototype.hasOwnProperty.call(value.outsideSystems.h,"level") == false) {
+					var index1 = ArrayHelper.InsertOnEmpty({ level : 0, limitbreak : 0, ascension : 0},this.wdata.equipLevels);
+					value.outsideSystems.h["level"] = index1;
+				}
+			}
 		}
 		if(this.wdata.regionProgress == null) {
 			this.wdata.regionProgress = [];
@@ -1148,7 +1291,6 @@ BattleManager.prototype = {
 					}
 				}
 			}
-			var attackerBuffChanged = false;
 			var _g = 0;
 			var _g1 = attacker.buffs.length;
 			while(_g < _g1) {
@@ -1156,43 +1298,84 @@ BattleManager.prototype = {
 				var bu = attacker.buffs[b];
 				if(attacker.buffs[b] != null) {
 					bu.duration -= 1;
-					if(bu.duration <= 0) {
-						attacker.buffs[b] = null;
-						attackerBuffChanged = true;
-					}
 				}
 			}
-			while(HxOverrides.remove(attacker.buffs,null)) {
-			}
-			if(attackerBuffChanged) {
-				this.RecalculateAttributes(attacker);
-			}
+			this.CheckRemoveMod(attacker);
+			this.CheckRemoveMod(defender);
 		} else if(this.wdata.hero.turnRecharge != null) {
 			this.wdata.hero.turnRecharge.length = 0;
 		}
 		return "";
 	}
-	,AddMod: function(modBase,statMul,seed) {
+	,CheckRemoveMod: function(actor) {
+		var attackerBuffChanged = false;
+		var _g = 0;
+		var _g1 = actor.buffs.length;
+		while(_g < _g1) {
+			var b = _g++;
+			var bu = actor.buffs[b];
+			if(bu.duration <= 0) {
+				attackerBuffChanged = true;
+				actor.buffs[b] = null;
+			}
+		}
+		while(HxOverrides.remove(actor.buffs,null)) {
+		}
+		if(attackerBuffChanged) {
+			this.RecalculateAttributes(actor);
+		}
+	}
+	,AddMod: function(modBase,statAdd,statMul,seed) {
 		var mulAdd = modBase.statMultipliers;
 		var rand = this.fixedRandom;
 		rand.set_seed(seed);
-		var h = mulAdd.h;
-		var m_h = h;
-		var m_keys = Object.keys(h);
-		var m_length = m_keys.length;
-		var m_current = 0;
-		while(m_current < m_length) {
-			var key = m_keys[m_current++];
-			var m_key = key;
-			var m_value = m_h[key];
-			var val = RandomExtender.Range(rand,mulAdd.h[m_key]);
-			if(Object.prototype.hasOwnProperty.call(statMul.h,m_key)) {
-				var v = statMul.h[m_key] * val / 100 | 0;
-				statMul.h[m_key] = v;
-			} else {
-				statMul.h[m_key] = val;
+		if(mulAdd != null) {
+			var h = mulAdd.h;
+			var m_h = h;
+			var m_keys = Object.keys(h);
+			var m_length = m_keys.length;
+			var m_current = 0;
+			while(m_current < m_length) {
+				var key = m_keys[m_current++];
+				var m_key = key;
+				var m_value = m_h[key];
+				var val = RandomExtender.Range(rand,mulAdd.h[m_key]);
+				if(Object.prototype.hasOwnProperty.call(statMul.h,m_key)) {
+					var v = statMul.h[m_key] * val / 100 | 0;
+					statMul.h[m_key] = v;
+				} else {
+					statMul.h[m_key] = val;
+				}
 			}
 		}
+		if(modBase.statAdds != null) {
+			var h = modBase.statAdds.h;
+			var m_h = h;
+			var m_keys = Object.keys(h);
+			var m_length = m_keys.length;
+			var m_current = 0;
+			while(m_current < m_length) {
+				var key = m_keys[m_current++];
+				var m_key = key;
+				var m_value = m_h[key];
+				var val = RandomExtender.Range(rand,modBase.statAdds.h[m_key]);
+				if(Object.prototype.hasOwnProperty.call(statAdd.h,m_key)) {
+					var v = statAdd.h[m_key] + val | 0;
+					statAdd.h[m_key] = v;
+				} else {
+					statAdd.h[m_key] = val;
+				}
+			}
+		}
+	}
+	,LimitBreakEquipment: function(pos) {
+		var e = this.wdata.hero.equipment[pos];
+		BattleManager.LimitBreak(e,this.wdata);
+	}
+	,UpgradeEquipment: function(pos) {
+		var e = this.wdata.hero.equipment[pos];
+		BattleManager.Upgrade(e,this.wdata);
+		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,DiscardSingleEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
@@ -1209,8 +1392,13 @@ BattleManager.prototype = {
 			this.equipmentToDiscard.push(e);
 		}
 	}
-	,DiscardEquipment: function(pos) {
+	,SellSingleEquipment: function(pos) {
 		this.DiscardSingleEquipment(pos);
+		var prize = BattleManager.GetSellPrize(this.wdata.hero.equipment[pos],this.wdata);
+		this.wdata.currency.currencies.h["Lagrima"].value += prize;
+	}
+	,SellEquipment: function(pos) {
+		this.SellSingleEquipment(pos);
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,ToggleEquipped: function(pos) {
@@ -1266,8 +1454,14 @@ BattleManager.prototype = {
 			var e = _g1[_g];
 			++_g;
 			if(e.outsideSystems != null) {
-				var skillsetpos = e.outsideSystems.h["skillset"];
-				this.wdata.skillSets[skillsetpos] = null;
+				if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"skillset")) {
+					var skillsetpos = e.outsideSystems.h["skillset"];
+					this.wdata.skillSets[skillsetpos] = null;
+				}
+				if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"level")) {
+					var level = e.outsideSystems.h["level"];
+					this.wdata.equipLevels[level] = null;
+				}
 			}
 		}
 		this.equipmentToDiscard.length = 0;
@@ -1306,7 +1500,7 @@ BattleManager.prototype = {
 		}
 		this.canAdvance = this.wdata.battleArea < this.wdata.maxArea;
 		this.canRetreat = this.wdata.battleArea > 0;
-		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax;
+		this.canLevelUp = this.wdata.hero.xp.value >= this.wdata.hero.xp.calculatedMax && this.wdata.hero.level < this.CalculateHeroMaxLevel();
 		var hasEquipment = this.wdata.hero.equipment.length > 1;
 		var lu = this.wdata.playerActions.h["tabequipment"];
 		lu.enabled = hasEquipment;
@@ -1599,7 +1793,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1547, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1744, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1616,7 +1810,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1564, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1761, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -1634,7 +1828,7 @@ BattleManager.prototype = {
 						++j;
 						continue;
 					}
-					this.DiscardSingleEquipment(j);
+					this.SellSingleEquipment(j);
 					continue;
 				}
 				if(r == 2) {
@@ -1642,7 +1836,7 @@ BattleManager.prototype = {
 						++j;
 						continue;
 					}
-					this.DiscardSingleEquipment(i);
+					this.SellSingleEquipment(i);
 					--i;
 					break;
 				}
@@ -2189,7 +2383,7 @@ $hxClasses["Main"] = Main;
 Main.__name__ = "Main";
 Main.main = function() {
 	haxe_ui_Toolkit.init();
-	haxe_Log.trace("sss",{ fileName : "src/Main.hx", lineNumber : 46, className : "Main", methodName : "main"});
+	haxe_Log.trace("sssX",{ fileName : "src/Main.hx", lineNumber : 46, className : "Main", methodName : "main"});
 	var key = "privacymemory";
 	var privacyAcceptance = js_Browser.getLocalStorage().getItem(key);
 	if(privacyAcceptance == null) {
@@ -2285,7 +2479,10 @@ Main.gamemain = function() {
 			bm.ToggleEquipped(pos);
 		}
 		if(action == 1) {
-			bm.DiscardEquipment(pos);
+			bm.SellEquipment(pos);
+		}
+		if(action == 2) {
+			bm.UpgradeEquipment(pos);
 		}
 		if(action == View.equipmentAction_DiscardBad) {
 			bm.DiscardWorseEquipment();
@@ -2396,6 +2593,8 @@ Main.gamemain = function() {
 	var equipmentWindowTypeAlert = [false,false];
 	view.FeedEquipmentTypes(["Weapons","Armor","Skill Set"]);
 	var saveFileImporterSetup = false;
+	var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
+	var bossMessage = originMessage;
 	update = function(timeStamp) {
 		var v = bm.wdata.maxArea;
 		global.h["maxarea"] = v;
@@ -2409,6 +2608,8 @@ Main.gamemain = function() {
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
 		view.UpdateValues(view.speedView,bm.wdata.hero.attributesCalculated.h["Speed"],-1);
 		view.UpdateValues(view.attackView,bm.wdata.hero.attributesCalculated.h["Attack"],-1);
+		view.UpdateValues(view.currencyViews[0],bm.wdata.currency.currencies.h["Lagrima"].value,-1);
+		view.UpdateValues(view.currencyViews[1],bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
 		view.UpdateValues(view.lifeView,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
 		view.UpdateValues(view.defView,bm.wdata.hero.attributesCalculated.h["Defense"],-1);
 		view.UpdateValues(view.mDefView,bm.wdata.hero.attributesCalculated.h["Magic Defense"],-1);
@@ -2468,31 +2669,33 @@ Main.gamemain = function() {
 					if(e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0) {
 						rarity = 1;
 					}
-					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1);
+					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1,BattleManager.IsUpgradable(e,bm.wdata),BattleManager.CanUpgrade(e,bm.wdata),BattleManager.GetCost(e,bm.wdata),BattleManager.GetSellPrize(e,bm.wdata));
 					var vid = 0;
 					if(e.outsideSystems != null) {
-						var ss = e.outsideSystems.h["skillset"];
-						var ssd = bm.wdata.skillSets[ss];
-						var _g2 = 0;
-						var _g3 = ssd.skills.length;
-						while(_g2 < _g3) {
-							var s = _g2++;
-							var actionId = "battleaction_" + s;
-							var action = bm.wdata.playerActions.h[actionId];
-							if(action.mode == 0) {
-								var skillName = ssd.skills[s].id;
-								if(ssd.skills[s].level > 1) {
-									var code = 80 + ssd.skills[s].level;
-									skillName += " " + String.fromCodePoint(code);
+						if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"skillset")) {
+							var ss = e.outsideSystems.h["skillset"];
+							var ssd = bm.wdata.skillSets[ss];
+							var _g2 = 0;
+							var _g3 = ssd.skills.length;
+							while(_g2 < _g3) {
+								var s = _g2++;
+								var actionId = "battleaction_" + s;
+								var action = bm.wdata.playerActions.h[actionId];
+								if(action.mode == 0) {
+									var skillName = ssd.skills[s].id;
+									if(ssd.skills[s].level > 1) {
+										var code = 80 + ssd.skills[s].level;
+										skillName += " " + String.fromCodePoint(code);
+									}
+									view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,skillName);
 								}
-								view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,skillName);
+								if(action.mode == 1) {
+									view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,"???");
+								}
+								++vid;
 							}
-							if(action.mode == 1) {
-								view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,"???");
-							}
-							++vid;
+							view.FeedEquipmentSeparation(equipmentViewPos,vid - 1);
 						}
-						view.FeedEquipmentSeparation(equipmentViewPos,vid - 1);
 					}
 					var h = e.attributes.h;
 					var v_h = h;
@@ -2538,7 +2741,7 @@ Main.gamemain = function() {
 		view.SetTabNotification(anyNewEquip,view.equipTab);
 		var levelUpSystem = bm.wdata.hero.level > 1;
 		view.UpdateVisibilityOfValueView(view.level,levelUpSystem);
-		view.UpdateVisibilityOfValueView(view.xpBar,true);
+		view.UpdateVisibilityOfValueView(view.xpBar,bm.wdata.hero.level < bm.CalculateHeroMaxLevel());
 		while(bm.events.length > eventShown) {
 			var e = bm.events[eventShown];
 			var data = e.data;
@@ -2596,12 +2799,15 @@ Main.gamemain = function() {
 				battle = false;
 				ev = "<b>Your stats permanently increased!</b>";
 				GameAnalyticsIntegration.SendProgressCompleteEvent("Permanentupg","","");
+				view.ShowMessage("Area Clear",bossMessage);
+				bossMessage = originMessage;
 			}
 			if(e.type == EventTypes.statUpgrade) {
 				battle = false;
 				var dataS = e.dataString;
 				var data1 = e.data;
 				ev = "<b>" + dataS + " +" + data1 + "</b>";
+				bossMessage += "" + dataS + " +" + data1 + "\n";
 			}
 			if(e.type == EventTypes.AreaUnlock) {
 				battle = false;
@@ -2718,7 +2924,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 680, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 700, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2730,7 +2936,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 697, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 717, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -2749,8 +2955,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 725, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 726, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 745, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 746, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -2764,6 +2970,16 @@ Main.GetEquipName = function(e,bm) {
 		}
 		if(e.generationSuffixMod >= 0) {
 			name = name + " " + modBases[e.generationSuffixMod].suffix;
+		}
+		var level = bm.wdata.equipLevels[e.outsideSystems.h["level"]].level;
+		var levelP = level / 3;
+		var levelS = level - 1 % 3 + 1;
+		var character = "+";
+		var _g = 0;
+		var _g1 = levelS;
+		while(_g < _g1) {
+			var i = _g++;
+			name += character;
 		}
 		return name;
 	}
@@ -2881,9 +3097,13 @@ PrototypeItemMaker.prototype = {
 		var value = this.R(70,90);
 		_g.h["Defense"] = value;
 		this.AddMod("of Rage","Beserker's",_g);
+		var _g = new haxe_ds_StringMap();
+		var value = this.R(1,5);
+		_g.h["Blood"] = value;
+		this.AddMod("of Blood","Sanguine",null,_g);
 	}
-	,AddMod: function(suffix,prefix,statMultipliers) {
-		this.mods.push({ prefix : prefix, suffix : suffix, statMultipliers : statMultipliers});
+	,AddMod: function(suffix,prefix,statMultipliers,statAdds) {
+		this.mods.push({ prefix : prefix, suffix : suffix, statMultipliers : statMultipliers, statAdds : statAdds});
 	}
 	,AddItem: function(name,type,scalingStats,statMultipliers) {
 		this.items.push({ name : name, type : type, scalingStats : scalingStats, statMultipliers : statMultipliers});
@@ -2941,6 +3161,20 @@ PrototypeSkillMaker.prototype = {
 			_g1.h["Speed"] = multiplier;
 			bm.AddBuff({ uniqueId : "haste", addStats : _g, mulStats : _g1, strength : level, duration : 8},array[0]);
 		}}], mpCost : 45});
+		this.skills.push({ id : "Bloodlust", profession : "Sanguiner", word : "Blood", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var multiplier = 90 + level * 10;
+			var _g = new haxe_ds_StringMap();
+			_g.h["Blood"] = 3;
+			_g.h["Bloodthirst"] = multiplier;
+			bm.AddBuff({ uniqueId : "bloodlust", addStats : _g, mulStats : null, strength : level, duration : 3},array[0]);
+		}}], mpCost : 5});
+		this.skills.push({ id : "Noblesse", profession : "Highborn", word : "Honour", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
+			var _g = new haxe_ds_StringMap();
+			_g.h["Defense"] = 3 + level * 2;
+			var _g1 = new haxe_ds_StringMap();
+			_g1.h["Attack"] = 150 + level * 25;
+			bm.AddBuff({ uniqueId : "noblesse", addStats : _g, mulStats : _g1, strength : level, duration : 99, noble : true},array[0]);
+		}}], mpCost : 5});
 		this.skills.push({ id : "Protect", profession : "Defender", word : "Defense", effects : [{ target : Target.SELF, effectExecution : function(bm,level,actor,array) {
 			var bonus = level * 5;
 			var multiplier = 110;
@@ -3040,6 +3274,21 @@ AttributeLogic.Add = function(attributes,attributeAddition,quantityOfAddition,re
 		}
 		var v = value + (addedValue * quantityOfAddition | 0);
 		result.h[key1] = v;
+	}
+	var h = attributeAddition.h;
+	var _g_h = h;
+	var _g_keys = Object.keys(h);
+	var _g_length = _g_keys.length;
+	var _g_current = 0;
+	while(_g_current < _g_length) {
+		var key = _g_keys[_g_current++];
+		var _g1_key = key;
+		var _g1_value = _g_h[key];
+		var key1 = _g1_key;
+		var value = _g1_value;
+		if(Object.prototype.hasOwnProperty.call(attributes.h,key1) == false) {
+			result.h[key1] = value;
+		}
 	}
 };
 var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
@@ -3716,6 +3965,7 @@ var View = function() {
 	this.enemy1 = "slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog".split("@");
 	this.prefix = "normal@fire@ice@water@thunder@wind@earth@poison@grass".split("@");
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
+	this.currencyViews = [];
 	var _gthis = this;
 	var boxParentP = new haxe_ui_containers_Box();
 	boxParentP.set_percentHeight(100);
@@ -3845,11 +4095,17 @@ var View = function() {
 	gridBox.set_percentHeight(100);
 	gridBox.set_percentWidth(100);
 	var statContainer = this.CreateContainer(gridBox,true);
+	this.currencyViews.push(this.CreateValueView(statContainer,false,"Lagrima: "));
+	this.currencyViews.push(this.CreateValueView(statContainer,false,"Lagrima\nStone: "));
+	var box = new haxe_ui_containers_Box();
+	box.set_height(40);
+	statContainer.addComponent(box);
 	this.lifeView = this.CreateValueView(statContainer,true,"Life: ");
 	this.attackView = this.CreateValueView(statContainer,false,"Attack: ");
 	this.speedView = this.CreateValueView(statContainer,false,"Speed: ");
 	this.defView = this.CreateValueView(statContainer,false,"Def: ");
 	this.mDefView = this.CreateValueView(statContainer,false,"mDef: ");
+	this.statEquipmentParent = statContainer;
 	var scroll = this.CreateScrollable(gridBox);
 	scroll.set_height(300);
 	scroll.set_text("Equipment");
@@ -3928,6 +4184,8 @@ View.prototype = {
 	,lifeView: null
 	,defView: null
 	,mDefView: null
+	,currencyViews: null
+	,statEquipmentParent: null
 	,enemyToAdvance: null
 	,areaLabel: null
 	,mainComponent: null
@@ -4225,7 +4483,7 @@ View.prototype = {
 			rightLabelBox.addComponent(rightLabel);
 			header.addComponent(rightLabelBox);
 			viewParent.addComponent(header);
-			var this1 = new Array(2);
+			var this1 = new Array(3);
 			var buttonsAct = this1;
 			var _g = 0;
 			var _g1 = buttonsAct.length;
@@ -4234,7 +4492,10 @@ View.prototype = {
 				var button = new haxe_ui_components_Button();
 				button.set_text("Equip");
 				if(i == 1) {
-					button.set_text("Discard");
+					button.set_text("Sell");
+				}
+				if(i == 2) {
+					button.set_text("Upgrade");
 				}
 				button.set_percentWidth(100);
 				var equipmentPos = [this.equipments.length];
@@ -4262,7 +4523,19 @@ View.prototype = {
 			this.equipmentMainAction(equipmentPos,actionId);
 		}
 	}
-	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee) {
+	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee,upgradeVisible,upgradable,cost,sellGain) {
+		if(sellGain == null) {
+			sellGain = 0;
+		}
+		if(cost == null) {
+			cost = 0;
+		}
+		if(upgradable == null) {
+			upgradable = false;
+		}
+		if(upgradeVisible == null) {
+			upgradeVisible = false;
+		}
 		if(firstTimeSee == null) {
 			firstTimeSee = false;
 		}
@@ -4278,6 +4551,9 @@ View.prototype = {
 		this.equipments[pos].parent.set_hidden(false);
 		this.equipments[pos].name.set_text(name);
 		this.equipments[pos].rightLabelBox.set_hidden(firstTimeSee == false);
+		var upgradeVisible1 = upgradeVisible;
+		this.equipments[pos].actionButtons[2].set_hidden(!upgradeVisible);
+		this.equipments[pos].actionButtons[2].set_disabled(!upgradable);
 		var color = "#000000";
 		if(rarity == 1) {
 			color = "#002299";
@@ -4295,6 +4571,8 @@ View.prototype = {
 			this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("white"));
 		}
 		this.equipments[pos].actionButtons[1].set_hidden(equipped == true);
+		this.equipments[pos].actionButtons[1].set_text("Sell\n" + sellGain + " Lagrima");
+		this.equipments[pos].actionButtons[2].set_text("Upgrade\n-" + cost + " Lagrima");
 		while(this.equipments[pos].values.length < numberOfValues) {
 			var vv = this.CreateValueView(this.equipments[pos].parent,false,"Attr");
 			this.equipments[pos].values.push(vv);
@@ -4340,6 +4618,10 @@ View.prototype = {
 		var frames = new haxe_ui_styles_elements_AnimationKeyFrames("press",[f]);
 		var a = new haxe_ui_styles_animation_Animation(comp);
 		this.buttonMap.h[key].set_componentAnimation(a);
+	}
+	,ShowMessage: function(title,message) {
+		haxe_ui_core_Screen.get_instance().messageBox(message,title,"info",true,function(button) {
+		});
 	}
 	,AddButton: function(id,label,onClick,warningMessage,position,secondArea) {
 		if(secondArea == null) {
@@ -46530,8 +46812,8 @@ View.storyAction_AdvanceMessage = 2;
 View.storyAction_SkipStory = 3;
 View.storyAction_WatchLater = 4;
 View.storyAction_WatchLaterClose = 5;
-View.equipmentAction_DiscardBad = 2;
-View.equipmentAction_ChangeTypeToView = 3;
+View.equipmentAction_DiscardBad = 4;
+View.equipmentAction_ChangeTypeToView = 5;
 haxe_ui_core_ComponentEvents.INTERACTIVE_EVENTS = ["mousemove","mouseover","mouseout","mousedown","mouseup","mousewheel","click","doubleclick","keydown","keyup"];
 haxe_ui_core_ComponentBounds.__meta__ = { fields : { percentWidth : { clonable : null, bindable : null}, percentHeight : { clonable : null, bindable : null}, width : { bindable : null}, height : { bindable : null}}};
 haxe_ui_backend_ComponentImpl.elementToComponent = new haxe_ds_ObjectMap();
