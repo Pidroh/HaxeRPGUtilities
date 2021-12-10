@@ -2543,6 +2543,12 @@ Main.gamemain = function() {
 	buffToIcon_h["enchant-fire"] = "&#128293;";
 	buffToIcon_h["protect"] = "&#9960;";
 	buffToIcon_h["haste"] = "&#128094;";
+	var ActorToFullView = function(actor,actorView) {
+		view.UpdateValues(view.GetValueView(actorView,0,true),bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"),"Life:");
+		view.UpdateValues(view.GetValueView(actorView,1,false),bm.GetAttribute(actor,"Attack"),-1,"Attack:");
+		view.UpdateValues(view.GetValueView(actorView,2,false),bm.GetAttribute(actor,"Speed"),-1,"Speed:");
+		view.UpdateValues(view.GetValueView(actorView,3,false),bm.GetAttribute(actor,"Defense"),-1,"Defense:");
+	};
 	var ActorToView = function(actor,actorView) {
 		if(actor != null) {
 			var name = actorView.defaultName;
@@ -2610,16 +2616,12 @@ Main.gamemain = function() {
 		GameAnalyticsIntegration.InitializeCheck();
 		ActorToView(bm.wdata.hero,view.heroView);
 		ActorToView(bm.wdata.enemy,view.enemyView);
+		ActorToFullView(bm.wdata.hero,view.equipHeroStats);
 		var actor = bm.wdata.hero;
 		view.UpdateValues(view.level,bm.wdata.hero.level,-1);
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
-		view.UpdateValues(view.speedView,bm.wdata.hero.attributesCalculated.h["Speed"],-1);
-		view.UpdateValues(view.attackView,bm.wdata.hero.attributesCalculated.h["Attack"],-1);
 		view.UpdateValues(view.currencyViews[0],bm.wdata.currency.currencies.h["Lagrima"].value,-1);
 		view.UpdateValues(view.currencyViews[1],bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
-		view.UpdateValues(view.lifeView,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
-		view.UpdateValues(view.defView,bm.wdata.hero.attributesCalculated.h["Defense"],-1);
-		view.UpdateValues(view.mDefView,bm.wdata.hero.attributesCalculated.h["Magic Defense"],-1);
 		view.UpdateValues(view.areaLabel,bm.wdata.battleArea + 1,-1);
 		view.UpdateValues(view.enemyToAdvance,bm.wdata.killedInArea[bm.wdata.battleArea],bm.wdata.necessaryToKillInArea);
 		StoryControlLogic.Update(timeStamp,storyRuntime,view,scriptExecuter);
@@ -2952,7 +2954,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 720, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 732, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2964,7 +2966,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 737, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 749, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -2983,8 +2985,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 765, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 766, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 777, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 778, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -4130,11 +4132,7 @@ var View = function() {
 	var box = new haxe_ui_containers_Box();
 	box.set_height(40);
 	statContainer.addComponent(box);
-	this.lifeView = this.CreateValueView(statContainer,true,"Life: ");
-	this.attackView = this.CreateValueView(statContainer,false,"Attack: ");
-	this.speedView = this.CreateValueView(statContainer,false,"Speed: ");
-	this.defView = this.CreateValueView(statContainer,false,"Def: ");
-	this.mDefView = this.CreateValueView(statContainer,false,"mDef: ");
+	this.equipHeroStats = this.CreateActorViewComplete("You",statContainer);
 	this.statEquipmentParent = statContainer;
 	var scroll = this.CreateScrollable(gridBox);
 	scroll.set_height(300);
@@ -4207,13 +4205,10 @@ View.TabBarAlert = function(tabBar,alert,names) {
 View.prototype = {
 	heroView: null
 	,enemyView: null
+	,equipHeroStats: null
 	,level: null
 	,xpBar: null
-	,speedView: null
-	,attackView: null
 	,lifeView: null
-	,defView: null
-	,mDefView: null
 	,currencyViews: null
 	,statEquipmentParent: null
 	,enemyToAdvance: null
@@ -4311,6 +4306,13 @@ View.prototype = {
 			a.parent.set_hidden(true);
 		}
 		this.amountOfStoryMessagesShown = 0;
+	}
+	,GetValueView: function(actorView,pos,bar) {
+		while(actorView.valueViews.length <= pos) {
+			var vv = this.CreateValueView(actorView.parent,bar,"s");
+			actorView.valueViews.push(vv);
+		}
+		return actorView.valueViews[pos];
 	}
 	,StoryButtonAmount: function(amount) {
 		var _gthis = this;
@@ -4729,7 +4731,9 @@ View.prototype = {
 			percent = false;
 		}
 		if(label != null) {
-			res.labelText.set_text(label);
+			if(res.labelText != null) {
+				res.labelText.set_text(label);
+			}
 		}
 		res.parent.set_hidden(current >= 0 == false);
 		if(valueAsString == null) {
@@ -4747,6 +4751,24 @@ View.prototype = {
 	}
 	,IsTabSelected: function(tab) {
 		return this.tabMaster.get_selectedPage() == tab;
+	}
+	,CreateActorViewComplete: function(name,parent) {
+		var box = new haxe_ui_containers_VBox();
+		box.set_width(180);
+		parent.addComponent(box);
+		var header = new haxe_ui_containers_Box();
+		header.set_percentWidth(100);
+		header.set_height(20);
+		box.addComponent(header);
+		var label = new haxe_ui_components_Label();
+		label.set_text(name);
+		label.set_verticalAlign("center");
+		var rightLabel = new haxe_ui_components_Label();
+		rightLabel.set_styleString("font-weight: bold; font-size: 16px;");
+		rightLabel.set_horizontalAlign("right");
+		header.addComponent(rightLabel);
+		header.addComponent(label);
+		return { name : label, valueViews : [], parent : box};
 	}
 	,GetActorView: function(name,parent) {
 		var box = new haxe_ui_containers_VBox();

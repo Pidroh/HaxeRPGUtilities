@@ -46,14 +46,16 @@ class View {
 	public var heroView:ActorView;
 	public var enemyView:ActorView;
 
+	public var equipHeroStats:ActorViewComplete;
+
 	public var level:ValueView;
 	public var xpBar:ValueView;
-	public var speedView:ValueView;
-	public var attackView:ValueView;
+	// public var speedView:ValueView;
+	// public var attackView:ValueView;
 	public var lifeView:ValueView;
-	public var defView:ValueView;
-	public var mDefView:ValueView;
 
+	// public var defView:ValueView;
+	// public var mDefView:ValueView;
 	public var currencyViews = new Array<ValueView>();
 
 	public var statEquipmentParent:Component;
@@ -190,6 +192,14 @@ class View {
 			a.parent.hidden = true;
 		}
 		this.amountOfStoryMessagesShown = 0;
+	}
+
+	public function GetValueView(actorView:ActorViewComplete, pos, bar) {
+		while (actorView.valueViews.length <= pos) {
+			var vv = CreateValueView(actorView.parent, bar, "s");
+			actorView.valueViews.push(vv);
+		}
+		return actorView.valueViews[pos];
 	}
 
 	public function StoryButtonAmount(amount:Int) {
@@ -491,12 +501,14 @@ class View {
 				box.height = 40;
 				statContainer.addComponent(box);
 
-				lifeView = CreateValueView(statContainer, true, "Life: ");
-				attackView = CreateValueView(statContainer, false, "Attack: ");
-				speedView = CreateValueView(statContainer, false, "Speed: ");
+				{}
+				equipHeroStats = CreateActorViewComplete("You", statContainer);
 
-				defView = CreateValueView(statContainer, false, "Def: ");
-				mDefView = CreateValueView(statContainer, false, "mDef: ");
+				// lifeView = CreateValueView(statContainer, true, "Life: ");
+				// attackView = CreateValueView(statContainer, false, "Attack: ");
+				// speedView = CreateValueView(statContainer, false, "Speed: ");
+				// defView = CreateValueView(statContainer, false, "Def: ");
+				// mDefView = CreateValueView(statContainer, false, "mDef: ");
 
 				statEquipmentParent = statContainer;
 			}
@@ -942,7 +954,8 @@ class View {
 
 	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null, percent = false, valueAsString:String = null) {
 		if (label != null) {
-			res.labelText.text = label;
+			if (res.labelText != null)
+				res.labelText.text = label;
 		}
 		res.parent.hidden = current >= 0 == false;
 		if (valueAsString == null) {
@@ -962,6 +975,35 @@ class View {
 
 	public function IsTabSelected(tab:Component):Bool {
 		return tabMaster.selectedPage == tab;
+	}
+
+	function CreateActorViewComplete(name:String, parent:Component):ActorViewComplete {
+		var box:VBox = new VBox();
+		box.width = 180;
+		parent.addComponent(box);
+
+		var header = new Box();
+		header.percentWidth = 100;
+		header.height = 20;
+		box.addComponent(header);
+
+		var label:Label = new Label();
+		label.text = name;
+		// label.height = 20;
+		label.verticalAlign = "center";
+
+		var rightLabel:Label = new Label();
+		rightLabel.styleString = "font-weight: bold; font-size: 16px;";
+		rightLabel.horizontalAlign = "right";
+
+		header.addComponent(rightLabel);
+		header.addComponent(label);
+
+		return {
+			name: label,
+			valueViews: new Array<ValueView>(),
+			parent: box
+		};
 	}
 
 	function GetActorView(name:String, parent:Component):ActorView {
@@ -1113,7 +1155,7 @@ typedef ActorView = {
 typedef ActorViewComplete = {
 	var name:Label;
 	var parent:Component;
-	var valueViews : Array<ValueView>;
+	var valueViews:Array<ValueView>;
 }
 
 typedef EquipmentView = {

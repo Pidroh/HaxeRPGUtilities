@@ -186,7 +186,6 @@ class Main {
 			if (action == 1)
 				bm.SellEquipment(pos);
 			if (action == 2) {
-				
 				bm.UpgradeOrLimitBreakEquipment(pos);
 			}
 			if (action == View.equipmentAction_DiscardBad)
@@ -277,6 +276,21 @@ class Main {
 			"haste" => "&#128094;"
 		];
 
+		var ActorToFullView = function(actor:Actor, actorView:ActorViewComplete) {
+			// var valueView:ValueView = view.GetValueView(actorView, 0);
+
+			view.UpdateValues(view.GetValueView(actorView, 0, true), bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"), "Life:");
+			view.UpdateValues(view.GetValueView(actorView, 1, false), bm.GetAttribute(actor, "Attack"), -1, "Attack:");
+			view.UpdateValues(view.GetValueView(actorView, 2, false), bm.GetAttribute(actor, "Speed"), -1, "Speed:");
+			view.UpdateValues(view.GetValueView(actorView, 3, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:");
+
+			// view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
+			// view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
+
+			// view.UpdateValues(view.defView, bm.wdata.hero.attributesCalculated["Defense"], -1);
+			// view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
+		}
+
 		var ActorToView = function(actor:Actor, actorView:ActorView) {
 			if (actor != null) {
 				var name = actorView.defaultName;
@@ -349,18 +363,16 @@ class Main {
 			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
 			ActorToView(bm.wdata.enemy, view.enemyView);
+			ActorToFullView(bm.wdata.hero, view.equipHeroStats);
 			var actor = bm.wdata.hero;
 			view.UpdateValues(view.level, bm.wdata.hero.level, -1);
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
-			view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
-			view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
 
 			view.UpdateValues(view.currencyViews[0], bm.wdata.currency.currencies["Lagrima"].value, -1);
 			view.UpdateValues(view.currencyViews[1], bm.wdata.currency.currencies["Lagrima Stone"].value, -1);
+
 			// view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
-			view.UpdateValues(view.lifeView, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
-			view.UpdateValues(view.defView, bm.wdata.hero.attributesCalculated["Defense"], -1);
-			view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
+
 			view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
@@ -566,7 +578,7 @@ class Main {
 					view.ShowMessage("Area Clear", bossMessage);
 					bossMessage = originMessage;
 				}
-				if(e.type == EquipMaxed){
+				if (e.type == EquipMaxed) {
 					view.ShowMessage("Equipment reached Limit Level", 'Your equipment reached Limit Level. The energy materializes into $dataString x$data');
 				}
 				if (e.type == statUpgrade) {
@@ -781,24 +793,23 @@ class Main {
 			}
 			var level = bm.wdata.equipLevels[e.outsideSystems["level"]].level;
 
-			var levelP = Std.int((level-1) / 3);
+			var levelP = Std.int((level - 1) / 3);
 			var levelS = ((level - 1) % 3) + 1;
-
 
 			name += " ";
 			// 0 - 0
 			var character = '+';
 			/*
-			if(levelP == 1){
-				character = 'X';
-			}
-			if(levelP == 2){
-				character = 'Y';
-			}
-			if(levelP == 3){
-				character = 'Z';
-			}
-			*/
+				if(levelP == 1){
+					character = 'X';
+				}
+				if(levelP == 2){
+					character = 'Y';
+				}
+				if(levelP == 3){
+					character = 'Z';
+				}
+			 */
 			for (i in 0...level) {
 				name += character;
 			}
