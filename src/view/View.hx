@@ -1110,6 +1110,12 @@ typedef ActorView = {
 	var defaultName:String;
 };
 
+typedef ActorViewComplete = {
+	var name:Label;
+	var parent:Component;
+	var valueViews : Array<ValueView>;
+}
+
 typedef EquipmentView = {
 	var name:Label;
 	var values:Array<ValueView>;
