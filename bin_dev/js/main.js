@@ -2543,11 +2543,35 @@ Main.gamemain = function() {
 	buffToIcon_h["enchant-fire"] = "&#128293;";
 	buffToIcon_h["protect"] = "&#9960;";
 	buffToIcon_h["haste"] = "&#128094;";
+	var ignoreStats = ["Attack","Defense","Speed","Life","LifeMax","MP","SpeedCount","MagicAttack","MPRechargeCount","MPRecharge"];
 	var ActorToFullView = function(actor,actorView) {
 		view.UpdateValues(view.GetValueView(actorView,0,true),bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"),"Life:");
 		view.UpdateValues(view.GetValueView(actorView,1,false),bm.GetAttribute(actor,"Attack"),-1,"Attack:");
 		view.UpdateValues(view.GetValueView(actorView,2,false),bm.GetAttribute(actor,"Speed"),-1,"Speed:");
 		view.UpdateValues(view.GetValueView(actorView,3,false),bm.GetAttribute(actor,"Defense"),-1,"Defense:");
+		var valueIndex = 4;
+		var h = actor.attributesCalculated.h;
+		var _g2_h = h;
+		var _g2_keys = Object.keys(h);
+		var _g2_length = _g2_keys.length;
+		var _g2_current = 0;
+		while(_g2_current < _g2_length) {
+			var key = _g2_keys[_g2_current++];
+			var _g3_key = key;
+			var _g3_value = _g2_h[key];
+			var key1 = _g3_key;
+			var value = _g3_value;
+			if(ignoreStats.indexOf(key1) == -1 && value != 0) {
+				view.UpdateValues(view.GetValueView(actorView,valueIndex,false),value,-1,"" + key1 + ":");
+				++valueIndex;
+			}
+		}
+		var _g = valueIndex;
+		var _g1 = actorView.valueViews.length;
+		while(_g < _g1) {
+			var i = _g++;
+			actorView.valueViews[i].parent.set_hidden(true);
+		}
 	};
 	var ActorToView = function(actor,actorView) {
 		if(actor != null) {
@@ -2954,7 +2978,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 732, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 748, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2966,7 +2990,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 749, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 765, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -2985,8 +3009,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 777, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 778, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 793, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 794, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -4730,6 +4754,7 @@ View.prototype = {
 		if(percent == null) {
 			percent = false;
 		}
+		res.parent.set_hidden(false);
 		if(label != null) {
 			if(res.labelText != null) {
 				res.labelText.set_text(label);

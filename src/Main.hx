@@ -276,6 +276,8 @@ class Main {
 			"haste" => "&#128094;"
 		];
 
+		var ignoreStats = ["Attack", "Defense", "Speed", "Life", "LifeMax", "MP", "SpeedCount", "MagicAttack", "MPRechargeCount", "MPRecharge"];
+
 		var ActorToFullView = function(actor:Actor, actorView:ActorViewComplete) {
 			// var valueView:ValueView = view.GetValueView(actorView, 0);
 
@@ -284,6 +286,20 @@ class Main {
 			view.UpdateValues(view.GetValueView(actorView, 2, false), bm.GetAttribute(actor, "Speed"), -1, "Speed:");
 			view.UpdateValues(view.GetValueView(actorView, 3, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:");
 
+			// continue from the last one
+			var valueIndex = 4;
+
+			for (key => value in actor.attributesCalculated) {
+				if(!ignoreStats.contains(key) && value != 0){
+					view.UpdateValues(view.GetValueView(actorView, valueIndex, false), value, -1, '$key:');
+					valueIndex++;
+				}				
+			}
+			for (i in valueIndex...actorView.valueViews.length) {
+					actorView.valueViews[i].parent.hidden = true;
+			}
+
+			
 			// view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
 			// view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
 

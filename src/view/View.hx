@@ -953,6 +953,7 @@ class View {
 	}
 
 	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null, percent = false, valueAsString:String = null) {
+		res.parent.hidden = false;
 		if (label != null) {
 			if (res.labelText != null)
 				res.labelText.text = label;
