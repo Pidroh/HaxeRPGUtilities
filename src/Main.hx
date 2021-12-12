@@ -201,6 +201,15 @@ class Main {
 		// main.horizontalAlign = "center";
 
 		Screen.instance.addComponent(main);
+		Screen.instance.addComponent(view.overlay);
+
+		
+		/*
+			var button = new Button();
+			button.top = 200;
+			button.left = 200;
+			button.text = "TEST";
+		 */
 
 		var time:Float = 0;
 
@@ -276,7 +285,9 @@ class Main {
 			"haste" => "&#128094;"
 		];
 
-		var ignoreStats = ["Attack", "Defense", "Speed", "Life", "LifeMax", "MP", "SpeedCount", "MagicAttack", "MPRechargeCount", "MPRecharge"];
+		var ignoreStats = [
+			"Attack", "Defense", "Speed", "Life", "LifeMax", "MP", "SpeedCount", "MagicAttack", "MPRechargeCount", "MPRecharge"
+		];
 
 		var ActorToFullView = function(actor:Actor, actorView:ActorViewComplete) {
 			// var valueView:ValueView = view.GetValueView(actorView, 0);
@@ -290,22 +301,26 @@ class Main {
 			var valueIndex = 4;
 
 			for (key => value in actor.attributesCalculated) {
-				if(!ignoreStats.contains(key) && value != 0){
+				if (!ignoreStats.contains(key) && value != 0) {
 					view.UpdateValues(view.GetValueView(actorView, valueIndex, false), value, -1, '$key:');
 					valueIndex++;
-				}				
+				}
 			}
 			for (i in valueIndex...actorView.valueViews.length) {
-					actorView.valueViews[i].parent.hidden = true;
+				actorView.valueViews[i].parent.hidden = true;
 			}
 
-			
 			// view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
 			// view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
 
 			// view.UpdateValues(view.defView, bm.wdata.hero.attributesCalculated["Defense"], -1);
 			// view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
 		}
+
+		view.addHover(view.heroView.parent, (b) -> {
+			view.overlay.hidden = !b;
+			ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
+		});
 
 		var ActorToView = function(actor:Actor, actorView:ActorView) {
 			if (actor != null) {

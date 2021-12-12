@@ -1,3 +1,4 @@
+import haxe.ui.events.MouseEvent;
 import Macros.MyMacro;
 import haxe.ui.styles.elements.AnimationKeyFrame;
 import haxe.ui.styles.elements.AnimationKeyFrames;
@@ -47,6 +48,7 @@ class View {
 	public var enemyView:ActorView;
 
 	public var equipHeroStats:ActorViewComplete;
+	public var overlayActorFullView :ActorViewComplete;
 
 	public var level:ValueView;
 	public var xpBar:ValueView;
@@ -104,6 +106,7 @@ class View {
 
 	public var amountOfStoryMessagesShown = 0;
 	public var storyDialog:StoryDialog;
+	public var overlay:Component;
 
 	public function Update() {
 		// equipTabChild.width = equipTabChild.parentComponent.width - 40;
@@ -280,7 +283,24 @@ class View {
 		cutsceneStartViews[buttonPos].parent.hide();
 	}
 
+	public function addHover(c:Component, callback){
+		var hovering = false;
+		c.registerEvent(MouseEvent.MOUSE_OVER, (e)->{
+			callback(true);
+		});
+		c.registerEvent(MouseEvent.MOUSE_OUT, (e)->{
+			callback(false);
+		});
+	}
+
 	public function new() {
+		
+		overlay = new VBox();
+		
+		overlayActorFullView = CreateActorViewComplete("S", overlay);
+		var l = new Label();
+		l.text = "DASDASDAS";
+		overlay.addComponent(l);
 		{
 			var boxParentP = new Box();
 			boxParentP.percentHeight = 100;
@@ -1194,6 +1214,7 @@ class StoryDialog extends Dialog {
 
 	public function new() {
 		super();
+
 		title = "Story Scene";
 		width = 400;
 		this.percentHeight = 80;
@@ -1210,15 +1231,6 @@ class StoryDialog extends Dialog {
 		scroll.percentContentWidth = 100;
 		scroll.horizontalAlign = "center";
 		addComponent(scroll);
-
-		// var vbox = new VBox();
-		// vbox.percentWidth = 100;
-
-		// mainText = new Label();
-		// mainText.text = "";
-		// mainText.percentWidth = 100;
-		// scroll.addComponent(mainText);
-		// vbox.addComponent(mainText);
 
 		{
 			var hbox = new ContinuousHBox();

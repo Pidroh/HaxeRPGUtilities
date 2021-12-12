@@ -2501,6 +2501,7 @@ Main.gamemain = function() {
 	var ls = js_Browser.getLocalStorage();
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
+	haxe_ui_core_Screen.get_instance().addComponent(view.overlay);
 	var time = 0;
 	var saveCount = 0.3;
 	bm.ForceSkillSetDrop(-1,null,{ skills : [{ id : "Slash", level : 1},{ id : "Cure", level : 1},{ id : "Protect", level : 3}]},false);
@@ -2573,6 +2574,10 @@ Main.gamemain = function() {
 			actorView.valueViews[i].parent.set_hidden(true);
 		}
 	};
+	view.addHover(view.heroView.parent,function(b) {
+		view.overlay.set_hidden(!b);
+		ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
+	});
 	var ActorToView = function(actor,actorView) {
 		if(actor != null) {
 			var name = actorView.defaultName;
@@ -2978,7 +2983,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 748, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 763, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2990,7 +2995,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 765, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 780, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3009,8 +3014,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 793, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 794, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 808, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 809, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -4023,6 +4028,11 @@ var View = function() {
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
 	this.currencyViews = [];
 	var _gthis = this;
+	this.overlay = new haxe_ui_containers_VBox();
+	this.overlayActorFullView = this.CreateActorViewComplete("S",this.overlay);
+	var l = new haxe_ui_components_Label();
+	l.set_text("DASDASDAS");
+	this.overlay.addComponent(l);
 	var boxParentP = new haxe_ui_containers_Box();
 	boxParentP.set_percentHeight(100);
 	boxParentP.set_verticalAlign("bottom");
@@ -4230,6 +4240,7 @@ View.prototype = {
 	heroView: null
 	,enemyView: null
 	,equipHeroStats: null
+	,overlayActorFullView: null
 	,level: null
 	,xpBar: null
 	,lifeView: null
@@ -4268,6 +4279,7 @@ View.prototype = {
 	,cutsceneStartViews: null
 	,amountOfStoryMessagesShown: null
 	,storyDialog: null
+	,overlay: null
 	,Update: function() {
 		this.equipTabChild.set_width(haxe_ui_core_Screen.get_instance().get_width() - 40 - 60 - 200);
 	}
@@ -4398,6 +4410,15 @@ View.prototype = {
 	}
 	,StoryButtonHide: function(buttonPos) {
 		this.cutsceneStartViews[buttonPos].parent.hide();
+	}
+	,addHover: function(c,callback) {
+		var hovering = false;
+		c.registerEvent("mouseover",function(e) {
+			callback(true);
+		});
+		c.registerEvent("mouseout",function(e) {
+			callback(false);
+		});
 	}
 	,GetEquipmentType: function() {
 		return this.equipmentTypeSelectionTabbar.get_selectedIndex();
