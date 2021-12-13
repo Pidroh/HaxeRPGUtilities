@@ -4594,6 +4594,9 @@ View.prototype = {
 			rightLabel.set_text("New");
 			rightLabel.set_horizontalAlign("right");
 			rightLabelBox.set_backgroundColor(haxe_ui_util_Color.fromString("#FFAAAA"));
+			if(haxe_ui_Toolkit.get_theme() == "dark") {
+				rightLabelBox.set_backgroundColor(haxe_ui_util_Color.fromString("#440000"));
+			}
 			rightLabelBox.addComponent(rightLabel);
 			header.addComponent(rightLabelBox);
 			viewParent.addComponent(header);

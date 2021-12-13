@@ -779,6 +779,9 @@ class View {
 			rightLabel.horizontalAlign = "right";
 			// rightLabel.verticalAlign = "center";
 			rightLabelBox.backgroundColor = "#FFAAAA";
+			if(Toolkit.theme == 'dark'){
+				rightLabelBox.backgroundColor = "#440000";
+			}
 			rightLabelBox.addComponent(rightLabel);
 			header.addComponent(rightLabelBox);
 			viewParent.addComponent(header);
