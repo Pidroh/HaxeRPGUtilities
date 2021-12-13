@@ -1,3 +1,5 @@
+import haxe.ui.styles.animation.util.ColorPropertyDetails;
+import haxe.ui.Toolkit;
 import haxe.ui.events.MouseEvent;
 import Macros.MyMacro;
 import haxe.ui.styles.elements.AnimationKeyFrame;
@@ -295,9 +297,9 @@ class View {
 
 	public function new() {
 		overlay = new VBox();
-		overlay.color = "#FFFFFF";
-		overlay.backgroundColor = "#FFFFFF";
-		overlay.borderColor = "#BBBBBB";
+		overlay.hidden = true;
+		overlay.addClass("default-background");
+		//overlay.borderColor = "#BBBBBB";
 		overlay.borderSize = 1;
 		overlay.padding = 10;
 
@@ -307,6 +309,7 @@ class View {
 		overlay.addComponent(l);
 		{
 			var boxParentP = new Box();
+			boxParentP.addClass("default-background");
 			boxParentP.percentHeight = 100;
 			boxParentP.verticalAlign = "bottom";
 			mainComponent = boxParentP;
@@ -730,7 +733,8 @@ class View {
 
 		// container.percentWidth = 100;
 		// container.borderRadius = 1;
-		container.borderColor = "#AAAAAA";
+		if(Toolkit.theme != 'dark')
+			container.borderColor = "#AAAAAA";
 		container.borderSize = 1;
 		container.padding = 15;
 		parent.addComponent(container);
@@ -844,17 +848,30 @@ class View {
 		if (rarity == 1) {
 			color = "#002299";
 		}
+		if(Toolkit.theme == "dark"){
+			color = "#EEEEEE";
+			if (rarity == 1) {
+				color = "#88AAFF";
+			}
+		}
+		
 		equipments[pos].name.color = color;
 		if (equipped) {
 			equipments[pos].actionButtons[0].text = "Unequip";
 			equipments[pos].actionButtons[0].hidden = unequipable;
 			equipments[pos].parent.borderSize = 2;
 			equipments[pos].parent.backgroundColor = "#FAEBD7";
+			if(Toolkit.theme == "dark"){
+				equipments[pos].parent.backgroundColor = "#9C6113";
+			}
 		} else {
 			equipments[pos].actionButtons[0].hidden = false;
 			equipments[pos].actionButtons[0].text = "Equip";
 			equipments[pos].parent.borderSize = 1;
 			equipments[pos].parent.backgroundColor = "white";
+			if(Toolkit.theme == "dark"){
+				equipments[pos].parent.backgroundColor = "black";
+			}
 		}
 		equipments[pos].actionButtons[1].hidden = equipped == true;
 		equipments[pos].actionButtons[1].text = "Sell\n" + sellGain + " Lagrima";
@@ -965,11 +982,17 @@ class View {
 	public function ButtonAttackColor(id:String) {
 		var b = buttonMap[id];
 		b.backgroundColor = "#FF6666";
+		if(Toolkit.theme == 'dark'){
+			b.backgroundColor = "#990000";
+		}
 	}
 
 	public function ButtonNormalColor(id:String) {
 		var b = buttonMap[id];
 		b.backgroundColor = "#EEEEFF";
+		if(Toolkit.theme == 'dark'){
+			b.backgroundColor = "#444444";
+		}
 	}
 
 	public function ButtonEnabled(id:String, enabled:Bool) {
@@ -1108,6 +1131,13 @@ class View {
 	}
 
 	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor:String = "#CCCCDD", extraHeight = 0):ValueView {
+		var color : haxe.ui.util.Color = barColor;
+		if(Toolkit.theme == "dark"){
+			color.r -= 128;
+			color.g -= 128;
+			color.b -= 128;
+			
+		}
 		var boxh = new Box();
 		boxh.width = 180;
 		boxh.height = 20 + extraHeight;
@@ -1137,7 +1167,7 @@ class View {
 		if (addLabel)
 			progress.horizontalAlign = "right";
 		if (withBar) {
-			progress.getComponentAt(0).backgroundColor = barColor;
+			progress.getComponentAt(0).backgroundColor = color;
 			progress.pos = 100;
 		} else {
 			progress.borderSize = 0;

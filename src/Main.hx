@@ -44,7 +44,11 @@ class Main {
 
 	static function main() {
 		Toolkit.init();
-		trace("sssX");
+		Toolkit.theme = "default";
+		Toolkit.theme = "dark";
+		var b:Button;
+		//trace(Toolkit.styleSheet.addStyleSheet);
+		//trace("sssX");
 		var key = "privacymemory";
 
 		var privacyAcceptance:String = Browser.getLocalStorage().getItem(key);

@@ -2391,7 +2391,9 @@ $hxClasses["Main"] = Main;
 Main.__name__ = "Main";
 Main.main = function() {
 	haxe_ui_Toolkit.init();
-	haxe_Log.trace("sssX",{ fileName : "src/Main.hx", lineNumber : 47, className : "Main", methodName : "main"});
+	haxe_ui_Toolkit.set_theme("default");
+	haxe_ui_Toolkit.set_theme("dark");
+	var b;
 	var key = "privacymemory";
 	var privacyAcceptance = js_Browser.getLocalStorage().getItem(key);
 	if(privacyAcceptance == null) {
@@ -2429,7 +2431,7 @@ Main.gamemain = function() {
 	var enemyNames_4 = "Cactuar";
 	var enemyNames_5 = "Reaper";
 	if(enemyRegionNames.length < bm.regionRequirements.length) {
-		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 113, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 117, className : "Main", methodName : "gamemain"});
 	}
 	var eventShown = 0;
 	var main = new haxe_ui_containers_Box();
@@ -2994,7 +2996,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 773, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 777, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3006,7 +3008,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 790, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 794, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3025,8 +3027,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 818, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 819, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 822, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 823, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -4040,9 +4042,8 @@ var View = function() {
 	this.currencyViews = [];
 	var _gthis = this;
 	this.overlay = new haxe_ui_containers_VBox();
-	this.overlay.set_color(haxe_ui_util_Color.fromString("#FFFFFF"));
-	this.overlay.set_backgroundColor(haxe_ui_util_Color.fromString("#FFFFFF"));
-	this.overlay.set_borderColor(haxe_ui_util_Color.fromString("#BBBBBB"));
+	this.overlay.set_hidden(true);
+	this.overlay.addClass("default-background");
 	this.overlay.set_borderSize(1);
 	this.overlay.set_padding(10);
 	this.overlayActorFullView = this.CreateActorViewComplete("S",this.overlay);
@@ -4050,6 +4051,7 @@ var View = function() {
 	l.set_text("DASDASDAS");
 	this.overlay.addComponent(l);
 	var boxParentP = new haxe_ui_containers_Box();
+	boxParentP.addClass("default-background");
 	boxParentP.set_percentHeight(100);
 	boxParentP.set_verticalAlign("bottom");
 	this.mainComponent = boxParentP;
@@ -4543,7 +4545,9 @@ View.prototype = {
 		} else {
 			container = new haxe_ui_containers_VBox();
 		}
-		container.set_borderColor(haxe_ui_util_Color.fromString("#AAAAAA"));
+		if(haxe_ui_Toolkit.get_theme() != "dark") {
+			container.set_borderColor(haxe_ui_util_Color.fromString("#AAAAAA"));
+		}
 		container.set_borderSize(1);
 		container.set_padding(15);
 		parent.addComponent(container);
@@ -4666,17 +4670,29 @@ View.prototype = {
 		if(rarity == 1) {
 			color = "#002299";
 		}
+		if(haxe_ui_Toolkit.get_theme() == "dark") {
+			color = "#EEEEEE";
+			if(rarity == 1) {
+				color = "#88AAFF";
+			}
+		}
 		this.equipments[pos].name.set_color(haxe_ui_util_Color.fromString(color));
 		if(equipped) {
 			this.equipments[pos].actionButtons[0].set_text("Unequip");
 			this.equipments[pos].actionButtons[0].set_hidden(unequipable);
 			this.equipments[pos].parent.set_borderSize(2);
 			this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("#FAEBD7"));
+			if(haxe_ui_Toolkit.get_theme() == "dark") {
+				this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("#9C6113"));
+			}
 		} else {
 			this.equipments[pos].actionButtons[0].set_hidden(false);
 			this.equipments[pos].actionButtons[0].set_text("Equip");
 			this.equipments[pos].parent.set_borderSize(1);
 			this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("white"));
+			if(haxe_ui_Toolkit.get_theme() == "dark") {
+				this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("black"));
+			}
 		}
 		this.equipments[pos].actionButtons[1].set_hidden(equipped == true);
 		this.equipments[pos].actionButtons[1].set_text("Sell\n" + sellGain + " Lagrima");
@@ -4781,10 +4797,16 @@ View.prototype = {
 	,ButtonAttackColor: function(id) {
 		var b = this.buttonMap.h[id];
 		b.set_backgroundColor(haxe_ui_util_Color.fromString("#FF6666"));
+		if(haxe_ui_Toolkit.get_theme() == "dark") {
+			b.set_backgroundColor(haxe_ui_util_Color.fromString("#990000"));
+		}
 	}
 	,ButtonNormalColor: function(id) {
 		var b = this.buttonMap.h[id];
 		b.set_backgroundColor(haxe_ui_util_Color.fromString("#EEEEFF"));
+		if(haxe_ui_Toolkit.get_theme() == "dark") {
+			b.set_backgroundColor(haxe_ui_util_Color.fromString("#444444"));
+		}
 	}
 	,ButtonEnabled: function(id,enabled) {
 		var b = this.buttonMap.h[id];
@@ -4892,6 +4914,12 @@ View.prototype = {
 		if(barColor == null) {
 			barColor = "#CCCCDD";
 		}
+		var color = haxe_ui_util_Color.fromString(barColor);
+		if(haxe_ui_Toolkit.get_theme() == "dark") {
+			color = (color >> 24 & 255 & 255) << 24 | ((color >> 16 & 255) - 128 & 255) << 16 | (color >> 8 & 255 & 255) << 8 | color & 255 & 255;
+			color = (color >> 24 & 255 & 255) << 24 | (color >> 16 & 255 & 255) << 16 | ((color >> 8 & 255) - 128 & 255) << 8 | color & 255 & 255;
+			color = (color >> 24 & 255 & 255) << 24 | (color >> 16 & 255 & 255) << 16 | (color >> 8 & 255 & 255) << 8 | (color & 255) - 128 & 255;
+		}
 		var boxh = new haxe_ui_containers_Box();
 		boxh.set_width(180);
 		boxh.set_height(20 + extraHeight);
@@ -4914,7 +4942,7 @@ View.prototype = {
 			progress.set_horizontalAlign("right");
 		}
 		if(withBar) {
-			progress.getComponentAt(0).set_backgroundColor(haxe_ui_util_Color.fromString(barColor));
+			progress.getComponentAt(0).set_backgroundColor(color);
 			progress.set_pos(100);
 		} else {
 			progress.set_borderSize(0);
