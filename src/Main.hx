@@ -203,7 +203,6 @@ class Main {
 		Screen.instance.addComponent(main);
 		Screen.instance.addComponent(view.overlay);
 
-		
 		/*
 			var button = new Button();
 			button.top = 200;
@@ -319,7 +318,18 @@ class Main {
 
 		view.addHover(view.heroView.parent, (b) -> {
 			view.overlay.hidden = !b;
-			ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
+			if (b) {
+				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
+				view.positionOverlay(view.heroView.parent);
+			}
+		});
+
+		view.addHover(view.enemyView.parent, (b) -> {
+			view.overlay.hidden = !b;
+			if (b) {
+				ActorToFullView(bm.wdata.enemy, view.overlayActorFullView);
+				view.positionOverlay(view.enemyView.parent);
+			}
 		});
 
 		var ActorToView = function(actor:Actor, actorView:ActorView) {
@@ -610,7 +620,7 @@ class Main {
 					bossMessage = originMessage;
 				}
 				if (e.type == EquipMaxed) {
-					view.ShowMessage("Equipment reached Limit Level", 'Your equipment reached Limit Level. The energy materializes into $dataString x$data');
+					view.ShowMessage("Equipment reached Limit Level", 'Your equipment reached Limit Level. The energy materializes into $dataString +$data');
 				}
 				if (e.type == statUpgrade) {
 					battle = false;

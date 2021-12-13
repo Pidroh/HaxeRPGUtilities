@@ -48,7 +48,7 @@ class View {
 	public var enemyView:ActorView;
 
 	public var equipHeroStats:ActorViewComplete;
-	public var overlayActorFullView :ActorViewComplete;
+	public var overlayActorFullView:ActorViewComplete;
 
 	public var level:ValueView;
 	public var xpBar:ValueView;
@@ -283,20 +283,24 @@ class View {
 		cutsceneStartViews[buttonPos].parent.hide();
 	}
 
-	public function addHover(c:Component, callback){
+	public function addHover(c:Component, callback) {
 		var hovering = false;
-		c.registerEvent(MouseEvent.MOUSE_OVER, (e)->{
+		c.registerEvent(MouseEvent.MOUSE_OVER, (e) -> {
 			callback(true);
 		});
-		c.registerEvent(MouseEvent.MOUSE_OUT, (e)->{
+		c.registerEvent(MouseEvent.MOUSE_OUT, (e) -> {
 			callback(false);
 		});
 	}
 
 	public function new() {
-		
 		overlay = new VBox();
-		
+		overlay.color = "#FFFFFF";
+		overlay.backgroundColor = "#FFFFFF";
+		overlay.borderColor = "#BBBBBB";
+		overlay.borderSize = 1;
+		overlay.padding = 10;
+
 		overlayActorFullView = CreateActorViewComplete("S", overlay);
 		var l = new Label();
 		l.text = "DASDASDAS";
@@ -610,6 +614,16 @@ class View {
 
 	public function GetEquipmentType():Int {
 		return equipmentTypeSelectionTabbar.selectedIndex;
+	}
+
+	public function positionOverlay(comp:Component) {
+		var xDis = 10;
+		var yDis = 10;
+		var left = comp.screenLeft;
+		left += comp.width + xDis;
+		var top = comp.screenTop - yDis;
+		overlay.left = left;
+		overlay.top = top;
 	}
 
 	public function FeedEquipmentTypes(types:Array<String>) {

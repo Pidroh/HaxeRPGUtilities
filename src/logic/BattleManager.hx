@@ -889,8 +889,9 @@ class BattleManager {
 		if (IsUpgradable(e, wdata) == false) {
 			var bonus = Std.int(GetLimitBreakCost(e, wdata) / 3);
 			wdata.currency.currencies["Lagrima Stone"].value += bonus;
-			bm.AddEvent(EquipMaxed).data = bonus;
-			bm.AddEvent(EquipMaxed).dataString = "Lagrima Stone";
+			var e= bm.AddEvent(EquipMaxed);
+			e.data = bonus;
+			e.dataString = "Lagrima Stone";
 		}
 		{
 			if (e.attributes.exists("Attack")) {

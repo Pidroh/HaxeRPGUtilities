@@ -240,8 +240,9 @@ BattleManager.Upgrade = function(e,wdata,bm) {
 	if(BattleManager.IsUpgradable(e,wdata) == false) {
 		var bonus = BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
 		wdata.currency.currencies.h["Lagrima Stone"].value += bonus;
-		bm.AddEvent(EventTypes.EquipMaxed).data = bonus;
-		bm.AddEvent(EventTypes.EquipMaxed).dataString = "Lagrima Stone";
+		var e1 = bm.AddEvent(EventTypes.EquipMaxed);
+		e1.data = bonus;
+		e1.dataString = "Lagrima Stone";
 	}
 	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
 		var tmp = "Attack";
@@ -1773,7 +1774,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1754:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1755:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1790,7 +1791,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1771:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1772:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

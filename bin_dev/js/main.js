@@ -242,8 +242,9 @@ BattleManager.Upgrade = function(e,wdata,bm) {
 	if(BattleManager.IsUpgradable(e,wdata) == false) {
 		var bonus = BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
 		wdata.currency.currencies.h["Lagrima Stone"].value += bonus;
-		bm.AddEvent(EventTypes.EquipMaxed).data = bonus;
-		bm.AddEvent(EventTypes.EquipMaxed).dataString = "Lagrima Stone";
+		var e1 = bm.AddEvent(EventTypes.EquipMaxed);
+		e1.data = bonus;
+		e1.dataString = "Lagrima Stone";
 	}
 	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
 		var tmp = "Attack";
@@ -1800,7 +1801,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1754, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1755, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1817,7 +1818,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1771, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1772, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2576,7 +2577,17 @@ Main.gamemain = function() {
 	};
 	view.addHover(view.heroView.parent,function(b) {
 		view.overlay.set_hidden(!b);
-		ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
+		if(b) {
+			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
+			view.positionOverlay(view.heroView.parent);
+		}
+	});
+	view.addHover(view.enemyView.parent,function(b) {
+		view.overlay.set_hidden(!b);
+		if(b) {
+			ActorToFullView(bm.wdata.enemy,view.overlayActorFullView);
+			view.positionOverlay(view.enemyView.parent);
+		}
 	});
 	var ActorToView = function(actor,actorView) {
 		if(actor != null) {
@@ -2859,7 +2870,7 @@ Main.gamemain = function() {
 				bossMessage = originMessage;
 			}
 			if(e.type == EventTypes.EquipMaxed) {
-				view.ShowMessage("Equipment reached Limit Level","Your equipment reached Limit Level. The energy materializes into " + dataString + " x" + data);
+				view.ShowMessage("Equipment reached Limit Level","Your equipment reached Limit Level. The energy materializes into " + dataString + " +" + data);
 			}
 			if(e.type == EventTypes.statUpgrade) {
 				battle = false;
@@ -2983,7 +2994,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 763, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 773, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2995,7 +3006,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 780, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 790, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3014,8 +3025,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 808, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 809, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 818, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 819, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -4029,6 +4040,11 @@ var View = function() {
 	this.currencyViews = [];
 	var _gthis = this;
 	this.overlay = new haxe_ui_containers_VBox();
+	this.overlay.set_color(haxe_ui_util_Color.fromString("#FFFFFF"));
+	this.overlay.set_backgroundColor(haxe_ui_util_Color.fromString("#FFFFFF"));
+	this.overlay.set_borderColor(haxe_ui_util_Color.fromString("#BBBBBB"));
+	this.overlay.set_borderSize(1);
+	this.overlay.set_padding(10);
 	this.overlayActorFullView = this.CreateActorViewComplete("S",this.overlay);
 	var l = new haxe_ui_components_Label();
 	l.set_text("DASDASDAS");
@@ -4422,6 +4438,15 @@ View.prototype = {
 	}
 	,GetEquipmentType: function() {
 		return this.equipmentTypeSelectionTabbar.get_selectedIndex();
+	}
+	,positionOverlay: function(comp) {
+		var xDis = 10;
+		var yDis = 10;
+		var left = comp.get_screenLeft();
+		left += comp.get_width() + xDis;
+		var top = comp.get_screenTop() - yDis;
+		this.overlay.set_left(left);
+		this.overlay.set_top(top);
 	}
 	,FeedEquipmentTypes: function(types) {
 		this.equipmentTypeNames = types;
