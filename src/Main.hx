@@ -320,9 +320,13 @@ class Main {
 			// view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
 		}
 
+		var overlayFullActorId = -1;
+
 		view.addHover(view.heroView.parent, (b) -> {
 			view.overlay.hidden = !b;
+			overlayFullActorId = -1;
 			if (b) {
+				overlayFullActorId = 0;
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 				view.positionOverlay(view.heroView.parent);
 			}
@@ -330,7 +334,9 @@ class Main {
 
 		view.addHover(view.enemyView.parent, (b) -> {
 			view.overlay.hidden = !b;
+			overlayFullActorId = -1;
 			if (b) {
+				overlayFullActorId = 1;
 				ActorToFullView(bm.wdata.enemy, view.overlayActorFullView);
 				view.positionOverlay(view.enemyView.parent);
 			}
@@ -402,6 +408,12 @@ class Main {
 		var bossMessage = originMessage;
 
 		update = function(timeStamp:Float):Bool {
+
+			if(overlayFullActorId == 0)
+				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
+			if(overlayFullActorId == 1 && bm.wdata.enemy != null)
+				ActorToFullView(bm.wdata.enemy, view.overlayActorFullView);
+
 			global["maxarea"] = bm.wdata.maxArea;
 			global["herolevel"] = bm.wdata.hero.level;
 
