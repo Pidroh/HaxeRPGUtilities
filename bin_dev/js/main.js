@@ -4046,10 +4046,7 @@ var View = function() {
 	this.overlay.addClass("default-background");
 	this.overlay.set_borderSize(1);
 	this.overlay.set_padding(10);
-	this.overlayActorFullView = this.CreateActorViewComplete("S",this.overlay);
-	var l = new haxe_ui_components_Label();
-	l.set_text("DASDASDAS");
-	this.overlay.addComponent(l);
+	this.overlayActorFullView = this.CreateActorViewComplete("",this.overlay);
 	var boxParentP = new haxe_ui_containers_Box();
 	boxParentP.addClass("default-background");
 	boxParentP.set_percentHeight(100);

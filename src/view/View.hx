@@ -303,10 +303,7 @@ class View {
 		overlay.borderSize = 1;
 		overlay.padding = 10;
 
-		overlayActorFullView = CreateActorViewComplete("S", overlay);
-		var l = new Label();
-		l.text = "DASDASDAS";
-		overlay.addComponent(l);
+		overlayActorFullView = CreateActorViewComplete("", overlay);
 		{
 			var boxParentP = new Box();
 			boxParentP.addClass("default-background");
