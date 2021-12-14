@@ -21,7 +21,7 @@ class GameAnalyticsIntegration{
             gameanalytics.GameAnalytics.initialize({0},{1}); 
             
         }
-        ', gameKey, secretKey, "0.11"+platform);
+        ', gameKey, secretKey, "0.12"+platform);
     }
 
     public static function SendDesignEvent(eventName:String, value:Int){

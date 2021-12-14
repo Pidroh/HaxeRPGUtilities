@@ -178,7 +178,7 @@ var BattleManager = function() {
 	_g.h["Speed"] = 20;
 	_g.h["SpeedCount"] = 0;
 	var stats = _g;
-	var w = { worldVersion : 1005, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], prestigeTimes : 0, timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
+	var w = { worldVersion : 1207, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], prestigeTimes : 0, timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -209,10 +209,10 @@ BattleManager.GetCost = function(e,wdata) {
 		genLevel = e.generationLevel;
 	}
 	if(e.generationPrefixMod >= 0) {
-		genLevel *= 1.3;
+		genLevel += 5;
 	}
 	if(e.generationSuffixMod >= 0) {
-		genLevel *= 1.3;
+		genLevel += 5;
 	}
 	return (genLevel / 5 | 0) * 5 + 5;
 };
@@ -234,13 +234,17 @@ BattleManager.LimitBreak = function(e,wdata) {
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.limitbreak++;
 };
-BattleManager.Upgrade = function(e,wdata) {
+BattleManager.Upgrade = function(e,wdata,bm) {
 	var cost = BattleManager.GetCost(e,wdata);
 	wdata.currency.currencies.h["Lagrima"].value -= cost;
 	var level = wdata.equipLevels[e.outsideSystems.h["level"]];
 	level.level++;
 	if(BattleManager.IsUpgradable(e,wdata) == false) {
-		wdata.currency.currencies.h["Lagrima Stone"].value += BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
+		var bonus = BattleManager.GetLimitBreakCost(e,wdata) / 3 | 0;
+		wdata.currency.currencies.h["Lagrima Stone"].value += bonus;
+		var e1 = bm.AddEvent(EventTypes.EquipMaxed);
+		e1.data = bonus;
+		e1.dataString = "Lagrima Stone";
 	}
 	if(Object.prototype.hasOwnProperty.call(e.attributes.h,"Attack")) {
 		var tmp = "Attack";
@@ -1372,9 +1376,13 @@ BattleManager.prototype = {
 		var e = this.wdata.hero.equipment[pos];
 		BattleManager.LimitBreak(e,this.wdata);
 	}
-	,UpgradeEquipment: function(pos) {
+	,UpgradeOrLimitBreakEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
-		BattleManager.Upgrade(e,this.wdata);
+		if(BattleManager.IsUpgradable(e,this.wdata)) {
+			BattleManager.Upgrade(e,this.wdata,this);
+		} else {
+			BattleManager.LimitBreak(e,this.wdata);
+		}
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,DiscardSingleEquipment: function(pos) {
@@ -1393,8 +1401,8 @@ BattleManager.prototype = {
 		}
 	}
 	,SellSingleEquipment: function(pos) {
-		this.DiscardSingleEquipment(pos);
 		var prize = BattleManager.GetSellPrize(this.wdata.hero.equipment[pos],this.wdata);
+		this.DiscardSingleEquipment(pos);
 		this.wdata.currency.currencies.h["Lagrima"].value += prize;
 	}
 	,SellEquipment: function(pos) {
@@ -1793,7 +1801,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1744, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1755, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1810,7 +1818,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1761, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1772, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2232,7 +2240,7 @@ GameAnalyticsIntegration.InitializeCheck = function() {
 	
         if(gameanalytics.GameAnalytics != null && gaInited == false){
             gaInited = true;
-            gameanalytics.GameAnalytics.configureBuild(("0.11" + platform));
+            gameanalytics.GameAnalytics.configureBuild(("0.12" + platform));
             gameanalytics.GameAnalytics.initialize(gameKey,secretKey); 
             
         }
@@ -2383,7 +2391,9 @@ $hxClasses["Main"] = Main;
 Main.__name__ = "Main";
 Main.main = function() {
 	haxe_ui_Toolkit.init();
-	haxe_Log.trace("sssX",{ fileName : "src/Main.hx", lineNumber : 46, className : "Main", methodName : "main"});
+	haxe_ui_Toolkit.set_theme("default");
+	haxe_ui_Toolkit.set_theme("dark");
+	var b;
 	var key = "privacymemory";
 	var privacyAcceptance = js_Browser.getLocalStorage().getItem(key);
 	if(privacyAcceptance == null) {
@@ -2421,7 +2431,7 @@ Main.gamemain = function() {
 	var enemyNames_4 = "Cactuar";
 	var enemyNames_5 = "Reaper";
 	if(enemyRegionNames.length < bm.regionRequirements.length) {
-		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 112, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 117, className : "Main", methodName : "gamemain"});
 	}
 	var eventShown = 0;
 	var main = new haxe_ui_containers_Box();
@@ -2482,7 +2492,7 @@ Main.gamemain = function() {
 			bm.SellEquipment(pos);
 		}
 		if(action == 2) {
-			bm.UpgradeEquipment(pos);
+			bm.UpgradeOrLimitBreakEquipment(pos);
 		}
 		if(action == View.equipmentAction_DiscardBad) {
 			bm.DiscardWorseEquipment();
@@ -2494,6 +2504,7 @@ Main.gamemain = function() {
 	var ls = js_Browser.getLocalStorage();
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
+	haxe_ui_core_Screen.get_instance().addComponent(view.overlay);
 	var time = 0;
 	var saveCount = 0.3;
 	bm.ForceSkillSetDrop(-1,null,{ skills : [{ id : "Slash", level : 1},{ id : "Cure", level : 1},{ id : "Protect", level : 3}]},false);
@@ -2536,6 +2547,55 @@ Main.gamemain = function() {
 	buffToIcon_h["enchant-fire"] = "&#128293;";
 	buffToIcon_h["protect"] = "&#9960;";
 	buffToIcon_h["haste"] = "&#128094;";
+	var ignoreStats = ["Attack","Defense","Speed","Life","LifeMax","MP","SpeedCount","MagicAttack","MPRechargeCount","MPRecharge"];
+	var ActorToFullView = function(actor,actorView) {
+		view.UpdateValues(view.GetValueView(actorView,0,true),bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"),"Life:");
+		view.UpdateValues(view.GetValueView(actorView,1,false),bm.GetAttribute(actor,"Attack"),-1,"Attack:");
+		view.UpdateValues(view.GetValueView(actorView,2,false),bm.GetAttribute(actor,"Speed"),-1,"Speed:");
+		view.UpdateValues(view.GetValueView(actorView,3,false),bm.GetAttribute(actor,"Defense"),-1,"Defense:");
+		var valueIndex = 4;
+		var h = actor.attributesCalculated.h;
+		var _g2_h = h;
+		var _g2_keys = Object.keys(h);
+		var _g2_length = _g2_keys.length;
+		var _g2_current = 0;
+		while(_g2_current < _g2_length) {
+			var key = _g2_keys[_g2_current++];
+			var _g3_key = key;
+			var _g3_value = _g2_h[key];
+			var key1 = _g3_key;
+			var value = _g3_value;
+			if(ignoreStats.indexOf(key1) == -1 && value != 0) {
+				view.UpdateValues(view.GetValueView(actorView,valueIndex,false),value,-1,"" + key1 + ":");
+				++valueIndex;
+			}
+		}
+		var _g = valueIndex;
+		var _g1 = actorView.valueViews.length;
+		while(_g < _g1) {
+			var i = _g++;
+			actorView.valueViews[i].parent.set_hidden(true);
+		}
+	};
+	var overlayFullActorId = -1;
+	view.addHover(view.heroView.parent,function(b) {
+		view.overlay.set_hidden(!b);
+		overlayFullActorId = -1;
+		if(b) {
+			overlayFullActorId = 0;
+			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
+			view.positionOverlay(view.heroView.parent);
+		}
+	});
+	view.addHover(view.enemyView.parent,function(b) {
+		view.overlay.set_hidden(!b);
+		overlayFullActorId = -1;
+		if(b) {
+			overlayFullActorId = 1;
+			ActorToFullView(bm.wdata.enemy,view.overlayActorFullView);
+			view.positionOverlay(view.enemyView.parent);
+		}
+	});
 	var ActorToView = function(actor,actorView) {
 		if(actor != null) {
 			var name = actorView.defaultName;
@@ -2596,6 +2656,12 @@ Main.gamemain = function() {
 	var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
 	var bossMessage = originMessage;
 	update = function(timeStamp) {
+		if(overlayFullActorId == 0) {
+			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
+		}
+		if(overlayFullActorId == 1 && bm.wdata.enemy != null) {
+			ActorToFullView(bm.wdata.enemy,view.overlayActorFullView);
+		}
 		var v = bm.wdata.maxArea;
 		global.h["maxarea"] = v;
 		var v = bm.wdata.hero.level;
@@ -2603,16 +2669,12 @@ Main.gamemain = function() {
 		GameAnalyticsIntegration.InitializeCheck();
 		ActorToView(bm.wdata.hero,view.heroView);
 		ActorToView(bm.wdata.enemy,view.enemyView);
+		ActorToFullView(bm.wdata.hero,view.equipHeroStats);
 		var actor = bm.wdata.hero;
 		view.UpdateValues(view.level,bm.wdata.hero.level,-1);
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
-		view.UpdateValues(view.speedView,bm.wdata.hero.attributesCalculated.h["Speed"],-1);
-		view.UpdateValues(view.attackView,bm.wdata.hero.attributesCalculated.h["Attack"],-1);
 		view.UpdateValues(view.currencyViews[0],bm.wdata.currency.currencies.h["Lagrima"].value,-1);
 		view.UpdateValues(view.currencyViews[1],bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
-		view.UpdateValues(view.lifeView,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
-		view.UpdateValues(view.defView,bm.wdata.hero.attributesCalculated.h["Defense"],-1);
-		view.UpdateValues(view.mDefView,bm.wdata.hero.attributesCalculated.h["Magic Defense"],-1);
 		view.UpdateValues(view.areaLabel,bm.wdata.battleArea + 1,-1);
 		view.UpdateValues(view.enemyToAdvance,bm.wdata.killedInArea[bm.wdata.battleArea],bm.wdata.necessaryToKillInArea);
 		StoryControlLogic.Update(timeStamp,storyRuntime,view,scriptExecuter);
@@ -2669,7 +2731,25 @@ Main.gamemain = function() {
 					if(e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0) {
 						rarity = 1;
 					}
-					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1,BattleManager.IsUpgradable(e,bm.wdata),BattleManager.CanUpgrade(e,bm.wdata),BattleManager.GetCost(e,bm.wdata),BattleManager.GetSellPrize(e,bm.wdata));
+					var upgradeLabel = "Upgrade";
+					var upgradeCurrency = "Lagrima";
+					var canUpgrade = false;
+					var upgradeCost = 0;
+					var upgradable = BattleManager.IsUpgradable(e,bm.wdata);
+					if(upgradable) {
+						canUpgrade = BattleManager.CanUpgrade(e,bm.wdata);
+						upgradeCost = BattleManager.GetCost(e,bm.wdata);
+					} else {
+						var limitable = BattleManager.IsLimitBreakable(e,bm.wdata);
+						if(limitable) {
+							upgradable = limitable;
+							canUpgrade = BattleManager.CanLimitBreak(e,bm.wdata);
+							upgradeCost = BattleManager.GetLimitBreakCost(e,bm.wdata);
+							upgradeLabel = "Limit Break";
+							upgradeCurrency = "Lagrima Stone";
+						}
+					}
+					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1,upgradable,canUpgrade,upgradeCost,BattleManager.GetSellPrize(e,bm.wdata),upgradeLabel,upgradeCurrency);
 					var vid = 0;
 					if(e.outsideSystems != null) {
 						if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"skillset")) {
@@ -2802,6 +2882,9 @@ Main.gamemain = function() {
 				view.ShowMessage("Area Clear",bossMessage);
 				bossMessage = originMessage;
 			}
+			if(e.type == EventTypes.EquipMaxed) {
+				view.ShowMessage("Equipment reached Limit Level","Your equipment reached Limit Level. The energy materializes into " + dataString + " +" + data);
+			}
 			if(e.type == EventTypes.statUpgrade) {
 				battle = false;
 				var dataS = e.dataString;
@@ -2924,7 +3007,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 700, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 789, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -2936,7 +3019,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 717, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 806, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -2955,8 +3038,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 745, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 746, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 834, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 835, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -2972,11 +3055,12 @@ Main.GetEquipName = function(e,bm) {
 			name = name + " " + modBases[e.generationSuffixMod].suffix;
 		}
 		var level = bm.wdata.equipLevels[e.outsideSystems.h["level"]].level;
-		var levelP = level / 3;
-		var levelS = level - 1 % 3 + 1;
+		var levelP = (level - 1) / 3 | 0;
+		var levelS = (level - 1) % 3 + 1;
+		name += " ";
 		var character = "+";
 		var _g = 0;
-		var _g1 = levelS;
+		var _g1 = level;
 		while(_g < _g1) {
 			var i = _g++;
 			name += character;
@@ -3309,8 +3393,9 @@ var EventTypes = $hxEnums["EventTypes"] = { __ename__:true,__constructs__:null
 	,MPRunOut: {_hx_name:"MPRunOut",_hx_index:14,__enum__:"EventTypes",toString:$estr}
 	,BuffRemoval: {_hx_name:"BuffRemoval",_hx_index:15,__enum__:"EventTypes",toString:$estr}
 	,DebuffBlock: {_hx_name:"DebuffBlock",_hx_index:16,__enum__:"EventTypes",toString:$estr}
+	,EquipMaxed: {_hx_name:"EquipMaxed",_hx_index:17,__enum__:"EventTypes",toString:$estr}
 };
-EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut,EventTypes.BuffRemoval,EventTypes.DebuffBlock];
+EventTypes.__constructs__ = [EventTypes.GameStart,EventTypes.ActorDead,EventTypes.EquipDrop,EventTypes.ActorAppear,EventTypes.ActorAttack,EventTypes.ActorLevelUp,EventTypes.AreaUnlock,EventTypes.RegionUnlock,EventTypes.AreaComplete,EventTypes.AreaEnterFirstTime,EventTypes.GetXP,EventTypes.PermanentStatUpgrade,EventTypes.statUpgrade,EventTypes.SkillUse,EventTypes.MPRunOut,EventTypes.BuffRemoval,EventTypes.DebuffBlock,EventTypes.EquipMaxed];
 var ActorReference = function(type,pos) {
 	this.type = type;
 	this.pos = pos;
@@ -3967,7 +4052,14 @@ var View = function() {
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
 	this.currencyViews = [];
 	var _gthis = this;
+	this.overlay = new haxe_ui_containers_VBox();
+	this.overlay.set_hidden(true);
+	this.overlay.addClass("default-background");
+	this.overlay.set_borderSize(1);
+	this.overlay.set_padding(10);
+	this.overlayActorFullView = this.CreateActorViewComplete("",this.overlay);
 	var boxParentP = new haxe_ui_containers_Box();
+	boxParentP.addClass("default-background");
 	boxParentP.set_percentHeight(100);
 	boxParentP.set_verticalAlign("bottom");
 	this.mainComponent = boxParentP;
@@ -3991,7 +4083,7 @@ var View = function() {
 	boxParentP.addComponent(title);
 	var title = new haxe_ui_components_Label();
 	var platform = "itch";
-	title.set_htmlText(platform + " Alpha 0.10E. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>");
+	title.set_htmlText(platform + " Alpha 0.12G. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>");
 	title.set_percentWidth(100);
 	title.set_textAlign("right");
 	title.set_paddingRight(20);
@@ -4100,11 +4192,7 @@ var View = function() {
 	var box = new haxe_ui_containers_Box();
 	box.set_height(40);
 	statContainer.addComponent(box);
-	this.lifeView = this.CreateValueView(statContainer,true,"Life: ");
-	this.attackView = this.CreateValueView(statContainer,false,"Attack: ");
-	this.speedView = this.CreateValueView(statContainer,false,"Speed: ");
-	this.defView = this.CreateValueView(statContainer,false,"Def: ");
-	this.mDefView = this.CreateValueView(statContainer,false,"mDef: ");
+	this.equipHeroStats = this.CreateActorViewComplete("You",statContainer);
 	this.statEquipmentParent = statContainer;
 	var scroll = this.CreateScrollable(gridBox);
 	scroll.set_height(300);
@@ -4177,13 +4265,11 @@ View.TabBarAlert = function(tabBar,alert,names) {
 View.prototype = {
 	heroView: null
 	,enemyView: null
+	,equipHeroStats: null
+	,overlayActorFullView: null
 	,level: null
 	,xpBar: null
-	,speedView: null
-	,attackView: null
 	,lifeView: null
-	,defView: null
-	,mDefView: null
 	,currencyViews: null
 	,statEquipmentParent: null
 	,enemyToAdvance: null
@@ -4219,6 +4305,7 @@ View.prototype = {
 	,cutsceneStartViews: null
 	,amountOfStoryMessagesShown: null
 	,storyDialog: null
+	,overlay: null
 	,Update: function() {
 		this.equipTabChild.set_width(haxe_ui_core_Screen.get_instance().get_width() - 40 - 60 - 200);
 	}
@@ -4282,6 +4369,13 @@ View.prototype = {
 		}
 		this.amountOfStoryMessagesShown = 0;
 	}
+	,GetValueView: function(actorView,pos,bar) {
+		while(actorView.valueViews.length <= pos) {
+			var vv = this.CreateValueView(actorView.parent,bar,"s");
+			actorView.valueViews.push(vv);
+		}
+		return actorView.valueViews[pos];
+	}
 	,StoryButtonAmount: function(amount) {
 		var _gthis = this;
 		while(this.cutsceneStartViews.length < amount) {
@@ -4343,8 +4437,26 @@ View.prototype = {
 	,StoryButtonHide: function(buttonPos) {
 		this.cutsceneStartViews[buttonPos].parent.hide();
 	}
+	,addHover: function(c,callback) {
+		var hovering = false;
+		c.registerEvent("mouseover",function(e) {
+			callback(true);
+		});
+		c.registerEvent("mouseout",function(e) {
+			callback(false);
+		});
+	}
 	,GetEquipmentType: function() {
 		return this.equipmentTypeSelectionTabbar.get_selectedIndex();
+	}
+	,positionOverlay: function(comp) {
+		var xDis = 10;
+		var yDis = 10;
+		var left = comp.get_screenLeft();
+		left += comp.get_width() + xDis;
+		var top = comp.get_screenTop() - yDis;
+		this.overlay.set_left(left);
+		this.overlay.set_top(top);
 	}
 	,FeedEquipmentTypes: function(types) {
 		this.equipmentTypeNames = types;
@@ -4441,7 +4553,9 @@ View.prototype = {
 		} else {
 			container = new haxe_ui_containers_VBox();
 		}
-		container.set_borderColor(haxe_ui_util_Color.fromString("#AAAAAA"));
+		if(haxe_ui_Toolkit.get_theme() != "dark") {
+			container.set_borderColor(haxe_ui_util_Color.fromString("#AAAAAA"));
+		}
 		container.set_borderSize(1);
 		container.set_padding(15);
 		parent.addComponent(container);
@@ -4480,6 +4594,9 @@ View.prototype = {
 			rightLabel.set_text("New");
 			rightLabel.set_horizontalAlign("right");
 			rightLabelBox.set_backgroundColor(haxe_ui_util_Color.fromString("#FFAAAA"));
+			if(haxe_ui_Toolkit.get_theme() == "dark") {
+				rightLabelBox.set_backgroundColor(haxe_ui_util_Color.fromString("#440000"));
+			}
 			rightLabelBox.addComponent(rightLabel);
 			header.addComponent(rightLabelBox);
 			viewParent.addComponent(header);
@@ -4523,7 +4640,13 @@ View.prototype = {
 			this.equipmentMainAction(equipmentPos,actionId);
 		}
 	}
-	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee,upgradeVisible,upgradable,cost,sellGain) {
+	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee,upgradeVisible,upgradable,cost,sellGain,upgradeLabel,upgradeCurrencyLabel) {
+		if(upgradeCurrencyLabel == null) {
+			upgradeCurrencyLabel = "Lagrima";
+		}
+		if(upgradeLabel == null) {
+			upgradeLabel = "Upgrade";
+		}
 		if(sellGain == null) {
 			sellGain = 0;
 		}
@@ -4558,21 +4681,33 @@ View.prototype = {
 		if(rarity == 1) {
 			color = "#002299";
 		}
+		if(haxe_ui_Toolkit.get_theme() == "dark") {
+			color = "#EEEEEE";
+			if(rarity == 1) {
+				color = "#88AAFF";
+			}
+		}
 		this.equipments[pos].name.set_color(haxe_ui_util_Color.fromString(color));
 		if(equipped) {
 			this.equipments[pos].actionButtons[0].set_text("Unequip");
 			this.equipments[pos].actionButtons[0].set_hidden(unequipable);
 			this.equipments[pos].parent.set_borderSize(2);
 			this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("#FAEBD7"));
+			if(haxe_ui_Toolkit.get_theme() == "dark") {
+				this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("#9C6113"));
+			}
 		} else {
 			this.equipments[pos].actionButtons[0].set_hidden(false);
 			this.equipments[pos].actionButtons[0].set_text("Equip");
 			this.equipments[pos].parent.set_borderSize(1);
 			this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("white"));
+			if(haxe_ui_Toolkit.get_theme() == "dark") {
+				this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("black"));
+			}
 		}
 		this.equipments[pos].actionButtons[1].set_hidden(equipped == true);
 		this.equipments[pos].actionButtons[1].set_text("Sell\n" + sellGain + " Lagrima");
-		this.equipments[pos].actionButtons[2].set_text("Upgrade\n-" + cost + " Lagrima");
+		this.equipments[pos].actionButtons[2].set_text("" + upgradeLabel + "\n-" + cost + " " + upgradeCurrencyLabel);
 		while(this.equipments[pos].values.length < numberOfValues) {
 			var vv = this.CreateValueView(this.equipments[pos].parent,false,"Attr");
 			this.equipments[pos].values.push(vv);
@@ -4673,10 +4808,16 @@ View.prototype = {
 	,ButtonAttackColor: function(id) {
 		var b = this.buttonMap.h[id];
 		b.set_backgroundColor(haxe_ui_util_Color.fromString("#FF6666"));
+		if(haxe_ui_Toolkit.get_theme() == "dark") {
+			b.set_backgroundColor(haxe_ui_util_Color.fromString("#990000"));
+		}
 	}
 	,ButtonNormalColor: function(id) {
 		var b = this.buttonMap.h[id];
 		b.set_backgroundColor(haxe_ui_util_Color.fromString("#EEEEFF"));
+		if(haxe_ui_Toolkit.get_theme() == "dark") {
+			b.set_backgroundColor(haxe_ui_util_Color.fromString("#444444"));
+		}
 	}
 	,ButtonEnabled: function(id,enabled) {
 		var b = this.buttonMap.h[id];
@@ -4692,8 +4833,11 @@ View.prototype = {
 		if(percent == null) {
 			percent = false;
 		}
+		res.parent.set_hidden(false);
 		if(label != null) {
-			res.labelText.set_text(label);
+			if(res.labelText != null) {
+				res.labelText.set_text(label);
+			}
 		}
 		res.parent.set_hidden(current >= 0 == false);
 		if(valueAsString == null) {
@@ -4711,6 +4855,24 @@ View.prototype = {
 	}
 	,IsTabSelected: function(tab) {
 		return this.tabMaster.get_selectedPage() == tab;
+	}
+	,CreateActorViewComplete: function(name,parent) {
+		var box = new haxe_ui_containers_VBox();
+		box.set_width(180);
+		parent.addComponent(box);
+		var header = new haxe_ui_containers_Box();
+		header.set_percentWidth(100);
+		header.set_height(20);
+		box.addComponent(header);
+		var label = new haxe_ui_components_Label();
+		label.set_text(name);
+		label.set_verticalAlign("center");
+		var rightLabel = new haxe_ui_components_Label();
+		rightLabel.set_styleString("font-weight: bold; font-size: 16px;");
+		rightLabel.set_horizontalAlign("right");
+		header.addComponent(rightLabel);
+		header.addComponent(label);
+		return { name : label, valueViews : [], parent : box};
 	}
 	,GetActorView: function(name,parent) {
 		var box = new haxe_ui_containers_VBox();
@@ -4763,6 +4925,12 @@ View.prototype = {
 		if(barColor == null) {
 			barColor = "#CCCCDD";
 		}
+		var color = haxe_ui_util_Color.fromString(barColor);
+		if(haxe_ui_Toolkit.get_theme() == "dark") {
+			color = (color >> 24 & 255 & 255) << 24 | ((color >> 16 & 255) - 128 & 255) << 16 | (color >> 8 & 255 & 255) << 8 | color & 255 & 255;
+			color = (color >> 24 & 255 & 255) << 24 | (color >> 16 & 255 & 255) << 16 | ((color >> 8 & 255) - 128 & 255) << 8 | color & 255 & 255;
+			color = (color >> 24 & 255 & 255) << 24 | (color >> 16 & 255 & 255) << 16 | (color >> 8 & 255 & 255) << 8 | (color & 255) - 128 & 255;
+		}
 		var boxh = new haxe_ui_containers_Box();
 		boxh.set_width(180);
 		boxh.set_height(20 + extraHeight);
@@ -4785,7 +4953,7 @@ View.prototype = {
 			progress.set_horizontalAlign("right");
 		}
 		if(withBar) {
-			progress.getComponentAt(0).set_backgroundColor(haxe_ui_util_Color.fromString(barColor));
+			progress.getComponentAt(0).set_backgroundColor(color);
 			progress.set_pos(100);
 		} else {
 			progress.set_borderSize(0);
