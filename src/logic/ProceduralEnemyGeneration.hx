@@ -14,6 +14,11 @@ class EnemyAreaFromProceduralUnitRepetition{
     public var enemySheets = new Array<ActorSheet>();
 
     public var aux : EnemyAreaInformation = new EnemyAreaInformation();
+    public function GetProceduralUnitRepeated(area:Int) : ProceduralUnitRepeated{
+        area = area % units.length;
+        var u = units[area];
+        return u;
+    }
     public function GetEnemyAreaInformation(area : Int) : EnemyAreaInformation{
         /*
         if(units.length <= area){
@@ -23,6 +28,7 @@ class EnemyAreaFromProceduralUnitRepetition{
             return aux;
         }
         */
+        var areaOrig = area;
         area = area % units.length;
         var u = units[area];
         var char = u.proceduralUnit.characteristics[0];
@@ -32,9 +38,9 @@ class EnemyAreaFromProceduralUnitRepetition{
         if(u.position == u.total-1){
             nEnemies = 3;
             levelBonus = 5;
-            if(area > 15)
+            if(areaOrig > 15)
                 levelBonus = 10;
-            if(area > 30)
+            if(areaOrig > 30)
                 levelBonus = 15;
         }
         aux.sheet = es;

@@ -3091,6 +3091,7 @@ Main.gamemain = function() {
 	};
 	var equipmentWindowTypeAlert = [false,false];
 	view.FeedEquipmentTypes(["Weapons","Armor","Skill Set"]);
+	var lagrimaAreaLabels = ["Forest","Streets","Mountain","Seaside"];
 	var saveFileImporterSetup = false;
 	var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
 	var bossMessage = originMessage;
@@ -3115,7 +3116,13 @@ Main.gamemain = function() {
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
 		view.UpdateValues(view.currencyViews[0],bm.wdata.currency.currencies.h["Lagrima"].value,-1);
 		view.UpdateValues(view.currencyViews[1],bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
-		view.UpdateValues(view.areaLabel,bm.wdata.battleArea + 1,-1);
+		if(bm.wdata.battleAreaRegion == 0) {
+			var pur = bm.enemyAreaFromProcedural.GetProceduralUnitRepeated(bm.wdata.battleArea);
+			var characteristic = pur.proceduralUnit.characteristics[0];
+			view.UpdateValues(view.areaLabel,-1,-1,null,false,lagrimaAreaLabels[characteristic]);
+		} else {
+			view.UpdateValues(view.areaLabel,bm.wdata.battleArea + 1,-1);
+		}
 		view.UpdateValues(view.enemyToAdvance,bm.wdata.killedInArea[bm.wdata.battleArea],bm.wdata.necessaryToKillInArea);
 		StoryControlLogic.Update(timeStamp,storyRuntime,view,scriptExecuter);
 		var showLocked = 0;
@@ -3447,7 +3454,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 808, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 819, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3459,7 +3466,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 825, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 836, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3478,8 +3485,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 853, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 854, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 864, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 865, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -3564,7 +3571,13 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 	units: null
 	,enemySheets: null
 	,aux: null
+	,GetProceduralUnitRepeated: function(area) {
+		area %= this.units.length;
+		var u = this.units[area];
+		return u;
+	}
 	,GetEnemyAreaInformation: function(area) {
+		var areaOrig = area;
 		area %= this.units.length;
 		var u = this.units[area];
 		var char = u.proceduralUnit.characteristics[0];
@@ -3574,10 +3587,10 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		if(u.position == u.total - 1) {
 			nEnemies = 3;
 			levelBonus = 5;
-			if(area > 15) {
+			if(areaOrig > 15) {
 				levelBonus = 10;
 			}
-			if(area > 30) {
+			if(areaOrig > 30) {
 				levelBonus = 15;
 			}
 		}

@@ -2870,7 +2870,13 @@ var EnemyAreaFromProceduralUnitRepetition = function() {
 };
 EnemyAreaFromProceduralUnitRepetition.__name__ = true;
 EnemyAreaFromProceduralUnitRepetition.prototype = {
-	GetEnemyAreaInformation: function(area) {
+	GetProceduralUnitRepeated: function(area) {
+		area %= this.units.length;
+		var u = this.units[area];
+		return u;
+	}
+	,GetEnemyAreaInformation: function(area) {
+		var areaOrig = area;
 		area %= this.units.length;
 		var u = this.units[area];
 		var char = u.proceduralUnit.characteristics[0];
@@ -2880,10 +2886,10 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		if(u.position == u.total - 1) {
 			nEnemies = 3;
 			levelBonus = 5;
-			if(area > 15) {
+			if(areaOrig > 15) {
 				levelBonus = 10;
 			}
-			if(area > 30) {
+			if(areaOrig > 30) {
 				levelBonus = 15;
 			}
 		}

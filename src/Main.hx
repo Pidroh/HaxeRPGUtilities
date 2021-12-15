@@ -419,11 +419,13 @@ class Main {
 
 		var equipmentWindowTypeAlert = [false, false]; // have same amount
 		view.FeedEquipmentTypes(["Weapons", "Armor", "Skill Set"]);
+		var lagrimaAreaLabels = ["Forest", "Streets", "Mountain", "Seaside"];
 
 		var saveFileImporterSetup = false;
 
 		var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
 		var bossMessage = originMessage;
+		
 
 		update = function(timeStamp:Float):Bool {
 			if (overlayFullActorId == 0)
@@ -449,7 +451,16 @@ class Main {
 
 			// view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
 
-			view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
+			if(bm.wdata.battleAreaRegion == 0){
+				var pur = bm.enemyAreaFromProcedural.GetProceduralUnitRepeated(bm.wdata.battleArea);
+				var characteristic = pur.proceduralUnit.characteristics[0];
+
+				view.UpdateValues(view.areaLabel, -1, -1, null, false, lagrimaAreaLabels[characteristic]);
+				// view.UpdateValues
+			} else{
+				view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
+			}
+			
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
 

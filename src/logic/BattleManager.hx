@@ -794,7 +794,7 @@ class BattleManager {
 
 		// Goblin
 		enemyAreaFromProcedural.enemySheets.push({speciesMultiplier: null, speciesLevelStats: null, speciesAdd: null});
-		// wolf
+		// Dog
 		enemyAreaFromProcedural.enemySheets.push({
 			speciesMultiplier: {
 				attributesBase: ["Attack" => 0.55, "Speed" => 2.7, "LifeMax" => 1.1]
