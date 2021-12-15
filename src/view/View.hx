@@ -46,6 +46,7 @@ class View {
 	public static final equipmentAction_DiscardBad = 4;
 	public static final equipmentAction_ChangeTypeToView = 5;
 	public static final equipmentAction_ChangeSet = 6;
+	public static final equipmentAction_SetPreview = 7;
 
 	public var heroView:ActorView;
 	public var enemyView:ActorView;
@@ -138,6 +139,16 @@ class View {
 			button.onClick = event -> {
 				equipmentMainAction(setPos, equipmentAction_ChangeSet);
 			};
+			addHover(button, (b, component) -> {
+				var pos = setPos;
+				if(b){
+					positionOverlay(button);
+				} else{
+					pos = -1;
+				}
+				equipmentMainAction(pos, equipmentAction_SetPreview);
+
+			});
 			button.text = "Set " + (setPos+1);
 			button.width = 65;
 			button.height = 30;
@@ -335,10 +346,10 @@ class View {
 	public function addHover(c:Component, callback) {
 		var hovering = false;
 		c.registerEvent(MouseEvent.MOUSE_OVER, (e) -> {
-			callback(true);
+			callback(true, c);
 		});
 		c.registerEvent(MouseEvent.MOUSE_OUT, (e) -> {
-			callback(false);
+			callback(false, c);
 		});
 	}
 

@@ -2590,7 +2590,7 @@ Main.gamemain = function() {
 		}
 	};
 	var overlayFullActorId = -1;
-	view.addHover(view.heroView.parent,function(b) {
+	view.addHover(view.heroView.parent,function(b,comp) {
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
 		if(b) {
@@ -2599,7 +2599,7 @@ Main.gamemain = function() {
 			view.positionOverlay(view.heroView.parent);
 		}
 	});
-	view.addHover(view.enemyView.parent,function(b) {
+	view.addHover(view.enemyView.parent,function(b,comp) {
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
 		if(b) {
@@ -4337,18 +4337,29 @@ View.prototype = {
 		}
 		var cc = parent._children == null ? [] : parent._children;
 		while(cc.length < numberOfSets) {
-			var button = new haxe_ui_components_Button();
+			var button = [new haxe_ui_components_Button()];
 			var setPos = [cc.length];
-			button.set_onClick((function(setPos) {
+			button[0].set_onClick((function(setPos) {
 				return function(event) {
 					_gthis.equipmentMainAction(setPos[0],View.equipmentAction_ChangeSet);
 				};
 			})(setPos));
-			button.set_text("Set " + (setPos[0] + 1));
-			button.set_width(65);
-			button.set_height(30);
-			button.set_toggle(true);
-			parent.addComponent(button);
+			this.addHover(button[0],(function(setPos,button) {
+				return function(b,component) {
+					var pos = setPos[0];
+					if(b) {
+						_gthis.positionOverlay(button[0]);
+					} else {
+						pos = -1;
+					}
+					_gthis.equipmentMainAction(pos,View.equipmentAction_SetPreview);
+				};
+			})(setPos,button));
+			button[0].set_text("Set " + (setPos[0] + 1));
+			button[0].set_width(65);
+			button[0].set_height(30);
+			button[0].set_toggle(true);
+			parent.addComponent(button[0]);
 			cc = parent._children == null ? [] : parent._children;
 		}
 		var _g = 0;
@@ -4507,10 +4518,10 @@ View.prototype = {
 	,addHover: function(c,callback) {
 		var hovering = false;
 		c.registerEvent("mouseover",function(e) {
-			callback(true);
+			callback(true,c);
 		});
 		c.registerEvent("mouseout",function(e) {
-			callback(false);
+			callback(false,c);
 		});
 	}
 	,GetEquipmentType: function() {
@@ -47050,6 +47061,7 @@ View.storyAction_WatchLaterClose = 5;
 View.equipmentAction_DiscardBad = 4;
 View.equipmentAction_ChangeTypeToView = 5;
 View.equipmentAction_ChangeSet = 6;
+View.equipmentAction_SetPreview = 7;
 haxe_ui_core_ComponentEvents.INTERACTIVE_EVENTS = ["mousemove","mouseover","mouseout","mousedown","mouseup","mousewheel","click","doubleclick","keydown","keyup"];
 haxe_ui_core_ComponentBounds.__meta__ = { fields : { percentWidth : { clonable : null, bindable : null}, percentHeight : { clonable : null, bindable : null}, width : { bindable : null}, height : { bindable : null}}};
 haxe_ui_backend_ComponentImpl.elementToComponent = new haxe_ds_ObjectMap();

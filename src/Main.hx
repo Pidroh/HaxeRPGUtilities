@@ -325,7 +325,7 @@ class Main {
 
 		var overlayFullActorId = -1;
 
-		view.addHover(view.heroView.parent, (b) -> {
+		view.addHover(view.heroView.parent, (b, comp) -> {
 			view.overlay.hidden = !b;
 			overlayFullActorId = -1;
 			if (b) {
@@ -335,7 +335,7 @@ class Main {
 			}
 		});
 
-		view.addHover(view.enemyView.parent, (b) -> {
+		view.addHover(view.enemyView.parent, (b, comp) -> {
 			view.overlay.hidden = !b;
 			overlayFullActorId = -1;
 			if (b) {
