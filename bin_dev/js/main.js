@@ -1398,11 +1398,16 @@ BattleManager.prototype = {
 		var e = this.wdata.hero.equipment[pos];
 		HxOverrides.remove(this.wdata.hero.equipment,e);
 		var _g = 0;
-		var _g1 = this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.length;
+		var _g1 = this.wdata.hero.equipmentSets.length;
 		while(_g < _g1) {
-			var i = _g++;
-			if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[i] >= pos) {
-				this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[i]--;
+			var j = _g++;
+			var _g2 = 0;
+			var _g3 = this.wdata.hero.equipmentSets[j].equipmentSlots.length;
+			while(_g2 < _g3) {
+				var i = _g2++;
+				if(this.wdata.hero.equipmentSets[j].equipmentSlots[i] >= pos) {
+					this.wdata.hero.equipmentSets[j].equipmentSlots[i]--;
+				}
 			}
 		}
 		if(e != null) {
@@ -1810,7 +1815,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1770, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1773, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1827,7 +1832,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1787, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1790, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

@@ -1371,11 +1371,16 @@ BattleManager.prototype = {
 		var e = this.wdata.hero.equipment[pos];
 		HxOverrides.remove(this.wdata.hero.equipment,e);
 		var _g = 0;
-		var _g1 = this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.length;
+		var _g1 = this.wdata.hero.equipmentSets.length;
 		while(_g < _g1) {
-			var i = _g++;
-			if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[i] >= pos) {
-				this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[i]--;
+			var j = _g++;
+			var _g2 = 0;
+			var _g3 = this.wdata.hero.equipmentSets[j].equipmentSlots.length;
+			while(_g2 < _g3) {
+				var i = _g2++;
+				if(this.wdata.hero.equipmentSets[j].equipmentSlots[i] >= pos) {
+					this.wdata.hero.equipmentSets[j].equipmentSlots[i]--;
+				}
 			}
 		}
 		if(e != null) {
@@ -1783,7 +1788,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1770:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1773:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1800,7 +1805,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1787:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1790:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

@@ -1360,11 +1360,14 @@ class BattleManager {
 	function DiscardSingleEquipment(pos) {
 		var e = wdata.hero.equipment[pos];
 		wdata.hero.equipment.remove(e);
-		for (i in 0...wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.length) {
-			if (wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[i] >= pos) {
-				wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[i]--; // adjust position of higher slots
-			}
+		for (j in 0...wdata.hero.equipmentSets.length) {
+			for (i in 0...wdata.hero.equipmentSets[j].equipmentSlots.length) {
+				if (wdata.hero.equipmentSets[j].equipmentSlots[i] >= pos) {
+					wdata.hero.equipmentSets[j].equipmentSlots[i]--; // adjust position of higher slots
+				}
+			}	
 		}
+		
 
 		if (e != null)
 			equipmentToDiscard.push(e);
