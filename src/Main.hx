@@ -47,8 +47,8 @@ class Main {
 		Toolkit.theme = "default";
 		Toolkit.theme = "dark";
 		var b:Button;
-		//trace(Toolkit.styleSheet.addStyleSheet);
-		//trace("sssX");
+		// trace(Toolkit.styleSheet.addStyleSheet);
+		// trace("sssX");
 		var key = "privacymemory";
 
 		var privacyAcceptance:String = Browser.getLocalStorage().getItem(key);
@@ -408,11 +408,12 @@ class Main {
 		var bossMessage = originMessage;
 
 		update = function(timeStamp:Float):Bool {
-
-			if(overlayFullActorId == 0)
+			if (overlayFullActorId == 0)
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
-			if(overlayFullActorId == 1 && bm.wdata.enemy != null)
+			if (overlayFullActorId == 1 && bm.wdata.enemy != null)
 				ActorToFullView(bm.wdata.enemy, view.overlayActorFullView);
+
+			view.FeedEquipmentSetInfoAll(bm.wdata.hero.equipmentSets.length, bm.wdata.hero.chosenEquipSet);
 
 			global["maxarea"] = bm.wdata.maxArea;
 			global["herolevel"] = bm.wdata.hero.level;
