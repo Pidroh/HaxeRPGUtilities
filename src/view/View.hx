@@ -45,6 +45,7 @@ class View {
 
 	public static final equipmentAction_DiscardBad = 4;
 	public static final equipmentAction_ChangeTypeToView = 5;
+	public static final equipmentAction_ChangeSet = 6;
 
 	public var heroView:ActorView;
 	public var enemyView:ActorView;
@@ -127,35 +128,46 @@ class View {
 		}
 	}
 
-	function FeedEquipmentSetInfo(numberOfSets:Int, chosenSet:Int,parent:Component){
-		if(parent == null) return;
+	function FeedEquipmentSetInfo(numberOfSets:Int, chosenSet:Int, parent:Component) {
+		if (parent == null)
+			return;
 		var cc = parent.childComponents;
-		while(cc.length < numberOfSets){
+		while (cc.length < numberOfSets) {
 			var button = new Button();
-			button.text = "Set "+ cc.length;
+			var setPos = cc.length;
+			button.onClick = event -> {
+				equipmentMainAction(setPos, equipmentAction_ChangeSet);
+			};
+			button.text = "Set " + (setPos+1);
+			button.width = 65;
+			button.height = 30;
+			button.toggle = true;
 			parent.addComponent(button);
 			cc = parent.childComponents;
 		}
 		for (i in 0...cc.length) {
 			cc[i].hidden = i >= numberOfSets;
 			var b:Button = cast(cc[i], Button);
-			b.toggle = i == chosenSet;
+			b.selected = i == chosenSet;
 		}
 	}
 
-	public function FeedEquipmentSetInfoAll(numberOfSets:Int, chosenSet:Int){
+	public function FeedEquipmentSetInfoAll(numberOfSets:Int, chosenSet:Int) {
 		FeedEquipmentSetInfo(numberOfSets, chosenSet, equipmentSetButtonParent_Battle);
 		FeedEquipmentSetInfo(numberOfSets, chosenSet, equipmentSetButtonParent_Equipment);
 	}
 
-	public function SetupEquipmentSetSelector(parent:Component) : Component{
-		var vbox = new VBox();
+	public function SetupEquipmentSetSelector(parent:Component):Component {
+		var vbox = CreateContainer(parent, false);
 		var title = new Label();
-		title.text = "Equipment Set";
+		title.text = "Equipment\nSet";
+		title.percentHeight = 100;
+		title.verticalAlign = "center";
+		title.paddingRight = 20;
 		vbox.addComponent(title);
 		var buttonParent = new HBox();
 		vbox.addComponent(buttonParent);
-		parent.addComponent(vbox);
+		//parent.addComponent(vbox);
 		return buttonParent;
 	}
 
@@ -422,7 +434,7 @@ class View {
 		battleParent.paddingTop = 10;
 		var verticalBox = new Box();
 		var hgl = new HorizontalGridLayout();
-		hgl.rows = 3;
+		hgl.rows = 4;
 		verticalBox.layout = hgl;
 		verticalBox.percentHeight = 100;
 		// var verticalBox = new Grid();
@@ -526,6 +538,10 @@ class View {
 		battleView.addComponent(box);
 		enemyView = GetActorView("Enemy", battleView);
 
+		{
+			equipmentSetButtonParent_Battle = SetupEquipmentSetSelector(verticalBox);
+		}
+
 		// var battleButtonView = CreateContainer(verticalBox, false);
 
 		{
@@ -578,7 +594,6 @@ class View {
 			gridBox.addComponent(equipRightSide);
 
 			var scroll = CreateScrollable(equipRightSide);
-
 
 			scroll.height = 300;
 			scroll.text = "Equipment";
@@ -675,8 +690,6 @@ class View {
 			equipmentTypeSelectionTabbar.addComponent(b);
 		}
 	}
-
-
 
 	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion, showLocked = 0, lockedMessage = null) {
 		// feed the current region view

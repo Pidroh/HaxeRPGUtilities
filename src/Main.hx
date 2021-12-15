@@ -194,6 +194,9 @@ class Main {
 			}
 			if (action == View.equipmentAction_DiscardBad)
 				bm.DiscardWorseEquipment();
+			if(action == View.equipmentAction_ChangeSet){
+				bm.ChangeEquipmentSet(pos);
+			}
 		};
 		view.regionChangeAction = i -> {
 			bm.changeRegion(i);

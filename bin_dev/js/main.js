@@ -2506,6 +2506,9 @@ Main.gamemain = function() {
 		if(action == View.equipmentAction_DiscardBad) {
 			bm.DiscardWorseEquipment();
 		}
+		if(action == View.equipmentAction_ChangeSet) {
+			bm.ChangeEquipmentSet(pos);
+		}
 	};
 	view.regionChangeAction = function(i) {
 		bm.changeRegion(i);
@@ -3017,7 +3020,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 790, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 793, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3029,7 +3032,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 807, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 810, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3048,8 +3051,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 835, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 836, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 838, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 839, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -4124,7 +4127,7 @@ var View = function() {
 	battleParent.set_paddingTop(10);
 	var verticalBox = new haxe_ui_containers_Box();
 	var hgl = new haxe_ui_layouts_HorizontalGridLayout();
-	hgl.set_rows(3);
+	hgl.set_rows(4);
 	verticalBox.set_layout(hgl);
 	verticalBox.set_percentHeight(100);
 	battleParent.addComponent(verticalBox);
@@ -4179,6 +4182,7 @@ var View = function() {
 	box.set_width(40);
 	this.battleView.addComponent(box);
 	this.enemyView = this.GetActorView("Enemy",this.battleView);
+	this.equipmentSetButtonParent_Battle = this.SetupEquipmentSetSelector(verticalBox);
 	this.equipTabChild = new haxe_ui_containers_ContinuousHBox();
 	var tabBar = new haxe_ui_components_TabBar();
 	tabBar.set_percentWidth(100);
@@ -4327,13 +4331,23 @@ View.prototype = {
 		this.equipTabChild.set_width(haxe_ui_core_Screen.get_instance().get_width() - 40 - 60 - 200);
 	}
 	,FeedEquipmentSetInfo: function(numberOfSets,chosenSet,parent) {
+		var _gthis = this;
 		if(parent == null) {
 			return;
 		}
 		var cc = parent._children == null ? [] : parent._children;
 		while(cc.length < numberOfSets) {
 			var button = new haxe_ui_components_Button();
-			button.set_text("Set " + cc.length);
+			var setPos = [cc.length];
+			button.set_onClick((function(setPos) {
+				return function(event) {
+					_gthis.equipmentMainAction(setPos[0],View.equipmentAction_ChangeSet);
+				};
+			})(setPos));
+			button.set_text("Set " + (setPos[0] + 1));
+			button.set_width(65);
+			button.set_height(30);
+			button.set_toggle(true);
 			parent.addComponent(button);
 			cc = parent._children == null ? [] : parent._children;
 		}
@@ -4343,7 +4357,7 @@ View.prototype = {
 			var i = _g++;
 			cc[i].set_hidden(i >= numberOfSets);
 			var b = js_Boot.__cast(cc[i] , haxe_ui_components_Button);
-			b.set_toggle(i == chosenSet);
+			b.set_selected(i == chosenSet);
 		}
 	}
 	,FeedEquipmentSetInfoAll: function(numberOfSets,chosenSet) {
@@ -4351,13 +4365,15 @@ View.prototype = {
 		this.FeedEquipmentSetInfo(numberOfSets,chosenSet,this.equipmentSetButtonParent_Equipment);
 	}
 	,SetupEquipmentSetSelector: function(parent) {
-		var vbox = new haxe_ui_containers_VBox();
+		var vbox = this.CreateContainer(parent,false);
 		var title = new haxe_ui_components_Label();
-		title.set_text("Equipment Set");
+		title.set_text("Equipment\nSet");
+		title.set_percentHeight(100);
+		title.set_verticalAlign("center");
+		title.set_paddingRight(20);
 		vbox.addComponent(title);
 		var buttonParent = new haxe_ui_containers_HBox();
 		vbox.addComponent(buttonParent);
-		parent.addComponent(vbox);
 		return buttonParent;
 	}
 	,LatestMessageUpdate: function(message,speaker,imageFile,messagePos) {
@@ -47033,6 +47049,7 @@ View.storyAction_WatchLater = 4;
 View.storyAction_WatchLaterClose = 5;
 View.equipmentAction_DiscardBad = 4;
 View.equipmentAction_ChangeTypeToView = 5;
+View.equipmentAction_ChangeSet = 6;
 haxe_ui_core_ComponentEvents.INTERACTIVE_EVENTS = ["mousemove","mouseover","mouseout","mousedown","mouseup","mousewheel","click","doubleclick","keydown","keyup"];
 haxe_ui_core_ComponentBounds.__meta__ = { fields : { percentWidth : { clonable : null, bindable : null}, percentHeight : { clonable : null, bindable : null}, width : { bindable : null}, height : { bindable : null}}};
 haxe_ui_backend_ComponentImpl.elementToComponent = new haxe_ds_ObjectMap();
