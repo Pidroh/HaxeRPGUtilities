@@ -51,6 +51,8 @@ class ProceduralUnit {
 	public var characteristics = new Array<Int>();
 	// which repetition is this one in the full list
 	public var repeat = 0;
+	
+	public function new(){}
 }
 
 @:stackOnly
@@ -61,4 +63,6 @@ class ProceduralUnitRepeated {
 	public var position = 0;
 	// the total amount repeated
 	public var total = 0;
+
+	public function new(){}
 }

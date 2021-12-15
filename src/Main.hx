@@ -35,6 +35,7 @@ import FileReader;
 import StoryControl;
 import PrototypeItemMaker;
 import PrototypeSkillMaker;
+import BasicProcedural;
 
 class Main {
 	static var hero:Actor;
@@ -126,6 +127,10 @@ class Main {
 		main.percentWidth = 100;
 		main.percentHeight = 100;
 		main.addComponent(view.mainComponent);
+
+		var pus = Generation.Generate("w1", 4, 1, 3);
+		var purs = Generation.GenerateRepetitions("w1", pus, {min: 3, max: 6});
+		
 
 		var keyOld = "save data2";
 		var key = "save data master";
