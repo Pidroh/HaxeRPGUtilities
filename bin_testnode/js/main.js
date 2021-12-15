@@ -6,6 +6,293 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var seedyrng_Random = function(seed,generator) {
+	if(seed == null) {
+		var this1 = new haxe__$Int64__$_$_$Int64(seedyrng_Random.randomSystemInt(),seedyrng_Random.randomSystemInt());
+		seed = this1;
+	}
+	if(generator == null) {
+		generator = new seedyrng_Xorshift128Plus();
+	}
+	this.generator = generator;
+	this.set_seed(seed);
+};
+seedyrng_Random.__name__ = true;
+seedyrng_Random.randomSystemInt = function() {
+	var value = Std.random(255) << 24 | Std.random(255) << 16 | Std.random(255) << 8 | Std.random(255);
+	return value;
+};
+seedyrng_Random.prototype = {
+	get_seed: function() {
+		return this.generator.get_seed();
+	}
+	,set_seed: function(value) {
+		return this.generator.set_seed(value);
+	}
+	,get_state: function() {
+		return this.generator.get_state();
+	}
+	,set_state: function(value) {
+		return this.generator.set_state(value);
+	}
+	,get_usesAllBits: function() {
+		return this.generator.get_usesAllBits();
+	}
+	,nextInt: function() {
+		return this.generator.nextInt();
+	}
+	,nextFullInt: function() {
+		if(this.generator.get_usesAllBits()) {
+			return this.generator.nextInt();
+		} else {
+			var num1 = this.generator.nextInt();
+			var num2 = this.generator.nextInt();
+			num2 = num2 >>> 16 | num2 << 16;
+			return num1 ^ num2;
+		}
+	}
+	,setStringSeed: function(seed) {
+		this.setBytesSeed(haxe_io_Bytes.ofString(seed));
+	}
+	,setBytesSeed: function(seed) {
+		var hash = haxe_crypto_Sha1.make(seed);
+		this.set_seed(hash.getInt64(0));
+	}
+	,random: function() {
+		var upper = this.nextFullInt() & 2097151;
+		var lower = this.nextFullInt();
+		var lhs = upper * Math.pow(2,32);
+		var floatNum = UInt.toFloat(lower) + lhs;
+		var result = floatNum * Math.pow(2,-53);
+		return result;
+	}
+	,randomInt: function(lower,upper) {
+		return Math.floor(this.random() * (upper - lower + 1)) + lower;
+	}
+	,uniform: function(lower,upper) {
+		return this.random() * (upper - lower) + lower;
+	}
+	,choice: function(array) {
+		return array[this.randomInt(0,array.length - 1)];
+	}
+	,shuffle: function(array) {
+		var _g = 0;
+		var _g1 = array.length - 1;
+		while(_g < _g1) {
+			var index = _g++;
+			var randIndex = this.randomInt(index,array.length - 1);
+			var tempA = array[index];
+			var tempB = array[randIndex];
+			array[index] = tempB;
+			array[randIndex] = tempA;
+		}
+	}
+};
+var Std = function() { };
+Std.__name__ = true;
+Std.string = function(s) {
+	return js_Boot.__string_rec(s,"");
+};
+Std.random = function(x) {
+	if(x <= 0) {
+		return 0;
+	} else {
+		return Math.floor(Math.random() * x);
+	}
+};
+Math.__name__ = true;
+var haxe__$Int64__$_$_$Int64 = function(high,low) {
+	this.high = high;
+	this.low = low;
+};
+haxe__$Int64__$_$_$Int64.__name__ = true;
+var seedyrng_Xorshift128Plus = function() {
+	this._currentAvailable = false;
+	var this1 = new haxe__$Int64__$_$_$Int64(0,1);
+	this.set_seed(this1);
+};
+seedyrng_Xorshift128Plus.__name__ = true;
+seedyrng_Xorshift128Plus.prototype = {
+	get_usesAllBits: function() {
+		return false;
+	}
+	,get_seed: function() {
+		return this._seed;
+	}
+	,set_seed: function(value) {
+		var b_high = 0;
+		var b_low = 0;
+		if(!(value.high != b_high || value.low != b_low)) {
+			var this1 = new haxe__$Int64__$_$_$Int64(0,1);
+			value = this1;
+		}
+		this._seed = value;
+		this._state0 = value;
+		this._state1 = seedyrng_Xorshift128Plus.SEED_1;
+		this._currentAvailable = false;
+		return value;
+	}
+	,get_state: function() {
+		var bytes = new haxe_io_Bytes(new ArrayBuffer(33));
+		bytes.setInt64(0,this._seed);
+		bytes.setInt64(8,this._state0);
+		bytes.setInt64(16,this._state1);
+		bytes.b[24] = this._currentAvailable ? 1 : 0;
+		if(this._currentAvailable) {
+			bytes.setInt64(25,this._current);
+		}
+		return bytes;
+	}
+	,set_state: function(value) {
+		if(value.length != 33) {
+			throw haxe_Exception.thrown("Wrong state size " + value.length);
+		}
+		this._seed = value.getInt64(0);
+		this._state0 = value.getInt64(8);
+		this._state1 = value.getInt64(16);
+		this._currentAvailable = value.b[24] == 1;
+		if(this._currentAvailable) {
+			this._current = value.getInt64(25);
+		}
+		return value;
+	}
+	,stepNext: function() {
+		var x = this._state0;
+		var y = this._state1;
+		this._state0 = y;
+		var b = 23;
+		b &= 63;
+		var b1;
+		if(b == 0) {
+			var this1 = new haxe__$Int64__$_$_$Int64(x.high,x.low);
+			b1 = this1;
+		} else if(b < 32) {
+			var this1 = new haxe__$Int64__$_$_$Int64(x.high << b | x.low >>> 32 - b,x.low << b);
+			b1 = this1;
+		} else {
+			var this1 = new haxe__$Int64__$_$_$Int64(x.low << b - 32,0);
+			b1 = this1;
+		}
+		var this1 = new haxe__$Int64__$_$_$Int64(x.high ^ b1.high,x.low ^ b1.low);
+		x = this1;
+		var a_high = x.high ^ y.high;
+		var a_low = x.low ^ y.low;
+		var b = 17;
+		b &= 63;
+		var b1;
+		if(b == 0) {
+			var this1 = new haxe__$Int64__$_$_$Int64(x.high,x.low);
+			b1 = this1;
+		} else if(b < 32) {
+			var this1 = new haxe__$Int64__$_$_$Int64(x.high >> b,x.high << 32 - b | x.low >>> b);
+			b1 = this1;
+		} else {
+			var this1 = new haxe__$Int64__$_$_$Int64(x.high >> 31,x.high >> b - 32);
+			b1 = this1;
+		}
+		var a_high1 = a_high ^ b1.high;
+		var a_low1 = a_low ^ b1.low;
+		var b = 26;
+		b &= 63;
+		var b1;
+		if(b == 0) {
+			var this1 = new haxe__$Int64__$_$_$Int64(y.high,y.low);
+			b1 = this1;
+		} else if(b < 32) {
+			var this1 = new haxe__$Int64__$_$_$Int64(y.high >> b,y.high << 32 - b | y.low >>> b);
+			b1 = this1;
+		} else {
+			var this1 = new haxe__$Int64__$_$_$Int64(y.high >> 31,y.high >> b - 32);
+			b1 = this1;
+		}
+		var this1 = new haxe__$Int64__$_$_$Int64(a_high1 ^ b1.high,a_low1 ^ b1.low);
+		this._state1 = this1;
+		var a = this._state1;
+		var high = a.high + y.high | 0;
+		var low = a.low + y.low | 0;
+		if(haxe_Int32.ucompare(low,a.low) < 0) {
+			var ret = high++;
+			high = high | 0;
+		}
+		var this1 = new haxe__$Int64__$_$_$Int64(high,low);
+		this._current = this1;
+	}
+	,nextInt: function() {
+		if(this._currentAvailable) {
+			this._currentAvailable = false;
+			return this._current.low;
+		} else {
+			this.stepNext();
+			this._currentAvailable = true;
+			return this._current.high;
+		}
+	}
+};
+var Generation = function(seed) {
+};
+Generation.__name__ = true;
+Generation.GenerateNumber = function(seed,min,max) {
+};
+Generation.GenerateRepetitions = function(seed,procUnits,range) {
+	var purs = [];
+	Generation.random.setStringSeed(seed);
+	var _g_current = 0;
+	var _g_array = procUnits;
+	while(_g_current < _g_array.length) {
+		var _g1_value = _g_array[_g_current];
+		var _g1_key = _g_current++;
+		var index = _g1_key;
+		var value = _g1_value;
+		var repetitions = RandomExtender.Range(Generation.random,range);
+		var _g = 0;
+		var _g1 = repetitions;
+		while(_g < _g1) {
+			var i = _g++;
+			var pur = new ProceduralUnitRepeated();
+			pur.position = i;
+			pur.total = repetitions;
+			pur.proceduralUnit = value;
+			purs.push(pur);
+		}
+	}
+	return purs;
+};
+Generation.Generate = function(seed,maxChar1,maxChar2,repetition) {
+	var response = [];
+	var _g = 0;
+	var _g1 = repetition;
+	while(_g < _g1) {
+		var rep = _g++;
+		var _g2 = 0;
+		var _g3 = maxChar1;
+		while(_g2 < _g3) {
+			var c1 = _g2++;
+			var _g4 = 0;
+			var _g5 = maxChar2;
+			while(_g4 < _g5) {
+				var c2 = _g4++;
+				var pu = new ProceduralUnit();
+				pu.characteristics[0] = c1;
+				pu.characteristics[1] = c2;
+				pu.repeat = rep;
+				response.push(pu);
+			}
+		}
+	}
+	Generation.random.setStringSeed(seed);
+	Generation.random.shuffle(response);
+	return response;
+};
+var ProceduralUnit = function() {
+	this.repeat = 0;
+	this.characteristics = [];
+};
+ProceduralUnit.__name__ = true;
+var ProceduralUnitRepeated = function() {
+	this.total = 0;
+	this.position = 0;
+};
+ProceduralUnitRepeated.__name__ = true;
 var ArrayHelper = function() { };
 ArrayHelper.__name__ = true;
 ArrayHelper.InsertOnEmpty = function(ele,array) {
@@ -18,6 +305,7 @@ ArrayHelper.InsertOnEmpty = function(ele,array) {
 	return array.length - 1;
 };
 var BattleManager = function() {
+	this.enemyAreaFromProcedural = new EnemyAreaFromProceduralUnitRepetition();
 	this.equipmentToDiscard = [];
 	this.volatileAttributeAux = [];
 	this.volatileAttributeList = ["MP","Life","MPRechargeCount","SpeedCount"];
@@ -168,8 +456,40 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:778:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:786:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
+	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
+	var tmp = this.enemyAreaFromProcedural.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 0.55;
+	_g.h["Speed"] = 2.7;
+	_g.h["LifeMax"] = 1.1;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Speed"] = 1;
+	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
+	var tmp = this.enemyAreaFromProcedural.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 3;
+	_g.h["Speed"] = 0.09;
+	_g.h["LifeMax"] = 2.5;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Speed"] = 0.05;
+	_g1.h["Defense"] = 0.2;
+	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
+	var tmp = this.enemyAreaFromProcedural.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1.4;
+	_g.h["Speed"] = 0.15;
+	_g.h["LifeMax"] = 4.0;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Defense"] = 0;
+	var _g2 = new haxe_ds_StringMap();
+	_g2.h["Defense"] = 0.6;
+	_g2.h["Speed"] = 0.05;
+	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
+	var pus = Generation.Generate("w1",4,1,3);
+	var purs = Generation.GenerateRepetitions("w1",pus,{ min : 3, max : 6});
+	this.enemyAreaFromProcedural.units = purs;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Life"] = 20;
@@ -847,6 +1167,11 @@ BattleManager.prototype = {
 				enemyLevel += 10;
 				enemyLevel += i * 10;
 			}
+		}
+		if(region == 0 && this.enemyAreaFromProcedural != null && this.enemyAreaFromProcedural.units != null) {
+			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea);
+			sheet = areaInfo.sheet;
+			enemyLevel += areaInfo.level;
 		}
 		var timeToKillEnemy = this.balancing.timeToKillFirstEnemy;
 		var initialAttackHero = 1;
@@ -1791,7 +2116,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1775:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1814:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1808,7 +2133,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1792:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1831:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2530,7 +2855,43 @@ MainTest.main = function() {
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
 };
-Math.__name__ = true;
+var EnemyAreaInformation = function() {
+};
+EnemyAreaInformation.__name__ = true;
+var EnemyAreaFromProceduralUnitRepetition = function() {
+	this.aux = new EnemyAreaInformation();
+	this.enemySheets = [];
+};
+EnemyAreaFromProceduralUnitRepetition.__name__ = true;
+EnemyAreaFromProceduralUnitRepetition.prototype = {
+	GetEnemyAreaInformation: function(area) {
+		if(this.units.length <= area) {
+			this.aux.level = 0;
+			this.aux.nEnemies = -1;
+			this.aux.sheet = this.enemySheets[0];
+			return this.aux;
+		}
+		var u = this.units[area];
+		var char = u.proceduralUnit.characteristics[0];
+		var es = this.enemySheets[char];
+		var nEnemies = -1;
+		var levelBonus = 0;
+		if(u.position == u.total - 1) {
+			nEnemies = 1;
+			levelBonus = 5;
+			if(area > 15) {
+				levelBonus = 10;
+			}
+			if(area > 30) {
+				levelBonus = 15;
+			}
+		}
+		this.aux.sheet = es;
+		this.aux.nEnemies = nEnemies;
+		this.aux.level = levelBonus;
+		return this.aux;
+	}
+};
 var PrototypeItemMaker = function() {
 	this.mods = [];
 	this.items = [];
@@ -2842,18 +3203,6 @@ SaveAssistant.GetPersistenceMaster = function(jsonData) {
 		return { worldVersion : -1, jsonStory : null, jsonGameplay : null};
 	}
 };
-var Std = function() { };
-Std.__name__ = true;
-Std.string = function(s) {
-	return js_Boot.__string_rec(s,"");
-};
-Std.random = function(x) {
-	if(x <= 0) {
-		return 0;
-	} else {
-		return Math.floor(Math.random() * x);
-	}
-};
 var haxe_io_Output = function() { };
 haxe_io_Output.__name__ = true;
 var _$Sys_FileOutput = function(fd) {
@@ -2978,11 +3327,6 @@ haxe_Int32.ucompare = function(a,b) {
 		return a - b | 0;
 	}
 };
-var haxe__$Int64__$_$_$Int64 = function(high,low) {
-	this.high = high;
-	this.low = low;
-};
-haxe__$Int64__$_$_$Int64.__name__ = true;
 var haxe_Resource = function() { };
 haxe_Resource.__name__ = true;
 haxe_Resource.getString = function(name) {
@@ -3591,210 +3935,6 @@ js_node_url_URLSearchParamsEntry.get_name = function(this1) {
 js_node_url_URLSearchParamsEntry.get_value = function(this1) {
 	return this1[1];
 };
-var seedyrng_Random = function(seed,generator) {
-	if(seed == null) {
-		var this1 = new haxe__$Int64__$_$_$Int64(seedyrng_Random.randomSystemInt(),seedyrng_Random.randomSystemInt());
-		seed = this1;
-	}
-	if(generator == null) {
-		generator = new seedyrng_Xorshift128Plus();
-	}
-	this.generator = generator;
-	this.set_seed(seed);
-};
-seedyrng_Random.__name__ = true;
-seedyrng_Random.randomSystemInt = function() {
-	var value = Std.random(255) << 24 | Std.random(255) << 16 | Std.random(255) << 8 | Std.random(255);
-	return value;
-};
-seedyrng_Random.prototype = {
-	get_seed: function() {
-		return this.generator.get_seed();
-	}
-	,set_seed: function(value) {
-		return this.generator.set_seed(value);
-	}
-	,get_state: function() {
-		return this.generator.get_state();
-	}
-	,set_state: function(value) {
-		return this.generator.set_state(value);
-	}
-	,get_usesAllBits: function() {
-		return this.generator.get_usesAllBits();
-	}
-	,nextInt: function() {
-		return this.generator.nextInt();
-	}
-	,nextFullInt: function() {
-		if(this.generator.get_usesAllBits()) {
-			return this.generator.nextInt();
-		} else {
-			var num1 = this.generator.nextInt();
-			var num2 = this.generator.nextInt();
-			num2 = num2 >>> 16 | num2 << 16;
-			return num1 ^ num2;
-		}
-	}
-	,setStringSeed: function(seed) {
-		this.setBytesSeed(haxe_io_Bytes.ofString(seed));
-	}
-	,setBytesSeed: function(seed) {
-		var hash = haxe_crypto_Sha1.make(seed);
-		this.set_seed(hash.getInt64(0));
-	}
-	,random: function() {
-		var upper = this.nextFullInt() & 2097151;
-		var lower = this.nextFullInt();
-		var lhs = upper * Math.pow(2,32);
-		var floatNum = UInt.toFloat(lower) + lhs;
-		var result = floatNum * Math.pow(2,-53);
-		return result;
-	}
-	,randomInt: function(lower,upper) {
-		return Math.floor(this.random() * (upper - lower + 1)) + lower;
-	}
-	,uniform: function(lower,upper) {
-		return this.random() * (upper - lower) + lower;
-	}
-	,choice: function(array) {
-		return array[this.randomInt(0,array.length - 1)];
-	}
-	,shuffle: function(array) {
-		var _g = 0;
-		var _g1 = array.length - 1;
-		while(_g < _g1) {
-			var index = _g++;
-			var randIndex = this.randomInt(index,array.length - 1);
-			var tempA = array[index];
-			var tempB = array[randIndex];
-			array[index] = tempB;
-			array[randIndex] = tempA;
-		}
-	}
-};
-var seedyrng_Xorshift128Plus = function() {
-	this._currentAvailable = false;
-	var this1 = new haxe__$Int64__$_$_$Int64(0,1);
-	this.set_seed(this1);
-};
-seedyrng_Xorshift128Plus.__name__ = true;
-seedyrng_Xorshift128Plus.prototype = {
-	get_usesAllBits: function() {
-		return false;
-	}
-	,get_seed: function() {
-		return this._seed;
-	}
-	,set_seed: function(value) {
-		var b_high = 0;
-		var b_low = 0;
-		if(!(value.high != b_high || value.low != b_low)) {
-			var this1 = new haxe__$Int64__$_$_$Int64(0,1);
-			value = this1;
-		}
-		this._seed = value;
-		this._state0 = value;
-		this._state1 = seedyrng_Xorshift128Plus.SEED_1;
-		this._currentAvailable = false;
-		return value;
-	}
-	,get_state: function() {
-		var bytes = new haxe_io_Bytes(new ArrayBuffer(33));
-		bytes.setInt64(0,this._seed);
-		bytes.setInt64(8,this._state0);
-		bytes.setInt64(16,this._state1);
-		bytes.b[24] = this._currentAvailable ? 1 : 0;
-		if(this._currentAvailable) {
-			bytes.setInt64(25,this._current);
-		}
-		return bytes;
-	}
-	,set_state: function(value) {
-		if(value.length != 33) {
-			throw haxe_Exception.thrown("Wrong state size " + value.length);
-		}
-		this._seed = value.getInt64(0);
-		this._state0 = value.getInt64(8);
-		this._state1 = value.getInt64(16);
-		this._currentAvailable = value.b[24] == 1;
-		if(this._currentAvailable) {
-			this._current = value.getInt64(25);
-		}
-		return value;
-	}
-	,stepNext: function() {
-		var x = this._state0;
-		var y = this._state1;
-		this._state0 = y;
-		var b = 23;
-		b &= 63;
-		var b1;
-		if(b == 0) {
-			var this1 = new haxe__$Int64__$_$_$Int64(x.high,x.low);
-			b1 = this1;
-		} else if(b < 32) {
-			var this1 = new haxe__$Int64__$_$_$Int64(x.high << b | x.low >>> 32 - b,x.low << b);
-			b1 = this1;
-		} else {
-			var this1 = new haxe__$Int64__$_$_$Int64(x.low << b - 32,0);
-			b1 = this1;
-		}
-		var this1 = new haxe__$Int64__$_$_$Int64(x.high ^ b1.high,x.low ^ b1.low);
-		x = this1;
-		var a_high = x.high ^ y.high;
-		var a_low = x.low ^ y.low;
-		var b = 17;
-		b &= 63;
-		var b1;
-		if(b == 0) {
-			var this1 = new haxe__$Int64__$_$_$Int64(x.high,x.low);
-			b1 = this1;
-		} else if(b < 32) {
-			var this1 = new haxe__$Int64__$_$_$Int64(x.high >> b,x.high << 32 - b | x.low >>> b);
-			b1 = this1;
-		} else {
-			var this1 = new haxe__$Int64__$_$_$Int64(x.high >> 31,x.high >> b - 32);
-			b1 = this1;
-		}
-		var a_high1 = a_high ^ b1.high;
-		var a_low1 = a_low ^ b1.low;
-		var b = 26;
-		b &= 63;
-		var b1;
-		if(b == 0) {
-			var this1 = new haxe__$Int64__$_$_$Int64(y.high,y.low);
-			b1 = this1;
-		} else if(b < 32) {
-			var this1 = new haxe__$Int64__$_$_$Int64(y.high >> b,y.high << 32 - b | y.low >>> b);
-			b1 = this1;
-		} else {
-			var this1 = new haxe__$Int64__$_$_$Int64(y.high >> 31,y.high >> b - 32);
-			b1 = this1;
-		}
-		var this1 = new haxe__$Int64__$_$_$Int64(a_high1 ^ b1.high,a_low1 ^ b1.low);
-		this._state1 = this1;
-		var a = this._state1;
-		var high = a.high + y.high | 0;
-		var low = a.low + y.low | 0;
-		if(haxe_Int32.ucompare(low,a.low) < 0) {
-			var ret = high++;
-			high = high | 0;
-		}
-		var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-		this._current = this1;
-	}
-	,nextInt: function() {
-		if(this._currentAvailable) {
-			this._currentAvailable = false;
-			return this._current.low;
-		} else {
-			this.stepNext();
-			this._currentAvailable = true;
-			return this._current.high;
-		}
-	}
-};
 var sys_io_FileInput = function(fd) {
 	this.fd = fd;
 	this.pos = 0;
@@ -3910,18 +4050,14 @@ var sys_io_FileSeek = $hxEnums["sys.io.FileSeek"] = { __ename__:true,__construct
 	,SeekEnd: {_hx_name:"SeekEnd",_hx_index:2,__enum__:"sys.io.FileSeek",toString:$estr}
 };
 sys_io_FileSeek.__constructs__ = [sys_io_FileSeek.SeekBegin,sys_io_FileSeek.SeekCur,sys_io_FileSeek.SeekEnd];
-if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : false) {
-	HxOverrides.now = performance.now.bind(performance);
-}
 if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c < 0x10000 ? String.fromCharCode(c) : String.fromCharCode((c>>10)+0xD7C0)+String.fromCharCode((c&0x3FF)+0xDC00); }
 String.__name__ = true;
 Array.__name__ = true;
+if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : false) {
+	HxOverrides.now = performance.now.bind(performance);
+}
 haxe_Resource.content = [{ name : "storyjson", data : "W3sibWVzc2FnZXMiOlt7ImJvZHkiOiIgV2hlcmUgYXJlIHlvdSBnb2luZz8iLCJzcGVha2VyIjoiTW9tIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgS2lsbCBzb21lIG1vbnN0ZXJzLCBtb20iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgVGhpcyBraWQuLi4iLCJzcGVha2VyIjoiTW9tIiwic2NyaXB0IjpudWxsfV0sInRpdGxlIjoiVGhpcyBraWQuLi4iLCJ2aXNpYmlsaXR5U2NyaXB0IjpudWxsLCJhY3Rpb25MYWJlbCI6Ildha2UgdXAifSx7Im1lc3NhZ2VzIjpbeyJib2R5IjoiIEknbSBiYWNrIiwic3BlYWtlciI6IllvdSIsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIEdvb2QsIGl0J3MgdGltZSBmb3IgZGlubmVyLiIsInNwZWFrZXIiOiJNb20iLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiBIZXkgbW9tLi4uIiwic3BlYWtlciI6IllvdSIsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIFdoYXQgaXMgd3JvbmcsIGRlYXI/Iiwic3BlYWtlciI6Ik1vbSIsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIEknbSBsZWF2aW5nIHRvd24iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgSGFoYWhhaGFhLCBvaCBZb3UuLi4iLCJzcGVha2VyIjoiTW9tIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgQW5kIEknbSBNYm9pLCBHb2Qgb2YgV2F0ZXJ3YXlzISIsInNwZWFrZXIiOiJNb20iLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiAuLi4iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgQydtb24sIGVhdCB1cC4iLCJzcGVha2VyIjoiTW9tIiwic2NyaXB0IjpudWxsfV0sInRpdGxlIjoiVGltZSBmb3IgZGlubmVyIiwidmlzaWJpbGl0eVNjcmlwdCI6IiByZXR1cm4gZ2xvYmFsW1wibWF4YXJlYVwiXSA+IDI7ICIsImFjdGlvbkxhYmVsIjoiSSdtIGh1bmdyeS4uLiJ9LHsibWVzc2FnZXMiOlt7ImJvZHkiOiIgSSBmZWVsIGxpa2UgaXQgYmVjb21lcyBoYXJkZXIgYW5kIGhhcmRlciB0byBiZWNvbWUgc3Ryb25nZXIuLi4iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiJBIHJlZC1oYWlyZWQgbWFuIGFwcHJvYWNoZXMgeW91LiIsInNwZWFrZXIiOm51bGwsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIEhleSBraWQuIiwic3BlYWtlciI6Ik1hbiIsInNjcmlwdCI6bnVsbH0seyJib2R5IjoiIFdobyBhcmUgeW91PyIsInNwZWFrZXIiOiJZb3UiLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiBOYW1lJ3MgQ2lkLiAiLCJzcGVha2VyIjoiTWFuIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgSSBmZWVsIGxpa2UgSSd2ZSBzZWVuIHRoYXQgbmFtZSBiZWZvcmUuLi4iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgWW91IHdhbm5hIGJlY29tZSBzdHJvbmdlcj8gSGVoLiBTb21ldGltZXMgeW91IGdvdHRhIGxvc2UgaXQgYWxsIHRvIHJlYWNoIGEgbmV3IGhlaWdodC4iLCJzcGVha2VyIjoiQ2lkIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgQW55d2F5cywgdGFrZSB0aGlzLiBJdCB0ZWFjaGVzIHlvdSBob3cgdG8gU291bCBDcnVzaC4iLCJzcGVha2VyIjoiQ2lkIiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiJIZSBoYW5kcyB5b3UgYW4gb2xkIHNjcm9sbC4iLCJzcGVha2VyIjpudWxsLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiBJIHNob3VsZG4ndCByZWFsbHkgdGFrZSB0aGluZ3MgZnJvbSBzdHJhbmdlcnMuLi4iLCJzcGVha2VyIjoiWW91Iiwic2NyaXB0IjpudWxsfSx7ImJvZHkiOiIgQnV0IG9oIHdlbGwuIEknbGwgdGFrZSBhIHNob3QuIEhvcGUgaXQgZG9lc24ndCBnZXQgbWUga2lsbGVkLiIsInNwZWFrZXIiOiJZb3UiLCJzY3JpcHQiOm51bGx9LHsiYm9keSI6IiBZb3UgbWF5IG5vdCBiZSBhYmxlIHRvIGRvIGl0IG5vdywgYnV0IHNvbWVkYXkuLi4gR29vZCBsdWNrLCBraWQuIiwic3BlYWtlciI6IkNpZCIsInNjcmlwdCI6bnVsbH1dLCJ0aXRsZSI6IkJlY29tZSBzdHJvbmdlciIsInZpc2liaWxpdHlTY3JpcHQiOiIgcmV0dXJuIGdsb2JhbFtcImhlcm9sZXZlbFwiXSA+IDg7ICIsImFjdGlvbkxhYmVsIjoiSG93IGRvIEkgZ2V0IHN0cm9uZ2VyLi4uIn1d"}];
 js_Boot.__toStr = ({ }).toString;
-PrototypeItemMaker.itemType_Weapon = 0;
-PrototypeItemMaker.itemType_Armor = 1;
-haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);
 seedyrng_Xorshift128Plus.PARAMETER_A = 23;
 seedyrng_Xorshift128Plus.PARAMETER_B = 17;
 seedyrng_Xorshift128Plus.PARAMETER_C = 26;
@@ -3931,5 +4067,10 @@ seedyrng_Xorshift128Plus.SEED_1 = (function($this) {
 	$r = this1;
 	return $r;
 }(this));
+Generation.random = new seedyrng_Random();
+PrototypeItemMaker.itemType_Weapon = 0;
+PrototypeItemMaker.itemType_Armor = 1;
+haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);
 MainTest.main();
 })({});

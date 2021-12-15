@@ -1,4 +1,5 @@
 // package logic;
+import BasicProcedural.Generation;
 import seedyrng.Random;
 import RPGData.Balancing;
 import js.html.GamepadEvent;
@@ -6,6 +7,7 @@ import haxe.Json;
 import haxe.ds.Vector;
 import RPGData;
 import PrototypeItemMaker;
+import ProceduralEnemyGeneration;
 
 using PrototypeItemMaker.RandomExtender;
 
@@ -61,8 +63,7 @@ class BattleManager {
 	public var volatileAttributeAux = new Array<Int>();
 	public var equipmentToDiscard = new Array<Equipment>();
 	public var scheduledSkill:SkillUsable;
-
-	// var arrayhelperSkillSet = new ArrayHelper<SkillSet>();
+	public var enemyAreaFromProcedural = new EnemyAreaFromProceduralUnitRepetition();
 
 	public function GetAttribute(actor:Actor, label:String) {
 		var i = actor.attributesCalculated[label];
@@ -608,6 +609,13 @@ class BattleManager {
 			}
 			// enemyLevel = (enemyLevel + 1) * 10 - 1;
 		}
+
+		if (region == 0 && enemyAreaFromProcedural != null && enemyAreaFromProcedural.units != null) {
+			var areaInfo = enemyAreaFromProcedural.GetEnemyAreaInformation(wdata.battleArea);
+			sheet = areaInfo.sheet;
+			enemyLevel += areaInfo.level;
+		}
+
 		{
 			var timeToKillEnemy = balancing.timeToKillFirstEnemy;
 
@@ -777,6 +785,37 @@ class BattleManager {
 		if (bm.regionPrizes.length > bm.regionRequirements.length) {
 			trace("PROBLEM: Tell developer to add more region requirements!!!");
 		}
+
+		// Goblin
+		enemyAreaFromProcedural.enemySheets.push({speciesMultiplier: null, speciesLevelStats: null, speciesAdd: null});
+		// wolf
+		enemyAreaFromProcedural.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 0.55, "Speed" => 2.7, "LifeMax" => 1.1]
+			},
+			speciesAdd: null,
+			speciesLevelStats: {attributesBase: ["Speed" => 1]}
+		});
+		// Giant
+		enemyAreaFromProcedural.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 3, "Speed" => 0.09, "LifeMax" => 2.5]
+			},
+			speciesAdd: null,
+			speciesLevelStats: {attributesBase: ["Speed" => 0.05, "Defense" => 0.2]}
+		});
+		// Turtle
+		enemyAreaFromProcedural.enemySheets.push({
+			speciesMultiplier: {
+				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 4.0]
+			},
+			speciesAdd: ["Defense" => 0],
+			speciesLevelStats: {attributesBase: ["Defense" => 0.6, "Speed" => 0.05]}
+		});
+
+		var pus = Generation.Generate("w1", 4, 1, 3);
+		var purs = Generation.GenerateRepetitions("w1", pus, {min: 3, max: 6});
+		enemyAreaFromProcedural.units = purs;
 
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0];
 		// var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];

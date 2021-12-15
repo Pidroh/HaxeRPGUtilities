@@ -378,6 +378,7 @@ ArrayHelper.InsertOnEmpty = function(ele,array) {
 	return array.length - 1;
 };
 var BattleManager = function() {
+	this.enemyAreaFromProcedural = new EnemyAreaFromProceduralUnitRepetition();
 	this.equipmentToDiscard = [];
 	this.volatileAttributeAux = [];
 	this.volatileAttributeList = ["MP","Life","MPRechargeCount","SpeedCount"];
@@ -528,8 +529,40 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 778, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 786, className : "BattleManager", methodName : "new"});
 	}
+	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
+	var tmp = this.enemyAreaFromProcedural.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 0.55;
+	_g.h["Speed"] = 2.7;
+	_g.h["LifeMax"] = 1.1;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Speed"] = 1;
+	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
+	var tmp = this.enemyAreaFromProcedural.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 3;
+	_g.h["Speed"] = 0.09;
+	_g.h["LifeMax"] = 2.5;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Speed"] = 0.05;
+	_g1.h["Defense"] = 0.2;
+	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
+	var tmp = this.enemyAreaFromProcedural.enemySheets;
+	var _g = new haxe_ds_StringMap();
+	_g.h["Attack"] = 1.4;
+	_g.h["Speed"] = 0.15;
+	_g.h["LifeMax"] = 4.0;
+	var _g1 = new haxe_ds_StringMap();
+	_g1.h["Defense"] = 0;
+	var _g2 = new haxe_ds_StringMap();
+	_g2.h["Defense"] = 0.6;
+	_g2.h["Speed"] = 0.05;
+	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
+	var pus = Generation.Generate("w1",4,1,3);
+	var purs = Generation.GenerateRepetitions("w1",pus,{ min : 3, max : 6});
+	this.enemyAreaFromProcedural.units = purs;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
 	_g.h["Life"] = 20;
@@ -662,6 +695,7 @@ BattleManager.prototype = {
 	,volatileAttributeAux: null
 	,equipmentToDiscard: null
 	,scheduledSkill: null
+	,enemyAreaFromProcedural: null
 	,GetAttribute: function(actor,label) {
 		var i = actor.attributesCalculated.h[label];
 		if(i < 0) {
@@ -1233,6 +1267,11 @@ BattleManager.prototype = {
 				enemyLevel += 10;
 				enemyLevel += i * 10;
 			}
+		}
+		if(region == 0 && this.enemyAreaFromProcedural != null && this.enemyAreaFromProcedural.units != null) {
+			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea);
+			sheet = areaInfo.sheet;
+			enemyLevel += areaInfo.level;
 		}
 		var timeToKillEnemy = this.balancing.timeToKillFirstEnemy;
 		var initialAttackHero = 1;
@@ -2177,7 +2216,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1775, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1814, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2194,7 +2233,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1792, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1831, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2814,8 +2853,6 @@ Main.gamemain = function() {
 	main.set_percentWidth(100);
 	main.set_percentHeight(100);
 	main.addComponent(view.mainComponent);
-	var pus = Generation.Generate("w1",4,1,3);
-	var purs = Generation.GenerateRepetitions("w1",pus,{ min : 3, max : 6});
 	var keyOld = "save data2";
 	var key = "save data master";
 	var keyBackup = "save backup";
@@ -3404,7 +3441,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 812, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 808, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3416,7 +3453,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 829, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 825, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3435,8 +3472,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 857, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 858, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 853, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 854, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -3500,6 +3537,55 @@ Main.GetEquipName = function(e,bm) {
 		equipName = "Armor";
 	}
 	return equipName;
+};
+var EnemyAreaInformation = function() {
+};
+$hxClasses["EnemyAreaInformation"] = EnemyAreaInformation;
+EnemyAreaInformation.__name__ = "EnemyAreaInformation";
+EnemyAreaInformation.prototype = {
+	sheet: null
+	,level: null
+	,nEnemies: null
+	,__class__: EnemyAreaInformation
+};
+var EnemyAreaFromProceduralUnitRepetition = function() {
+	this.aux = new EnemyAreaInformation();
+	this.enemySheets = [];
+};
+$hxClasses["EnemyAreaFromProceduralUnitRepetition"] = EnemyAreaFromProceduralUnitRepetition;
+EnemyAreaFromProceduralUnitRepetition.__name__ = "EnemyAreaFromProceduralUnitRepetition";
+EnemyAreaFromProceduralUnitRepetition.prototype = {
+	units: null
+	,enemySheets: null
+	,aux: null
+	,GetEnemyAreaInformation: function(area) {
+		if(this.units.length <= area) {
+			this.aux.level = 0;
+			this.aux.nEnemies = -1;
+			this.aux.sheet = this.enemySheets[0];
+			return this.aux;
+		}
+		var u = this.units[area];
+		var char = u.proceduralUnit.characteristics[0];
+		var es = this.enemySheets[char];
+		var nEnemies = -1;
+		var levelBonus = 0;
+		if(u.position == u.total - 1) {
+			nEnemies = 1;
+			levelBonus = 5;
+			if(area > 15) {
+				levelBonus = 10;
+			}
+			if(area > 30) {
+				levelBonus = 15;
+			}
+		}
+		this.aux.sheet = es;
+		this.aux.nEnemies = nEnemies;
+		this.aux.level = levelBonus;
+		return this.aux;
+	}
+	,__class__: EnemyAreaFromProceduralUnitRepetition
 };
 var PrototypeItemMaker = function() {
 	this.mods = [];
