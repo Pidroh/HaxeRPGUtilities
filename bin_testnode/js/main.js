@@ -456,7 +456,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:786:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:792:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	var tmp = this.enemyAreaFromProcedural.enemySheets;
@@ -1113,6 +1113,12 @@ BattleManager.prototype = {
 			if(area > 4) {
 				var mul = fRand.random() * 1.5 + 0.5;
 				this.wdata.necessaryToKillInArea = this.wdata.necessaryToKillInArea * mul | 0;
+			}
+			if(this.enemyAreaFromProcedural != null && this.wdata.battleAreaRegion == 0) {
+				var eAI = this.enemyAreaFromProcedural.GetEnemyAreaInformation(area);
+				if(eAI.nEnemies > 0) {
+					this.wdata.necessaryToKillInArea = eAI.nEnemies;
+				}
 			}
 			if(this.wdata.battleAreaRegion > 0) {
 				this.wdata.necessaryToKillInArea = 3;
@@ -2116,7 +2122,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1814:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1820:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2133,7 +2139,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1831:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1837:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2872,7 +2878,7 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		var nEnemies = -1;
 		var levelBonus = 0;
 		if(u.position == u.total - 1) {
-			nEnemies = 1;
+			nEnemies = 3;
 			levelBonus = 5;
 			if(area > 15) {
 				levelBonus = 10;

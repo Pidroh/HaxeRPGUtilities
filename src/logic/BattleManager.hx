@@ -550,6 +550,12 @@ class BattleManager {
 				var mul = fRand.random() * 1.5 + 0.5;
 				wdata.necessaryToKillInArea = Std.int(wdata.necessaryToKillInArea * mul);
 			}
+			if(enemyAreaFromProcedural != null && wdata.battleAreaRegion == 0){
+				var eAI = enemyAreaFromProcedural.GetEnemyAreaInformation(area);
+				if(eAI.nEnemies > 0){
+					wdata.necessaryToKillInArea = eAI.nEnemies;
+				}
+			}
 
 			if (wdata.battleAreaRegion > 0)
 				wdata.necessaryToKillInArea = 3;

@@ -30,7 +30,7 @@ class EnemyAreaFromProceduralUnitRepetition{
         var nEnemies = -1;
         var levelBonus = 0;
         if(u.position == u.total-1){
-            nEnemies = 1;
+            nEnemies = 3;
             levelBonus = 5;
             if(area > 15)
                 levelBonus = 10;
