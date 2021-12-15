@@ -633,7 +633,6 @@ class BattleManager {
 			wdata.enemy = {
 				level: 1 + enemyLevel,
 				attributesBase: stats2,
-				equipmentSlots: null,
 				equipment: [],
 				xp: null,
 				attributesCalculated: stats2,
@@ -787,7 +786,6 @@ class BattleManager {
 			hero: {
 				level: 1,
 				attributesBase: null,
-				equipmentSlots: null,
 				equipment: null,
 				xp: null,
 				attributesCalculated: stats,
@@ -847,11 +845,11 @@ class BattleManager {
 
 		// increases cost to upgrade every 5 levels, by 5. So 5, 10, 15, 20, etc
 		if (e.generationPrefixMod >= 0) {
-			//genLevel *= 1.5;
+			// genLevel *= 1.5;
 			genLevel += 5;
 		}
 		if (e.generationSuffixMod >= 0) {
-			//genLevel *= 1.5;
+			// genLevel *= 1.5;
 			genLevel += 5;
 		}
 
@@ -889,7 +887,7 @@ class BattleManager {
 		if (IsUpgradable(e, wdata) == false) {
 			var bonus = Std.int(GetLimitBreakCost(e, wdata) / 3);
 			wdata.currency.currencies["Lagrima Stone"].value += bonus;
-			var e= bm.AddEvent(EquipMaxed);
+			var e = bm.AddEvent(EquipMaxed);
 			e.data = bonus;
 			e.dataString = "Lagrima Stone";
 		}
@@ -936,6 +934,17 @@ class BattleManager {
 				]
 			};
 
+		if (wdata.hero.equipmentSets == null) {
+			wdata.hero.equipmentSets = new Array<EquipmentSet>();
+			wdata.hero.chosenEquipSet = 0;
+		}
+
+		while (wdata.hero.equipmentSets.length < 5) {
+			wdata.hero.equipmentSets.push({
+				equipmentSlots: [-1, -1, -1]
+			});
+		}
+
 		if (wdata.hero.equipment != null) {
 			while (wdata.hero.equipment.contains(null)) {
 				DiscardSingleEquipment(wdata.hero.equipment.indexOf(null));
@@ -956,6 +965,7 @@ class BattleManager {
 				}
 			}
 		}
+
 		if (wdata.regionProgress == null) {
 			wdata.regionProgress = [];
 		}
@@ -1087,8 +1097,8 @@ class BattleManager {
 		if (wdata.hero.equipment == null) {
 			wdata.hero.equipment = [];
 		}
-		if (wdata.hero.equipmentSlots == null) {
-			wdata.hero.equipmentSlots = [-1, -1, -1];
+		if (wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots == null) {
+			wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots = [-1, -1, -1];
 		}
 		RecalculateAttributes(wdata.hero);
 	}
@@ -1113,7 +1123,7 @@ class BattleManager {
 		wdata.prestigeTimes++;
 		RecalculateAttributes(wdata.hero);
 		for (i in 0...wdata.hero.equipment.length) {
-			if (wdata.hero.equipmentSlots.contains(i)) {
+			if (wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.contains(i)) {
 				var e = wdata.hero.equipment[i];
 				if (e != null) {
 					for (s in e.attributes.keys()) {
@@ -1331,23 +1341,28 @@ class BattleManager {
 		BattleManager.LimitBreak(e, wdata);
 	}
 
+	public function ChangeEquipmentSet(pos){
+		wdata.hero.chosenEquipSet = pos;
+		RecalculateAttributes(wdata.hero);
+	}
+
 	public function UpgradeOrLimitBreakEquipment(pos) {
 		var e = wdata.hero.equipment[pos];
-		if(IsUpgradable(e, wdata)){
+		if (IsUpgradable(e, wdata)) {
 			BattleManager.Upgrade(e, wdata, this);
-		} else{
+		} else {
 			BattleManager.LimitBreak(e, wdata);
 		}
-		
+
 		RecalculateAttributes(wdata.hero);
 	}
 
 	function DiscardSingleEquipment(pos) {
 		var e = wdata.hero.equipment[pos];
 		wdata.hero.equipment.remove(e);
-		for (i in 0...wdata.hero.equipmentSlots.length) {
-			if (wdata.hero.equipmentSlots[i] >= pos) {
-				wdata.hero.equipmentSlots[i]--; // adjust position of higher slots
+		for (i in 0...wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.length) {
+			if (wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[i] >= pos) {
+				wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[i]--; // adjust position of higher slots
 			}
 		}
 
@@ -1368,17 +1383,17 @@ class BattleManager {
 
 	public function ToggleEquipped(pos) {
 		var slot = wdata.hero.equipment[pos].type;
-		if (wdata.hero.equipmentSlots[slot] == pos) {
-			wdata.hero.equipmentSlots[slot] = -1;
+		if (wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[slot] == pos) {
+			wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[slot] = -1;
 		} else {
-			wdata.hero.equipmentSlots[slot] = pos;
+			wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[slot] = pos;
 		}
 		UseMP(wdata.hero, 9999, false);
 		RecalculateAttributes(wdata.hero);
 	}
 
 	public function IsEquipped(pos):Bool {
-		return wdata.hero.equipmentSlots.contains(pos);
+		return wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.contains(pos);
 	}
 
 	function AddEvent(eventType):GameEvent {
@@ -1657,7 +1672,7 @@ $baseInfo';
 		}
 
 		if (actor == wdata.hero) {
-			var skillSetPos = wdata.hero.equipmentSlots[2];
+			var skillSetPos = wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[2];
 			if (skillSetPos >= 0) {
 				var skillSet = wdata.skillSets[wdata.hero.equipment[skillSetPos].outsideSystems["skillset"]];
 				wdata.hero.usableSkills = skillSet.skills;
@@ -1704,8 +1719,8 @@ $baseInfo';
 		}
 
 		// first do adds
-		if (actor.equipmentSlots != null) {
-			for (es in actor.equipmentSlots) {
+		if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+			for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
 				var e = actor.equipment[es];
 				if (e != null) {
 					AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
@@ -1718,8 +1733,8 @@ $baseInfo';
 		}
 
 		// then do multipliers
-		if (actor.equipmentSlots != null) {
-			for (es in actor.equipmentSlots) {
+		if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+			for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
 				var e = actor.equipment[es];
 				if (e != null) {
 					if (e.attributeMultiplier != null) {
@@ -1784,7 +1799,7 @@ $baseInfo';
 					}
 					var r = CompareEquipmentStrength(e, e2);
 					if (r == 1 || r == 0) { // if they are exactly the same or r1 is better
-						if (wdata.hero.equipmentSlots.contains(j)) {
+						if (wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.contains(j)) {
 							j++;
 							continue;
 						}
@@ -1794,7 +1809,7 @@ $baseInfo';
 						continue;
 					}
 					if (r == 2) {
-						if (wdata.hero.equipmentSlots.contains(i)) {
+						if (wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.contains(i)) {
 							j++;
 							continue;
 						}

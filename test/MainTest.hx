@@ -45,15 +45,15 @@ class MainTest {
 				requiredAttributes: null,
 				attributes: ["Life" => 3]
 			});
-			bm.wdata.hero.equipmentSlots[0] = 2;
-			bm.wdata.hero.equipmentSlots[1] = 0;
-			var attributes0 = bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes.copy();
-			var attributes1 = bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes.copy();
+			bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[0] = 2;
+			bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[1] = 0;
+			var attributes0 = bm.wdata.hero.equipment[bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[0]].attributes.copy();
+			var attributes1 = bm.wdata.hero.equipment[bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[1]].attributes.copy();
 			bm.SellEquipment(1);
-			if (attributes0["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes["Attack"]) {
+			if (attributes0["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[0]].attributes["Attack"]) {
 				Sys.println("Error0");
 			}
-			if (attributes1["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes["Attack"]) {
+			if (attributes1["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[1]].attributes["Attack"]) {
 				Sys.println("Error1");
 			}
 		}
@@ -356,7 +356,6 @@ class MainTest {
 			var hero:Actor = {
 				level: 1,
 				attributesBase: stats,
-				equipmentSlots: null,
 				equipment: null,
 				xp: ResourceLogic.getExponentialResource(1.5, 1, 5),
 				attributesCalculated: stats.copy(),

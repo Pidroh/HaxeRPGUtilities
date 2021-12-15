@@ -221,7 +221,7 @@ class Main {
 		bm.ForceSkillSetDrop(-1, null, {
 			skills: [{id: "Slash", level: 1}, {id: "Cure", level: 1}, {id: "Protect", level: 3}]
 		}, false);
-		bm.wdata.hero.equipmentSlots[2] = 0;
+		bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[2] = 0;
 
 		var storyPersistence:StoryPersistence = {progressionData: [], worldVersion: bm.wdata.worldVersion, currentStoryId: null};
 		var jsonData = ls.getItem(key);

@@ -75,13 +75,19 @@ typedef ActorSheet = {
 	var ?initialBuff:Buff;
 }
 
+typedef EquipmentSet = {
+	var equipmentSlots:Array<Int>;
+}
+
 typedef Actor = {
 	var level:Int;
 	var xp:ScalingResource;
 	var attributesBase:Map<String, Int>;
 	var attributesCalculated:Map<String, Int>;
 	var equipment:Array<Equipment>;
-	var equipmentSlots:Array<Int>;
+	var ?equipmentSets  : Array<EquipmentSet>;
+	var ?chosenEquipSet : Int;
+	//var equipmentSlots:Array<Int>;
 	var ?turnRecharge:Array<Int>;
 	var reference:ActorReference;
 	var ?buffs:Array<Buff>;

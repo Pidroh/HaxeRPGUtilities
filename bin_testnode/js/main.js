@@ -168,7 +168,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:779:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:778:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1;
@@ -177,7 +177,7 @@ var BattleManager = function() {
 	_g.h["Speed"] = 20;
 	_g.h["SpeedCount"] = 0;
 	var stats = _g;
-	var w = { worldVersion : 1207, hero : { level : 1, attributesBase : null, equipmentSlots : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], prestigeTimes : 0, timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
+	var w = { worldVersion : 1207, hero : { level : 1, attributesBase : null, equipment : null, xp : null, attributesCalculated : stats, reference : new ActorReference(0,0)}, enemy : null, maxArea : 1, necessaryToKillInArea : 0, killedInArea : [0,0], prestigeTimes : 0, timeCount : 0, playerTimesKilled : 0, battleArea : 0, battleAreaRegion : 0, battleAreaRegionMax : 1, playerActions : new haxe_ds_StringMap(), recovering : false, sleeping : false, regionProgress : []};
 	this.wdata = w;
 	this.ReinitGameValues();
 	this.ChangeBattleArea(0);
@@ -865,7 +865,7 @@ BattleManager.prototype = {
 		_g.h["MagicDefense"] = 0;
 		_g.h["Piercing"] = 0;
 		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipmentSlots : null, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
+		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
 		if(sheet != null) {
 			var mul = sheet.speciesMultiplier;
 			if(mul != null) {
@@ -941,6 +941,11 @@ BattleManager.prototype = {
 			_g.h["Lagrima Stone"] = { value : 0, visible : false};
 			this.wdata.currency = { currencies : _g};
 		}
+		if(this.wdata.hero.equipmentSets == null) {
+			this.wdata.hero.equipmentSets = [];
+			this.wdata.hero.chosenEquipSet = 0;
+		}
+		while(this.wdata.hero.equipmentSets.length < 5) this.wdata.hero.equipmentSets.push({ equipmentSlots : [-1,-1,-1]});
 		if(this.wdata.hero.equipment != null) {
 			while(this.wdata.hero.equipment.indexOf(null) != -1) this.DiscardSingleEquipment(this.wdata.hero.equipment.indexOf(null));
 			var _g_current = 0;
@@ -1086,8 +1091,8 @@ BattleManager.prototype = {
 		if(this.wdata.hero.equipment == null) {
 			this.wdata.hero.equipment = [];
 		}
-		if(this.wdata.hero.equipmentSlots == null) {
-			this.wdata.hero.equipmentSlots = [-1,-1,-1];
+		if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots == null) {
+			this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots = [-1,-1,-1];
 		}
 		this.RecalculateAttributes(this.wdata.hero);
 	}
@@ -1117,7 +1122,7 @@ BattleManager.prototype = {
 		var _g1 = this.wdata.hero.equipment.length;
 		while(_g < _g1) {
 			var i = _g++;
-			if(this.wdata.hero.equipmentSlots.indexOf(i) != -1) {
+			if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.indexOf(i) != -1) {
 				var e = this.wdata.hero.equipment[i];
 				if(e != null) {
 					var h = e.attributes.h;
@@ -1349,6 +1354,10 @@ BattleManager.prototype = {
 		var e = this.wdata.hero.equipment[pos];
 		BattleManager.LimitBreak(e,this.wdata);
 	}
+	,ChangeEquipmentSet: function(pos) {
+		this.wdata.hero.chosenEquipSet = pos;
+		this.RecalculateAttributes(this.wdata.hero);
+	}
 	,UpgradeOrLimitBreakEquipment: function(pos) {
 		var e = this.wdata.hero.equipment[pos];
 		if(BattleManager.IsUpgradable(e,this.wdata)) {
@@ -1362,11 +1371,11 @@ BattleManager.prototype = {
 		var e = this.wdata.hero.equipment[pos];
 		HxOverrides.remove(this.wdata.hero.equipment,e);
 		var _g = 0;
-		var _g1 = this.wdata.hero.equipmentSlots.length;
+		var _g1 = this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.length;
 		while(_g < _g1) {
 			var i = _g++;
-			if(this.wdata.hero.equipmentSlots[i] >= pos) {
-				this.wdata.hero.equipmentSlots[i]--;
+			if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[i] >= pos) {
+				this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[i]--;
 			}
 		}
 		if(e != null) {
@@ -1384,16 +1393,16 @@ BattleManager.prototype = {
 	}
 	,ToggleEquipped: function(pos) {
 		var slot = this.wdata.hero.equipment[pos].type;
-		if(this.wdata.hero.equipmentSlots[slot] == pos) {
-			this.wdata.hero.equipmentSlots[slot] = -1;
+		if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[slot] == pos) {
+			this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[slot] = -1;
 		} else {
-			this.wdata.hero.equipmentSlots[slot] = pos;
+			this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[slot] = pos;
 		}
 		this.UseMP(this.wdata.hero,9999,false);
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,IsEquipped: function(pos) {
-		return this.wdata.hero.equipmentSlots.indexOf(pos) != -1;
+		return this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.indexOf(pos) != -1;
 	}
 	,AddEvent: function(eventType) {
 		var e = new GameEvent(eventType);
@@ -1627,7 +1636,7 @@ BattleManager.prototype = {
 			}
 		}
 		if(actor == this.wdata.hero) {
-			var skillSetPos = this.wdata.hero.equipmentSlots[2];
+			var skillSetPos = this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[2];
 			if(skillSetPos >= 0) {
 				var skillSet = this.wdata.skillSets[this.wdata.hero.equipment[skillSetPos].outsideSystems.h["skillset"]];
 				this.wdata.hero.usableSkills = skillSet.skills;
@@ -1691,9 +1700,9 @@ BattleManager.prototype = {
 				}
 			}
 		}
-		if(actor.equipmentSlots != null) {
+		if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
 			var _g = 0;
-			var _g1 = actor.equipmentSlots;
+			var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
 			while(_g < _g1.length) {
 				var es = _g1[_g];
 				++_g;
@@ -1712,9 +1721,9 @@ BattleManager.prototype = {
 				AttributeLogic.Add(actor.attributesCalculated,b.addStats,1,actor.attributesCalculated);
 			}
 		}
-		if(actor.equipmentSlots != null) {
+		if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
 			var _g = 0;
-			var _g1 = actor.equipmentSlots;
+			var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
 			while(_g < _g1.length) {
 				var es = _g1[_g];
 				++_g;
@@ -1774,7 +1783,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1755:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1770:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1791,7 +1800,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1772:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1787:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -1805,7 +1814,7 @@ BattleManager.prototype = {
 				}
 				var r = this.CompareEquipmentStrength(e,e2);
 				if(r == 1 || r == 0) {
-					if(this.wdata.hero.equipmentSlots.indexOf(j) != -1) {
+					if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.indexOf(j) != -1) {
 						++j;
 						continue;
 					}
@@ -1813,7 +1822,7 @@ BattleManager.prototype = {
 					continue;
 				}
 				if(r == 2) {
-					if(this.wdata.hero.equipmentSlots.indexOf(i) != -1) {
+					if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.indexOf(i) != -1) {
 						++j;
 						continue;
 					}
@@ -2051,16 +2060,16 @@ MainTest.main = function() {
 	var _g = new haxe_ds_StringMap();
 	_g.h["Life"] = 3;
 	bm1.push({ seen : 0, type : 0, requiredAttributes : null, attributes : _g});
-	bm.wdata.hero.equipmentSlots[0] = 2;
-	bm.wdata.hero.equipmentSlots[1] = 0;
-	var attributes0 = haxe_ds_StringMap.createCopy(bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes.h);
-	var attributes1 = haxe_ds_StringMap.createCopy(bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes.h);
+	bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[0] = 2;
+	bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[1] = 0;
+	var attributes0 = haxe_ds_StringMap.createCopy(bm.wdata.hero.equipment[bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[0]].attributes.h);
+	var attributes1 = haxe_ds_StringMap.createCopy(bm.wdata.hero.equipment[bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[1]].attributes.h);
 	bm.SellEquipment(1);
-	if(attributes0.h["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[0]].attributes.h["Attack"]) {
+	if(attributes0.h["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[0]].attributes.h["Attack"]) {
 		process.stdout.write("Error0");
 		process.stdout.write("\n");
 	}
-	if(attributes1.h["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSlots[1]].attributes.h["Attack"]) {
+	if(attributes1.h["Attack"] != bm.wdata.hero.equipment[bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[1]].attributes.h["Attack"]) {
 		process.stdout.write("Error1");
 		process.stdout.write("\n");
 	}
@@ -2387,7 +2396,6 @@ MainTest.main = function() {
 	var stats = _g;
 	var hero_level = 1;
 	var hero_attributesBase = stats;
-	var hero_equipmentSlots = null;
 	var hero_equipment = null;
 	var hero_xp = ResourceLogic.getExponentialResource(1.5,1,5);
 	var hero_attributesCalculated = haxe_ds_StringMap.createCopy(stats.h);
@@ -2502,14 +2510,14 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
+		console.log("test/MainTest.hx:423:","  _____ ");
 		console.log("test/MainTest.hx:424:","  _____ ");
 		console.log("test/MainTest.hx:425:","  _____ ");
-		console.log("test/MainTest.hx:426:","  _____ ");
-		console.log("test/MainTest.hx:427:",json);
+		console.log("test/MainTest.hx:426:",json);
+		console.log("test/MainTest.hx:427:","  _____ ");
 		console.log("test/MainTest.hx:428:","  _____ ");
 		console.log("test/MainTest.hx:429:","  _____ ");
-		console.log("test/MainTest.hx:430:","  _____ ");
-		console.log("test/MainTest.hx:431:",json2);
+		console.log("test/MainTest.hx:430:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
