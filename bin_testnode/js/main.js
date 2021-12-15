@@ -2865,12 +2865,7 @@ var EnemyAreaFromProceduralUnitRepetition = function() {
 EnemyAreaFromProceduralUnitRepetition.__name__ = true;
 EnemyAreaFromProceduralUnitRepetition.prototype = {
 	GetEnemyAreaInformation: function(area) {
-		if(this.units.length <= area) {
-			this.aux.level = 0;
-			this.aux.nEnemies = -1;
-			this.aux.sheet = this.enemySheets[0];
-			return this.aux;
-		}
+		area %= this.units.length;
 		var u = this.units[area];
 		var char = u.proceduralUnit.characteristics[0];
 		var es = this.enemySheets[char];

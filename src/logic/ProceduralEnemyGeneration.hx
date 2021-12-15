@@ -15,12 +15,15 @@ class EnemyAreaFromProceduralUnitRepetition{
 
     public var aux : EnemyAreaInformation = new EnemyAreaInformation();
     public function GetEnemyAreaInformation(area : Int) : EnemyAreaInformation{
+        /*
         if(units.length <= area){
             aux.level = 0;
             aux.nEnemies = -1;
             aux.sheet = enemySheets[0];
             return aux;
         }
+        */
+        area = area % units.length;
         var u = units[area];
         var char = u.proceduralUnit.characteristics[0];
         var es = enemySheets[char];
