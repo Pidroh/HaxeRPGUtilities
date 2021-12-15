@@ -146,6 +146,8 @@ class Main {
 			var actionData = bm.wdata.playerActions[actionId];
 			if (key != null) {
 				keyMappings[key] = () -> {
+					action = bm.playerActions[actionId];
+					actionData = bm.wdata.playerActions[actionId];
 					if (actionData.enabled) {
 						action.actualAction(actionData);
 						view.AnimateButtonPress(buttonLabel);
@@ -214,7 +216,6 @@ class Main {
 			// view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
 		}
 
-
 		view.equipmentMainAction = function(pos, action) {
 			if (action == 0) {
 				bm.ToggleEquipped(pos);
@@ -238,10 +239,9 @@ class Main {
 					bm.wdata.hero.chosenEquipSet = ces;
 					bm.RecalculateAttributes(bm.wdata.hero);
 					view.overlay.hidden = false;
-				} else{
+				} else {
 					view.overlay.hidden = true;
 				}
-
 			}
 		};
 		view.regionChangeAction = i -> {
@@ -337,9 +337,6 @@ class Main {
 			"haste" => "&#128094;"
 		];
 
-		
-
-		
 		var overlayFullActorId = -1;
 
 		view.addHover(view.heroView.parent, (b, comp) -> {
