@@ -1670,8 +1670,11 @@ BattleManager.prototype = {
 		if(actor == this.wdata.hero) {
 			var skillSetPos = this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[2];
 			if(skillSetPos >= 0) {
-				var skillSet = this.wdata.skillSets[this.wdata.hero.equipment[skillSetPos].outsideSystems.h["skillset"]];
-				this.wdata.hero.usableSkills = skillSet.skills;
+				var e = this.wdata.hero.equipment[skillSetPos];
+				if(e != null && e.type == 2) {
+					var skillSet = this.wdata.skillSets[e.outsideSystems.h["skillset"]];
+					this.wdata.hero.usableSkills = skillSet.skills;
+				}
 			}
 		}
 		if(actor.attributesBase == actor.attributesCalculated) {
@@ -1815,7 +1818,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1773, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1775, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1832,7 +1835,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1790, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1792, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -4551,6 +4554,10 @@ View.prototype = {
 		var left = comp.get_screenLeft();
 		left += comp.get_width() + xDis;
 		var top = comp.get_screenTop() - yDis;
+		var screenOverFlowY = top + this.overlay.get_height() - haxe_ui_core_Screen.get_instance().get_height();
+		if(screenOverFlowY > 0) {
+			top -= screenOverFlowY;
+		}
 		this.overlay.set_left(left);
 		this.overlay.set_top(top);
 	}

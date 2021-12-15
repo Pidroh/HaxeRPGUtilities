@@ -689,6 +689,12 @@ class View {
 		var left = comp.screenLeft;
 		left += comp.width + xDis;
 		var top = comp.screenTop - yDis;
+		
+		var screenOverFlowY = top + overlay.height - Screen.instance.height;
+		if(screenOverFlowY > 0){
+			top -= screenOverFlowY;
+		}
+
 		overlay.left = left;
 		overlay.top = top;
 	}

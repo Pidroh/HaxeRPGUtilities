@@ -1341,7 +1341,7 @@ class BattleManager {
 		BattleManager.LimitBreak(e, wdata);
 	}
 
-	public function ChangeEquipmentSet(pos){
+	public function ChangeEquipmentSet(pos) {
 		wdata.hero.chosenEquipSet = pos;
 		RecalculateAttributes(wdata.hero);
 	}
@@ -1365,9 +1365,8 @@ class BattleManager {
 				if (wdata.hero.equipmentSets[j].equipmentSlots[i] >= pos) {
 					wdata.hero.equipmentSets[j].equipmentSlots[i]--; // adjust position of higher slots
 				}
-			}	
+			}
 		}
-		
 
 		if (e != null)
 			equipmentToDiscard.push(e);
@@ -1677,8 +1676,11 @@ $baseInfo';
 		if (actor == wdata.hero) {
 			var skillSetPos = wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[2];
 			if (skillSetPos >= 0) {
-				var skillSet = wdata.skillSets[wdata.hero.equipment[skillSetPos].outsideSystems["skillset"]];
-				wdata.hero.usableSkills = skillSet.skills;
+				var e = wdata.hero.equipment[skillSetPos];
+				if (e != null && e.type == 2) {
+					var skillSet = wdata.skillSets[e.outsideSystems["skillset"]];
+					wdata.hero.usableSkills = skillSet.skills;
+				}
 			}
 		}
 

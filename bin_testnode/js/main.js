@@ -1643,8 +1643,11 @@ BattleManager.prototype = {
 		if(actor == this.wdata.hero) {
 			var skillSetPos = this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[2];
 			if(skillSetPos >= 0) {
-				var skillSet = this.wdata.skillSets[this.wdata.hero.equipment[skillSetPos].outsideSystems.h["skillset"]];
-				this.wdata.hero.usableSkills = skillSet.skills;
+				var e = this.wdata.hero.equipment[skillSetPos];
+				if(e != null && e.type == 2) {
+					var skillSet = this.wdata.skillSets[e.outsideSystems.h["skillset"]];
+					this.wdata.hero.usableSkills = skillSet.skills;
+				}
 			}
 		}
 		if(actor.attributesBase == actor.attributesCalculated) {
@@ -1788,7 +1791,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1773:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1775:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -1805,7 +1808,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1790:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1792:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
