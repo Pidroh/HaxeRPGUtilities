@@ -182,6 +182,38 @@ class Main {
 			+
 			". You will keep all permanent stats bonuses. \n\nYou will go back to Level 1. Your progress in all regions will be reset. All that is not equipped will be lost. All that is equipped will lose strength.";
 		CreateButtonFromAction("prestige", "Soul Crush", prestigeWarn);
+		var ignoreStats = [
+			"Attack", "Defense", "Speed", "Life", "LifeMax", "MP", "SpeedCount", "MagicAttack", "MPRechargeCount", "MPRecharge"
+		];
+
+		var ActorToFullView = function(actor:Actor, actorView:ActorViewComplete) {
+			// var valueView:ValueView = view.GetValueView(actorView, 0);
+
+			view.UpdateValues(view.GetValueView(actorView, 0, true), bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"), "Life:");
+			view.UpdateValues(view.GetValueView(actorView, 1, false), bm.GetAttribute(actor, "Attack"), -1, "Attack:");
+			view.UpdateValues(view.GetValueView(actorView, 2, false), bm.GetAttribute(actor, "Speed"), -1, "Speed:");
+			view.UpdateValues(view.GetValueView(actorView, 3, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:");
+
+			// continue from the last one
+			var valueIndex = 4;
+
+			for (key => value in actor.attributesCalculated) {
+				if (!ignoreStats.contains(key) && value != 0) {
+					view.UpdateValues(view.GetValueView(actorView, valueIndex, false), value, -1, '$key:');
+					valueIndex++;
+				}
+			}
+			for (i in valueIndex...actorView.valueViews.length) {
+				actorView.valueViews[i].parent.hidden = true;
+			}
+
+			// view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
+			// view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
+
+			// view.UpdateValues(view.defView, bm.wdata.hero.attributesCalculated["Defense"], -1);
+			// view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
+		}
+
 
 		view.equipmentMainAction = function(pos, action) {
 			if (action == 0) {
@@ -194,8 +226,22 @@ class Main {
 			}
 			if (action == View.equipmentAction_DiscardBad)
 				bm.DiscardWorseEquipment();
-			if(action == View.equipmentAction_ChangeSet){
+			if (action == View.equipmentAction_ChangeSet) {
 				bm.ChangeEquipmentSet(pos);
+			}
+			if (action == View.equipmentAction_SetPreview) {
+				if (pos >= 0) {
+					var ces = bm.wdata.hero.chosenEquipSet;
+					bm.wdata.hero.chosenEquipSet = pos;
+					bm.RecalculateAttributes(bm.wdata.hero);
+					ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
+					bm.wdata.hero.chosenEquipSet = ces;
+					bm.RecalculateAttributes(bm.wdata.hero);
+					view.overlay.hidden = false;
+				} else{
+					view.overlay.hidden = true;
+				}
+
 			}
 		};
 		view.regionChangeAction = i -> {
@@ -291,38 +337,9 @@ class Main {
 			"haste" => "&#128094;"
 		];
 
-		var ignoreStats = [
-			"Attack", "Defense", "Speed", "Life", "LifeMax", "MP", "SpeedCount", "MagicAttack", "MPRechargeCount", "MPRecharge"
-		];
+		
 
-		var ActorToFullView = function(actor:Actor, actorView:ActorViewComplete) {
-			// var valueView:ValueView = view.GetValueView(actorView, 0);
-
-			view.UpdateValues(view.GetValueView(actorView, 0, true), bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"), "Life:");
-			view.UpdateValues(view.GetValueView(actorView, 1, false), bm.GetAttribute(actor, "Attack"), -1, "Attack:");
-			view.UpdateValues(view.GetValueView(actorView, 2, false), bm.GetAttribute(actor, "Speed"), -1, "Speed:");
-			view.UpdateValues(view.GetValueView(actorView, 3, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:");
-
-			// continue from the last one
-			var valueIndex = 4;
-
-			for (key => value in actor.attributesCalculated) {
-				if (!ignoreStats.contains(key) && value != 0) {
-					view.UpdateValues(view.GetValueView(actorView, valueIndex, false), value, -1, '$key:');
-					valueIndex++;
-				}
-			}
-			for (i in valueIndex...actorView.valueViews.length) {
-				actorView.valueViews[i].parent.hidden = true;
-			}
-
-			// view.UpdateValues(view.speedView, bm.wdata.hero.attributesCalculated["Speed"], -1);
-			// view.UpdateValues(view.attackView, bm.wdata.hero.attributesCalculated["Attack"], -1);
-
-			// view.UpdateValues(view.defView, bm.wdata.hero.attributesCalculated["Defense"], -1);
-			// view.UpdateValues(view.mDefView, bm.wdata.hero.attributesCalculated["Magic Defense"], -1);
-		}
-
+		
 		var overlayFullActorId = -1;
 
 		view.addHover(view.heroView.parent, (b, comp) -> {
