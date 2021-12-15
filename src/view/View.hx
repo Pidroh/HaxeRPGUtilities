@@ -89,6 +89,9 @@ class View {
 	public var levelContainer:Component;
 	public var battleView:Component;
 
+	public var equipmentSetButtonParent_Battle:Component;
+	public var equipmentSetButtonParent_Equipment:Component;
+
 	public var buttonDiscardBad:Button;
 
 	var buttonBox:Component;
@@ -122,6 +125,38 @@ class View {
 			else
 				tabBar.getComponentAt(i).text = names[i];
 		}
+	}
+
+	function FeedEquipmentSetInfo(numberOfSets:Int, chosenSet:Int,parent:Component){
+		if(parent == null) return;
+		var cc = parent.childComponents;
+		while(cc.length < numberOfSets){
+			var button = new Button();
+			button.text = "Set "+ cc.length;
+			parent.addComponent(button);
+			cc = parent.childComponents;
+		}
+		for (i in 0...cc.length) {
+			cc[i].hidden = i >= numberOfSets;
+			var b:Button = cast(cc[i], Button);
+			b.toggle = i == chosenSet;
+		}
+	}
+
+	public function FeedEquipmentSetInfoAll(numberOfSets:Int, chosenSet:Int){
+		FeedEquipmentSetInfo(numberOfSets, chosenSet, equipmentSetButtonParent_Battle);
+		FeedEquipmentSetInfo(numberOfSets, chosenSet, equipmentSetButtonParent_Equipment);
+	}
+
+	public function SetupEquipmentSetSelector(parent:Component) : Component{
+		var vbox = new VBox();
+		var title = new Label();
+		title.text = "Equipment Set";
+		vbox.addComponent(title);
+		var buttonParent = new HBox();
+		vbox.addComponent(buttonParent);
+		parent.addComponent(vbox);
+		return buttonParent;
 	}
 
 	public function LatestMessageUpdate(message:String, speaker:String, imageFile:String, messagePos:Int) {
@@ -299,7 +334,7 @@ class View {
 		overlay = new VBox();
 		overlay.hidden = true;
 		overlay.addClass("default-background");
-		//overlay.borderColor = "#BBBBBB";
+		// overlay.borderColor = "#BBBBBB";
 		overlay.borderSize = 1;
 		overlay.padding = 10;
 
@@ -536,8 +571,14 @@ class View {
 
 				statEquipmentParent = statContainer;
 			}
+			var equipRightSide = new VBox();
+			equipRightSide.percentWidth = 100;
+			equipRightSide.percentHeight = 100;
+			this.equipmentSetButtonParent_Equipment = SetupEquipmentSetSelector(equipRightSide);
+			gridBox.addComponent(equipRightSide);
 
-			var scroll = CreateScrollable(gridBox);
+			var scroll = CreateScrollable(equipRightSide);
+
 
 			scroll.height = 300;
 			scroll.text = "Equipment";
@@ -635,6 +676,8 @@ class View {
 		}
 	}
 
+
+
 	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion, showLocked = 0, lockedMessage = null) {
 		// feed the current region view
 		// regionLabel.centeredText.text = regionNames[currentRegion];
@@ -730,7 +773,7 @@ class View {
 
 		// container.percentWidth = 100;
 		// container.borderRadius = 1;
-		if(Toolkit.theme != 'dark')
+		if (Toolkit.theme != 'dark')
 			container.borderColor = "#AAAAAA";
 		container.borderSize = 1;
 		container.padding = 15;
@@ -779,7 +822,7 @@ class View {
 			rightLabel.horizontalAlign = "right";
 			// rightLabel.verticalAlign = "center";
 			rightLabelBox.backgroundColor = "#FFAAAA";
-			if(Toolkit.theme == 'dark'){
+			if (Toolkit.theme == 'dark') {
 				rightLabelBox.backgroundColor = "#440000";
 			}
 			rightLabelBox.addComponent(rightLabel);
@@ -848,20 +891,20 @@ class View {
 		if (rarity == 1) {
 			color = "#002299";
 		}
-		if(Toolkit.theme == "dark"){
+		if (Toolkit.theme == "dark") {
 			color = "#EEEEEE";
 			if (rarity == 1) {
 				color = "#88AAFF";
 			}
 		}
-		
+
 		equipments[pos].name.color = color;
 		if (equipped) {
 			equipments[pos].actionButtons[0].text = "Unequip";
 			equipments[pos].actionButtons[0].hidden = unequipable;
 			equipments[pos].parent.borderSize = 2;
 			equipments[pos].parent.backgroundColor = "#FAEBD7";
-			if(Toolkit.theme == "dark"){
+			if (Toolkit.theme == "dark") {
 				equipments[pos].parent.backgroundColor = "#9C6113";
 			}
 		} else {
@@ -869,7 +912,7 @@ class View {
 			equipments[pos].actionButtons[0].text = "Equip";
 			equipments[pos].parent.borderSize = 1;
 			equipments[pos].parent.backgroundColor = "white";
-			if(Toolkit.theme == "dark"){
+			if (Toolkit.theme == "dark") {
 				equipments[pos].parent.backgroundColor = "black";
 			}
 		}
@@ -982,7 +1025,7 @@ class View {
 	public function ButtonAttackColor(id:String) {
 		var b = buttonMap[id];
 		b.backgroundColor = "#FF6666";
-		if(Toolkit.theme == 'dark'){
+		if (Toolkit.theme == 'dark') {
 			b.backgroundColor = "#990000";
 		}
 	}
@@ -990,7 +1033,7 @@ class View {
 	public function ButtonNormalColor(id:String) {
 		var b = buttonMap[id];
 		b.backgroundColor = "#EEEEFF";
-		if(Toolkit.theme == 'dark'){
+		if (Toolkit.theme == 'dark') {
 			b.backgroundColor = "#444444";
 		}
 	}
@@ -1131,12 +1174,11 @@ class View {
 	}
 
 	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor:String = "#CCCCDD", extraHeight = 0):ValueView {
-		var color : haxe.ui.util.Color = barColor;
-		if(Toolkit.theme == "dark"){
+		var color:haxe.ui.util.Color = barColor;
+		if (Toolkit.theme == "dark") {
 			color.r -= 128;
 			color.g -= 128;
 			color.b -= 128;
-			
 		}
 		var boxh = new Box();
 		boxh.width = 180;

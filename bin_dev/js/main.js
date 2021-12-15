@@ -4203,7 +4203,12 @@ var View = function() {
 	statContainer.addComponent(box);
 	this.equipHeroStats = this.CreateActorViewComplete("You",statContainer);
 	this.statEquipmentParent = statContainer;
-	var scroll = this.CreateScrollable(gridBox);
+	var equipRightSide = new haxe_ui_containers_VBox();
+	equipRightSide.set_percentWidth(100);
+	equipRightSide.set_percentHeight(100);
+	this.equipmentSetButtonParent_Equipment = this.SetupEquipmentSetSelector(equipRightSide);
+	gridBox.addComponent(equipRightSide);
+	var scroll = this.CreateScrollable(equipRightSide);
 	scroll.set_height(300);
 	scroll.set_text("Equipment");
 	scroll.addComponent(this.equipTabChild);
@@ -4302,6 +4307,8 @@ View.prototype = {
 	,regionButtonParent: null
 	,levelContainer: null
 	,battleView: null
+	,equipmentSetButtonParent_Battle: null
+	,equipmentSetButtonParent_Equipment: null
 	,buttonDiscardBad: null
 	,buttonBox: null
 	,buttonMap: null
@@ -4317,6 +4324,40 @@ View.prototype = {
 	,overlay: null
 	,Update: function() {
 		this.equipTabChild.set_width(haxe_ui_core_Screen.get_instance().get_width() - 40 - 60 - 200);
+	}
+	,FeedEquipmentSetInfo: function(numberOfSets,chosenSet,parent) {
+		if(parent == null) {
+			return;
+		}
+		var cc = parent._children == null ? [] : parent._children;
+		while(cc.length < numberOfSets) {
+			var button = new haxe_ui_components_Button();
+			button.set_text("Set " + cc.length);
+			parent.addComponent(button);
+			cc = parent._children == null ? [] : parent._children;
+		}
+		var _g = 0;
+		var _g1 = cc.length;
+		while(_g < _g1) {
+			var i = _g++;
+			cc[i].set_hidden(i >= numberOfSets);
+			var b = js_Boot.__cast(cc[i] , haxe_ui_components_Button);
+			b.set_toggle(i == chosenSet);
+		}
+	}
+	,FeedEquipmentSetInfoAll: function(numberOfSets,chosenSet) {
+		this.FeedEquipmentSetInfo(numberOfSets,chosenSet,this.equipmentSetButtonParent_Battle);
+		this.FeedEquipmentSetInfo(numberOfSets,chosenSet,this.equipmentSetButtonParent_Equipment);
+	}
+	,SetupEquipmentSetSelector: function(parent) {
+		var vbox = new haxe_ui_containers_VBox();
+		var title = new haxe_ui_components_Label();
+		title.set_text("Equipment Set");
+		vbox.addComponent(title);
+		var buttonParent = new haxe_ui_containers_HBox();
+		vbox.addComponent(buttonParent);
+		parent.addComponent(vbox);
+		return buttonParent;
 	}
 	,LatestMessageUpdate: function(message,speaker,imageFile,messagePos) {
 		if(speaker == null) {
