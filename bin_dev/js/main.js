@@ -4990,7 +4990,7 @@ View.prototype = {
 	}
 	,GetValueView: function(actorView,pos,bar) {
 		while(actorView.valueViews.length <= pos) {
-			var vv = this.CreateValueView(actorView.parent,bar,"s");
+			var vv = this.CreateValueView(actorView.parent,bar,"s",240,130);
 			actorView.valueViews.push(vv);
 		}
 		return actorView.valueViews[pos];
@@ -5481,7 +5481,7 @@ View.prototype = {
 	}
 	,CreateActorViewComplete: function(name,parent) {
 		var box = new haxe_ui_containers_VBox();
-		box.set_width(180);
+		box.set_width(240);
 		parent.addComponent(box);
 		var header = new haxe_ui_containers_Box();
 		header.set_percentWidth(100);

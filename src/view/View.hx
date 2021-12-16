@@ -259,7 +259,7 @@ class View {
 
 	public function GetValueView(actorView:ActorViewComplete, pos, bar) {
 		while (actorView.valueViews.length <= pos) {
-			var vv = CreateValueView(actorView.parent, bar, "s");
+			var vv = CreateValueView(actorView.parent, bar, "s", 240, 130);
 			actorView.valueViews.push(vv);
 		}
 		return actorView.valueViews[pos];
@@ -1110,7 +1110,7 @@ class View {
 
 	function CreateActorViewComplete(name:String, parent:Component):ActorViewComplete {
 		var box:VBox = new VBox();
-		box.width = 180;
+		box.width = 240;
 		parent.addComponent(box);
 
 		var header = new Box();
