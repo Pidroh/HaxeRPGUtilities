@@ -1226,7 +1226,7 @@ BattleManager.prototype = {
 				this.wdata.necessaryToKillInArea = this.wdata.necessaryToKillInArea * mul | 0;
 			}
 			if(this.enemyAreaFromProcedural != null && this.wdata.battleAreaRegion == 0) {
-				var eAI = this.enemyAreaFromProcedural.GetEnemyAreaInformation(area);
+				var eAI = this.enemyAreaFromProcedural.GetEnemyAreaInformation(area - 1);
 				if(eAI.nEnemies > 0) {
 					this.wdata.necessaryToKillInArea = eAI.nEnemies;
 				}
@@ -1286,7 +1286,7 @@ BattleManager.prototype = {
 			}
 		}
 		if(region == 0 && this.enemyAreaFromProcedural != null && this.enemyAreaFromProcedural.units != null) {
-			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea);
+			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea - 1);
 			sheet = areaInfo.sheet;
 			enemyLevel += areaInfo.level;
 		}
@@ -3128,25 +3128,31 @@ Main.gamemain = function() {
 		view.UpdateValues(view.currencyViews[0],bm.wdata.currency.currencies.h["Lagrima"].value,-1);
 		view.UpdateValues(view.currencyViews[1],bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
 		if(bm.wdata.battleAreaRegion == 0) {
-			var pur = bm.enemyAreaFromProcedural.GetProceduralUnitRepeated(bm.wdata.battleArea);
-			var characteristic = pur.proceduralUnit.characteristics[0];
-			var text = lagrimaAreaLabels[characteristic];
-			switch(pur.proceduralUnit.repeat) {
-			case 1:
-				text += " II";
-				break;
-			case 2:
-				text += " III";
-				break;
-			case 3:
-				text += " IV";
-				break;
-			case 4:
-				text += " V";
-				break;
+			if(bm.wdata.battleArea > 0) {
+				var pur = bm.enemyAreaFromProcedural.GetProceduralUnitRepeated(bm.wdata.battleArea - 1);
+				var characteristic = pur.proceduralUnit.characteristics[0];
+				var text = lagrimaAreaLabels[characteristic];
+				switch(pur.proceduralUnit.repeat) {
+				case 1:
+					text += " II";
+					break;
+				case 2:
+					text += " III";
+					break;
+				case 3:
+					text += " IV";
+					break;
+				case 4:
+					text += " V";
+					break;
+				}
+				text += " - " + (pur.position + 1);
+				view.UpdateValues(view.areaLabel,1,1,null,false,text);
+			} else if(bm.wdata.battleAreaRegion == 0) {
+				view.UpdateValues(view.areaLabel,1,1,null,false,"Home");
+			} else {
+				view.UpdateValues(view.areaLabel,1,1,null,false,"Entrance");
 			}
-			text += " - " + (pur.position + 1);
-			view.UpdateValues(view.areaLabel,1,1,null,false,text);
 		} else {
 			view.UpdateValues(view.areaLabel,bm.wdata.battleArea + 1,-1);
 		}
@@ -3481,7 +3487,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 835, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 846, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3493,7 +3499,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 852, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 863, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3512,8 +3518,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 880, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 881, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 891, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 892, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -3754,11 +3760,11 @@ PrototypeSkillMaker.prototype = {
 			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15,100,"fire");
 		}}], turnRecharge : 1, mpCost : 10});
 		this.skills.push({ id : "Gelo", profession : "Wizard", word : "Ice", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
-			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"ice");
+			bm.AttackExecute(actor,array[0],105 + level * 30,level * 15,100,"ice");
 		}}], turnRecharge : 1, mpCost : 12});
-		this.skills.push({ id : "Raio", profession : "Wizard", word : "Bolt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
-			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"thunder");
-		}}], turnRecharge : 1, mpCost : 12});
+		this.skills.push({ id : "Raio", profession : "Wizard", word : "Thunder", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			bm.AttackExecute(actor,array[0],100 + level * 25,level * 13,100,"thunder");
+		}}], turnRecharge : 1, mpCost : 9});
 		this.skills.push({ id : "DeSpell", profession : "Unbuffer", word : "Witchhunt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 30;
 			bm.RemoveBuffs(array[0]);

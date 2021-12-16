@@ -181,7 +181,7 @@ class BattleManager {
 		}
 		if(element != null){
 			magicAttack = true;
-			
+
 		}
 		if (attacker.attributesCalculated["Blood"] > 0) {
 			var blood = attacker.attributesCalculated["Blood"];
@@ -555,7 +555,7 @@ class BattleManager {
 				wdata.necessaryToKillInArea = Std.int(wdata.necessaryToKillInArea * mul);
 			}
 			if (enemyAreaFromProcedural != null && wdata.battleAreaRegion == 0) {
-				var eAI = enemyAreaFromProcedural.GetEnemyAreaInformation(area);
+				var eAI = enemyAreaFromProcedural.GetEnemyAreaInformation(area-1);
 				if (eAI.nEnemies > 0) {
 					wdata.necessaryToKillInArea = eAI.nEnemies;
 				}
@@ -621,7 +621,7 @@ class BattleManager {
 		}
 
 		if (region == 0 && enemyAreaFromProcedural != null && enemyAreaFromProcedural.units != null) {
-			var areaInfo = enemyAreaFromProcedural.GetEnemyAreaInformation(wdata.battleArea);
+			var areaInfo = enemyAreaFromProcedural.GetEnemyAreaInformation(wdata.battleArea-1);
 			sheet = areaInfo.sheet;
 			enemyLevel += areaInfo.level;
 		}

@@ -8,8 +8,6 @@ class PrototypeSkillMaker {
 	public function AddSkill(id:String, mpCost:Int) {}
 
 	public function init() {
-		// AddSkill("Regen", 25);
-
 		skills.push({
 			id: "Regen",
 			profession: "Priest",
@@ -57,7 +55,6 @@ class PrototypeSkillMaker {
 			id: "Light Slash",
 			profession: "Warrior",
 			word: "Red",
-			//effects: null,
 			effects: [
 				{
 					target: ENEMY,
@@ -125,7 +122,7 @@ class PrototypeSkillMaker {
 				{
 					target: ENEMY,
 					effectExecution: (bm, level, actor, array) -> {
-						bm.AttackExecute(actor, array[0], 100+level*30, level*15+4, 100, "ice");
+						bm.AttackExecute(actor, array[0], 105+level*30, level*15, 100, "ice");
 					}
 				}
 			],
@@ -135,17 +132,17 @@ class PrototypeSkillMaker {
 		skills.push({
 			id: "Raio",
 			profession: "Wizard",
-			word: "Bolt",
+			word: "Thunder",
 			effects: [
 				{
 					target: ENEMY,
 					effectExecution: (bm, level, actor, array) -> {
-						bm.AttackExecute(actor, array[0], 100+level*30, level*15+4, 100, "thunder");
+						bm.AttackExecute(actor, array[0], 100+level*25, level*13, 100, "thunder");
 					}
 				}
 			],
 			turnRecharge: 1,
-			mpCost: 12
+			mpCost: 9
 		});
 		skills.push({
 			id: "DeSpell",

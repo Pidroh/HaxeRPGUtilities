@@ -1126,7 +1126,7 @@ BattleManager.prototype = {
 				this.wdata.necessaryToKillInArea = this.wdata.necessaryToKillInArea * mul | 0;
 			}
 			if(this.enemyAreaFromProcedural != null && this.wdata.battleAreaRegion == 0) {
-				var eAI = this.enemyAreaFromProcedural.GetEnemyAreaInformation(area);
+				var eAI = this.enemyAreaFromProcedural.GetEnemyAreaInformation(area - 1);
 				if(eAI.nEnemies > 0) {
 					this.wdata.necessaryToKillInArea = eAI.nEnemies;
 				}
@@ -1186,7 +1186,7 @@ BattleManager.prototype = {
 			}
 		}
 		if(region == 0 && this.enemyAreaFromProcedural != null && this.enemyAreaFromProcedural.units != null) {
-			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea);
+			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea - 1);
 			sheet = areaInfo.sheet;
 			enemyLevel += areaInfo.level;
 		}
@@ -3029,11 +3029,11 @@ PrototypeSkillMaker.prototype = {
 			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15,100,"fire");
 		}}], turnRecharge : 1, mpCost : 10});
 		this.skills.push({ id : "Gelo", profession : "Wizard", word : "Ice", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
-			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"ice");
+			bm.AttackExecute(actor,array[0],105 + level * 30,level * 15,100,"ice");
 		}}], turnRecharge : 1, mpCost : 12});
-		this.skills.push({ id : "Raio", profession : "Wizard", word : "Bolt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
-			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"thunder");
-		}}], turnRecharge : 1, mpCost : 12});
+		this.skills.push({ id : "Raio", profession : "Wizard", word : "Thunder", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			bm.AttackExecute(actor,array[0],100 + level * 25,level * 13,100,"thunder");
+		}}], turnRecharge : 1, mpCost : 9});
 		this.skills.push({ id : "DeSpell", profession : "Unbuffer", word : "Witchhunt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 30;
 			bm.RemoveBuffs(array[0]);

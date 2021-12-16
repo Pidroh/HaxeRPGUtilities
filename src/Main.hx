@@ -451,27 +451,38 @@ class Main {
 			// view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
 
 			if (bm.wdata.battleAreaRegion == 0) {
-				var pur = bm.enemyAreaFromProcedural.GetProceduralUnitRepeated(bm.wdata.battleArea);
-				var characteristic = pur.proceduralUnit.characteristics[0];
-				var text = lagrimaAreaLabels[characteristic];
-				
-				switch pur.proceduralUnit.repeat {
-					case 1: {
-						text += " II";
-					}
-					case 2: {
-						text += " III";
-					}
-					case 3: {
-						text += " IV";
-					}
-					case 4: {
-						text += " V";
-					}
-				}
+				if (bm.wdata.battleArea > 0) {
+					var pur = bm.enemyAreaFromProcedural.GetProceduralUnitRepeated(bm.wdata.battleArea - 1);
+					var characteristic = pur.proceduralUnit.characteristics[0];
+					var text = lagrimaAreaLabels[characteristic];
 
-				text += " - "+(pur.position+1);
-				view.UpdateValues(view.areaLabel, 1, 1, null, false, text);
+					switch pur.proceduralUnit.repeat {
+						case 1:
+							{
+								text += " II";
+							}
+						case 2:
+							{
+								text += " III";
+							}
+						case 3:
+							{
+								text += " IV";
+							}
+						case 4:
+							{
+								text += " V";
+							}
+					}
+
+					text += " - " + (pur.position + 1);
+					view.UpdateValues(view.areaLabel, 1, 1, null, false, text);
+				} else{
+					if(bm.wdata.battleAreaRegion == 0)
+						view.UpdateValues(view.areaLabel, 1, 1, null, false, "Home");
+					else
+						view.UpdateValues(view.areaLabel, 1, 1, null, false, "Entrance");
+				}
 				// view.UpdateValues
 			} else {
 				view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
