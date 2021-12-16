@@ -3095,7 +3095,7 @@ Main.gamemain = function() {
 			view.positionOverlay(view.heroView.parent);
 		}
 	});
-	var lagrimaAreaEnemies = ["Goblin","Dog","Giant","Turtle"];
+	var enemyLabels = [["Goblin","Dog","Giant","Turtle"],["Wolf"],["Tonberry"],["Adamanstoise"],["Cactuar"],["Reaper"],["Witchhunter"],["Buff Witch"],["Witchkiller"]];
 	var lagrimaAreaPrefix = [null,null,null,null,null,"Fire","Ice","Thunder"];
 	view.addHover(view.enemyView.parent,function(b,comp) {
 		view.overlay.set_hidden(!b);
@@ -3114,7 +3114,7 @@ Main.gamemain = function() {
 			if(enemyName && bm.wdata.battleAreaRegion == 0) {
 				var eafp = bm.enemyAreaFromProcedural;
 				var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
-				actorView.name.set_text(lagrimaAreaEnemies[eai.sheetId]);
+				actorView.name.set_text(enemyLabels[0][eai.sheetId]);
 				if(lagrimaAreaPrefix[eai.equipId] != null) {
 					actorView.name.set_text(lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.get_text());
 				}
@@ -3128,10 +3128,11 @@ Main.gamemain = function() {
 					}
 				}
 			} else {
-				var name = actorView.defaultName;
-				if(name != actorView.name.get_text()) {
-					actorView.name.set_text(name);
-				}
+				actorView.name.set_text(enemyLabels[bm.wdata.battleAreaRegion][0]);
+				var fh = actorView.name;
+				var ActorToView = fh.get_text();
+				var code = 65 + bm.wdata.battleArea - 1;
+				fh.set_text(ActorToView + (" " + String.fromCodePoint(code)));
 			}
 			var buffText = "";
 			var _g = 0;
@@ -3568,7 +3569,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 876, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 890, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3580,7 +3581,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 893, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 907, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3599,8 +3600,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 921, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 922, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 935, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 936, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {

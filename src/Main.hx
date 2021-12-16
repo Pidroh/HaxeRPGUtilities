@@ -350,7 +350,18 @@ class Main {
 			}
 		});
 
-		var lagrimaAreaEnemies = ["Goblin", "Dog", "Giant", "Turtle"];
+		// var lagrimaAreaEnemies = ["Goblin", "Dog", "Giant", "Turtle"];
+		var enemyLabels = [
+			["Goblin", "Dog", "Giant", "Turtle"],
+			["Wolf"],
+			["Tonberry"],
+			["Adamanstoise"],
+			["Cactuar"],
+			["Reaper"],
+			["Witchhunter"],
+			["Buff Witch"],
+			["Witchkiller"],
+		];
 		var lagrimaAreaPrefix = [null, null, null, null, null, "Fire", "Ice", "Thunder"];
 
 		view.addHover(view.enemyView.parent, (b, comp) -> {
@@ -368,7 +379,7 @@ class Main {
 				if (enemyName && bm.wdata.battleAreaRegion == 0) {
 					var eafp = bm.enemyAreaFromProcedural;
 					var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
-					actorView.name.text = lagrimaAreaEnemies[eai.sheetId];
+					actorView.name.text = enemyLabels[0][eai.sheetId];
 					if (lagrimaAreaPrefix[eai.equipId] != null) {
 						actorView.name.text = lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.text;
 					}
@@ -382,10 +393,13 @@ class Main {
 						}
 					}
 				} else {
-					var name = actorView.defaultName;
-					if (name != actorView.name.text) {
-						actorView.name.text = name;
-					}
+					actorView.name.text = enemyLabels[bm.wdata.battleAreaRegion][0];
+					actorView.name.text += " " + String.fromCharCode('A'.code + bm.wdata.battleArea - 1);
+
+					/*var name = actorView.defaultName;
+						if (name != actorView.name.text) {
+							actorView.name.text = name;
+					}*/
 				}
 				var buffText = "";
 				for (b in actor.buffs) {
