@@ -3754,10 +3754,10 @@ PrototypeSkillMaker.prototype = {
 			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15,100,"fire");
 		}}], turnRecharge : 1, mpCost : 10});
 		this.skills.push({ id : "Gelo", profession : "Wizard", word : "Ice", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
-			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"fire");
+			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"ice");
 		}}], turnRecharge : 1, mpCost : 12});
-		this.skills.push({ id : "Raio", profession : "Wizard", word : "Ice", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
-			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"fire");
+		this.skills.push({ id : "Raio", profession : "Wizard", word : "Bolt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"thunder");
 		}}], turnRecharge : 1, mpCost : 12});
 		this.skills.push({ id : "DeSpell", profession : "Unbuffer", word : "Witchhunt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 30;

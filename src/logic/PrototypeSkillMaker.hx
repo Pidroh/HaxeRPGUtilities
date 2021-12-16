@@ -125,7 +125,7 @@ class PrototypeSkillMaker {
 				{
 					target: ENEMY,
 					effectExecution: (bm, level, actor, array) -> {
-						bm.AttackExecute(actor, array[0], 100+level*30, level*15+4, 100, "fire");
+						bm.AttackExecute(actor, array[0], 100+level*30, level*15+4, 100, "ice");
 					}
 				}
 			],
@@ -135,12 +135,12 @@ class PrototypeSkillMaker {
 		skills.push({
 			id: "Raio",
 			profession: "Wizard",
-			word: "Ice",
+			word: "Bolt",
 			effects: [
 				{
 					target: ENEMY,
 					effectExecution: (bm, level, actor, array) -> {
-						bm.AttackExecute(actor, array[0], 100+level*30, level*15+4, 100, "fire");
+						bm.AttackExecute(actor, array[0], 100+level*30, level*15+4, 100, "thunder");
 					}
 				}
 			],
