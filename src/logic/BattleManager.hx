@@ -181,6 +181,11 @@ class BattleManager {
 		}
 		if (element != null) {
 			magicAttack = true;
+			var elementDmg = element + "-damage";
+			if (defender.attributesCalculated.exists(elementDmg)) {
+				var baseDmg = 100+ defender.attributesCalculated[elementDmg];
+				attackRate = Std.int(attackRate*baseDmg / 100);
+			}
 		}
 		if (attacker.attributesCalculated["Blood"] > 0) {
 			var blood = attacker.attributesCalculated["Blood"];
