@@ -1,4 +1,5 @@
 // package logic;
+import BasicProcedural.ProceduralUnit;
 import BasicProcedural.Generation;
 import seedyrng.Random;
 import RPGData.Balancing;
@@ -872,7 +873,22 @@ class BattleManager {
 			attributes: ["ice-damage" => 250, "thunder-damage" => 30]
 		});
 
-		var pus = Generation.Generate("w1", 8, 1, 3);
+		var pus : Array<ProceduralUnit> = [];
+		{
+			var pu = new ProceduralUnit();
+			pu.characteristics.push(0);
+			pu.characteristics.push(0);
+			pu.repeat = 0;
+			pus.push(pu);
+		}
+		{
+			var pu = new ProceduralUnit();
+			pu.characteristics.push(1);
+			pu.characteristics.push(0);
+			pu.repeat = 0;
+			pus.push(pu);
+		}
+		pus = Generation.Generate("w1", 8, 1, 3, pus, [0, 1]);
 		var purs = Generation.GenerateRepetitions("w1", pus, {min: 3, max: 6});
 		enemyAreaFromProcedural.units = purs;
 

@@ -316,9 +316,11 @@ Generation.GenerateRepetitions = function(seed,procUnits,range) {
 	}
 	return purs;
 };
-Generation.Generate = function(seed,maxChar1,maxChar2,repetition) {
+Generation.Generate = function(seed,maxChar1,maxChar2,repetition,response,skipCharacteristicsFirstRound) {
 	Generation.random.setStringSeed(seed);
-	var response = [];
+	if(response == null) {
+		var response1 = [];
+	}
 	var responseAux = [];
 	var _g = 0;
 	var _g1 = repetition;
@@ -328,6 +330,9 @@ Generation.Generate = function(seed,maxChar1,maxChar2,repetition) {
 		var _g3 = maxChar1;
 		while(_g2 < _g3) {
 			var c1 = _g2++;
+			if(skipCharacteristicsFirstRound != null && repetition == 0 && skipCharacteristicsFirstRound.indexOf(c1) != -1) {
+				continue;
+			}
 			var _g4 = 0;
 			var _g5 = maxChar2;
 			while(_g4 < _g5) {
@@ -542,7 +547,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 814, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 815, className : "BattleManager", methodName : "new"});
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -593,7 +598,18 @@ var BattleManager = function() {
 	_g.h["ice-damage"] = 250;
 	_g.h["thunder-damage"] = 30;
 	tmp.push({ type : 0, seen : 2, requiredAttributes : null, attributes : _g});
-	var pus = Generation.Generate("w1",8,1,3);
+	var pus = [];
+	var pu = new ProceduralUnit();
+	pu.characteristics.push(0);
+	pu.characteristics.push(0);
+	pu.repeat = 0;
+	pus.push(pu);
+	var pu = new ProceduralUnit();
+	pu.characteristics.push(1);
+	pu.characteristics.push(0);
+	pu.repeat = 0;
+	pus.push(pu);
+	pus = Generation.Generate("w1",8,1,3,pus,[0,1]);
 	var purs = Generation.GenerateRepetitions("w1",pus,{ min : 3, max : 6});
 	this.enemyAreaFromProcedural.units = purs;
 	var _g = new haxe_ds_StringMap();
@@ -2275,7 +2291,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1876, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1892, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2292,7 +2308,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1893, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1909, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

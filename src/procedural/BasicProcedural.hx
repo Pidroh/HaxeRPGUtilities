@@ -9,7 +9,7 @@ class Generation {
 
 	public function new(seed:String) {}
 
-	public static function GenerateRepetitions(seed:String, procUnits : Array<ProceduralUnit>, range : Range) : Array<ProceduralUnitRepeated> {
+	public static function GenerateRepetitions(seed:String, procUnits:Array<ProceduralUnit>, range:Range):Array<ProceduralUnitRepeated> {
 		var purs = new Array<ProceduralUnitRepeated>();
 		random.setStringSeed(seed);
 		for (index => value in procUnits) {
@@ -29,12 +29,17 @@ class Generation {
 	}
 
 	// all possibilities: maxChar1 x maxChar2 x repetition
-	public static function Generate(seed:String, maxChar1:Int, maxChar2:Int, repetition:Int):Array<ProceduralUnit> {
+	public static function Generate(seed:String, maxChar1:Int, maxChar2:Int, repetition:Int, response:Array<ProceduralUnit> = null,
+			skipCharacteristicsFirstRound:Array<Int> = null):Array<ProceduralUnit> {
 		random.setStringSeed(seed);
-		var response = new Array<ProceduralUnit>();
+		if (response == null)
+			var response = new Array<ProceduralUnit>();
 		var responseAux = new Array<ProceduralUnit>();
 		for (rep in 0...repetition) {
 			for (c1 in 0...maxChar1) {
+				if (skipCharacteristicsFirstRound != null && repetition == 0 && skipCharacteristicsFirstRound.contains(c1)) {
+					continue;
+				}
 				for (c2 in 0...maxChar2) {
 					var pu = new ProceduralUnit();
 					pu.characteristics[0] = c1;
@@ -60,13 +65,13 @@ class ProceduralUnit {
 	// which repetition is this one in the full list
 	public var repeat = 0;
 
-	public function new(){}
+	public function new() {}
 }
 
 @:stackOnly
 class ProceduralUnitRepeated {
 	// the procedural unit to be repeated
-	public var proceduralUnit : ProceduralUnit;
+	public var proceduralUnit:ProceduralUnit;
 	// the position in the total amount repeated
 	public var position = 0;
 	// the total amount repeated
@@ -74,5 +79,5 @@ class ProceduralUnitRepeated {
 	// random numbers to use in data processing
 	public var randomExtra = new Array<Int>();
 
-	public function new(){}
+	public function new() {}
 }
