@@ -171,13 +171,17 @@ class BattleManager {
 		AddEvent(BuffRemoval).origin = defender.reference;
 	}
 
-	public function AttackExecute(attacker:Actor, defender:Actor, attackRate = 100, attackBonus = 0, defenseRate = 100) {
+	public function AttackExecute(attacker:Actor, defender:Actor, attackRate = 100, attackBonus = 0, defenseRate = 100, element:String = null) {
 		var gEvent = AddEvent(ActorAttack);
 		var magicAttack = false;
 		var enchant = attacker.attributesCalculated["enchant-fire"];
 		if (enchant > 0) {
 			magicAttack = true;
 			attackBonus += enchant;
+		}
+		if(element != null){
+			magicAttack = true;
+			
 		}
 		if (attacker.attributesCalculated["Blood"] > 0) {
 			var blood = attacker.attributesCalculated["Blood"];
@@ -550,9 +554,9 @@ class BattleManager {
 				var mul = fRand.random() * 1.5 + 0.5;
 				wdata.necessaryToKillInArea = Std.int(wdata.necessaryToKillInArea * mul);
 			}
-			if(enemyAreaFromProcedural != null && wdata.battleAreaRegion == 0){
+			if (enemyAreaFromProcedural != null && wdata.battleAreaRegion == 0) {
 				var eAI = enemyAreaFromProcedural.GetEnemyAreaInformation(area);
-				if(eAI.nEnemies > 0){
+				if (eAI.nEnemies > 0) {
 					wdata.necessaryToKillInArea = eAI.nEnemies;
 				}
 			}

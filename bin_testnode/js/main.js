@@ -464,7 +464,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:792:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:796:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	var tmp = this.enemyAreaFromProcedural.enemySheets;
@@ -716,7 +716,7 @@ BattleManager.prototype = {
 		this.RecalculateAttributes(defender);
 		this.AddEvent(EventTypes.BuffRemoval).origin = defender.reference;
 	}
-	,AttackExecute: function(attacker,defender,attackRate,attackBonus,defenseRate) {
+	,AttackExecute: function(attacker,defender,attackRate,attackBonus,defenseRate,element) {
 		if(defenseRate == null) {
 			defenseRate = 100;
 		}
@@ -732,6 +732,9 @@ BattleManager.prototype = {
 		if(enchant > 0) {
 			magicAttack = true;
 			attackBonus += enchant;
+		}
+		if(element != null) {
+			magicAttack = true;
 		}
 		if(attacker.attributesCalculated.h["Blood"] > 0) {
 			var blood = attacker.attributesCalculated.h["Blood"];
@@ -2130,7 +2133,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1820:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1824:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2147,7 +2150,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1837:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1841:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3022,6 +3025,15 @@ PrototypeSkillMaker.prototype = {
 		this.skills.push({ id : "Heavy Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15,100);
 		}}], turnRecharge : 1, mpCost : 40});
+		this.skills.push({ id : "Fogo", profession : "Wizard", word : "Fire", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15,100,"fire");
+		}}], turnRecharge : 1, mpCost : 10});
+		this.skills.push({ id : "Gelo", profession : "Wizard", word : "Ice", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"fire");
+		}}], turnRecharge : 1, mpCost : 12});
+		this.skills.push({ id : "Raio", profession : "Wizard", word : "Ice", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"fire");
+		}}], turnRecharge : 1, mpCost : 12});
 		this.skills.push({ id : "DeSpell", profession : "Unbuffer", word : "Witchhunt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 30;
 			bm.RemoveBuffs(array[0]);

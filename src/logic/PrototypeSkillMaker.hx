@@ -103,6 +103,51 @@ class PrototypeSkillMaker {
 			mpCost: 40
 		});
 		skills.push({
+			id: "Fogo",
+			profession: "Wizard",
+			word: "Fire",
+			effects: [
+				{
+					target: ENEMY,
+					effectExecution: (bm, level, actor, array) -> {
+						bm.AttackExecute(actor, array[0], 100+level*30, level*15, 100, "fire");
+					}
+				}
+			],
+			turnRecharge: 1,
+			mpCost: 10
+		});
+		skills.push({
+			id: "Gelo",
+			profession: "Wizard",
+			word: "Ice",
+			effects: [
+				{
+					target: ENEMY,
+					effectExecution: (bm, level, actor, array) -> {
+						bm.AttackExecute(actor, array[0], 100+level*30, level*15+4, 100, "fire");
+					}
+				}
+			],
+			turnRecharge: 1,
+			mpCost: 12
+		});
+		skills.push({
+			id: "Raio",
+			profession: "Wizard",
+			word: "Ice",
+			effects: [
+				{
+					target: ENEMY,
+					effectExecution: (bm, level, actor, array) -> {
+						bm.AttackExecute(actor, array[0], 100+level*30, level*15+4, 100, "fire");
+					}
+				}
+			],
+			turnRecharge: 1,
+			mpCost: 12
+		});
+		skills.push({
 			id: "DeSpell",
 			profession: "Unbuffer",
 			word: "Witchhunt",

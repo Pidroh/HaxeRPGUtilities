@@ -537,7 +537,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 792, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 796, className : "BattleManager", methodName : "new"});
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	var tmp = this.enemyAreaFromProcedural.enemySheets;
@@ -816,7 +816,7 @@ BattleManager.prototype = {
 		this.RecalculateAttributes(defender);
 		this.AddEvent(EventTypes.BuffRemoval).origin = defender.reference;
 	}
-	,AttackExecute: function(attacker,defender,attackRate,attackBonus,defenseRate) {
+	,AttackExecute: function(attacker,defender,attackRate,attackBonus,defenseRate,element) {
 		if(defenseRate == null) {
 			defenseRate = 100;
 		}
@@ -832,6 +832,9 @@ BattleManager.prototype = {
 		if(enchant > 0) {
 			magicAttack = true;
 			attackBonus += enchant;
+		}
+		if(element != null) {
+			magicAttack = true;
 		}
 		if(attacker.attributesCalculated.h["Blood"] > 0) {
 			var blood = attacker.attributesCalculated.h["Blood"];
@@ -2230,7 +2233,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1820, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1824, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2247,7 +2250,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1837, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1841, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3747,6 +3750,15 @@ PrototypeSkillMaker.prototype = {
 		this.skills.push({ id : "Heavy Slash", profession : "Warrior", word : "Red", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15,100);
 		}}], turnRecharge : 1, mpCost : 40});
+		this.skills.push({ id : "Fogo", profession : "Wizard", word : "Fire", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15,100,"fire");
+		}}], turnRecharge : 1, mpCost : 10});
+		this.skills.push({ id : "Gelo", profession : "Wizard", word : "Ice", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"fire");
+		}}], turnRecharge : 1, mpCost : 12});
+		this.skills.push({ id : "Raio", profession : "Wizard", word : "Ice", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
+			bm.AttackExecute(actor,array[0],100 + level * 30,level * 15 + 4,100,"fire");
+		}}], turnRecharge : 1, mpCost : 12});
 		this.skills.push({ id : "DeSpell", profession : "Unbuffer", word : "Witchhunt", effects : [{ target : Target.ENEMY, effectExecution : function(bm,level,actor,array) {
 			var strength = level * 30;
 			bm.RemoveBuffs(array[0]);
