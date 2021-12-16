@@ -351,6 +351,7 @@ class Main {
 		});
 
 		var lagrimaAreaEnemies = ["Goblin", "Dog", "Giant", "Turtle"];
+		var lagrimaAreaPrefix = [null, null, null, null, null, "Fire", "Ice", "Thunder"];
 
 		view.addHover(view.enemyView.parent, (b, comp) -> {
 			view.overlay.hidden = !b;
@@ -368,6 +369,9 @@ class Main {
 					var eafp = bm.enemyAreaFromProcedural;
 					var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
 					actorView.name.text = lagrimaAreaEnemies[eai.sheetId];
+					if(lagrimaAreaPrefix[eai.equipId] != null){
+						actorView.name.text = lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.text;
+					}
 				} else {
 					var name = actorView.defaultName;
 					if (name != actorView.name.text) {
