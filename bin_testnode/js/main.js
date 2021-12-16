@@ -252,6 +252,9 @@ Generation.GenerateRepetitions = function(seed,procUnits,range) {
 			pur.position = i;
 			pur.total = repetitions;
 			pur.proceduralUnit = value;
+			pur.randomExtra.push(Generation.random.randomInt(0,1000));
+			pur.randomExtra.push(Generation.random.randomInt(0,1000));
+			pur.randomExtra.push(Generation.random.randomInt(0,1000));
 			purs.push(pur);
 		}
 	}
@@ -297,6 +300,7 @@ var ProceduralUnit = function() {
 };
 ProceduralUnit.__name__ = true;
 var ProceduralUnitRepeated = function() {
+	this.randomExtra = [];
 	this.total = 0;
 	this.position = 0;
 };
@@ -464,9 +468,10 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:796:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:795:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
+	this.enemyAreaFromProcedural.equipments.push(null);
 	var tmp = this.enemyAreaFromProcedural.enemySheets;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 0.55;
@@ -475,6 +480,7 @@ var BattleManager = function() {
 	var _g1 = new haxe_ds_StringMap();
 	_g1.h["Speed"] = 1;
 	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
+	this.enemyAreaFromProcedural.equipments.push(null);
 	var tmp = this.enemyAreaFromProcedural.enemySheets;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 3;
@@ -484,6 +490,7 @@ var BattleManager = function() {
 	_g1.h["Speed"] = 0.05;
 	_g1.h["Defense"] = 0.2;
 	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
+	this.enemyAreaFromProcedural.equipments.push(null);
 	var tmp = this.enemyAreaFromProcedural.enemySheets;
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1.4;
@@ -495,6 +502,23 @@ var BattleManager = function() {
 	_g2.h["Defense"] = 0.6;
 	_g2.h["Speed"] = 0.05;
 	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
+	this.enemyAreaFromProcedural.equipments.push(null);
+	this.enemyAreaFromProcedural.equipments.push(null);
+	var tmp = this.enemyAreaFromProcedural.equipments;
+	var _g = new haxe_ds_StringMap();
+	_g.h["thunder-damage"] = 250;
+	_g.h["fire-damage"] = 30;
+	tmp.push({ type : 0, seen : 2, requiredAttributes : null, attributes : _g});
+	var tmp = this.enemyAreaFromProcedural.equipments;
+	var _g = new haxe_ds_StringMap();
+	_g.h["fire-damage"] = 250;
+	_g.h["ice-damage"] = 30;
+	tmp.push({ type : 0, seen : 2, requiredAttributes : null, attributes : _g});
+	var tmp = this.enemyAreaFromProcedural.equipments;
+	var _g = new haxe_ds_StringMap();
+	_g.h["ice-damage"] = 250;
+	_g.h["thunder-damage"] = 30;
+	tmp.push({ type : 0, seen : 2, requiredAttributes : null, attributes : _g});
 	var pus = Generation.Generate("w1",4,1,3);
 	var purs = Generation.GenerateRepetitions("w1",pus,{ min : 3, max : 6});
 	this.enemyAreaFromProcedural.units = purs;
@@ -2133,7 +2157,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1824:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1854:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2150,7 +2174,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1841:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1871:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2877,6 +2901,7 @@ var EnemyAreaInformation = function() {
 EnemyAreaInformation.__name__ = true;
 var EnemyAreaFromProceduralUnitRepetition = function() {
 	this.aux = new EnemyAreaInformation();
+	this.equipments = [];
 	this.enemySheets = [];
 };
 EnemyAreaFromProceduralUnitRepetition.__name__ = true;
@@ -2892,6 +2917,9 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		var u = this.units[area];
 		var char = u.proceduralUnit.characteristics[0];
 		var es = this.enemySheets[char];
+		if(es == null) {
+			es = this.enemySheets[u.randomExtra[0] % this.enemySheets.length];
+		}
 		var nEnemies = -1;
 		var levelBonus = 0;
 		if(u.position == u.total - 1) {

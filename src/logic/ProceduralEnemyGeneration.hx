@@ -1,6 +1,7 @@
-import js.html.rtc.IceCandidate;
 import RPGData.ActorSheet;
+import RPGData.Equipment;
 import BasicProcedural.ProceduralUnitRepeated;
+
 
 class EnemyAreaInformation{
     public var sheet : ActorSheet;
@@ -12,6 +13,7 @@ class EnemyAreaInformation{
 class EnemyAreaFromProceduralUnitRepetition{
     public var units : Array<ProceduralUnitRepeated>;
     public var enemySheets = new Array<ActorSheet>();
+    public var equipments = new Array<Equipment>();
 
     public var aux : EnemyAreaInformation = new EnemyAreaInformation();
     public function GetProceduralUnitRepeated(area:Int) : ProceduralUnitRepeated{
@@ -33,6 +35,11 @@ class EnemyAreaFromProceduralUnitRepetition{
         var u = units[area];
         var char = u.proceduralUnit.characteristics[0];
         var es = enemySheets[char];
+
+        // if enemy sheet is null, will choose a random enemy sheet
+        if(es == null){
+            es = enemySheets[u.randomExtra[0] % enemySheets.length];
+        }
         var nEnemies = -1;
         var levelBonus = 0;
         if(u.position == u.total-1){
@@ -47,7 +54,6 @@ class EnemyAreaFromProceduralUnitRepetition{
         aux.nEnemies = nEnemies;
         aux.level = levelBonus;
         return aux;
-
     }
 
     public function new(){}

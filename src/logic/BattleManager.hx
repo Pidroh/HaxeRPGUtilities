@@ -179,9 +179,8 @@ class BattleManager {
 			magicAttack = true;
 			attackBonus += enchant;
 		}
-		if(element != null){
+		if (element != null) {
 			magicAttack = true;
-
 		}
 		if (attacker.attributesCalculated["Blood"] > 0) {
 			var blood = attacker.attributesCalculated["Blood"];
@@ -555,7 +554,7 @@ class BattleManager {
 				wdata.necessaryToKillInArea = Std.int(wdata.necessaryToKillInArea * mul);
 			}
 			if (enemyAreaFromProcedural != null && wdata.battleAreaRegion == 0) {
-				var eAI = enemyAreaFromProcedural.GetEnemyAreaInformation(area-1);
+				var eAI = enemyAreaFromProcedural.GetEnemyAreaInformation(area - 1);
 				if (eAI.nEnemies > 0) {
 					wdata.necessaryToKillInArea = eAI.nEnemies;
 				}
@@ -621,7 +620,7 @@ class BattleManager {
 		}
 
 		if (region == 0 && enemyAreaFromProcedural != null && enemyAreaFromProcedural.units != null) {
-			var areaInfo = enemyAreaFromProcedural.GetEnemyAreaInformation(wdata.battleArea-1);
+			var areaInfo = enemyAreaFromProcedural.GetEnemyAreaInformation(wdata.battleArea - 1);
 			sheet = areaInfo.sheet;
 			enemyLevel += areaInfo.level;
 		}
@@ -798,6 +797,7 @@ class BattleManager {
 
 		// Goblin
 		enemyAreaFromProcedural.enemySheets.push({speciesMultiplier: null, speciesLevelStats: null, speciesAdd: null});
+		enemyAreaFromProcedural.equipments.push(null);
 		// Dog
 		enemyAreaFromProcedural.enemySheets.push({
 			speciesMultiplier: {
@@ -806,6 +806,7 @@ class BattleManager {
 			speciesAdd: null,
 			speciesLevelStats: {attributesBase: ["Speed" => 1]}
 		});
+		enemyAreaFromProcedural.equipments.push(null);
 		// Giant
 		enemyAreaFromProcedural.enemySheets.push({
 			speciesMultiplier: {
@@ -814,6 +815,7 @@ class BattleManager {
 			speciesAdd: null,
 			speciesLevelStats: {attributesBase: ["Speed" => 0.05, "Defense" => 0.2]}
 		});
+		enemyAreaFromProcedural.equipments.push(null);
 		// Turtle
 		enemyAreaFromProcedural.enemySheets.push({
 			speciesMultiplier: {
@@ -821,6 +823,34 @@ class BattleManager {
 			},
 			speciesAdd: ["Defense" => 0],
 			speciesLevelStats: {attributesBase: ["Defense" => 0.6, "Speed" => 0.05]}
+		});
+		enemyAreaFromProcedural.equipments.push(null);
+
+		// all enemies in combination
+		enemyAreaFromProcedural.equipments.push(null);
+
+		// fire area
+		enemyAreaFromProcedural.equipments.push({
+			type: 0,
+			seen: 2,
+			requiredAttributes: null,
+			attributes: ["thunder-damage" => 250, "fire-damage" => 30]
+		});
+
+		// ice area
+		enemyAreaFromProcedural.equipments.push({
+			type: 0,
+			seen: 2,
+			requiredAttributes: null,
+			attributes: ["fire-damage" => 250, "ice-damage" => 30]
+		});
+
+		// thunder area
+		enemyAreaFromProcedural.equipments.push({
+			type: 0,
+			seen: 2,
+			requiredAttributes: null,
+			attributes: ["ice-damage" => 250, "thunder-damage" => 30]
 		});
 
 		var pus = Generation.Generate("w1", 4, 1, 3);

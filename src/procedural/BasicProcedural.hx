@@ -19,6 +19,9 @@ class Generation {
 				pur.position = i;
 				pur.total = repetitions;
 				pur.proceduralUnit = value;
+				pur.randomExtra.push(random.randomInt(0, 1000));
+				pur.randomExtra.push(random.randomInt(0, 1000));
+				pur.randomExtra.push(random.randomInt(0, 1000));
 				purs.push(pur);
 			}
 		}
@@ -68,6 +71,8 @@ class ProceduralUnitRepeated {
 	public var position = 0;
 	// the total amount repeated
 	public var total = 0;
+	// random numbers to use in data processing
+	public var randomExtra = new Array<Int>();
 
 	public function new(){}
 }
