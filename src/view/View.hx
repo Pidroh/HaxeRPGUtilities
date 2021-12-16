@@ -532,7 +532,7 @@ class View {
 			// areaContainer.addComponent(container);
 			// regionLabel = CreateValueView(container, false, "Region: ");
 
-			areaLabel = CreateValueView(container, false, "Area: ");
+			areaLabel = CreateValueView(container, false, "Area: ", 200, 140);
 
 			var b = new Box();
 			b.width = 30;

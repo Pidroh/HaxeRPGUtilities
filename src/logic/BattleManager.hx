@@ -853,7 +853,7 @@ class BattleManager {
 			type: 0,
 			seen: 2,
 			requiredAttributes: null,
-			attributes: ["thunder-damage" => 150, "fire-damage" => -70]
+			attributes: ["thunder-damage" => 250, "fire-damage" => 30]
 		});
 
 		// ice area
@@ -861,7 +861,7 @@ class BattleManager {
 			type: 0,
 			seen: 2,
 			requiredAttributes: null,
-			attributes: ["fire-damage" => 150, "ice-damage" => -70]
+			attributes: ["fire-damage" => 250, "ice-damage" => 30]
 		});
 
 		// thunder area
@@ -869,7 +869,7 @@ class BattleManager {
 			type: 0,
 			seen: 2,
 			requiredAttributes: null,
-			attributes: ["ice-damage" => 150, "thunder-damage" => -70]
+			attributes: ["ice-damage" => 250, "thunder-damage" => 30]
 		});
 
 		var pus = Generation.Generate("w1", 8, 1, 3);
