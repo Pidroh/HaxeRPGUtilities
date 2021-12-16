@@ -425,7 +425,6 @@ class Main {
 
 		var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
 		var bossMessage = originMessage;
-		
 
 		update = function(timeStamp:Float):Bool {
 			if (overlayFullActorId == 0)
@@ -451,16 +450,33 @@ class Main {
 
 			// view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
 
-			if(bm.wdata.battleAreaRegion == 0){
+			if (bm.wdata.battleAreaRegion == 0) {
 				var pur = bm.enemyAreaFromProcedural.GetProceduralUnitRepeated(bm.wdata.battleArea);
 				var characteristic = pur.proceduralUnit.characteristics[0];
+				var text = lagrimaAreaLabels[characteristic];
+				
+				switch pur.proceduralUnit.repeat {
+					case 1: {
+						text += " II";
+					}
+					case 2: {
+						text += " III";
+					}
+					case 3: {
+						text += " IV";
+					}
+					case 4: {
+						text += " V";
+					}
+				}
 
-				view.UpdateValues(view.areaLabel, -1, -1, null, false, lagrimaAreaLabels[characteristic]);
+				text += " - "+(pur.position+1);
+				view.UpdateValues(view.areaLabel, 1, 1, null, false, text);
 				// view.UpdateValues
-			} else{
+			} else {
 				view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
 			}
-			
+
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
 
