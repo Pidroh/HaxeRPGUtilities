@@ -619,10 +619,13 @@ class BattleManager {
 			// enemyLevel = (enemyLevel + 1) * 10 - 1;
 		}
 
+		var equipment : Equipment = null;
+
 		if (region == 0 && enemyAreaFromProcedural != null && enemyAreaFromProcedural.units != null) {
 			var areaInfo = enemyAreaFromProcedural.GetEnemyAreaInformation(wdata.battleArea - 1);
 			sheet = areaInfo.sheet;
 			enemyLevel += areaInfo.level;
+			equipment = areaInfo.equipment;
 		}
 
 		{
@@ -657,6 +660,13 @@ class BattleManager {
 				buffs: [],
 				usableSkills: []
 			};
+			if(equipment != null){
+				wdata.enemy.equipment.push(equipment);
+				wdata.enemy.equipmentSets = [{
+					equipmentSlots: [0]
+				}];
+				wdata.enemy.chosenEquipSet = 0;
+			}
 			if (sheet != null) {
 				var mul = sheet.speciesMultiplier;
 				if (mul != null) {
@@ -858,7 +868,6 @@ class BattleManager {
 		enemyAreaFromProcedural.units = purs;
 
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0];
-		// var stats2 = ["Attack" => 2, "Life" => 6, "LifeMax" => 6];
 
 		var w:WorldData = {
 			worldVersion: 1207,

@@ -542,7 +542,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 795, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 805, className : "BattleManager", methodName : "new"});
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -1310,10 +1310,12 @@ BattleManager.prototype = {
 				enemyLevel += i * 10;
 			}
 		}
+		var equipment = null;
 		if(region == 0 && this.enemyAreaFromProcedural != null && this.enemyAreaFromProcedural.units != null) {
 			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea - 1);
 			sheet = areaInfo.sheet;
 			enemyLevel += areaInfo.level;
+			equipment = areaInfo.equipment;
 		}
 		var timeToKillEnemy = this.balancing.timeToKillFirstEnemy;
 		var initialAttackHero = 1;
@@ -1333,6 +1335,11 @@ BattleManager.prototype = {
 		_g.h["Piercing"] = 0;
 		var stats2 = _g;
 		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
+		if(equipment != null) {
+			this.wdata.enemy.equipment.push(equipment);
+			this.wdata.enemy.equipmentSets = [{ equipmentSlots : [0]}];
+			this.wdata.enemy.chosenEquipSet = 0;
+		}
 		if(sheet != null) {
 			var mul = sheet.speciesMultiplier;
 			if(mul != null) {
@@ -2258,7 +2265,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1854, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1863, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2275,7 +2282,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1871, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1880, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3617,6 +3624,7 @@ EnemyAreaInformation.prototype = {
 	sheet: null
 	,level: null
 	,nEnemies: null
+	,equipment: null
 	,__class__: EnemyAreaInformation
 };
 var EnemyAreaFromProceduralUnitRepetition = function() {
@@ -3660,6 +3668,7 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		this.aux.sheet = es;
 		this.aux.nEnemies = nEnemies;
 		this.aux.level = levelBonus;
+		this.aux.equipment = this.equipments[char];
 		return this.aux;
 	}
 	,__class__: EnemyAreaFromProceduralUnitRepetition

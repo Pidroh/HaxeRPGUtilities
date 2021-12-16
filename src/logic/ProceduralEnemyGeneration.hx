@@ -7,6 +7,7 @@ class EnemyAreaInformation{
     public var sheet : ActorSheet;
     public var level : Int;
     public var nEnemies : Int;
+    public var equipment : Equipment;
     public function new(){}
 }
 
@@ -53,6 +54,7 @@ class EnemyAreaFromProceduralUnitRepetition{
         aux.sheet = es;
         aux.nEnemies = nEnemies;
         aux.level = levelBonus;
+        aux.equipment = equipments[char];
         return aux;
     }
 

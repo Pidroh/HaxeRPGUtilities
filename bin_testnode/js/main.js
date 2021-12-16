@@ -468,7 +468,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:795:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:805:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -1209,10 +1209,12 @@ BattleManager.prototype = {
 				enemyLevel += i * 10;
 			}
 		}
+		var equipment = null;
 		if(region == 0 && this.enemyAreaFromProcedural != null && this.enemyAreaFromProcedural.units != null) {
 			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea - 1);
 			sheet = areaInfo.sheet;
 			enemyLevel += areaInfo.level;
+			equipment = areaInfo.equipment;
 		}
 		var timeToKillEnemy = this.balancing.timeToKillFirstEnemy;
 		var initialAttackHero = 1;
@@ -1232,6 +1234,11 @@ BattleManager.prototype = {
 		_g.h["Piercing"] = 0;
 		var stats2 = _g;
 		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
+		if(equipment != null) {
+			this.wdata.enemy.equipment.push(equipment);
+			this.wdata.enemy.equipmentSets = [{ equipmentSlots : [0]}];
+			this.wdata.enemy.chosenEquipSet = 0;
+		}
 		if(sheet != null) {
 			var mul = sheet.speciesMultiplier;
 			if(mul != null) {
@@ -2157,7 +2164,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1854:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1863:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2174,7 +2181,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1871:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1880:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2935,6 +2942,7 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		this.aux.sheet = es;
 		this.aux.nEnemies = nEnemies;
 		this.aux.level = levelBonus;
+		this.aux.equipment = this.equipments[char];
 		return this.aux;
 	}
 };
