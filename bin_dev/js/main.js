@@ -3111,28 +3111,30 @@ Main.gamemain = function() {
 			enemyName = false;
 		}
 		if(actor != null) {
-			if(enemyName && bm.wdata.battleAreaRegion == 0) {
-				var eafp = bm.enemyAreaFromProcedural;
-				var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
-				actorView.name.set_text(enemyLabels[0][eai.sheetId]);
-				if(lagrimaAreaPrefix[eai.equipId] != null) {
-					actorView.name.set_text(lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.get_text());
-				}
-				if(eai.level > 0) {
-					if(eai.level < 10) {
-						actorView.name.set_text(actorView.name.get_text() + " Forte");
-					} else if(eai.level < 30) {
-						actorView.name.set_text(actorView.name.get_text() + " Monstro");
-					} else {
-						actorView.name.set_text(actorView.name.get_text() + " do Carai");
+			if(enemyName) {
+				if(bm.wdata.battleAreaRegion == 0) {
+					var eafp = bm.enemyAreaFromProcedural;
+					var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
+					actorView.name.set_text(enemyLabels[0][eai.sheetId]);
+					if(lagrimaAreaPrefix[eai.equipId] != null) {
+						actorView.name.set_text(lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.get_text());
 					}
+					if(eai.level > 0) {
+						if(eai.level < 10) {
+							actorView.name.set_text(actorView.name.get_text() + " Forte");
+						} else if(eai.level < 30) {
+							actorView.name.set_text(actorView.name.get_text() + " Monstro");
+						} else {
+							actorView.name.set_text(actorView.name.get_text() + " do Carai");
+						}
+					}
+				} else {
+					actorView.name.set_text(enemyLabels[bm.wdata.battleAreaRegion][0]);
+					var fh = actorView.name;
+					var ActorToView = fh.get_text();
+					var code = 65 + bm.wdata.battleArea - 1;
+					fh.set_text(ActorToView + (" " + String.fromCodePoint(code)));
 				}
-			} else {
-				actorView.name.set_text(enemyLabels[bm.wdata.battleAreaRegion][0]);
-				var fh = actorView.name;
-				var ActorToView = fh.get_text();
-				var code = 65 + bm.wdata.battleArea - 1;
-				fh.set_text(ActorToView + (" " + String.fromCodePoint(code)));
 			}
 			var buffText = "";
 			var _g = 0;
@@ -3580,7 +3582,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 902, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 904, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3592,7 +3594,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 919, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 921, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3611,8 +3613,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 947, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 948, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 949, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 950, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {

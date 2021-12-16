@@ -376,30 +376,32 @@ class Main {
 
 		var ActorToView = function(actor:Actor, actorView:ActorView, enemyName = false) {
 			if (actor != null) {
-				if (enemyName && bm.wdata.battleAreaRegion == 0) {
-					var eafp = bm.enemyAreaFromProcedural;
-					var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
-					actorView.name.text = enemyLabels[0][eai.sheetId];
-					if (lagrimaAreaPrefix[eai.equipId] != null) {
-						actorView.name.text = lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.text;
-					}
-					if (eai.level > 0) {
-						if (eai.level < 10) {
-							actorView.name.text = actorView.name.text + " Forte";
-						} else if (eai.level < 30) {
-							actorView.name.text = actorView.name.text + " Monstro";
-						} else {
-							actorView.name.text = actorView.name.text + " do Carai";
+				if (enemyName) {
+					if (bm.wdata.battleAreaRegion == 0) {
+						var eafp = bm.enemyAreaFromProcedural;
+						var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
+						actorView.name.text = enemyLabels[0][eai.sheetId];
+						if (lagrimaAreaPrefix[eai.equipId] != null) {
+							actorView.name.text = lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.text;
 						}
-					}
-				} else {
-					actorView.name.text = enemyLabels[bm.wdata.battleAreaRegion][0];
-					actorView.name.text += " " + String.fromCharCode('A'.code + bm.wdata.battleArea - 1);
+						if (eai.level > 0) {
+							if (eai.level < 10) {
+								actorView.name.text = actorView.name.text + " Forte";
+							} else if (eai.level < 30) {
+								actorView.name.text = actorView.name.text + " Monstro";
+							} else {
+								actorView.name.text = actorView.name.text + " do Carai";
+							}
+						}
+					} else {
+						actorView.name.text = enemyLabels[bm.wdata.battleAreaRegion][0];
+						actorView.name.text += " " + String.fromCharCode('A'.code + bm.wdata.battleArea - 1);
 
-					/*var name = actorView.defaultName;
-						if (name != actorView.name.text) {
-							actorView.name.text = name;
-					}*/
+						/*var name = actorView.defaultName;
+							if (name != actorView.name.text) {
+								actorView.name.text = name;
+						}*/
+					}
 				}
 				var buffText = "";
 				for (b in actor.buffs) {
@@ -801,7 +803,7 @@ class Main {
 						view.ButtonLabel("advance", "A Strong Presence");
 					}
 				}
-				if(changeLabel == false)
+				if (changeLabel == false)
 					view.ButtonLabel("advance", "Next Area");
 			}
 			buttonToAction("retreat", "retreat");
