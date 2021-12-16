@@ -2930,6 +2930,7 @@ MainTest.main = function() {
 	}
 };
 var EnemyAreaInformation = function() {
+	this.tags = [];
 };
 EnemyAreaInformation.__name__ = true;
 var EnemyAreaFromProceduralUnitRepetition = function() {
@@ -2958,14 +2959,24 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		var nEnemies = -1;
 		var levelBonus = 0;
 		if(u.position == u.total - 1) {
-			nEnemies = 3;
-			levelBonus = 5;
+			nEnemies = u.randomExtra[1] % 3 + 1;
+			levelBonus = 3;
+			if(areaOrig > 8) {
+				levelBonus = 5;
+			}
 			if(areaOrig > 15) {
 				levelBonus = 10;
 			}
-			if(areaOrig > 30) {
+			if(areaOrig > 20) {
 				levelBonus = 15;
 			}
+			if(areaOrig > 30) {
+				levelBonus = 25;
+			}
+			if(areaOrig > 40) {
+				levelBonus = 30;
+			}
+			levelBonus *= 2;
 		}
 		this.aux.sheet = es;
 		this.aux.nEnemies = nEnemies;

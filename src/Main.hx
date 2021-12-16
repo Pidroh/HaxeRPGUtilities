@@ -369,8 +369,17 @@ class Main {
 					var eafp = bm.enemyAreaFromProcedural;
 					var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
 					actorView.name.text = lagrimaAreaEnemies[eai.sheetId];
-					if(lagrimaAreaPrefix[eai.equipId] != null){
+					if (lagrimaAreaPrefix[eai.equipId] != null) {
 						actorView.name.text = lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.text;
+					}
+					if (eai.level > 0) {
+						if (eai.level < 10) {
+							actorView.name.text = actorView.name.text + " Forte";
+						} else if (eai.level < 30) {
+							actorView.name.text = actorView.name.text + " Monstro";
+						} else {
+							actorView.name.text = actorView.name.text + " do Carai";
+						}
 					}
 				} else {
 					var name = actorView.defaultName;
@@ -441,7 +450,6 @@ class Main {
 			"Snow Fields",
 			"Thunder Roads"
 		];
-		
 
 		var saveFileImporterSetup = false;
 

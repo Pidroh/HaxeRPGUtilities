@@ -3118,6 +3118,15 @@ Main.gamemain = function() {
 				if(lagrimaAreaPrefix[eai.equipId] != null) {
 					actorView.name.set_text(lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.get_text());
 				}
+				if(eai.level > 0) {
+					if(eai.level < 10) {
+						actorView.name.set_text(actorView.name.get_text() + " Forte");
+					} else if(eai.level < 30) {
+						actorView.name.set_text(actorView.name.get_text() + " Monstro");
+					} else {
+						actorView.name.set_text(actorView.name.get_text() + " do Carai");
+					}
+				}
 			} else {
 				var name = actorView.defaultName;
 				if(name != actorView.name.get_text()) {
@@ -3559,7 +3568,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 868, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 876, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3571,7 +3580,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 885, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 893, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3590,8 +3599,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 913, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 914, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 921, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 922, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -3657,6 +3666,7 @@ Main.GetEquipName = function(e,bm) {
 	return equipName;
 };
 var EnemyAreaInformation = function() {
+	this.tags = [];
 };
 $hxClasses["EnemyAreaInformation"] = EnemyAreaInformation;
 EnemyAreaInformation.__name__ = "EnemyAreaInformation";
@@ -3667,6 +3677,7 @@ EnemyAreaInformation.prototype = {
 	,equipment: null
 	,sheetId: null
 	,equipId: null
+	,tags: null
 	,__class__: EnemyAreaInformation
 };
 var EnemyAreaFromProceduralUnitRepetition = function() {
@@ -3700,14 +3711,24 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		var nEnemies = -1;
 		var levelBonus = 0;
 		if(u.position == u.total - 1) {
-			nEnemies = 3;
-			levelBonus = 5;
+			nEnemies = u.randomExtra[1] % 3 + 1;
+			levelBonus = 3;
+			if(areaOrig > 8) {
+				levelBonus = 5;
+			}
 			if(areaOrig > 15) {
 				levelBonus = 10;
 			}
-			if(areaOrig > 30) {
+			if(areaOrig > 20) {
 				levelBonus = 15;
 			}
+			if(areaOrig > 30) {
+				levelBonus = 25;
+			}
+			if(areaOrig > 40) {
+				levelBonus = 30;
+			}
+			levelBonus *= 2;
 		}
 		this.aux.sheet = es;
 		this.aux.nEnemies = nEnemies;

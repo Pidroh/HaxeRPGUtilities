@@ -10,6 +10,7 @@ class EnemyAreaInformation{
     public var equipment : Equipment;
     public var sheetId : Int;
     public var equipId : Int;
+    public var tags = new Array<String>();
     public function new(){}
 }
 
@@ -48,12 +49,19 @@ class EnemyAreaFromProceduralUnitRepetition{
         var nEnemies = -1;
         var levelBonus = 0;
         if(u.position == u.total-1){
-            nEnemies = 3;
-            levelBonus = 5;
+            nEnemies = u.randomExtra[1] % 3 + 1;
+            levelBonus = 3;
+            if(areaOrig > 8)
+                levelBonus = 5;
             if(areaOrig > 15)
                 levelBonus = 10;
-            if(areaOrig > 30)
+            if(areaOrig > 20)
                 levelBonus = 15;
+            if(areaOrig > 30)
+                levelBonus = 25;
+            if(areaOrig > 40)
+                levelBonus = 30;
+            levelBonus *= 2;
         }
         aux.sheet = es;
         aux.nEnemies = nEnemies;
