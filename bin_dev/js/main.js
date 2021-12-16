@@ -5514,8 +5514,8 @@ View.prototype = {
 		header.addComponent(rightLabel);
 		header.addComponent(label);
 		var lifeView = null;
-		lifeView = this.CreateValueView(box,true,"Life: ","#FF8888");
-		return { name : label, life : lifeView, attack : this.CreateValueView(box,false,"Attack: "), parent : box, mp : this.CreateValueView(box,true,"MP: ","#CC88FF"), defaultName : name, buffText : rightLabel};
+		lifeView = this.CreateValueView(box,true,"Life: ",null,null,"#FF8888");
+		return { name : label, life : lifeView, attack : this.CreateValueView(box,false,"Attack: "), parent : box, mp : this.CreateValueView(box,true,"MP: ",null,null,"#CC88FF"), defaultName : name, buffText : rightLabel};
 	}
 	,CreateDropDownView: function(parent,label) {
 		var boxh = new haxe_ui_containers_Box();
@@ -5541,12 +5541,18 @@ View.prototype = {
 		boxh.addComponent(dd);
 		return { parent : boxh, dropdown : dd, labelText : nameLabel};
 	}
-	,CreateValueView: function(parent,withBar,label,barColor,extraHeight) {
+	,CreateValueView: function(parent,withBar,label,fullWidth,barWidth,barColor,extraHeight) {
 		if(extraHeight == null) {
 			extraHeight = 0;
 		}
 		if(barColor == null) {
 			barColor = "#CCCCDD";
+		}
+		if(barWidth == null) {
+			barWidth = 120;
+		}
+		if(fullWidth == null) {
+			fullWidth = 180;
 		}
 		var color = haxe_ui_util_Color.fromString(barColor);
 		if(haxe_ui_Toolkit.get_theme() == "dark") {
@@ -5555,7 +5561,7 @@ View.prototype = {
 			color = (color >> 24 & 255 & 255) << 24 | (color >> 16 & 255 & 255) << 16 | (color >> 8 & 255 & 255) << 8 | (color & 255) - 128 & 255;
 		}
 		var boxh = new haxe_ui_containers_Box();
-		boxh.set_width(180);
+		boxh.set_width(fullWidth);
 		boxh.set_height(20 + extraHeight);
 		parent.addComponent(boxh);
 		var addLabel = label != null && label != "";
@@ -5570,7 +5576,7 @@ View.prototype = {
 		}
 		var progress = new haxe_ui_components_HorizontalProgress();
 		boxh.addComponent(progress);
-		progress.set_width(120);
+		progress.set_width(barWidth);
 		progress.set_height(20);
 		if(addLabel) {
 			progress.set_horizontalAlign("right");

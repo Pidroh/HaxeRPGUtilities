@@ -1203,7 +1203,7 @@ class View {
 		return {parent: boxh, dropdown: dd, labelText: nameLabel};
 	}
 
-	function CreateValueView(parent:Component, withBar:Bool, label:String, barColor:String = "#CCCCDD", extraHeight = 0):ValueView {
+	function CreateValueView(parent:Component, withBar:Bool, label:String, fullWidth = 180, barWidth= 120, barColor:String = "#CCCCDD", extraHeight = 0):ValueView {
 		var color:haxe.ui.util.Color = barColor;
 		if (Toolkit.theme == "dark") {
 			color.r -= 128;
@@ -1211,7 +1211,7 @@ class View {
 			color.b -= 128;
 		}
 		var boxh = new Box();
-		boxh.width = 180;
+		boxh.width = fullWidth;
 		boxh.height = 20 + extraHeight;
 
 		parent.addComponent(boxh);
@@ -1234,7 +1234,7 @@ class View {
 		var progress:HorizontalProgress = new HorizontalProgress();
 		boxh.addComponent(progress);
 
-		progress.width = 120;
+		progress.width = barWidth;
 		progress.height = 20;
 		if (addLabel)
 			progress.horizontalAlign = "right";
