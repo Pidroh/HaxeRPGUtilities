@@ -619,7 +619,7 @@ class BattleManager {
 			// enemyLevel = (enemyLevel + 1) * 10 - 1;
 		}
 
-		var equipment : Equipment = null;
+		var equipment:Equipment = null;
 
 		if (region == 0 && enemyAreaFromProcedural != null && enemyAreaFromProcedural.units != null) {
 			var areaInfo = enemyAreaFromProcedural.GetEnemyAreaInformation(wdata.battleArea - 1);
@@ -660,11 +660,13 @@ class BattleManager {
 				buffs: [],
 				usableSkills: []
 			};
-			if(equipment != null){
+			if (equipment != null) {
 				wdata.enemy.equipment.push(equipment);
-				wdata.enemy.equipmentSets = [{
-					equipmentSlots: [0]
-				}];
+				wdata.enemy.equipmentSets = [
+					{
+						equipmentSlots: [0]
+					}
+				];
 				wdata.enemy.chosenEquipSet = 0;
 			}
 			if (sheet != null) {
@@ -699,7 +701,9 @@ class BattleManager {
 					AddBuff(sheet.initialBuff, wdata.enemy);
 				}
 			}
+			RecalculateAttributes(wdata.enemy);
 			wdata.enemy.attributesCalculated["Life"] = wdata.enemy.attributesCalculated["LifeMax"];
+
 			// trace('Enemy speed ' + wdata.enemy.attributesCalculated["Speed"]);
 		}
 	}
@@ -844,7 +848,7 @@ class BattleManager {
 			type: 0,
 			seen: 2,
 			requiredAttributes: null,
-			attributes: ["thunder-damage" => 250, "fire-damage" => 30]
+			attributes: ["thunder-damage" => 150, "fire-damage" => -70]
 		});
 
 		// ice area
@@ -852,7 +856,7 @@ class BattleManager {
 			type: 0,
 			seen: 2,
 			requiredAttributes: null,
-			attributes: ["fire-damage" => 250, "ice-damage" => 30]
+			attributes: ["fire-damage" => 150, "ice-damage" => -70]
 		});
 
 		// thunder area
@@ -860,7 +864,7 @@ class BattleManager {
 			type: 0,
 			seen: 2,
 			requiredAttributes: null,
-			attributes: ["ice-damage" => 250, "thunder-damage" => 30]
+			attributes: ["ice-damage" => 150, "thunder-damage" => -70]
 		});
 
 		var pus = Generation.Generate("w1", 8, 1, 3);
@@ -1812,11 +1816,13 @@ $baseInfo';
 		}
 
 		// first do adds
-		if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-			for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
-				var e = actor.equipment[es];
-				if (e != null) {
-					AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+		if (actor.equipmentSets != null) {
+			if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+				for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
+					var e = actor.equipment[es];
+					if (e != null) {
+						AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+					}
 				}
 			}
 		}
@@ -1826,13 +1832,15 @@ $baseInfo';
 		}
 
 		// then do multipliers
-		if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-			for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
-				var e = actor.equipment[es];
-				if (e != null) {
-					if (e.attributeMultiplier != null) {
-						for (a in e.attributeMultiplier.keyValueIterator()) {
-							actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+		if (actor.equipmentSets != null) {
+			if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+				for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
+					var e = actor.equipment[es];
+					if (e != null) {
+						if (e.attributeMultiplier != null) {
+							for (a in e.attributeMultiplier.keyValueIterator()) {
+								actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+							}
 						}
 					}
 				}

@@ -419,7 +419,7 @@ class Main {
 
 		var equipmentWindowTypeAlert = [false, false]; // have same amount
 		view.FeedEquipmentTypes(["Weapons", "Armor", "Skill Set"]);
-		var lagrimaAreaLabels = ["Forest", "Streets", "Mountain", "Seaside"];
+		var lagrimaAreaLabels = ["Forest", "Streets", "Mountain", "Seaside", "Wild Plains", "Inactive Volcano", "Snow Fields", "Thunder Roads"];
 
 		var saveFileImporterSetup = false;
 
@@ -477,8 +477,8 @@ class Main {
 
 					text += " - " + (pur.position + 1);
 					view.UpdateValues(view.areaLabel, 1, 1, null, false, text);
-				} else{
-					if(bm.wdata.battleAreaRegion == 0)
+				} else {
+					if (bm.wdata.battleAreaRegion == 0)
 						view.UpdateValues(view.areaLabel, 1, 1, null, false, "Home");
 					else
 						view.UpdateValues(view.areaLabel, 1, 1, null, false, "Entrance");

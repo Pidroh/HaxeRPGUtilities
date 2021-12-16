@@ -468,7 +468,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:805:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:809:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -506,18 +506,18 @@ var BattleManager = function() {
 	this.enemyAreaFromProcedural.equipments.push(null);
 	var tmp = this.enemyAreaFromProcedural.equipments;
 	var _g = new haxe_ds_StringMap();
-	_g.h["thunder-damage"] = 250;
-	_g.h["fire-damage"] = 30;
+	_g.h["thunder-damage"] = 150;
+	_g.h["fire-damage"] = -70;
 	tmp.push({ type : 0, seen : 2, requiredAttributes : null, attributes : _g});
 	var tmp = this.enemyAreaFromProcedural.equipments;
 	var _g = new haxe_ds_StringMap();
-	_g.h["fire-damage"] = 250;
-	_g.h["ice-damage"] = 30;
+	_g.h["fire-damage"] = 150;
+	_g.h["ice-damage"] = -70;
 	tmp.push({ type : 0, seen : 2, requiredAttributes : null, attributes : _g});
 	var tmp = this.enemyAreaFromProcedural.equipments;
 	var _g = new haxe_ds_StringMap();
-	_g.h["ice-damage"] = 250;
-	_g.h["thunder-damage"] = 30;
+	_g.h["ice-damage"] = 150;
+	_g.h["thunder-damage"] = -70;
 	tmp.push({ type : 0, seen : 2, requiredAttributes : null, attributes : _g});
 	var pus = Generation.Generate("w1",8,1,3);
 	var purs = Generation.GenerateRepetitions("w1",pus,{ min : 3, max : 6});
@@ -1303,6 +1303,7 @@ BattleManager.prototype = {
 				this.AddBuff(sheet.initialBuff,this.wdata.enemy);
 			}
 		}
+		this.RecalculateAttributes(this.wdata.enemy);
 		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
 		this.wdata.enemy.attributesCalculated.h["Life"] = v;
 	}
@@ -2081,15 +2082,17 @@ BattleManager.prototype = {
 				}
 			}
 		}
-		if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-			var _g = 0;
-			var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
-			while(_g < _g1.length) {
-				var es = _g1[_g];
-				++_g;
-				var e = actor.equipment[es];
-				if(e != null) {
-					AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+		if(actor.equipmentSets != null) {
+			if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+				var _g = 0;
+				var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
+				while(_g < _g1.length) {
+					var es = _g1[_g];
+					++_g;
+					var e = actor.equipment[es];
+					if(e != null) {
+						AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+					}
 				}
 			}
 		}
@@ -2102,26 +2105,28 @@ BattleManager.prototype = {
 				AttributeLogic.Add(actor.attributesCalculated,b.addStats,1,actor.attributesCalculated);
 			}
 		}
-		if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-			var _g = 0;
-			var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
-			while(_g < _g1.length) {
-				var es = _g1[_g];
-				++_g;
-				var e = actor.equipment[es];
-				if(e != null) {
-					if(e.attributeMultiplier != null) {
-						var h = e.attributeMultiplier.h;
-						var a_h = h;
-						var a_keys = Object.keys(h);
-						var a_length = a_keys.length;
-						var a_current = 0;
-						while(a_current < a_length) {
-							var key = a_keys[a_current++];
-							var a_key = key;
-							var a_value = a_h[key];
-							var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
-							actor.attributesCalculated.h[a_key] = v;
+		if(actor.equipmentSets != null) {
+			if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+				var _g = 0;
+				var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
+				while(_g < _g1.length) {
+					var es = _g1[_g];
+					++_g;
+					var e = actor.equipment[es];
+					if(e != null) {
+						if(e.attributeMultiplier != null) {
+							var h = e.attributeMultiplier.h;
+							var a_h = h;
+							var a_keys = Object.keys(h);
+							var a_length = a_keys.length;
+							var a_current = 0;
+							while(a_current < a_length) {
+								var key = a_keys[a_current++];
+								var a_key = key;
+								var a_value = a_h[key];
+								var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
+								actor.attributesCalculated.h[a_key] = v;
+							}
 						}
 					}
 				}
@@ -2164,7 +2169,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1863:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1871:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2181,7 +2186,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1880:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1888:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
