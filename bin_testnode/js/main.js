@@ -2949,9 +2949,11 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		area %= this.units.length;
 		var u = this.units[area];
 		var char = u.proceduralUnit.characteristics[0];
-		var es = this.enemySheets[char];
+		var enemyId = char;
+		var es = this.enemySheets[enemyId];
 		if(es == null) {
-			es = this.enemySheets[u.randomExtra[0] % this.enemySheets.length];
+			enemyId = u.randomExtra[0] % this.enemySheets.length;
+			es = this.enemySheets[enemyId];
 		}
 		var nEnemies = -1;
 		var levelBonus = 0;
@@ -2969,6 +2971,8 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		this.aux.nEnemies = nEnemies;
 		this.aux.level = levelBonus;
 		this.aux.equipment = this.equipments[char];
+		this.aux.sheetId = enemyId;
+		this.aux.equipId = char;
 		return this.aux;
 	}
 };

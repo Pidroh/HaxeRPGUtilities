@@ -8,6 +8,8 @@ class EnemyAreaInformation{
     public var level : Int;
     public var nEnemies : Int;
     public var equipment : Equipment;
+    public var sheetId : Int;
+    public var equipId : Int;
     public function new(){}
 }
 
@@ -35,11 +37,13 @@ class EnemyAreaFromProceduralUnitRepetition{
         area = area % units.length;
         var u = units[area];
         var char = u.proceduralUnit.characteristics[0];
-        var es = enemySheets[char];
+        var enemyId = char;
+        var es = enemySheets[enemyId];
 
         // if enemy sheet is null, will choose a random enemy sheet
         if(es == null){
-            es = enemySheets[u.randomExtra[0] % enemySheets.length];
+            enemyId = u.randomExtra[0] % enemySheets.length;
+            es = enemySheets[enemyId];
         }
         var nEnemies = -1;
         var levelBonus = 0;
@@ -55,6 +59,8 @@ class EnemyAreaFromProceduralUnitRepetition{
         aux.nEnemies = nEnemies;
         aux.level = levelBonus;
         aux.equipment = equipments[char];
+        aux.sheetId = enemyId;
+        aux.equipId = char;
         return aux;
     }
 

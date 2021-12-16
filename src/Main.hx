@@ -350,6 +350,8 @@ class Main {
 			}
 		});
 
+		var lagrimaAreaEnemies = ["Goblin", "Dog", "Giant", "Turtle"];
+
 		view.addHover(view.enemyView.parent, (b, comp) -> {
 			view.overlay.hidden = !b;
 			overlayFullActorId = -1;
@@ -360,11 +362,17 @@ class Main {
 			}
 		});
 
-		var ActorToView = function(actor:Actor, actorView:ActorView) {
+		var ActorToView = function(actor:Actor, actorView:ActorView, enemyName = false) {
 			if (actor != null) {
-				var name = actorView.defaultName;
-				if (name != actorView.name.text) {
-					actorView.name.text = name;
+				if (enemyName && bm.wdata.battleAreaRegion == 0) {
+					var eafp = bm.enemyAreaFromProcedural;
+					var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
+					actorView.name.text = lagrimaAreaEnemies[eai.sheetId];
+				} else {
+					var name = actorView.defaultName;
+					if (name != actorView.name.text) {
+						actorView.name.text = name;
+					}
 				}
 				var buffText = "";
 				for (b in actor.buffs) {
@@ -419,7 +427,17 @@ class Main {
 
 		var equipmentWindowTypeAlert = [false, false]; // have same amount
 		view.FeedEquipmentTypes(["Weapons", "Armor", "Skill Set"]);
-		var lagrimaAreaLabels = ["Forest", "Streets", "Mountain", "Seaside", "Wild Plains", "Inactive Volcano", "Snow Fields", "Thunder Roads"];
+		var lagrimaAreaLabels = [
+			"Forest",
+			"Streets",
+			"Mountain",
+			"Seaside",
+			"Wild Plains",
+			"Inactive Volcano",
+			"Snow Fields",
+			"Thunder Roads"
+		];
+		
 
 		var saveFileImporterSetup = false;
 
@@ -439,7 +457,7 @@ class Main {
 
 			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
-			ActorToView(bm.wdata.enemy, view.enemyView);
+			ActorToView(bm.wdata.enemy, view.enemyView, true);
 			ActorToFullView(bm.wdata.hero, view.equipHeroStats);
 			var actor = bm.wdata.hero;
 			view.UpdateValues(view.level, bm.wdata.hero.level, -1);

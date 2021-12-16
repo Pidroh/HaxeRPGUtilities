@@ -3095,6 +3095,7 @@ Main.gamemain = function() {
 			view.positionOverlay(view.heroView.parent);
 		}
 	});
+	var lagrimaAreaEnemies = ["Goblin","Dog","Giant","Turtle"];
 	view.addHover(view.enemyView.parent,function(b,comp) {
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
@@ -3104,11 +3105,20 @@ Main.gamemain = function() {
 			view.positionOverlay(view.enemyView.parent);
 		}
 	});
-	var ActorToView = function(actor,actorView) {
+	var ActorToView = function(actor,actorView,enemyName) {
+		if(enemyName == null) {
+			enemyName = false;
+		}
 		if(actor != null) {
-			var name = actorView.defaultName;
-			if(name != actorView.name.get_text()) {
-				actorView.name.set_text(name);
+			if(enemyName && bm.wdata.battleAreaRegion == 0) {
+				var eafp = bm.enemyAreaFromProcedural;
+				var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
+				actorView.name.set_text(lagrimaAreaEnemies[eai.sheetId]);
+			} else {
+				var name = actorView.defaultName;
+				if(name != actorView.name.get_text()) {
+					actorView.name.set_text(name);
+				}
 			}
 			var buffText = "";
 			var _g = 0;
@@ -3178,7 +3188,7 @@ Main.gamemain = function() {
 		global.h["herolevel"] = v;
 		GameAnalyticsIntegration.InitializeCheck();
 		ActorToView(bm.wdata.hero,view.heroView);
-		ActorToView(bm.wdata.enemy,view.enemyView);
+		ActorToView(bm.wdata.enemy,view.enemyView,true);
 		ActorToFullView(bm.wdata.hero,view.equipHeroStats);
 		var actor = bm.wdata.hero;
 		view.UpdateValues(view.level,bm.wdata.hero.level,-1);
@@ -3545,7 +3555,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 846, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 864, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3557,7 +3567,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 863, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 881, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3576,8 +3586,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 891, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 892, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 909, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 910, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -3651,6 +3661,8 @@ EnemyAreaInformation.prototype = {
 	,level: null
 	,nEnemies: null
 	,equipment: null
+	,sheetId: null
+	,equipId: null
 	,__class__: EnemyAreaInformation
 };
 var EnemyAreaFromProceduralUnitRepetition = function() {
@@ -3675,9 +3687,11 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		area %= this.units.length;
 		var u = this.units[area];
 		var char = u.proceduralUnit.characteristics[0];
-		var es = this.enemySheets[char];
+		var enemyId = char;
+		var es = this.enemySheets[enemyId];
 		if(es == null) {
-			es = this.enemySheets[u.randomExtra[0] % this.enemySheets.length];
+			enemyId = u.randomExtra[0] % this.enemySheets.length;
+			es = this.enemySheets[enemyId];
 		}
 		var nEnemies = -1;
 		var levelBonus = 0;
@@ -3695,6 +3709,8 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		this.aux.nEnemies = nEnemies;
 		this.aux.level = levelBonus;
 		this.aux.equipment = this.equipments[char];
+		this.aux.sheetId = enemyId;
+		this.aux.equipId = char;
 		return this.aux;
 	}
 	,__class__: EnemyAreaFromProceduralUnitRepetition
