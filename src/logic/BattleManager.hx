@@ -853,7 +853,7 @@ class BattleManager {
 			attributes: ["ice-damage" => 250, "thunder-damage" => 30]
 		});
 
-		var pus = Generation.Generate("w1", 4, 1, 3);
+		var pus = Generation.Generate("w1", 8, 1, 3);
 		var purs = Generation.GenerateRepetitions("w1", pus, {min: 3, max: 6});
 		enemyAreaFromProcedural.units = purs;
 

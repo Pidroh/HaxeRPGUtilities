@@ -519,7 +519,7 @@ var BattleManager = function() {
 	_g.h["ice-damage"] = 250;
 	_g.h["thunder-damage"] = 30;
 	tmp.push({ type : 0, seen : 2, requiredAttributes : null, attributes : _g});
-	var pus = Generation.Generate("w1",4,1,3);
+	var pus = Generation.Generate("w1",8,1,3);
 	var purs = Generation.GenerateRepetitions("w1",pus,{ min : 3, max : 6});
 	this.enemyAreaFromProcedural.units = purs;
 	var _g = new haxe_ds_StringMap();
