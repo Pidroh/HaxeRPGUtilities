@@ -3495,6 +3495,17 @@ Main.gamemain = function() {
 		time = timeStamp;
 		buttonToAction("advance","advance");
 		view.ButtonVisibility("advance",storyHappened);
+		var changeLabel = false;
+		if(bm.wdata.battleAreaRegion == 0) {
+			var nextAreaInformation = bm.enemyAreaFromProcedural.GetEnemyAreaInformation(bm.wdata.battleArea);
+			if(nextAreaInformation.level > 0) {
+				changeLabel = true;
+				view.ButtonLabel("advance","A Strong Presence");
+			}
+		}
+		if(changeLabel == false) {
+			view.ButtonLabel("advance","Next Area");
+		}
 		buttonToAction("retreat","retreat");
 		buttonToAction("levelup","levelup");
 		buttonToAction("sleep","sleep");
@@ -3569,7 +3580,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 890, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 902, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3581,7 +3592,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 907, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 919, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3600,8 +3611,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 935, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 936, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 947, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 948, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {

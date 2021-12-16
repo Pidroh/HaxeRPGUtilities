@@ -792,6 +792,18 @@ class Main {
 			time = timeStamp;
 			buttonToAction("advance", "advance");
 			view.ButtonVisibility("advance", storyHappened);
+			{
+				var changeLabel = false;
+				if (bm.wdata.battleAreaRegion == 0) {
+					var nextAreaInformation = bm.enemyAreaFromProcedural.GetEnemyAreaInformation(bm.wdata.battleArea);
+					if (nextAreaInformation.level > 0) {
+						changeLabel = true;
+						view.ButtonLabel("advance", "A Strong Presence");
+					}
+				}
+				if(changeLabel == false)
+					view.ButtonLabel("advance", "Next Area");
+			}
 			buttonToAction("retreat", "retreat");
 			buttonToAction("levelup", "levelup");
 			buttonToAction("sleep", "sleep");
