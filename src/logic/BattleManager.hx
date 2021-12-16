@@ -183,7 +183,7 @@ class BattleManager {
 			magicAttack = true;
 			var elementDmg = element + "-damage";
 			if (defender.attributesCalculated.exists(elementDmg)) {
-				var baseDmg = 100+ defender.attributesCalculated[elementDmg];
+				var baseDmg = defender.attributesCalculated[elementDmg];
 				attackRate = Std.int(attackRate*baseDmg / 100);
 			}
 		}

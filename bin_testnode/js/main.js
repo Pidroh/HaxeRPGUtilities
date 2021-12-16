@@ -761,7 +761,7 @@ BattleManager.prototype = {
 			magicAttack = true;
 			var elementDmg = element + "-damage";
 			if(Object.prototype.hasOwnProperty.call(defender.attributesCalculated.h,elementDmg)) {
-				var baseDmg = 100 + defender.attributesCalculated.h[elementDmg];
+				var baseDmg = defender.attributesCalculated.h[elementDmg];
 				attackRate = attackRate * baseDmg / 100 | 0;
 			}
 		}
