@@ -258,7 +258,9 @@ Generation.GenerateRepetitions = function(seed,procUnits,range) {
 	return purs;
 };
 Generation.Generate = function(seed,maxChar1,maxChar2,repetition) {
+	Generation.random.setStringSeed(seed);
 	var response = [];
+	var responseAux = [];
 	var _g = 0;
 	var _g1 = repetition;
 	while(_g < _g1) {
@@ -275,12 +277,18 @@ Generation.Generate = function(seed,maxChar1,maxChar2,repetition) {
 				pu.characteristics[0] = c1;
 				pu.characteristics[1] = c2;
 				pu.repeat = rep;
-				response.push(pu);
+				responseAux.push(pu);
 			}
 		}
+		Generation.random.shuffle(responseAux);
+		var _g6 = 0;
+		while(_g6 < responseAux.length) {
+			var unit = responseAux[_g6];
+			++_g6;
+			response.push(unit);
+		}
+		responseAux.length = 0;
 	}
-	Generation.random.setStringSeed(seed);
-	Generation.random.shuffle(response);
 	return response;
 };
 var ProceduralUnit = function() {

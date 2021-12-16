@@ -27,7 +27,9 @@ class Generation {
 
 	// all possibilities: maxChar1 x maxChar2 x repetition
 	public static function Generate(seed:String, maxChar1:Int, maxChar2:Int, repetition:Int):Array<ProceduralUnit> {
+		random.setStringSeed(seed);
 		var response = new Array<ProceduralUnit>();
+		var responseAux = new Array<ProceduralUnit>();
 		for (rep in 0...repetition) {
 			for (c1 in 0...maxChar1) {
 				for (c2 in 0...maxChar2) {
@@ -35,12 +37,15 @@ class Generation {
 					pu.characteristics[0] = c1;
 					pu.characteristics[1] = c2;
 					pu.repeat = rep;
-					response.push(pu);
+					responseAux.push(pu);
 				}
 			}
+			random.shuffle(responseAux);
+			for (unit in responseAux) {
+				response.push(unit);
+			}
+			responseAux.resize(0);
 		}
-		random.setStringSeed(seed);
-		random.shuffle(response);
 		return response;
 	}
 }
@@ -51,7 +56,7 @@ class ProceduralUnit {
 	public var characteristics = new Array<Int>();
 	// which repetition is this one in the full list
 	public var repeat = 0;
-	
+
 	public function new(){}
 }
 
