@@ -821,7 +821,7 @@ class BattleManager {
 		// Dog
 		enemyAreaFromProcedural.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 0.55, "Speed" => 2.7, "LifeMax" => 1.1]
+				attributesBase: ["Attack" => 0.35, "Speed" => 3.0, "LifeMax" => 0.9]
 			},
 			speciesAdd: null,
 			speciesLevelStats: {attributesBase: ["Speed" => 1]}
@@ -830,18 +830,18 @@ class BattleManager {
 		// Giant
 		enemyAreaFromProcedural.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 3, "Speed" => 0.09, "LifeMax" => 2.5]
+				attributesBase: ["Attack" => 2.2, "Speed" => 0.3, "LifeMax" => 2]
 			},
 			speciesAdd: null,
-			speciesLevelStats: {attributesBase: ["Speed" => 0.05, "Defense" => 0.2]}
+			speciesLevelStats: {attributesBase: ["Speed" => 0.05, "Defense" => 0.1]}
 		});
 		enemyAreaFromProcedural.equipments.push(null);
 		// Turtle
 		enemyAreaFromProcedural.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 1.4, "Speed" => 0.15, "LifeMax" => 4.0]
+				attributesBase: ["Attack" => 1.0, "Speed" => 0.25, "LifeMax" => 4.0]
 			},
-			speciesAdd: ["Defense" => 0],
+			speciesAdd: ["Defense" => 1],
 			speciesLevelStats: {attributesBase: ["Defense" => 0.6, "Speed" => 0.05]}
 		});
 		enemyAreaFromProcedural.equipments.push(null);
