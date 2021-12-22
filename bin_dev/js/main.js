@@ -2291,7 +2291,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1892, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1890, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2308,7 +2308,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1909, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1907, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3502,7 +3502,7 @@ Main.gamemain = function() {
 			var nextAreaInformation = bm.enemyAreaFromProcedural.GetEnemyAreaInformation(bm.wdata.battleArea);
 			if(nextAreaInformation.level > 0) {
 				changeLabel = true;
-				view.ButtonLabel("advance","A Strong Presence");
+				view.ButtonLabel("advance","Next Area <br><span style='color:red;'>(Gate)</span>");
 			}
 		}
 		if(changeLabel == false) {
@@ -3725,13 +3725,14 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		var nEnemies = -1;
 		var levelBonus = 0;
 		if(u.position == u.total - 1) {
-			nEnemies = u.randomExtra[1] % 3 + 1;
-			levelBonus = 3;
+			nEnemies = 1;
+			levelBonus = 2;
 			if(areaOrig > 8) {
 				levelBonus = 5;
 			}
 			if(areaOrig > 15) {
 				levelBonus = 10;
+				nEnemies = u.randomExtra[1] % 3 + 1;
 			}
 			if(areaOrig > 20) {
 				levelBonus = 15;
@@ -3742,7 +3743,10 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 			if(areaOrig > 40) {
 				levelBonus = 30;
 			}
-			levelBonus *= 2;
+			if(areaOrig > 50) {
+				levelBonus = 40;
+			}
+			levelBonus = 2;
 		}
 		this.aux.sheet = es;
 		this.aux.nEnemies = nEnemies;

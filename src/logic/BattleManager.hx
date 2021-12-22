@@ -1140,9 +1140,7 @@ class BattleManager {
 			enabled: false,
 			timesUsed: 0,
 			mode: 0
-		}, null // (a) ->{
-			//	AdvanceArea();
-			// }
+		}, null 
 		);
 
 		addAction("retreat", {

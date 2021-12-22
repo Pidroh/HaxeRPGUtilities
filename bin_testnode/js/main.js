@@ -2190,7 +2190,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1892:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1890:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2207,7 +2207,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1909:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1907:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2959,13 +2959,14 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		var nEnemies = -1;
 		var levelBonus = 0;
 		if(u.position == u.total - 1) {
-			nEnemies = u.randomExtra[1] % 3 + 1;
-			levelBonus = 3;
+			nEnemies = 1;
+			levelBonus = 2;
 			if(areaOrig > 8) {
 				levelBonus = 5;
 			}
 			if(areaOrig > 15) {
 				levelBonus = 10;
+				nEnemies = u.randomExtra[1] % 3 + 1;
 			}
 			if(areaOrig > 20) {
 				levelBonus = 15;
@@ -2976,7 +2977,10 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 			if(areaOrig > 40) {
 				levelBonus = 30;
 			}
-			levelBonus *= 2;
+			if(areaOrig > 50) {
+				levelBonus = 40;
+			}
+			levelBonus = 2;
 		}
 		this.aux.sheet = es;
 		this.aux.nEnemies = nEnemies;

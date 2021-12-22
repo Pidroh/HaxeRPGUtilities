@@ -800,7 +800,7 @@ class Main {
 					var nextAreaInformation = bm.enemyAreaFromProcedural.GetEnemyAreaInformation(bm.wdata.battleArea);
 					if (nextAreaInformation.level > 0) {
 						changeLabel = true;
-						view.ButtonLabel("advance", "A Strong Presence");
+						view.ButtonLabel("advance", "Next Area <br><span style='color:red;'>(Gate)</span>");
 					}
 				}
 				if (changeLabel == false)
