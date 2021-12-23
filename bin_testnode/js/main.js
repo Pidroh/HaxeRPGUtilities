@@ -1578,7 +1578,7 @@ BattleManager.prototype = {
 					break;
 				}
 			}
-			if(equipKept) {
+			if(equipKept == false) {
 				this.wdata.hero.equipment[i] = null;
 			}
 		}
@@ -2236,7 +2236,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1925:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1924:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2253,7 +2253,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1942:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1941:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

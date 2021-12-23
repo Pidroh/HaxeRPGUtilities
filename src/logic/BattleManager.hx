@@ -1274,9 +1274,8 @@ class BattleManager {
 					break;
 				} 
 			}
-			
-			
-			if (equipKept) {
+
+			if (equipKept == false) {
 				wdata.hero.equipment[i] = null;
 			}
 		}
