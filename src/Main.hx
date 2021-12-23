@@ -615,8 +615,8 @@ class Main {
 								upgradeCurrency = "Lagrima Stone";
 							}
 						}
-						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i), rarity, -1, e.type == 2, e.seen == 1, upgradable, canUpgrade,
-							upgradeCost, BattleManager.GetSellPrize(e, bm.wdata), upgradeLabel, upgradeCurrency);
+						view.FeedEquipmentBase(equipmentViewPos, equipName, bm.IsEquipped(i, false), rarity, -1, e.type == 2, e.seen == 1, upgradable,
+							canUpgrade, upgradeCost, BattleManager.GetSellPrize(e, bm.wdata), upgradeLabel, upgradeCurrency, bm.IsEquipped(i, true));
 						var vid = 0;
 						if (e.outsideSystems != null) {
 							if (e.outsideSystems.exists("skillset")) {

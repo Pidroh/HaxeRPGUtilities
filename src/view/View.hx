@@ -141,15 +141,14 @@ class View {
 			};
 			addHover(button, (b, component) -> {
 				var pos = setPos;
-				if(b){
+				if (b) {
 					positionOverlay(button);
-				} else{
+				} else {
 					pos = -1;
 				}
 				equipmentMainAction(pos, equipmentAction_SetPreview);
-
 			});
-			button.text = "Set " + (setPos+1);
+			button.text = "Set " + (setPos + 1);
 			button.width = 65;
 			button.height = 30;
 			button.toggle = true;
@@ -178,7 +177,7 @@ class View {
 		vbox.addComponent(title);
 		var buttonParent = new HBox();
 		vbox.addComponent(buttonParent);
-		//parent.addComponent(vbox);
+		// parent.addComponent(vbox);
 		return buttonParent;
 	}
 
@@ -689,9 +688,9 @@ class View {
 		var left = comp.screenLeft;
 		left += comp.width + xDis;
 		var top = comp.screenTop - yDis;
-		
+
 		var screenOverFlowY = top + overlay.height - Screen.instance.height;
-		if(screenOverFlowY > 0){
+		if (screenOverFlowY > 0) {
 			top -= screenOverFlowY;
 		}
 
@@ -908,7 +907,8 @@ class View {
 	}
 
 	public function FeedEquipmentBase(pos:Int, name:String, equipped:Bool, rarity = 0, numberOfValues:Int = -1, unequipable = false, firstTimeSee = false,
-			upgradeVisible = false, upgradable = false, cost = 0, sellGain = 0, upgradeLabel = "Upgrade", upgradeCurrencyLabel = "Lagrima") {
+			upgradeVisible = false, upgradable = false, cost = 0, sellGain = 0, upgradeLabel = "Upgrade", upgradeCurrencyLabel = "Lagrima",
+			equippedInAnySet = false) {
 		equipments[pos].parent.hidden = false;
 		equipments[pos].name.text = name;
 		equipments[pos].rightLabelBox.hidden = firstTimeSee == false;
@@ -946,7 +946,7 @@ class View {
 				equipments[pos].parent.backgroundColor = "black";
 			}
 		}
-		equipments[pos].actionButtons[1].hidden = equipped == true;
+		equipments[pos].actionButtons[1].hidden = equippedInAnySet == true;
 		equipments[pos].actionButtons[1].text = "Sell\n" + sellGain + " Lagrima";
 		equipments[pos].actionButtons[2].text = '$upgradeLabel\n-$cost $upgradeCurrencyLabel';
 		while (equipments[pos].values.length < numberOfValues) {
@@ -1203,7 +1203,8 @@ class View {
 		return {parent: boxh, dropdown: dd, labelText: nameLabel};
 	}
 
-	function CreateValueView(parent:Component, withBar:Bool, label:String, fullWidth = 180, barWidth= 120, barColor:String = "#CCCCDD", extraHeight = 0):ValueView {
+	function CreateValueView(parent:Component, withBar:Bool, label:String, fullWidth = 180, barWidth = 120, barColor:String = "#CCCCDD",
+			extraHeight = 0):ValueView {
 		var color:haxe.ui.util.Color = barColor;
 		if (Toolkit.theme == "dark") {
 			color.r -= 128;

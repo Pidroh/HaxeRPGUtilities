@@ -846,19 +846,19 @@ class BattleManager {
 		// Giant
 		enemyAreaFromProcedural.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 1.8, "Speed" => 0.3, "LifeMax" => 1.3]
+				attributesBase: ["Attack" => 1.8, "Speed" => 0.3, "LifeMax" => 1.2]
 			},
 			speciesAdd: null,
-			speciesLevelStats: {attributesBase: ["Speed" => 0.05, "Defense" => 0.1]}
+			speciesLevelStats: {attributesBase: ["Speed" => 0.05, "Defense" => 0.05]}
 		});
 		enemyAreaFromProcedural.equipments.push(null);
 		// Turtle
 		enemyAreaFromProcedural.enemySheets.push({
 			speciesMultiplier: {
-				attributesBase: ["Attack" => 0.8, "Speed" => 0.4, "LifeMax" => 1.8]
+				attributesBase: ["Attack" => 0.9, "Speed" => 0.5, "LifeMax" => 1.3]
 			},
 			speciesAdd: ["Defense" => 1],
-			speciesLevelStats: {attributesBase: ["Defense" => 0.2, "Speed" => 0]}
+			speciesLevelStats: {attributesBase: ["Defense" => 0.1, "Speed" => 0]}
 		});
 		enemyAreaFromProcedural.equipments.push(null);
 
@@ -1256,9 +1256,14 @@ class BattleManager {
 					if (e != null) {
 						var reset = ResetEquipToBaseLevel(e, 1);
 						if (reset == false) {
+
+							// base item-less items will not get reset
+
+							/* 
 							for (s in e.attributes.keys()) {
 								e.attributes[s] = Std.int(e.attributes[s] * 0.2);
 							}
+							*/
 						}
 						if (e.outsideSystems.exists("level")) {
 							var levelId = e.outsideSystems["level"];
@@ -1272,7 +1277,7 @@ class BattleManager {
 					}
 					equipKept = true;
 					break;
-				} 
+				}
 			}
 
 			if (equipKept == false) {
@@ -1539,8 +1544,17 @@ class BattleManager {
 		RecalculateAttributes(wdata.hero);
 	}
 
-	public function IsEquipped(pos):Bool {
-		return wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.contains(pos);
+	public function IsEquipped(pos, anySet = true):Bool {
+		if (anySet) {
+			for (i in 0...wdata.hero.equipmentSets.length) {
+				if (wdata.hero.equipmentSets[i].equipmentSlots.contains(pos)) {
+					return true;
+				}
+			}
+			return false;
+		} else {
+			return wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.contains(pos);
+		}
 	}
 
 	function AddEvent(eventType):GameEvent {

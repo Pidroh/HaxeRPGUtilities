@@ -564,21 +564,21 @@ var BattleManager = function() {
 	var _g = new haxe_ds_StringMap();
 	_g.h["Attack"] = 1.8;
 	_g.h["Speed"] = 0.3;
-	_g.h["LifeMax"] = 1.3;
+	_g.h["LifeMax"] = 1.2;
 	var _g1 = new haxe_ds_StringMap();
 	_g1.h["Speed"] = 0.05;
-	_g1.h["Defense"] = 0.1;
+	_g1.h["Defense"] = 0.05;
 	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : null, speciesLevelStats : { attributesBase : _g1}});
 	this.enemyAreaFromProcedural.equipments.push(null);
 	var tmp = this.enemyAreaFromProcedural.enemySheets;
 	var _g = new haxe_ds_StringMap();
-	_g.h["Attack"] = 0.8;
-	_g.h["Speed"] = 0.4;
-	_g.h["LifeMax"] = 1.8;
+	_g.h["Attack"] = 0.9;
+	_g.h["Speed"] = 0.5;
+	_g.h["LifeMax"] = 1.3;
 	var _g1 = new haxe_ds_StringMap();
 	_g1.h["Defense"] = 1;
 	var _g2 = new haxe_ds_StringMap();
-	_g2.h["Defense"] = 0.2;
+	_g2.h["Defense"] = 0.1;
 	_g2.h["Speed"] = 0;
 	tmp.push({ speciesMultiplier : { attributesBase : _g}, speciesAdd : _g1, speciesLevelStats : { attributesBase : _g2}});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -1653,18 +1653,7 @@ BattleManager.prototype = {
 					var e = this.wdata.hero.equipment[i];
 					if(e != null) {
 						var reset = this.ResetEquipToBaseLevel(e,1);
-						if(reset == false) {
-							var h = e.attributes.h;
-							var s_h = h;
-							var s_keys = Object.keys(h);
-							var s_length = s_keys.length;
-							var s_current = 0;
-							while(s_current < s_length) {
-								var s = s_keys[s_current++];
-								var v = e.attributes.h[s] * 0.2 | 0;
-								e.attributes.h[s] = v;
-							}
-						}
+						var tmp = reset == false;
 						if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"level")) {
 							var levelId = e.outsideSystems.h["level"];
 							if(levelId >= 0) {
@@ -1948,8 +1937,23 @@ BattleManager.prototype = {
 		}
 		this.RecalculateAttributes(this.wdata.hero);
 	}
-	,IsEquipped: function(pos) {
-		return this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.indexOf(pos) != -1;
+	,IsEquipped: function(pos,anySet) {
+		if(anySet == null) {
+			anySet = true;
+		}
+		if(anySet) {
+			var _g = 0;
+			var _g1 = this.wdata.hero.equipmentSets.length;
+			while(_g < _g1) {
+				var i = _g++;
+				if(this.wdata.hero.equipmentSets[i].equipmentSlots.indexOf(pos) != -1) {
+					return true;
+				}
+			}
+			return false;
+		} else {
+			return this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.indexOf(pos) != -1;
+		}
 	}
 	,AddEvent: function(eventType) {
 		var e = new GameEvent(eventType);
@@ -2337,7 +2341,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1924, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1938, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2354,7 +2358,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1941, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1955, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3359,7 +3363,7 @@ Main.gamemain = function() {
 							upgradeCurrency = "Lagrima Stone";
 						}
 					}
-					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i),rarity,-1,e.type == 2,e.seen == 1,upgradable,canUpgrade,upgradeCost,BattleManager.GetSellPrize(e,bm.wdata),upgradeLabel,upgradeCurrency);
+					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i,false),rarity,-1,e.type == 2,e.seen == 1,upgradable,canUpgrade,upgradeCost,BattleManager.GetSellPrize(e,bm.wdata),upgradeLabel,upgradeCurrency,bm.IsEquipped(i,true));
 					var vid = 0;
 					if(e.outsideSystems != null) {
 						if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"skillset")) {
@@ -5384,7 +5388,10 @@ View.prototype = {
 			this.equipmentMainAction(equipmentPos,actionId);
 		}
 	}
-	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee,upgradeVisible,upgradable,cost,sellGain,upgradeLabel,upgradeCurrencyLabel) {
+	,FeedEquipmentBase: function(pos,name,equipped,rarity,numberOfValues,unequipable,firstTimeSee,upgradeVisible,upgradable,cost,sellGain,upgradeLabel,upgradeCurrencyLabel,equippedInAnySet) {
+		if(equippedInAnySet == null) {
+			equippedInAnySet = false;
+		}
 		if(upgradeCurrencyLabel == null) {
 			upgradeCurrencyLabel = "Lagrima";
 		}
@@ -5449,7 +5456,7 @@ View.prototype = {
 				this.equipments[pos].parent.set_backgroundColor(haxe_ui_util_Color.fromString("black"));
 			}
 		}
-		this.equipments[pos].actionButtons[1].set_hidden(equipped == true);
+		this.equipments[pos].actionButtons[1].set_hidden(equippedInAnySet == true);
 		this.equipments[pos].actionButtons[1].set_text("Sell\n" + sellGain + " Lagrima");
 		this.equipments[pos].actionButtons[2].set_text("" + upgradeLabel + "\n-" + cost + " " + upgradeCurrencyLabel);
 		while(this.equipments[pos].values.length < numberOfValues) {
