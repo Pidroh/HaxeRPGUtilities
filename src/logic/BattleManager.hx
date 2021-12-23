@@ -1249,26 +1249,34 @@ class BattleManager {
 		wdata.prestigeTimes++;
 		RecalculateAttributes(wdata.hero);
 		for (i in 0...wdata.hero.equipment.length) {
-			if (wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.contains(i)) {
-				var e = wdata.hero.equipment[i];
-				if (e != null) {
-					var reset = ResetEquipToBaseLevel(e, 1);
-					if (reset == false) {
-						for (s in e.attributes.keys()) {
-							e.attributes[s] = Std.int(e.attributes[s] * 0.2);
+			var equipKept = false;
+			for (j in 0...wdata.hero.equipmentSets.length) {
+				if (wdata.hero.equipmentSets[j].equipmentSlots.contains(i)) {
+					var e = wdata.hero.equipment[i];
+					if (e != null) {
+						var reset = ResetEquipToBaseLevel(e, 1);
+						if (reset == false) {
+							for (s in e.attributes.keys()) {
+								e.attributes[s] = Std.int(e.attributes[s] * 0.2);
+							}
+						}
+						if (e.outsideSystems.exists("level")) {
+							var levelId = e.outsideSystems["level"];
+							if (levelId >= 0) {
+								var el = wdata.equipLevels[levelId];
+								el.ascension = 0;
+								el.level = 0;
+								el.limitbreak = 0;
+							}
 						}
 					}
-					if (e.outsideSystems.exists("level")) {
-						var levelId = e.outsideSystems["level"];
-						if (levelId >= 0) {
-							var el = wdata.equipLevels[levelId];
-							el.ascension = 0;
-							el.level = 0;
-							el.limitbreak = 0;
-						}
-					}
-				}
-			} else {
+					equipKept = true;
+					break;
+				} 
+			}
+			
+			
+			if (equipKept) {
 				wdata.hero.equipment[i] = null;
 			}
 		}

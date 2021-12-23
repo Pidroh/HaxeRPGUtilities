@@ -1543,33 +1543,42 @@ BattleManager.prototype = {
 		var _g1 = this.wdata.hero.equipment.length;
 		while(_g < _g1) {
 			var i = _g++;
-			if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.indexOf(i) != -1) {
-				var e = this.wdata.hero.equipment[i];
-				if(e != null) {
-					var reset = this.ResetEquipToBaseLevel(e,1);
-					if(reset == false) {
-						var h = e.attributes.h;
-						var s_h = h;
-						var s_keys = Object.keys(h);
-						var s_length = s_keys.length;
-						var s_current = 0;
-						while(s_current < s_length) {
-							var s = s_keys[s_current++];
-							var v = e.attributes.h[s] * 0.2 | 0;
-							e.attributes.h[s] = v;
+			var equipKept = false;
+			var _g2 = 0;
+			var _g3 = this.wdata.hero.equipmentSets.length;
+			while(_g2 < _g3) {
+				var j = _g2++;
+				if(this.wdata.hero.equipmentSets[j].equipmentSlots.indexOf(i) != -1) {
+					var e = this.wdata.hero.equipment[i];
+					if(e != null) {
+						var reset = this.ResetEquipToBaseLevel(e,1);
+						if(reset == false) {
+							var h = e.attributes.h;
+							var s_h = h;
+							var s_keys = Object.keys(h);
+							var s_length = s_keys.length;
+							var s_current = 0;
+							while(s_current < s_length) {
+								var s = s_keys[s_current++];
+								var v = e.attributes.h[s] * 0.2 | 0;
+								e.attributes.h[s] = v;
+							}
+						}
+						if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"level")) {
+							var levelId = e.outsideSystems.h["level"];
+							if(levelId >= 0) {
+								var el = this.wdata.equipLevels[levelId];
+								el.ascension = 0;
+								el.level = 0;
+								el.limitbreak = 0;
+							}
 						}
 					}
-					if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"level")) {
-						var levelId = e.outsideSystems.h["level"];
-						if(levelId >= 0) {
-							var el = this.wdata.equipLevels[levelId];
-							el.ascension = 0;
-							el.level = 0;
-							el.limitbreak = 0;
-						}
-					}
+					equipKept = true;
+					break;
 				}
-			} else {
+			}
+			if(equipKept) {
 				this.wdata.hero.equipment[i] = null;
 			}
 		}
@@ -2227,7 +2236,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1917:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1925:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2244,7 +2253,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1934:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1942:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
