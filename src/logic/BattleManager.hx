@@ -185,7 +185,7 @@ class BattleManager {
 			var elementDmg = element + "-damage";
 			if (defender.attributesCalculated.exists(elementDmg)) {
 				var baseDmg = defender.attributesCalculated[elementDmg];
-				attackRate = Std.int(attackRate*baseDmg / 100);
+				attackRate = Std.int(attackRate * baseDmg / 100);
 			}
 		}
 		if (attacker.attributesCalculated["Blood"] > 0) {
@@ -327,6 +327,22 @@ class BattleManager {
 			wdata.skillSets = new Array<SkillSet>();
 		var skillSetPos = ArrayHelper.InsertOnEmpty(ss, wdata.skillSets);
 		DropItem(itemB, -1, skillSetPos, enemyLevel, dropperReference, event);
+	}
+
+	public function ResetEquipToBaseLevel(equipment:Equipment, level:Int):Bool {
+		var baseItem = equipment.generationBaseItem;
+		if (baseItem >= 0) {
+			var ib = itemBases[baseItem];
+			if (ib != null) {
+				for (key => value in ib.scalingStats) {
+					equipment.attributes[key] = Std.int(value * level);
+				}
+				equipment.generationLevel = 1;
+				return true;
+			}
+			return false;
+		}
+		return false;
 	}
 
 	public function DropItemOrSkillSet(itemDropProbability:Int, skillSetDropProbability:Int = 2, enemyLevel:Int, dropperReference = null) {
@@ -873,7 +889,7 @@ class BattleManager {
 			attributes: ["ice-damage" => 250, "thunder-damage" => 30]
 		});
 
-		var pus : Array<ProceduralUnit> = [];
+		var pus:Array<ProceduralUnit> = [];
 		{
 			var pu = new ProceduralUnit();
 			pu.characteristics.push(0);
@@ -1140,8 +1156,7 @@ class BattleManager {
 			enabled: false,
 			timesUsed: 0,
 			mode: 0
-		}, null 
-		);
+		}, null);
 
 		addAction("retreat", {
 			visible: false,
@@ -1237,8 +1252,20 @@ class BattleManager {
 			if (wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots.contains(i)) {
 				var e = wdata.hero.equipment[i];
 				if (e != null) {
-					for (s in e.attributes.keys()) {
-						e.attributes[s] = Std.int(e.attributes[s] * 0.2);
+					var reset = ResetEquipToBaseLevel(e, 1);
+					if (reset == false) {
+						for (s in e.attributes.keys()) {
+							e.attributes[s] = Std.int(e.attributes[s] * 0.2);
+						}
+					}
+					if (e.outsideSystems.exists("level")) {
+						var levelId = e.outsideSystems["level"];
+						if (levelId >= 0) {
+							var el = wdata.equipLevels[levelId];
+							el.ascension = 0;
+							el.level = 0;
+							el.limitbreak = 0;
+						}
 					}
 				}
 			} else {

@@ -473,7 +473,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:815:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:831:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -922,6 +922,32 @@ BattleManager.prototype = {
 		}
 		var skillSetPos = ArrayHelper.InsertOnEmpty(ss,this.wdata.skillSets);
 		this.DropItem(itemB,-1,skillSetPos,enemyLevel,dropperReference,event);
+	}
+	,ResetEquipToBaseLevel: function(equipment,level) {
+		var baseItem = equipment.generationBaseItem;
+		if(baseItem >= 0) {
+			var ib = this.itemBases[baseItem];
+			if(ib != null) {
+				var h = ib.scalingStats.h;
+				var _g_h = h;
+				var _g_keys = Object.keys(h);
+				var _g_length = _g_keys.length;
+				var _g_current = 0;
+				while(_g_current < _g_length) {
+					var key = _g_keys[_g_current++];
+					var _g1_key = key;
+					var _g1_value = _g_h[key];
+					var key1 = _g1_key;
+					var value = _g1_value;
+					var v = value * level | 0;
+					equipment.attributes.h[key1] = v;
+				}
+				equipment.generationLevel = 1;
+				return true;
+			}
+			return false;
+		}
+		return false;
 	}
 	,DropItemOrSkillSet: function(itemDropProbability,skillSetDropProbability,enemyLevel,dropperReference) {
 		if(skillSetDropProbability == null) {
@@ -1520,15 +1546,27 @@ BattleManager.prototype = {
 			if(this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots.indexOf(i) != -1) {
 				var e = this.wdata.hero.equipment[i];
 				if(e != null) {
-					var h = e.attributes.h;
-					var s_h = h;
-					var s_keys = Object.keys(h);
-					var s_length = s_keys.length;
-					var s_current = 0;
-					while(s_current < s_length) {
-						var s = s_keys[s_current++];
-						var v = e.attributes.h[s] * 0.2 | 0;
-						e.attributes.h[s] = v;
+					var reset = this.ResetEquipToBaseLevel(e,1);
+					if(reset == false) {
+						var h = e.attributes.h;
+						var s_h = h;
+						var s_keys = Object.keys(h);
+						var s_length = s_keys.length;
+						var s_current = 0;
+						while(s_current < s_length) {
+							var s = s_keys[s_current++];
+							var v = e.attributes.h[s] * 0.2 | 0;
+							e.attributes.h[s] = v;
+						}
+					}
+					if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"level")) {
+						var levelId = e.outsideSystems.h["level"];
+						if(levelId >= 0) {
+							var el = this.wdata.equipLevels[levelId];
+							el.ascension = 0;
+							el.level = 0;
+							el.limitbreak = 0;
+						}
 					}
 				}
 			} else {
@@ -2189,7 +2227,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1890:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1917:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2206,7 +2244,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1907:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1934:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
