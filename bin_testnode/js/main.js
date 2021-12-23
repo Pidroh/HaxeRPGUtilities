@@ -1798,7 +1798,6 @@ BattleManager.prototype = {
 		} else {
 			this.wdata.hero.equipmentSets[this.wdata.hero.chosenEquipSet].equipmentSlots[slot] = pos;
 		}
-		this.UseMP(this.wdata.hero,9999,false);
 		this.RecalculateAttributes(this.wdata.hero);
 	}
 	,IsEquipped: function(pos) {

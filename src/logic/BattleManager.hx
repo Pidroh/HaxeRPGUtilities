@@ -1501,7 +1501,7 @@ class BattleManager {
 		} else {
 			wdata.hero.equipmentSets[wdata.hero.chosenEquipSet].equipmentSlots[slot] = pos;
 		}
-		UseMP(wdata.hero, 9999, false);
+		// UseMP(wdata.hero, 9999, false);
 		RecalculateAttributes(wdata.hero);
 	}
 
