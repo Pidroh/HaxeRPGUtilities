@@ -1098,10 +1098,13 @@ class BattleManager {
 		if (wdata.regionProgress == null) {
 			wdata.regionProgress = [];
 		}
-		for (r in wdata.regionProgress) {
+		for (i in 0...wdata.regionProgress.length) {
+			CheckRegionNull(i);
+			var r = wdata.regionProgress[i];
 			if (r.maxAreaOnPrestigeRecord == null)
 				r.maxAreaOnPrestigeRecord = [];
 		}
+
 		if (wdata.battleAreaRegionMax >= 1 == false) {
 			wdata.battleAreaRegionMax = 1;
 		}
@@ -1256,14 +1259,13 @@ class BattleManager {
 					if (e != null) {
 						var reset = ResetEquipToBaseLevel(e, 1);
 						if (reset == false) {
-
 							// base item-less items will not get reset
 
 							/* 
-							for (s in e.attributes.keys()) {
-								e.attributes[s] = Std.int(e.attributes[s] * 0.2);
-							}
-							*/
+								for (s in e.attributes.keys()) {
+									e.attributes[s] = Std.int(e.attributes[s] * 0.2);
+								}
+							 */
 						}
 						if (e.outsideSystems.exists("level")) {
 							var levelId = e.outsideSystems["level"];
@@ -1286,8 +1288,7 @@ class BattleManager {
 		}
 	}
 
-	public function changeRegion(region) {
-		wdata.battleAreaRegion = region;
+	public function CheckRegionNull(region) {
 		if (wdata.regionProgress[region] == null)
 			wdata.regionProgress[region] = {
 				area: 0,
@@ -1296,6 +1297,11 @@ class BattleManager {
 				maxAreaRecord: 1,
 				maxAreaOnPrestigeRecord: []
 			}
+	}
+
+	public function changeRegion(region) {
+		wdata.battleAreaRegion = region;
+		CheckRegionNull(region);
 		ChangeBattleArea(wdata.regionProgress[region].area);
 		// wdata.battleArea = wdata.regionProgress[region].area;
 		wdata.maxArea = wdata.regionProgress[region].maxArea;

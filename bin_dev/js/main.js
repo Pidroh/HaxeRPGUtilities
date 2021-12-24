@@ -1493,10 +1493,11 @@ BattleManager.prototype = {
 			this.wdata.regionProgress = [];
 		}
 		var _g = 0;
-		var _g1 = this.wdata.regionProgress;
-		while(_g < _g1.length) {
-			var r = _g1[_g];
-			++_g;
+		var _g1 = this.wdata.regionProgress.length;
+		while(_g < _g1) {
+			var i = _g++;
+			this.CheckRegionNull(i);
+			var r = this.wdata.regionProgress[i];
 			if(r.maxAreaOnPrestigeRecord == null) {
 				r.maxAreaOnPrestigeRecord = [];
 			}
@@ -1673,11 +1674,14 @@ BattleManager.prototype = {
 			}
 		}
 	}
-	,changeRegion: function(region) {
-		this.wdata.battleAreaRegion = region;
+	,CheckRegionNull: function(region) {
 		if(this.wdata.regionProgress[region] == null) {
 			this.wdata.regionProgress[region] = { area : 0, maxArea : 1, amountEnemyKilledInArea : 0, maxAreaRecord : 1, maxAreaOnPrestigeRecord : []};
 		}
+	}
+	,changeRegion: function(region) {
+		this.wdata.battleAreaRegion = region;
+		this.CheckRegionNull(region);
 		this.ChangeBattleArea(this.wdata.regionProgress[region].area);
 		this.wdata.maxArea = this.wdata.regionProgress[region].maxArea;
 		this.wdata.killedInArea[this.wdata.battleArea] = this.wdata.regionProgress[region].amountEnemyKilledInArea;
@@ -2341,7 +2345,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1938, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1944, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2358,7 +2362,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1955, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1961, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
