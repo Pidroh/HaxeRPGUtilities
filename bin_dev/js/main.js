@@ -3094,6 +3094,9 @@ Main.gamemain = function() {
 	view.regionChangeAction = function(i) {
 		bm.changeRegion(i);
 	};
+	view.areaChangeAction = function(i) {
+		bm.ChangeBattleArea(i);
+	};
 	var ls = js_Browser.getLocalStorage();
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
@@ -3612,7 +3615,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 872, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 875, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3624,7 +3627,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 889, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 892, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3643,8 +3646,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 917, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 918, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 920, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 921, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5009,6 +5012,7 @@ View.prototype = {
 	,equipmentMainAction: null
 	,storyMainAction: null
 	,regionChangeAction: null
+	,areaChangeAction: null
 	,areaContainer: null
 	,regionButtonParent: null
 	,levelContainer: null
@@ -5262,7 +5266,7 @@ View.prototype = {
 			var areaPos = children.length;
 			this.regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
 			b.set_onClick(function(event) {
-				_gthis.regionChangeAction(areaPos);
+				_gthis.areaChangeAction(areaPos);
 			});
 			b.set_width(100);
 			b.set_height(40);

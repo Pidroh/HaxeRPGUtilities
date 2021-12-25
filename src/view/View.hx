@@ -86,6 +86,7 @@ class View {
 	public var equipmentMainAction:(Int, Int) -> Void;
 	public var storyMainAction:(Int, Int) -> Void;
 	public var regionChangeAction:(Int) -> Void;
+	public var areaChangeAction:(Int) -> Void;
 
 	public var areaContainer:Component;
 	public var regionButtonParent:Component;
@@ -739,7 +740,7 @@ class View {
 			var b = new Button();
 			var areaPos = children.length;
 			regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
-			b.onClick = event -> regionChangeAction(areaPos);
+			b.onClick = event -> areaChangeAction(areaPos);
 			b.width = 100;
 			b.height = 40;
 			b.toggle = true;

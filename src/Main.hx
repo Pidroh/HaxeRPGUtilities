@@ -248,6 +248,9 @@ class Main {
 		view.regionChangeAction = i -> {
 			bm.changeRegion(i);
 		}
+		view.areaChangeAction = i -> {
+			bm.ChangeBattleArea(i);
+		}
 
 		var ls = Browser.getLocalStorage();
 
