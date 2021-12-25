@@ -498,43 +498,8 @@ class Main {
 
 			// view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
 
-			if (bm.wdata.battleAreaRegion == 0) {
-				if (bm.wdata.battleArea > 0) {
-					var pur = bm.enemyAreaFromProcedural.GetProceduralUnitRepeated(bm.wdata.battleArea - 1);
-					var characteristic = pur.proceduralUnit.characteristics[0];
-					var text = lagrimaAreaLabels[characteristic];
-
-					switch pur.proceduralUnit.repeat {
-						case 1:
-							{
-								text += " II";
-							}
-						case 2:
-							{
-								text += " III";
-							}
-						case 3:
-							{
-								text += " IV";
-							}
-						case 4:
-							{
-								text += " V";
-							}
-					}
-
-					text += " - " + (pur.position + 1);
-					view.UpdateValues(view.areaLabel, 1, 1, null, false, text);
-				} else {
-					if (bm.wdata.battleAreaRegion == 0)
-						view.UpdateValues(view.areaLabel, 1, 1, null, false, "Home");
-					else
-						view.UpdateValues(view.areaLabel, 1, 1, null, false, "Entrance");
-				}
-				// view.UpdateValues
-			} else {
-				view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
-			}
+			RefreshAreaName(bm, bm.wdata.battleAreaRegion, bm.wdata.maxArea, areaNames, lagrimaAreaLabels);
+			view.UpdateValues(view.areaLabel, 1, 1, null, false, areaNames[bm.wdata.battleAreaRegion][bm.wdata.battleArea]);
 
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);
 			StoryControlLogic.Update(timeStamp, storyRuntime, view, scriptExecuter);
@@ -903,7 +868,6 @@ class Main {
 	}
 
 	static function runTest() {
-
 		trace("Discard worse equip tests");
 		var bm:BattleManager = new BattleManager();
 		bm.DefaultConfiguration();
@@ -951,6 +915,58 @@ class Main {
 		if (numberOfNullEquipment != 2) {
 			trace('ERROR: discard worse equipment problem: $numberOfNullEquipment VS 2 (a)');
 			trace('$oldEquipN $equipN');
+		}
+	}
+
+	static function RefreshAreaName(bm:BattleManager, region:Int, maxArea:Int, areaNames:Array<Array<String>>, lagrimaAreaLabels) {
+		if (areaNames[region] == null)
+			areaNames[region] = new Array<String>();
+		while (areaNames[region].length <= maxArea) {
+			var bArea = areaNames[region].length;
+			if (region == 0) {
+				if (bArea > 0) {
+					var pur = bm.enemyAreaFromProcedural.GetProceduralUnitRepeated(bArea - 1);
+					var characteristic = pur.proceduralUnit.characteristics[0];
+					var text = lagrimaAreaLabels[characteristic];
+
+					switch pur.proceduralUnit.repeat {
+						case 1:
+							{
+								text += " II";
+							}
+						case 2:
+							{
+								text += " III";
+							}
+						case 3:
+							{
+								text += " IV";
+							}
+						case 4:
+							{
+								text += " V";
+							}
+					}
+
+					text += " - " + (pur.position + 1);
+					areaNames[region].push(text);
+					// view.UpdateValues(view.areaLabel, 1, 1, null, false, text);
+				} else {
+					if (region == 0)
+						areaNames[region].push("Home");
+					// view.UpdateValues(view.areaLabel, 1, 1, null, false, "Home");
+					else
+						areaNames[region].push("Entrance");
+					// view.UpdateValues(view.areaLabel, 1, 1, null, false, "Entrance");
+				}
+				// view.UpdateValues
+			} else {
+				// view.UpdateValues(view.areaLabel, bm.wdata.battleArea + 1, -1);
+				if (bArea == 0)
+					areaNames[region].push("Entrance");
+				else
+					areaNames[region].push("" + (bArea));
+			}
 		}
 	}
 
