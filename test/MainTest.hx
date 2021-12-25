@@ -276,13 +276,15 @@ class MainTest {
 		{
 			Sys.println("Add skillset for all skills");
 			var bm:BattleManager = GetBattleManager();
-		
+
 			for (sb in bm.skillBases) {
 				bm.ForceSkillSetDrop(1, null, {
-					skills: [{
-						id: sb.id,
-						level: 1
-					}]
+					skills: [
+						{
+							id: sb.id,
+							level: 1
+						}
+					]
 				});
 			}
 
@@ -432,6 +434,25 @@ class MainTest {
 				sys.io.File.saveContent('error/json.json', json);
 				sys.io.File.saveContent('error/json2.json', json2);
 				// Sys.getChar(false);
+			}
+			{
+				trace("Test region change progression bug");
+				var bm:BattleManager =  GetBattleManager();
+				bm.DefaultConfiguration();
+				bm.wdata.hero.level = 200;
+				bm.RecalculateAttributes(bm.wdata.hero);
+				for (i in 0...20) {
+					bm.AdvanceArea();
+					for (i in 1...600) {
+						bm.update(0.9);
+					}
+				}
+
+				bm.changeRegion(2);
+				bm.AdvanceArea();
+				for (i in 1...600) {
+					bm.update(0.9);
+				}
 			}
 		}
 	}

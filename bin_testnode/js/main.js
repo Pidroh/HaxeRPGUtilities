@@ -2137,6 +2137,7 @@ BattleManager.prototype = {
 			var _g1 = this.wdata.regionProgress.length;
 			while(_g < _g1) {
 				var i = _g++;
+				this.CheckRegionNull(i);
 				var pro = this.wdata.regionProgress[i];
 				var prize = this.regionPrizes[i];
 				var bonusLevel = 0;
@@ -2244,7 +2245,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1944:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1945:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2261,7 +2262,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1961:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1962:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -2971,16 +2972,38 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:423:","  _____ ");
-		console.log("test/MainTest.hx:424:","  _____ ");
 		console.log("test/MainTest.hx:425:","  _____ ");
-		console.log("test/MainTest.hx:426:",json);
+		console.log("test/MainTest.hx:426:","  _____ ");
 		console.log("test/MainTest.hx:427:","  _____ ");
-		console.log("test/MainTest.hx:428:","  _____ ");
+		console.log("test/MainTest.hx:428:",json);
 		console.log("test/MainTest.hx:429:","  _____ ");
-		console.log("test/MainTest.hx:430:",json2);
+		console.log("test/MainTest.hx:430:","  _____ ");
+		console.log("test/MainTest.hx:431:","  _____ ");
+		console.log("test/MainTest.hx:432:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
+	}
+	console.log("test/MainTest.hx:439:","Test region change progression bug");
+	var bm = MainTest.GetBattleManager();
+	bm.DefaultConfiguration();
+	bm.wdata.hero.level = 200;
+	bm.RecalculateAttributes(bm.wdata.hero);
+	var _g = 0;
+	while(_g < 20) {
+		var i = _g++;
+		bm.AdvanceArea();
+		var _g1 = 1;
+		while(_g1 < 600) {
+			var i1 = _g1++;
+			bm.update(0.9);
+		}
+	}
+	bm.changeRegion(2);
+	bm.AdvanceArea();
+	var _g = 1;
+	while(_g < 600) {
+		var i = _g++;
+		bm.update(0.9);
 	}
 };
 var EnemyAreaInformation = function() {

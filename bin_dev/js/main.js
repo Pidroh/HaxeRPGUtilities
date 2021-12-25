@@ -2238,6 +2238,7 @@ BattleManager.prototype = {
 			var _g1 = this.wdata.regionProgress.length;
 			while(_g < _g1) {
 				var i = _g++;
+				this.CheckRegionNull(i);
 				var pro = this.wdata.regionProgress[i];
 				var prize = this.regionPrizes[i];
 				var bonusLevel = 0;
@@ -2345,7 +2346,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1944, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1945, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2362,7 +2363,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1961, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1962, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3244,6 +3245,7 @@ Main.gamemain = function() {
 	var saveFileImporterSetup = false;
 	var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
 	var bossMessage = originMessage;
+	var areaNames = [];
 	update = function(timeStamp) {
 		if(overlayFullActorId == 0) {
 			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
@@ -3636,7 +3638,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 904, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 907, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3648,7 +3650,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 921, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 924, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3667,8 +3669,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 949, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 950, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 952, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 953, className : "Main", methodName : "runTest"});
 	}
 };
 Main.GetEquipName = function(e,bm) {
@@ -4788,6 +4790,18 @@ var View = function() {
 	this.mainComponent.addComponent(this.tabMaster);
 	this.tabMaster.set_percentHeight(90);
 	this.tabMaster.set_verticalAlign("bottom");
+	this.regionTab = new haxe_ui_containers_HBox();
+	this.regionTab.set_text("Regions");
+	var vb = new haxe_ui_containers_VBox();
+	vb.set_horizontalAlign("center");
+	this.regionTab.addComponent(vb);
+	var vb = new haxe_ui_containers_VBox();
+	vb.set_horizontalAlign("center");
+	this.regionTab.addComponent(vb);
+	var vb = new haxe_ui_containers_VBox();
+	vb.set_horizontalAlign("center");
+	this.regionTab.addComponent(vb);
+	this.tabMaster.addComponent(this.regionTab);
 	var battleParent = new haxe_ui_containers_HBox();
 	battleParent.set_percentHeight(100);
 	this.tabMaster.addComponent(battleParent);
@@ -4970,6 +4984,7 @@ View.prototype = {
 	,equipTab: null
 	,developTab: null
 	,tabMaster: null
+	,regionTab: null
 	,logText: null
 	,logTextBattle: null
 	,areaNouns: null
@@ -5227,12 +5242,12 @@ View.prototype = {
 		}
 		var _gthis = this;
 		var buttonAmount = regionAmount + showLocked;
-		var _this = this.regionButtonParent;
+		var _this = this.regionTab.getComponentAt(0);
 		var children = _this._children == null ? [] : _this._children;
 		if(children.length < buttonAmount) {
 			var b = new haxe_ui_components_Button();
 			var regionPos = children.length;
-			this.regionButtonParent.addComponent(b);
+			this.regionTab.getComponentAt(0).addComponent(b);
 			b.set_onClick(function(event) {
 				_gthis.regionChangeAction(regionPos);
 			});

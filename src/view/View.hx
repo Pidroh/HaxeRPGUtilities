@@ -76,6 +76,7 @@ class View {
 	public var equipTab:UIElementWrapper;
 	public var developTab:UIElementWrapper;
 	public var tabMaster:TabView;
+	public var regionTab: Component;
 	public var logText:Label;
 	public var logTextBattle:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
@@ -433,6 +434,18 @@ class View {
 		tabMaster.percentHeight = 90;
 		tabMaster.verticalAlign = "bottom";
 
+		{
+			regionTab = new HBox();
+			regionTab.text = "Regions";
+			for (i in 0...3) {
+				var vb = new VBox();
+				vb.horizontalAlign = "center";
+				regionTab.addComponent(vb);
+			}
+
+			tabMaster.addComponent(regionTab);
+		}
+
 		var battleParent = new HBox();
 		battleParent.percentHeight = 100;
 		// mainComponent.addComponent(boxParent);
@@ -453,9 +466,6 @@ class View {
 		battleParent.addComponent(verticalBox);
 
 		buttonBox = CreateContainer(battleParent, true);
-		// buttonBox.hidden = true;
-		// buttonBox.percentHeight = 100;
-		// boxParent.addComponent(buttonBox);
 
 		{
 			var box = new Box();
@@ -712,11 +722,14 @@ class View {
 		// regionLabel.centeredText.text = regionNames[currentRegion];
 
 		var buttonAmount = regionAmount + showLocked;
-		var children = regionButtonParent.childComponents;
+		
+		var children = regionTab.getComponentAt(0).childComponents;
+		
 		if (children.length < buttonAmount) {
 			var b = new Button();
 			var regionPos = children.length;
-			regionButtonParent.addComponent(b);
+			// regionButtonParent.addComponent(b);
+			regionTab.getComponentAt(0).addComponent(b);
 
 			b.onClick = event -> regionChangeAction(regionPos);
 			b.width = 100;

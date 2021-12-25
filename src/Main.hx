@@ -472,6 +472,8 @@ class Main {
 		var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
 		var bossMessage = originMessage;
 
+		var areaNames = new Array<Array<String>>();
+
 		update = function(timeStamp:Float):Bool {
 			if (overlayFullActorId == 0)
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
@@ -901,6 +903,7 @@ class Main {
 	}
 
 	static function runTest() {
+
 		trace("Discard worse equip tests");
 		var bm:BattleManager = new BattleManager();
 		bm.DefaultConfiguration();

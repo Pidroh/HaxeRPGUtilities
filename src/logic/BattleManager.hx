@@ -1869,6 +1869,7 @@ $baseInfo';
 
 		if (actor == wdata.hero) {
 			for (i in 0...wdata.regionProgress.length) {
+				CheckRegionNull(i);
 				var pro = wdata.regionProgress[i];
 				var prize = regionPrizes[i];
 				var bonusLevel = 0;
