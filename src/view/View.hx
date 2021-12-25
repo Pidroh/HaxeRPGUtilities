@@ -435,13 +435,28 @@ class View {
 		tabMaster.verticalAlign = "bottom";
 
 		{
-			regionTab = new HBox();
+			var grid = new Grid();
+			regionTab = grid;
+			grid.columns = 3;
+			
 			regionTab.text = "Regions";
-			for (i in 0...3) {
+
+			{
 				var vb = new VBox();
 				vb.horizontalAlign = "center";
 				regionTab.addComponent(vb);
 			}
+			{
+				var scroll = CreateScrollable(regionTab);
+				scroll.width = 410;
+				scroll.percentHeight = 100;
+				var vb = new ContinuousHBox();
+				vb.percentWidth = 90;
+				vb.horizontalAlign = "center";
+				scroll.addComponent(vb);
+			}
+
+
 
 			tabMaster.addComponent(regionTab);
 		}
@@ -717,19 +732,18 @@ class View {
 		}
 	}
 
-	public function FeedAreaNames(areaNames : Array<String>, currentArea) {
-		var children = regionTab.getComponentAt(1).childComponents;
+	public function FeedAreaNames(areaNames:Array<String>, currentArea) {
+		var children = regionTab.getComponentAt(1).getComponentAt(0).childComponents;
 		var buttonAmount = children.length;
 		if (children.length < areaNames.length) {
 			var b = new Button();
 			var areaPos = children.length;
-			// regionButtonParent.addComponent(b);
-			regionTab.getComponentAt(1).addComponent(b);
-
+			regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
 			b.onClick = event -> regionChangeAction(areaPos);
 			b.width = 100;
 			b.height = 40;
 			b.toggle = true;
+			b.horizontalAlign = "center";
 		}
 		for (i in 0...children.length) {
 			var hide = i >= areaNames.length;
@@ -740,7 +754,6 @@ class View {
 			if (hide == false) {
 				children[i].text = areaNames[i];
 			}
-
 		}
 	}
 
