@@ -911,7 +911,7 @@ class BattleManager {
 		var stats = ["Attack" => 1, "Life" => 20, "LifeMax" => 20, "Speed" => 20, "SpeedCount" => 0];
 
 		var w:WorldData = {
-			worldVersion: 1207,
+			worldVersion: 1501,
 			hero: {
 				level: 1,
 				attributesBase: null,
