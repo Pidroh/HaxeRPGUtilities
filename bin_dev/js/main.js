@@ -3268,6 +3268,7 @@ Main.gamemain = function() {
 		view.UpdateValues(view.currencyViews[0],bm.wdata.currency.currencies.h["Lagrima"].value,-1);
 		view.UpdateValues(view.currencyViews[1],bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
 		Main.RefreshAreaName(bm,bm.wdata.battleAreaRegion,bm.wdata.maxArea,areaNames,lagrimaAreaLabels);
+		view.FeedAreaNames(areaNames[bm.wdata.battleAreaRegion],bm.wdata.battleArea);
 		view.UpdateValues(view.areaLabel,1,1,null,false,areaNames[bm.wdata.battleAreaRegion][bm.wdata.battleArea]);
 		view.UpdateValues(view.enemyToAdvance,bm.wdata.killedInArea[bm.wdata.battleArea],bm.wdata.necessaryToKillInArea);
 		StoryControlLogic.Update(timeStamp,storyRuntime,view,scriptExecuter);
@@ -3611,7 +3612,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 871, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 872, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3623,7 +3624,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 888, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 889, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3642,8 +3643,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 916, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 917, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 917, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 918, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5246,6 +5247,35 @@ View.prototype = {
 			var b = new haxe_ui_components_Button();
 			b.set_text(type);
 			this.equipmentTypeSelectionTabbar.addComponent(b);
+		}
+	}
+	,FeedAreaNames: function(areaNames,currentArea) {
+		var _gthis = this;
+		var _this = this.regionTab.getComponentAt(1);
+		var children = _this._children == null ? [] : _this._children;
+		var buttonAmount = children.length;
+		if(children.length < areaNames.length) {
+			var b = new haxe_ui_components_Button();
+			var areaPos = children.length;
+			this.regionTab.getComponentAt(1).addComponent(b);
+			b.set_onClick(function(event) {
+				_gthis.regionChangeAction(areaPos);
+			});
+			b.set_width(100);
+			b.set_height(40);
+			b.set_toggle(true);
+		}
+		var _g = 0;
+		var _g1 = children.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var hide = i >= areaNames.length;
+			var b = js_Boot.__cast(children[i] , haxe_ui_components_Button);
+			b.set_selected(currentArea == i);
+			children[i].set_hidden(hide);
+			if(hide == false) {
+				children[i].set_text(areaNames[i]);
+			}
 		}
 	}
 	,FeedDropDownRegion: function(regionNames,regionAmount,currentRegion,showLocked,lockedMessage) {

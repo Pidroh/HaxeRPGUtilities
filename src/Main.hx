@@ -499,6 +499,7 @@ class Main {
 			// view.UpdateValues(view.lifeView, bm.wdata.hero.attributesCalculated["LifeMax"], -1);
 
 			RefreshAreaName(bm, bm.wdata.battleAreaRegion, bm.wdata.maxArea, areaNames, lagrimaAreaLabels);
+			view.FeedAreaNames(areaNames[bm.wdata.battleAreaRegion], bm.wdata.battleArea);
 			view.UpdateValues(view.areaLabel, 1, 1, null, false, areaNames[bm.wdata.battleAreaRegion][bm.wdata.battleArea]);
 
 			view.UpdateValues(view.enemyToAdvance, bm.wdata.killedInArea[bm.wdata.battleArea], bm.wdata.necessaryToKillInArea);

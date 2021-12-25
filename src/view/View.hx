@@ -76,7 +76,7 @@ class View {
 	public var equipTab:UIElementWrapper;
 	public var developTab:UIElementWrapper;
 	public var tabMaster:TabView;
-	public var regionTab: Component;
+	public var regionTab:Component;
 	public var logText:Label;
 	public var logTextBattle:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
@@ -717,14 +717,41 @@ class View {
 		}
 	}
 
+	public function FeedAreaNames(areaNames : Array<String>, currentArea) {
+		var children = regionTab.getComponentAt(1).childComponents;
+		var buttonAmount = children.length;
+		if (children.length < areaNames.length) {
+			var b = new Button();
+			var areaPos = children.length;
+			// regionButtonParent.addComponent(b);
+			regionTab.getComponentAt(1).addComponent(b);
+
+			b.onClick = event -> regionChangeAction(areaPos);
+			b.width = 100;
+			b.height = 40;
+			b.toggle = true;
+		}
+		for (i in 0...children.length) {
+			var hide = i >= areaNames.length;
+			var b:Button = cast(children[i], Button);
+			b.selected = currentArea == i;
+			// hide = true;
+			children[i].hidden = hide;
+			if (hide == false) {
+				children[i].text = areaNames[i];
+			}
+
+		}
+	}
+
 	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion, showLocked = 0, lockedMessage = null) {
 		// feed the current region view
 		// regionLabel.centeredText.text = regionNames[currentRegion];
 
 		var buttonAmount = regionAmount + showLocked;
-		
+
 		var children = regionTab.getComponentAt(0).childComponents;
-		
+
 		if (children.length < buttonAmount) {
 			var b = new Button();
 			var regionPos = children.length;
