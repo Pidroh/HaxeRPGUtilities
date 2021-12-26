@@ -1,3 +1,4 @@
+import ProceduralEnemyGeneration.EnemyAreaInformation;
 import haxe.ui.styles.animation.util.ColorPropertyDetails;
 import haxe.ui.Toolkit;
 import haxe.ui.events.MouseEvent;
@@ -53,6 +54,7 @@ class View {
 
 	public var equipHeroStats:ActorViewComplete;
 	public var overlayActorFullView:ActorViewComplete;
+	public var enemyAreaStats : ActorViewComplete;
 
 	public var level:ValueView;
 	public var xpBar:ValueView;
@@ -87,6 +89,7 @@ class View {
 	public var storyMainAction:(Int, Int) -> Void;
 	public var regionChangeAction:(Int) -> Void;
 	public var areaChangeAction:(Int) -> Void;
+	public var areaButtonHover:(Int, Bool) -> Void;
 
 	public var areaContainer:Component;
 	public var regionButtonParent:Component;
@@ -456,6 +459,9 @@ class View {
 				vb.horizontalAlign = "center";
 				scroll.addComponent(vb);
 			}
+			{
+				enemyAreaStats = CreateActorViewComplete("Enemy", regionTab);
+			}
 
 
 
@@ -745,6 +751,7 @@ class View {
 			b.height = 40;
 			b.toggle = true;
 			b.horizontalAlign = "center";
+			addHover(b, (b, component) -> areaButtonHover(areaPos, b));
 		}
 		for (i in 0...children.length) {
 			var hide = i >= areaNames.length;

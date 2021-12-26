@@ -473,7 +473,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:831:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:943:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -1241,10 +1241,10 @@ BattleManager.prototype = {
 	,GetLevelRequirementForPrestige: function() {
 		return this.CalculateHeroMaxLevel() - 10;
 	}
-	,CreateAreaEnemy: function() {
-		var region = this.wdata.battleAreaRegion;
-		var enemyLevel = this.wdata.battleArea;
+	,CreateEnemy: function(region,area) {
+		var enemyLevel = area;
 		var sheet = this.enemySheets[region];
+		var enemy;
 		if(region > 0) {
 			var oldLevel = enemyLevel;
 			enemyLevel = 0;
@@ -1258,7 +1258,7 @@ BattleManager.prototype = {
 		}
 		var equipment = null;
 		if(region == 0 && this.enemyAreaFromProcedural != null && this.enemyAreaFromProcedural.units != null) {
-			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea - 1);
+			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(area - 1);
 			sheet = areaInfo.sheet;
 			enemyLevel += areaInfo.level;
 			equipment = areaInfo.equipment;
@@ -1280,11 +1280,11 @@ BattleManager.prototype = {
 		_g.h["MagicDefense"] = 0;
 		_g.h["Piercing"] = 0;
 		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
+		enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
 		if(equipment != null) {
-			this.wdata.enemy.equipment.push(equipment);
-			this.wdata.enemy.equipmentSets = [{ equipmentSlots : [0]}];
-			this.wdata.enemy.chosenEquipSet = 0;
+			enemy.equipment.push(equipment);
+			enemy.equipmentSets = [{ equipmentSlots : [0]}];
+			enemy.chosenEquipSet = 0;
 		}
 		if(sheet != null) {
 			var mul = sheet.speciesMultiplier;
@@ -1299,9 +1299,9 @@ BattleManager.prototype = {
 					var p_key = key;
 					var p_value = p_h[key];
 					var mul = p_value;
-					var value = this.wdata.enemy.attributesBase.h[p_key] * mul | 0;
-					this.wdata.enemy.attributesBase.h[p_key] = value;
-					this.wdata.enemy.attributesCalculated.h[p_key] = value;
+					var value = enemy.attributesBase.h[p_key] * mul | 0;
+					enemy.attributesBase.h[p_key] = value;
+					enemy.attributesCalculated.h[p_key] = value;
 				}
 			}
 			if(sheet.speciesAdd != null) {
@@ -1315,16 +1315,16 @@ BattleManager.prototype = {
 					var p_key = key;
 					var p_value = p_h[key];
 					var add = p_value;
-					if(Object.prototype.hasOwnProperty.call(this.wdata.enemy.attributesBase.h,p_key) == false) {
-						this.wdata.enemy.attributesBase.h[p_key] = add;
-						this.wdata.enemy.attributesCalculated.h[p_key] = add;
+					if(Object.prototype.hasOwnProperty.call(enemy.attributesBase.h,p_key) == false) {
+						enemy.attributesBase.h[p_key] = add;
+						enemy.attributesCalculated.h[p_key] = add;
 					} else {
 						var _g = p_key;
-						var _g1 = this.wdata.enemy.attributesBase;
+						var _g1 = enemy.attributesBase;
 						var v = _g1.h[_g] + add;
 						_g1.h[_g] = v;
 						var _g2 = p_key;
-						var _g3 = this.wdata.enemy.attributesCalculated;
+						var _g3 = enemy.attributesCalculated;
 						var v1 = _g3.h[_g2] + add;
 						_g3.h[_g2] = v1;
 					}
@@ -1341,18 +1341,22 @@ BattleManager.prototype = {
 					var p_key = key;
 					var p_value = p_h[key];
 					var addLevel = p_value;
-					var value = this.wdata.enemy.attributesBase.h[p_key] + addLevel * enemyLevel | 0;
-					this.wdata.enemy.attributesBase.h[p_key] = value;
-					this.wdata.enemy.attributesCalculated.h[p_key] = value;
+					var value = enemy.attributesBase.h[p_key] + addLevel * enemyLevel | 0;
+					enemy.attributesBase.h[p_key] = value;
+					enemy.attributesCalculated.h[p_key] = value;
 				}
 			}
 			if(sheet.initialBuff != null) {
-				this.AddBuff(sheet.initialBuff,this.wdata.enemy);
+				this.AddBuff(sheet.initialBuff,enemy);
 			}
 		}
-		this.RecalculateAttributes(this.wdata.enemy);
-		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
-		this.wdata.enemy.attributesCalculated.h["Life"] = v;
+		this.RecalculateAttributes(enemy);
+		var v = enemy.attributesCalculated.h["LifeMax"];
+		enemy.attributesCalculated.h["Life"] = v;
+		return enemy;
+	}
+	,CreateAreaEnemy: function() {
+		this.wdata.enemy = this.CreateEnemy(this.wdata.battleAreaRegion,this.wdata.battleArea);
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
@@ -2245,7 +2249,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1945:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:2057:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2262,7 +2266,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1962:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:2074:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

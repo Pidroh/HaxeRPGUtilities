@@ -547,7 +547,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 831, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 943, className : "BattleManager", methodName : "new"});
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -1342,10 +1342,10 @@ BattleManager.prototype = {
 	,GetLevelRequirementForPrestige: function() {
 		return this.CalculateHeroMaxLevel() - 10;
 	}
-	,CreateAreaEnemy: function() {
-		var region = this.wdata.battleAreaRegion;
-		var enemyLevel = this.wdata.battleArea;
+	,CreateEnemy: function(region,area) {
+		var enemyLevel = area;
 		var sheet = this.enemySheets[region];
+		var enemy;
 		if(region > 0) {
 			var oldLevel = enemyLevel;
 			enemyLevel = 0;
@@ -1359,7 +1359,7 @@ BattleManager.prototype = {
 		}
 		var equipment = null;
 		if(region == 0 && this.enemyAreaFromProcedural != null && this.enemyAreaFromProcedural.units != null) {
-			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(this.wdata.battleArea - 1);
+			var areaInfo = this.enemyAreaFromProcedural.GetEnemyAreaInformation(area - 1);
 			sheet = areaInfo.sheet;
 			enemyLevel += areaInfo.level;
 			equipment = areaInfo.equipment;
@@ -1381,11 +1381,11 @@ BattleManager.prototype = {
 		_g.h["MagicDefense"] = 0;
 		_g.h["Piercing"] = 0;
 		var stats2 = _g;
-		this.wdata.enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
+		enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
 		if(equipment != null) {
-			this.wdata.enemy.equipment.push(equipment);
-			this.wdata.enemy.equipmentSets = [{ equipmentSlots : [0]}];
-			this.wdata.enemy.chosenEquipSet = 0;
+			enemy.equipment.push(equipment);
+			enemy.equipmentSets = [{ equipmentSlots : [0]}];
+			enemy.chosenEquipSet = 0;
 		}
 		if(sheet != null) {
 			var mul = sheet.speciesMultiplier;
@@ -1400,9 +1400,9 @@ BattleManager.prototype = {
 					var p_key = key;
 					var p_value = p_h[key];
 					var mul = p_value;
-					var value = this.wdata.enemy.attributesBase.h[p_key] * mul | 0;
-					this.wdata.enemy.attributesBase.h[p_key] = value;
-					this.wdata.enemy.attributesCalculated.h[p_key] = value;
+					var value = enemy.attributesBase.h[p_key] * mul | 0;
+					enemy.attributesBase.h[p_key] = value;
+					enemy.attributesCalculated.h[p_key] = value;
 				}
 			}
 			if(sheet.speciesAdd != null) {
@@ -1416,16 +1416,16 @@ BattleManager.prototype = {
 					var p_key = key;
 					var p_value = p_h[key];
 					var add = p_value;
-					if(Object.prototype.hasOwnProperty.call(this.wdata.enemy.attributesBase.h,p_key) == false) {
-						this.wdata.enemy.attributesBase.h[p_key] = add;
-						this.wdata.enemy.attributesCalculated.h[p_key] = add;
+					if(Object.prototype.hasOwnProperty.call(enemy.attributesBase.h,p_key) == false) {
+						enemy.attributesBase.h[p_key] = add;
+						enemy.attributesCalculated.h[p_key] = add;
 					} else {
 						var _g = p_key;
-						var _g1 = this.wdata.enemy.attributesBase;
+						var _g1 = enemy.attributesBase;
 						var v = _g1.h[_g] + add;
 						_g1.h[_g] = v;
 						var _g2 = p_key;
-						var _g3 = this.wdata.enemy.attributesCalculated;
+						var _g3 = enemy.attributesCalculated;
 						var v1 = _g3.h[_g2] + add;
 						_g3.h[_g2] = v1;
 					}
@@ -1442,18 +1442,22 @@ BattleManager.prototype = {
 					var p_key = key;
 					var p_value = p_h[key];
 					var addLevel = p_value;
-					var value = this.wdata.enemy.attributesBase.h[p_key] + addLevel * enemyLevel | 0;
-					this.wdata.enemy.attributesBase.h[p_key] = value;
-					this.wdata.enemy.attributesCalculated.h[p_key] = value;
+					var value = enemy.attributesBase.h[p_key] + addLevel * enemyLevel | 0;
+					enemy.attributesBase.h[p_key] = value;
+					enemy.attributesCalculated.h[p_key] = value;
 				}
 			}
 			if(sheet.initialBuff != null) {
-				this.AddBuff(sheet.initialBuff,this.wdata.enemy);
+				this.AddBuff(sheet.initialBuff,enemy);
 			}
 		}
-		this.RecalculateAttributes(this.wdata.enemy);
-		var v = this.wdata.enemy.attributesCalculated.h["LifeMax"];
-		this.wdata.enemy.attributesCalculated.h["Life"] = v;
+		this.RecalculateAttributes(enemy);
+		var v = enemy.attributesCalculated.h["LifeMax"];
+		enemy.attributesCalculated.h["Life"] = v;
+		return enemy;
+	}
+	,CreateAreaEnemy: function() {
+		this.wdata.enemy = this.CreateEnemy(this.wdata.battleAreaRegion,this.wdata.battleArea);
 	}
 	,ReinitGameValues: function() {
 		var _gthis = this;
@@ -2346,7 +2350,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1945, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2057, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2363,7 +2367,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1962, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2074, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3097,6 +3101,16 @@ Main.gamemain = function() {
 	view.areaChangeAction = function(i) {
 		bm.ChangeBattleArea(i);
 	};
+	var lastRegion = -1;
+	var lastArea = -1;
+	view.areaButtonHover = function(i,b) {
+		if(b) {
+			if(lastRegion != bm.wdata.battleAreaRegion || lastArea != i) {
+				var enemy = bm.CreateEnemy(bm.wdata.battleAreaRegion,i);
+				ActorToFullView(enemy,view.enemyAreaStats);
+			}
+		}
+	};
 	var ls = js_Browser.getLocalStorage();
 	main.set_percentWidth(100);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
@@ -3615,7 +3629,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 875, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 889, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3627,7 +3641,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 892, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 906, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3646,8 +3660,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 920, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 921, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 934, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 935, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -4820,6 +4834,7 @@ var View = function() {
 	vb.set_percentWidth(90);
 	vb.set_horizontalAlign("center");
 	scroll.addComponent(vb);
+	this.enemyAreaStats = this.CreateActorViewComplete("Enemy",this.regionTab);
 	this.tabMaster.addComponent(this.regionTab);
 	var battleParent = new haxe_ui_containers_HBox();
 	battleParent.set_percentHeight(100);
@@ -4989,6 +5004,7 @@ View.prototype = {
 	,enemyView: null
 	,equipHeroStats: null
 	,overlayActorFullView: null
+	,enemyAreaStats: null
 	,level: null
 	,xpBar: null
 	,lifeView: null
@@ -5013,6 +5029,7 @@ View.prototype = {
 	,storyMainAction: null
 	,regionChangeAction: null
 	,areaChangeAction: null
+	,areaButtonHover: null
 	,areaContainer: null
 	,regionButtonParent: null
 	,levelContainer: null
@@ -5272,6 +5289,9 @@ View.prototype = {
 			b.set_height(40);
 			b.set_toggle(true);
 			b.set_horizontalAlign("center");
+			this.addHover(b,function(b,component) {
+				_gthis.areaButtonHover(areaPos,b);
+			});
 		}
 		var _g = 0;
 		var _g1 = children.length;

@@ -252,6 +252,20 @@ class Main {
 			bm.ChangeBattleArea(i);
 		}
 
+		var lastRegion = -1;
+		var lastArea = -1;
+		view.areaButtonHover = (i, b) -> {
+			if (b) {
+				if (lastRegion != bm.wdata.battleAreaRegion || lastArea != i) {
+					var enemy = bm.CreateEnemy(bm.wdata.battleAreaRegion, i);
+					ActorToFullView(enemy,view.enemyAreaStats);	
+
+				}
+				
+			}
+			// ActorToFullView();
+		}
+
 		var ls = Browser.getLocalStorage();
 
 		main.percentWidth = 100;

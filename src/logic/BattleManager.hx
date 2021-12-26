@@ -626,7 +626,119 @@ class BattleManager {
 		return CalculateHeroMaxLevel() - 10;
 	}
 
+	public function CreateEnemy(region:Int, area:Int):Actor {
+		var enemyLevel = area;
+
+		var sheet = this.enemySheets[region];
+
+		var enemy:Actor;
+
+		if (region > 0) {
+			var oldLevel = enemyLevel;
+			enemyLevel = 0;
+			for (i in 0...oldLevel) {
+				enemyLevel += 10;
+				enemyLevel += (i) * 10;
+			}
+			// enemyLevel = (enemyLevel + 1) * 10 - 1;
+		}
+
+		var equipment:Equipment = null;
+
+		if (region == 0 && enemyAreaFromProcedural != null && enemyAreaFromProcedural.units != null) {
+			var areaInfo = enemyAreaFromProcedural.GetEnemyAreaInformation(area - 1);
+			sheet = areaInfo.sheet;
+			enemyLevel += areaInfo.level;
+			equipment = areaInfo.equipment;
+		}
+
+		{
+			var timeToKillEnemy = balancing.timeToKillFirstEnemy;
+
+			var initialAttackHero = 1; // may have to put this somewhere...
+			var heroAttackTime = timePeriod * 2;
+			var heroDPS = initialAttackHero / heroAttackTime;
+
+			var initialLifeEnemy = Std.int(heroDPS * timeToKillEnemy);
+
+			var enemyLife = initialLifeEnemy + (enemyLevel - 1) * (initialLifeEnemy);
+			var enemyAttack = 1 + (enemyLevel - 1) * 1;
+
+			var stats2 = [
+				"Attack" => enemyAttack,
+				"Life" => enemyLife,
+				"LifeMax" => enemyLife,
+				"Speed" => 20,
+				"SpeedCount" => 0,
+				"Defense" => 0,
+				"MagicDefense" => 0,
+				"Piercing" => 0
+			];
+			enemy = {
+				level: 1 + enemyLevel,
+				attributesBase: stats2,
+				equipment: [],
+				xp: null,
+				attributesCalculated: stats2,
+				reference: new ActorReference(1, 0),
+				buffs: [],
+				usableSkills: []
+			};
+			if (equipment != null) {
+				enemy.equipment.push(equipment);
+				enemy.equipmentSets = [
+					{
+						equipmentSlots: [0]
+					}
+				];
+				enemy.chosenEquipSet = 0;
+			}
+			if (sheet != null) {
+				var mul = sheet.speciesMultiplier;
+				if (mul != null) {
+					for (p in mul.attributesBase.keyValueIterator()) {
+						var mul = p.value;
+						var value = Std.int(enemy.attributesBase[p.key] * mul);
+						enemy.attributesBase[p.key] = value;
+						enemy.attributesCalculated[p.key] = value;
+					}
+				}
+				if (sheet.speciesAdd != null)
+					for (p in sheet.speciesAdd.keyValueIterator()) {
+						var add = p.value;
+						if (enemy.attributesBase.exists(p.key) == false) {
+							enemy.attributesBase[p.key] = add;
+							enemy.attributesCalculated[p.key] = add;
+						} else {
+							enemy.attributesBase[p.key] += add;
+							enemy.attributesCalculated[p.key] += add;
+						}
+					}
+				if (sheet.speciesLevelStats != null)
+					for (p in sheet.speciesLevelStats.attributesBase.keyValueIterator()) {
+						var addLevel = p.value;
+						var value = Std.int(enemy.attributesBase[p.key] + addLevel * enemyLevel);
+						enemy.attributesBase[p.key] = value;
+						enemy.attributesCalculated[p.key] = value;
+					}
+				if (sheet.initialBuff != null) {
+					AddBuff(sheet.initialBuff, enemy);
+				}
+			}
+			RecalculateAttributes(enemy);
+			enemy.attributesCalculated["Life"] = enemy.attributesCalculated["LifeMax"];
+
+			// trace('Enemy speed ' + wdata.enemy.attributesCalculated["Speed"]);
+		}
+		return enemy;
+	}
+
+	// createEnemy
 	function CreateAreaEnemy() {
+		wdata.enemy = CreateEnemy(wdata.battleAreaRegion, wdata.battleArea);
+		return;
+
+		// DELETE THIS TODO
 		var region = wdata.battleAreaRegion;
 		var enemyLevel = wdata.battleArea;
 		var sheet = this.enemySheets[region];
