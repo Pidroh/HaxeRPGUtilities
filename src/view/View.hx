@@ -615,7 +615,7 @@ class View {
 			// gridBox.columns =2;
 			gridBox.text = "Equipment";
 			equipTab = new UIElementWrapper(gridBox, tabMaster);
-			equipTab.desiredPosition = 1;
+			equipTab.desiredPosition = 2;
 			gridBox.percentHeight = 100;
 			gridBox.percentWidth = 100;
 

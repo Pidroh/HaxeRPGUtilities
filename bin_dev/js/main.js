@@ -4938,7 +4938,7 @@ var View = function() {
 	var gridBox = new haxe_ui_containers_HBox();
 	gridBox.set_text("Equipment");
 	this.equipTab = new UIElementWrapper(gridBox,this.tabMaster);
-	this.equipTab.desiredPosition = 1;
+	this.equipTab.desiredPosition = 2;
 	gridBox.set_percentHeight(100);
 	gridBox.set_percentWidth(100);
 	var statContainer = this.CreateContainer(gridBox,true);
