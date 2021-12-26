@@ -92,7 +92,7 @@ class View {
 	public var areaButtonHover:(Int, Bool) -> Void;
 
 	public var areaContainer:Component;
-	public var regionButtonParent:Component;
+	// public var regionButtonParent:Component;
 	public var levelContainer:Component;
 	public var battleView:Component;
 
@@ -556,24 +556,16 @@ class View {
 		// areaContainer.percentHeight = 60;
 
 		// areaLabel = CreateValueView(areaContainer, false, "Area: ");
-		/*var ddv = CreateDropDownView(areaContainer, "Location: ");
-			ddv.dropdown.onChange = event -> {
-				var region = ddv.dropdown.selectedIndex;
-				regionChangeAction(region);
-			};
-			dropDownRegion = ddv;
+		/*
+			var ddv = CreateDropDownView(areaContainer, "Location: ");
+				ddv.dropdown.onChange = event -> {
+					var region = ddv.dropdown.selectedIndex;
+					regionChangeAction(region);
+				};
+				dropDownRegion = ddv;
 		 */
 		{
-			var container = new ContinuousHBox();
-			container.percentWidth = 100;
-			areaContainer.addComponent(container);
-			regionButtonParent = container;
-		}
-		{
 			var container = CreateContainer(areaContainer, false);
-			// container.marginLeft = 20;
-			// areaContainer.addComponent(container);
-			// regionLabel = CreateValueView(container, false, "Region: ");
 
 			areaLabel = CreateValueView(container, false, "Area: ", 200, 140);
 
@@ -616,7 +608,7 @@ class View {
 			// gridBox.columns =2;
 			gridBox.text = "Equipment";
 			equipTab = new UIElementWrapper(gridBox, tabMaster);
-			equipTab.desiredPosition = 1;
+			equipTab.desiredPosition = 2;
 			gridBox.percentHeight = 100;
 			gridBox.percentWidth = 100;
 

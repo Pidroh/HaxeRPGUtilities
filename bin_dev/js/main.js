@@ -547,7 +547,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 943, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 839, className : "BattleManager", methodName : "new"});
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -2350,7 +2350,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2057, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1953, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2367,7 +2367,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2074, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1970, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3278,6 +3278,7 @@ Main.gamemain = function() {
 			if(view.regionTab.get_hidden() == false && view.regionTab.parentComponent == null) {
 				flagRegionTab = true;
 				view.tabMaster.addComponentAt(view.regionTab,0);
+				view.equipTab.desiredPosition = 2;
 			}
 		}
 		if(overlayFullActorId == 0) {
@@ -3645,7 +3646,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 904, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 905, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3657,7 +3658,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 921, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 922, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3676,8 +3677,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 949, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 950, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 950, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 951, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -4913,10 +4914,6 @@ var View = function() {
 	this.levelContainer = this.CreateContainer(verticalBox,true);
 	this.level = this.CreateValueView(this.levelContainer,false,"Level: ");
 	this.xpBar = this.CreateValueView(this.levelContainer,true,"XP: ");
-	var container = new haxe_ui_containers_ContinuousHBox();
-	container.set_percentWidth(100);
-	this.areaContainer.addComponent(container);
-	this.regionButtonParent = container;
 	var container = this.CreateContainer(this.areaContainer,false);
 	this.areaLabel = this.CreateValueView(container,false,"Area: ",200,140);
 	var b = new haxe_ui_containers_Box();
@@ -4945,7 +4942,7 @@ var View = function() {
 	var gridBox = new haxe_ui_containers_HBox();
 	gridBox.set_text("Equipment");
 	this.equipTab = new UIElementWrapper(gridBox,this.tabMaster);
-	this.equipTab.desiredPosition = 1;
+	this.equipTab.desiredPosition = 2;
 	gridBox.set_percentHeight(100);
 	gridBox.set_percentWidth(100);
 	var statContainer = this.CreateContainer(gridBox,true);
@@ -5061,7 +5058,6 @@ View.prototype = {
 	,areaChangeAction: null
 	,areaButtonHover: null
 	,areaContainer: null
-	,regionButtonParent: null
 	,levelContainer: null
 	,battleView: null
 	,equipmentSetButtonParent_Battle: null

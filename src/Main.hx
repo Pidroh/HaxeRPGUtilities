@@ -505,6 +505,7 @@ class Main {
 				if (view.regionTab.hidden == false && view.regionTab.parentComponent == null) {
 					flagRegionTab = true;
 					view.tabMaster.addComponentAt(view.regionTab, 0);
+					view.equipTab.desiredPosition = 2;
 				}
 			}
 			if (overlayFullActorId == 0)

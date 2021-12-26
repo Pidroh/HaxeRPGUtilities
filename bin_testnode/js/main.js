@@ -473,7 +473,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:943:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:839:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -2249,7 +2249,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:2057:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1953:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2266,7 +2266,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:2074:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1970:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
