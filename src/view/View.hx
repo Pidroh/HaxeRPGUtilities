@@ -54,7 +54,7 @@ class View {
 
 	public var equipHeroStats:ActorViewComplete;
 	public var overlayActorFullView:ActorViewComplete;
-	public var enemyAreaStats : ActorViewComplete;
+	public var enemyAreaStats:ActorViewComplete;
 
 	public var level:ValueView;
 	public var xpBar:ValueView;
@@ -441,33 +441,46 @@ class View {
 		{
 			var grid = new Grid();
 			regionTab = grid;
+			regionTab.percentWidth = 100;
 			grid.columns = 3;
-			
+
 			regionTab.text = "Regions";
+			regionTab.percentHeight = 90;
 
 			{
+				var scroll = CreateScrollable(regionTab);
+				scroll.marginLeft = 15;
+				scroll.marginTop = 15;
+				scroll.padding = 15;
+				scroll.width = 200;
+				scroll.percentHeight = 100;
 				var vb = new VBox();
 				vb.horizontalAlign = "center";
-				regionTab.addComponent(vb);
+				scroll.addComponent(vb);
 			}
+
 			{
 				var scroll = CreateScrollable(regionTab);
-				scroll.width = 410;
+				scroll.marginLeft = 15;
+				scroll.marginTop = 15;
+				scroll.padding = 15;
+				scroll.width = Screen.instance.width * 0.28;
 				scroll.percentHeight = 100;
+				scroll.horizontalAlign = "center";
+
 				var vb = new ContinuousHBox();
-				vb.percentWidth = 90;
+				vb.width = scroll.width - 30;
 				vb.horizontalAlign = "center";
 				scroll.addComponent(vb);
 			}
 			{
 				enemyAreaStats = CreateActorViewComplete("Enemy", regionTab);
+				enemyAreaStats.parent.marginLeft = 30;
+				enemyAreaStats.parent.marginTop = 15;
+				enemyAreaStats.parent.percentHeight = 90;
 			}
-
-
-
 			tabMaster.addComponent(regionTab);
 		}
-
 		var battleParent = new HBox();
 		battleParent.percentHeight = 100;
 		// mainComponent.addComponent(boxParent);
@@ -482,8 +495,6 @@ class View {
 		hgl.rows = 4;
 		verticalBox.layout = hgl;
 		verticalBox.percentHeight = 100;
-		// var verticalBox = new Grid();
-		// verticalBox.columns= 1;
 
 		battleParent.addComponent(verticalBox);
 
@@ -745,24 +756,46 @@ class View {
 		if (children.length < areaNames.length) {
 			var b = new Button();
 			var areaPos = children.length;
-			regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
+
 			b.onClick = event -> areaChangeAction(areaPos);
-			b.width = 100;
+			b.width = 150;
 			b.height = 40;
+			/*
+				if (children.length == 0) {
+					b.marginLeft = 100;
+					b.marginTop = 100;
+				}
+			 */
 			b.toggle = true;
-			b.horizontalAlign = "center";
+
+			// b.marginTop = 15;
+			// b.horizontalAlign = "center";
 			addHover(b, (b, component) -> areaButtonHover(areaPos, b));
+
+			regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
+
+			{
+				/* var b = new Box();
+					b.width = 30;
+					b.height = 30;
+					regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
+				 */
+			}
 		}
 		for (i in 0...children.length) {
 			var hide = i >= areaNames.length;
 			var b:Button = cast(children[i], Button);
 			b.selected = currentArea == i;
+			b.marginTop = 100;
+			b.marginLeft = 100;
 			// hide = true;
 			children[i].hidden = hide;
 			if (hide == false) {
 				children[i].text = areaNames[i];
 			}
 		}
+
+		// regionTab.getComponentAt(1).getComponentAt(0).marginRight = 100;
 	}
 
 	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion, showLocked = 0, lockedMessage = null) {
@@ -771,16 +804,16 @@ class View {
 
 		var buttonAmount = regionAmount + showLocked;
 
-		var children = regionTab.getComponentAt(0).childComponents;
+		var children = regionTab.getComponentAt(0).getComponentAt(0).childComponents;
 
 		if (children.length < buttonAmount) {
 			var b = new Button();
 			var regionPos = children.length;
 			// regionButtonParent.addComponent(b);
-			regionTab.getComponentAt(0).addComponent(b);
+			regionTab.getComponentAt(0).getComponentAt(0).addComponent(b);
 
 			b.onClick = event -> regionChangeAction(regionPos);
-			b.width = 100;
+			b.width = 150;
 			b.height = 40;
 			b.toggle = true;
 		}

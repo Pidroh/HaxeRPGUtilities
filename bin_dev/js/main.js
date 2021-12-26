@@ -4830,19 +4830,34 @@ var View = function() {
 	this.tabMaster.set_verticalAlign("bottom");
 	var grid = new haxe_ui_containers_Grid();
 	this.regionTab = grid;
+	this.regionTab.set_percentWidth(100);
 	grid.set_columns(3);
 	this.regionTab.set_text("Regions");
+	this.regionTab.set_percentHeight(90);
+	var scroll = this.CreateScrollable(this.regionTab);
+	scroll.set_marginLeft(15);
+	scroll.set_marginTop(15);
+	scroll.set_padding(15);
+	scroll.set_width(200);
+	scroll.set_percentHeight(100);
 	var vb = new haxe_ui_containers_VBox();
 	vb.set_horizontalAlign("center");
-	this.regionTab.addComponent(vb);
+	scroll.addComponent(vb);
 	var scroll = this.CreateScrollable(this.regionTab);
-	scroll.set_width(410);
+	scroll.set_marginLeft(15);
+	scroll.set_marginTop(15);
+	scroll.set_padding(15);
+	scroll.set_width(haxe_ui_core_Screen.get_instance().get_width() * 0.28);
 	scroll.set_percentHeight(100);
+	scroll.set_horizontalAlign("center");
 	var vb = new haxe_ui_containers_ContinuousHBox();
-	vb.set_percentWidth(90);
+	vb.set_width(scroll.get_width() - 30);
 	vb.set_horizontalAlign("center");
 	scroll.addComponent(vb);
 	this.enemyAreaStats = this.CreateActorViewComplete("Enemy",this.regionTab);
+	this.enemyAreaStats.parent.set_marginLeft(30);
+	this.enemyAreaStats.parent.set_marginTop(15);
+	this.enemyAreaStats.parent.set_percentHeight(90);
 	this.tabMaster.addComponent(this.regionTab);
 	var battleParent = new haxe_ui_containers_HBox();
 	battleParent.set_percentHeight(100);
@@ -5289,17 +5304,16 @@ View.prototype = {
 		if(children.length < areaNames.length) {
 			var b = new haxe_ui_components_Button();
 			var areaPos = children.length;
-			this.regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
 			b.set_onClick(function(event) {
 				_gthis.areaChangeAction(areaPos);
 			});
-			b.set_width(100);
+			b.set_width(150);
 			b.set_height(40);
 			b.set_toggle(true);
-			b.set_horizontalAlign("center");
 			this.addHover(b,function(b,component) {
 				_gthis.areaButtonHover(areaPos,b);
 			});
+			this.regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
 		}
 		var _g = 0;
 		var _g1 = children.length;
@@ -5308,6 +5322,8 @@ View.prototype = {
 			var hide = i >= areaNames.length;
 			var b = js_Boot.__cast(children[i] , haxe_ui_components_Button);
 			b.set_selected(currentArea == i);
+			b.set_marginTop(100);
+			b.set_marginLeft(100);
 			children[i].set_hidden(hide);
 			if(hide == false) {
 				children[i].set_text(areaNames[i]);
@@ -5320,16 +5336,16 @@ View.prototype = {
 		}
 		var _gthis = this;
 		var buttonAmount = regionAmount + showLocked;
-		var _this = this.regionTab.getComponentAt(0);
+		var _this = this.regionTab.getComponentAt(0).getComponentAt(0);
 		var children = _this._children == null ? [] : _this._children;
 		if(children.length < buttonAmount) {
 			var b = new haxe_ui_components_Button();
 			var regionPos = children.length;
-			this.regionTab.getComponentAt(0).addComponent(b);
+			this.regionTab.getComponentAt(0).getComponentAt(0).addComponent(b);
 			b.set_onClick(function(event) {
 				_gthis.regionChangeAction(regionPos);
 			});
-			b.set_width(100);
+			b.set_width(150);
 			b.set_height(40);
 			b.set_toggle(true);
 		}
