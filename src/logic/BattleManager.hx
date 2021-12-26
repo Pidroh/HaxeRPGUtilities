@@ -643,7 +643,7 @@ class BattleManager {
 			// enemyLevel = (enemyLevel + 1) * 10 - 1;
 		}
 
-		var equipment:Equipment = null;
+		var equipment:Array<Equipment> = null;
 
 		if (region == 0 && enemyAreaFromProcedural != null && enemyAreaFromProcedural.units != null) {
 			var areaInfo = enemyAreaFromProcedural.GetEnemyAreaInformation(area - 1);
@@ -651,7 +651,6 @@ class BattleManager {
 			enemyLevel += areaInfo.level;
 			equipment = areaInfo.equipment;
 		}
-
 		{
 			var timeToKillEnemy = balancing.timeToKillFirstEnemy;
 
@@ -685,10 +684,14 @@ class BattleManager {
 				usableSkills: []
 			};
 			if (equipment != null) {
-				enemy.equipment.push(equipment);
+				var equipSlots = new Array<Int>();
+				for (index => value in equipment) {
+					enemy.equipment.push(value);
+					equipSlots.push(index);
+				}
 				enemy.equipmentSets = [
 					{
-						equipmentSlots: [0]
+						equipmentSlots: equipSlots
 					}
 				];
 				enemy.chosenEquipSet = 0;

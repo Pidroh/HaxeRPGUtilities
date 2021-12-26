@@ -6,7 +6,7 @@ class EnemyAreaInformation {
 	public var sheet:ActorSheet;
 	public var level:Int;
 	public var nEnemies:Int;
-	public var equipment:Equipment;
+	public var equipment:Array<Equipment> = new Array<Equipment>();
 	public var sheetId:Int;
 	public var equipId:Int;
 	public var tags = new Array<String>();
@@ -42,6 +42,7 @@ class EnemyAreaFromProceduralUnitRepetition {
 		var char = u.proceduralUnit.characteristics[0];
 		var enemyId = char;
 		var es = enemySheets[enemyId];
+		var extraEquip:Equipment = null;
 
 		// if enemy sheet is null, will choose a random enemy sheet
 		if (es == null) {
@@ -52,13 +53,23 @@ class EnemyAreaFromProceduralUnitRepetition {
 		var levelBonus = 0;
 		if (u.position == u.total - 1) {
 			nEnemies = 1;
-			levelBonus = 2;
+			levelBonus = 1;
+			var hpMultiplier = 400;
+			extraEquip = {
+				seen: 0,
+				requiredAttributes: null,
+				type: 1,
+				attributes: null,
+				attributeMultiplier: ["LifeMax" => hpMultiplier]
+			}
+            extraEquip.attributes = new Map<String, Int>();
+
 			if (areaOrig > 8) {
-				levelBonus = 5;
+				levelBonus = 3;
 			}
 			if (areaOrig > 15) {
-				levelBonus = 10;
-                nEnemies = u.randomExtra[1] % 3 + 1;
+				levelBonus = 5;
+				nEnemies = u.randomExtra[1] % 3 + 1;
 			}
 			if (areaOrig > 20)
 				levelBonus = 15;
@@ -68,13 +79,21 @@ class EnemyAreaFromProceduralUnitRepetition {
 				levelBonus = 30;
 			if (areaOrig > 50)
 				levelBonus = 40;
-
-			levelBonus = 2;
 		}
+
 		aux.sheet = es;
 		aux.nEnemies = nEnemies;
 		aux.level = levelBonus;
-		aux.equipment = equipments[char];
+        aux.equipment.resize(0);
+		if (equipments[char] != null || extraEquip != null) {
+			if (equipments[char] != null) {
+				aux.equipment.push(equipments[char]);
+			}
+            if (extraEquip != null){
+                aux.equipment.push(extraEquip);
+            }
+		}
+
 		aux.sheetId = enemyId;
 		aux.equipId = char;
 		return aux;

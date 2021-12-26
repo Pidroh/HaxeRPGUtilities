@@ -473,7 +473,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:839:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:842:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -1282,8 +1282,18 @@ BattleManager.prototype = {
 		var stats2 = _g;
 		enemy = { level : 1 + enemyLevel, attributesBase : stats2, equipment : [], xp : null, attributesCalculated : stats2, reference : new ActorReference(1,0), buffs : [], usableSkills : []};
 		if(equipment != null) {
-			enemy.equipment.push(equipment);
-			enemy.equipmentSets = [{ equipmentSlots : [0]}];
+			var equipSlots = [];
+			var _g1_current = 0;
+			var _g1_array = equipment;
+			while(_g1_current < _g1_array.length) {
+				var _g2_value = _g1_array[_g1_current];
+				var _g2_key = _g1_current++;
+				var index = _g2_key;
+				var value = _g2_value;
+				enemy.equipment.push(value);
+				equipSlots.push(index);
+			}
+			enemy.equipmentSets = [{ equipmentSlots : equipSlots}];
 			enemy.chosenEquipSet = 0;
 		}
 		if(sheet != null) {
@@ -2249,7 +2259,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1953:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1956:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2266,7 +2276,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1970:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1973:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3012,6 +3022,7 @@ MainTest.main = function() {
 };
 var EnemyAreaInformation = function() {
 	this.tags = [];
+	this.equipment = [];
 };
 EnemyAreaInformation.__name__ = true;
 var EnemyAreaFromProceduralUnitRepetition = function() {
@@ -3033,6 +3044,7 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		var char = u.proceduralUnit.characteristics[0];
 		var enemyId = char;
 		var es = this.enemySheets[enemyId];
+		var extraEquip = null;
 		if(es == null) {
 			enemyId = u.randomExtra[0] % this.enemySheets.length;
 			es = this.enemySheets[enemyId];
@@ -3041,12 +3053,17 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 		var levelBonus = 0;
 		if(u.position == u.total - 1) {
 			nEnemies = 1;
-			levelBonus = 2;
+			levelBonus = 1;
+			var hpMultiplier = 400;
+			var _g = new haxe_ds_StringMap();
+			_g.h["LifeMax"] = hpMultiplier;
+			extraEquip = { seen : 0, requiredAttributes : null, type : 1, attributes : null, attributeMultiplier : _g};
+			extraEquip.attributes = new haxe_ds_StringMap();
 			if(areaOrig > 8) {
-				levelBonus = 5;
+				levelBonus = 3;
 			}
 			if(areaOrig > 15) {
-				levelBonus = 10;
+				levelBonus = 5;
 				nEnemies = u.randomExtra[1] % 3 + 1;
 			}
 			if(areaOrig > 20) {
@@ -3061,12 +3078,19 @@ EnemyAreaFromProceduralUnitRepetition.prototype = {
 			if(areaOrig > 50) {
 				levelBonus = 40;
 			}
-			levelBonus = 2;
 		}
 		this.aux.sheet = es;
 		this.aux.nEnemies = nEnemies;
 		this.aux.level = levelBonus;
-		this.aux.equipment = this.equipments[char];
+		this.aux.equipment.length = 0;
+		if(this.equipments[char] != null || extraEquip != null) {
+			if(this.equipments[char] != null) {
+				this.aux.equipment.push(this.equipments[char]);
+			}
+			if(extraEquip != null) {
+				this.aux.equipment.push(extraEquip);
+			}
+		}
 		this.aux.sheetId = enemyId;
 		this.aux.equipId = char;
 		return this.aux;
