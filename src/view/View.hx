@@ -479,7 +479,8 @@ class View {
 				enemyAreaStats.parent.marginTop = 15;
 				enemyAreaStats.parent.percentHeight = 90;
 			}
-			tabMaster.addComponent(regionTab);
+			// tabMaster.addComponent(regionTab);
+			// regionTab.hidden = false;
 		}
 		var battleParent = new HBox();
 		battleParent.percentHeight = 100;
@@ -615,7 +616,7 @@ class View {
 			// gridBox.columns =2;
 			gridBox.text = "Equipment";
 			equipTab = new UIElementWrapper(gridBox, tabMaster);
-			equipTab.desiredPosition = 2;
+			equipTab.desiredPosition = 1;
 			gridBox.percentHeight = 100;
 			gridBox.percentWidth = 100;
 

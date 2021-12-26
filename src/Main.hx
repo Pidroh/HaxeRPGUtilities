@@ -497,7 +497,16 @@ class Main {
 
 		var areaNames = new Array<Array<String>>();
 
+		var flagRegionTab = false;
+
 		update = function(timeStamp:Float):Bool {
+			if (flagRegionTab == false) {
+				view.regionTab.hidden = bm.wdata.battleAreaRegionMax <= 1;
+				if (view.regionTab.hidden == false && view.regionTab.parentComponent == null) {
+					flagRegionTab = true;
+					view.tabMaster.addComponentAt(view.regionTab, 0);
+				}
+			}
 			if (overlayFullActorId == 0)
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 			if (overlayFullActorId == 1 && bm.wdata.enemy != null)
