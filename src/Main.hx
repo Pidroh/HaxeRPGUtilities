@@ -257,11 +257,17 @@ class Main {
 		view.areaButtonHover = (i, b) -> {
 			if (b) {
 				if (lastRegion != bm.wdata.battleAreaRegion || lastArea != i) {
-					var enemy = bm.CreateEnemy(bm.wdata.battleAreaRegion, i);
-					ActorToFullView(enemy,view.enemyAreaStats);	
+					lastArea = i;
+					lastRegion = bm.wdata.battleAreaRegion;
+					var enemy = null;
 
+					if (lastArea != 0) {
+						enemy = bm.CreateEnemy(bm.wdata.battleAreaRegion, i);
+					}
+					view.enemyAreaStats.parent.hidden = enemy == null;
+					if (enemy != null)
+						ActorToFullView(enemy, view.enemyAreaStats);
 				}
-				
 			}
 			// ActorToFullView();
 		}
