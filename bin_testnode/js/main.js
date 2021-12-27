@@ -2093,7 +2093,35 @@ BattleManager.prototype = {
 		hero.attributesCalculated.h["MP"] = v;
 		hero.attributesCalculated.h["MPRechargeCount"] = 10000;
 	}
-	,RecalculateAttributes: function(actor) {
+	,GetRegionBonusLevel: function(i) {
+		this.CheckRegionNull(i);
+		var prize = this.regionPrizes[i];
+		var pro = this.wdata.regionProgress[i];
+		var bonusLevel = 0;
+		if(prize.statBonus != null) {
+			if(pro.maxArea >= 2) {
+				bonusLevel += pro.maxArea - 1;
+			}
+			var _g = 0;
+			var _g1 = pro.maxAreaOnPrestigeRecord;
+			while(_g < _g1.length) {
+				var maxAreaPrestiges = _g1[_g];
+				++_g;
+				if(maxAreaPrestiges >= 2) {
+					bonusLevel += maxAreaPrestiges - 1;
+				}
+			}
+			return bonusLevel;
+		}
+		return -1;
+	}
+	,RecalculateAttributes: function(actor,equipCalculation,buffCalculation) {
+		if(buffCalculation == null) {
+			buffCalculation = true;
+		}
+		if(equipCalculation == null) {
+			equipCalculation = true;
+		}
 		var _g = 0;
 		var _g1 = this.volatileAttributeList.length;
 		while(_g < _g1) {
@@ -2151,94 +2179,88 @@ BattleManager.prototype = {
 			var _g1 = this.wdata.regionProgress.length;
 			while(_g < _g1) {
 				var i = _g++;
-				this.CheckRegionNull(i);
-				var pro = this.wdata.regionProgress[i];
-				var prize = this.regionPrizes[i];
-				var bonusLevel = 0;
-				if(prize.statBonus != null) {
-					if(pro.maxArea >= 2) {
-						bonusLevel += pro.maxArea - 1;
-					}
-					var _g2 = 0;
-					var _g3 = pro.maxAreaOnPrestigeRecord;
-					while(_g2 < _g3.length) {
-						var maxAreaPrestiges = _g3[_g2];
-						++_g2;
-						if(maxAreaPrestiges >= 2) {
-							bonusLevel += maxAreaPrestiges - 1;
-						}
-					}
+				var bonusLevel = this.GetRegionBonusLevel(i);
+				if(bonusLevel > 0) {
+					var prize = this.regionPrizes[i];
 					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,bonusLevel,actor.attributesCalculated);
 				}
 			}
 		}
-		if(actor.equipmentSets != null) {
-			if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-				var _g = 0;
-				var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
-				while(_g < _g1.length) {
-					var es = _g1[_g];
-					++_g;
-					var e = actor.equipment[es];
-					if(e != null) {
-						AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+		if(equipCalculation) {
+			if(actor.equipmentSets != null) {
+				if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+					var _g = 0;
+					var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
+					while(_g < _g1.length) {
+						var es = _g1[_g];
+						++_g;
+						var e = actor.equipment[es];
+						if(e != null) {
+							AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+						}
 					}
 				}
 			}
 		}
-		var _g = 0;
-		var _g1 = actor.buffs;
-		while(_g < _g1.length) {
-			var b = _g1[_g];
-			++_g;
-			if(b.addStats != null) {
-				AttributeLogic.Add(actor.attributesCalculated,b.addStats,1,actor.attributesCalculated);
+		if(buffCalculation) {
+			var _g = 0;
+			var _g1 = actor.buffs;
+			while(_g < _g1.length) {
+				var b = _g1[_g];
+				++_g;
+				if(b.addStats != null) {
+					AttributeLogic.Add(actor.attributesCalculated,b.addStats,1,actor.attributesCalculated);
+				}
 			}
 		}
-		if(actor.equipmentSets != null) {
-			if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-				var _g = 0;
-				var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
-				while(_g < _g1.length) {
-					var es = _g1[_g];
-					++_g;
-					var e = actor.equipment[es];
-					if(e != null) {
-						if(e.attributeMultiplier != null) {
-							var h = e.attributeMultiplier.h;
-							var a_h = h;
-							var a_keys = Object.keys(h);
-							var a_length = a_keys.length;
-							var a_current = 0;
-							while(a_current < a_length) {
-								var key = a_keys[a_current++];
-								var a_key = key;
-								var a_value = a_h[key];
-								var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
-								actor.attributesCalculated.h[a_key] = v;
+		if(equipCalculation) {
+			if(actor.equipmentSets != null) {
+				if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+					var _g = 0;
+					var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
+					while(_g < _g1.length) {
+						var es = _g1[_g];
+						++_g;
+						var e = actor.equipment[es];
+						if(e != null) {
+							if(e.attributeMultiplier != null) {
+								var h = e.attributeMultiplier.h;
+								var a_h = h;
+								var a_keys = Object.keys(h);
+								var a_length = a_keys.length;
+								var a_current = 0;
+								while(a_current < a_length) {
+									var key = a_keys[a_current++];
+									var a_key = key;
+									var a_value = a_h[key];
+									var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
+									actor.attributesCalculated.h[a_key] = v;
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-		var _g = 0;
-		var _g1 = actor.buffs;
-		while(_g < _g1.length) {
-			var b = _g1[_g];
-			++_g;
-			if(b.mulStats != null) {
-				var h = b.mulStats.h;
-				var a_h = h;
-				var a_keys = Object.keys(h);
-				var a_length = a_keys.length;
-				var a_current = 0;
-				while(a_current < a_length) {
-					var key = a_keys[a_current++];
-					var a_key = key;
-					var a_value = a_h[key];
-					var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
-					actor.attributesCalculated.h[a_key] = v;
+		if(buffCalculation) {
+			var _g = 0;
+			var _g1 = actor.buffs;
+			while(_g < _g1.length) {
+				var b = _g1[_g];
+				++_g;
+				if(b.mulStats != null) {
+					var h = b.mulStats.h;
+					var a_h = h;
+					var a_keys = Object.keys(h);
+					var a_length = a_keys.length;
+					var a_current = 0;
+					while(a_current < a_length) {
+						var key = a_keys[a_current++];
+						var a_key = key;
+						var a_value = a_h[key];
+						var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
+						actor.attributesCalculated.h[a_key] = v;
+					}
 				}
 			}
 		}
@@ -2259,7 +2281,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1956:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:1973:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2276,7 +2298,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1973:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:1990:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

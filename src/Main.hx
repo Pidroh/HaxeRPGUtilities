@@ -130,7 +130,6 @@ class Main {
 
 		var keyOld = "save data2";
 		var key = "save data master";
-		// var keyStory = "save data masterStory";
 		var keyBackup = "save backup";
 
 		var keyMappings = new Map<String, Void->Void>();
@@ -195,10 +194,12 @@ class Main {
 			view.UpdateValues(view.GetValueView(actorView, 0, true), bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"), "Life:");
 			view.UpdateValues(view.GetValueView(actorView, 1, false), bm.GetAttribute(actor, "Attack"), -1, "Attack:");
 			view.UpdateValues(view.GetValueView(actorView, 2, false), bm.GetAttribute(actor, "Speed"), -1, "Speed:");
-			view.UpdateValues(view.GetValueView(actorView, 3, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:");
-
 			// continue from the last one
-			var valueIndex = 4;
+			var valueIndex = 3;
+			if (bm.GetAttribute(actor, "Defense") > 0) {
+				view.UpdateValues(view.GetValueView(actorView, valueIndex, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:");
+				valueIndex++;
+			}
 
 			for (key => value in actor.attributesCalculated) {
 				if (!ignoreStats.contains(key) && value != 0) {
@@ -251,7 +252,6 @@ class Main {
 		view.areaChangeAction = i -> {
 			bm.ChangeBattleArea(i);
 		}
-
 		var lastRegion = -1;
 		var lastArea = -1;
 		view.areaButtonHover = (i, b) -> {
@@ -327,9 +327,9 @@ class Main {
 			persistence: storyPersistence,
 			speakerToImage: [
 				"mom" => "graphics/mom.png",
-				"you" => "graphics/main.png",
-				"cid" => "graphics/cid.png",
-				"man" => "graphics/cid.png"
+				"you" => "graphics/main.jpg",
+				"cid" => "graphics/cid.jpg",
+				"man" => "graphics/cid.jpg"
 			]
 		}
 
@@ -513,6 +513,17 @@ class Main {
 			if (overlayFullActorId == 1 && bm.wdata.enemy != null)
 				ActorToFullView(bm.wdata.enemy, view.overlayActorFullView);
 
+			{
+				var id = 0;
+				for (i in 0...bm.wdata.regionProgress.length) {
+					var rbl = bm.GetRegionBonusLevel(i);
+					if (rbl > 0) {
+						view.FeedRegionBonusView(id, enemyRegionNames[i], rbl);
+						id++;
+					}
+				}
+			}
+
 			view.FeedEquipmentSetInfoAll(bm.wdata.hero.equipmentSets.length, bm.wdata.hero.chosenEquipSet);
 
 			global["maxarea"] = bm.wdata.maxArea;
@@ -522,6 +533,14 @@ class Main {
 			ActorToView(bm.wdata.hero, view.heroView);
 			ActorToView(bm.wdata.enemy, view.enemyView, true);
 			ActorToFullView(bm.wdata.hero, view.equipHeroStats);
+
+			{
+				bm.RecalculateAttributes(bm.wdata.hero, false, false);
+				ActorToFullView(bm.wdata.hero, view.charaTab_CharaBaseStats);
+				bm.RecalculateAttributes(bm.wdata.hero);
+			}
+
+			ActorToFullView(bm.wdata.hero, view.charaTab_CharaEquipStats);
 			var actor = bm.wdata.hero;
 			view.UpdateValues(view.level, bm.wdata.hero.level, -1);
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);

@@ -85,6 +85,13 @@ class View {
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
 	public var enemy1 = 'slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog'.split('@');
 
+	public var charaTab :Component;
+	public var charaTab_CharaBaseStats: ActorViewComplete;
+	public var charaTab_CharaEquipStats : ActorViewComplete;
+	public var charaTab_RegionElements : Component;
+	public var charaTab_ButtonParent : VBox;
+	public var charaTab_bonusesView  = new Array<BonusView>();
+
 	public var equipmentMainAction:(Int, Int) -> Void;
 	public var storyMainAction:(Int, Int) -> Void;
 	public var regionChangeAction:(Int) -> Void;
@@ -653,6 +660,40 @@ class View {
 			scroll.percentHeight = 100;
 		}
 		{
+			var grid = new Grid();
+			charaTab = grid;
+			grid.columns = 3;
+			grid.text = "Character";
+			tabMaster.addComponent(grid);
+
+			{
+				var box = new VBox();	
+				charaTab_CharaBaseStats = CreateActorViewComplete("You", box);
+				grid.addComponent(box);
+
+			}
+			{
+				var box = new VBox();	
+				charaTab_CharaEquipStats = CreateActorViewComplete("You", box);	
+				grid.addComponent(box);
+			}
+			{
+				var box = new VBox();
+				charaTab_RegionElements = box;
+				box.width = 200;
+				var scroll = CreateScrollable(grid);
+				scroll.width = 200;
+				scroll.percentHeight = 100;
+				scroll.addComponent(box);
+			}
+
+			for (i in 0...2){
+				var box = new VBox();	
+
+			}
+
+		}
+		{
 			var storyTabComp = new ContinuousHBox();
 			storyTabComp.width = 600;
 			storyTabComp.height = 300;
@@ -760,20 +801,8 @@ class View {
 				}
 			 */
 			b.toggle = true;
-
-			// b.marginTop = 15;
-			// b.horizontalAlign = "center";
 			addHover(b, (b, component) -> areaButtonHover(areaPos, b));
-
 			regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
-
-			{
-				/* var b = new Box();
-					b.width = 30;
-					b.height = 30;
-					regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
-				 */
-			}
 		}
 		for (i in 0...children.length) {
 			var hide = i >= areaNames.length;
@@ -1046,6 +1075,8 @@ class View {
 		equipments[pos].parent.hidden = true;
 	}
 
+	
+
 	public function FinishFeedingEquipmentValue(pos, vid) {
 		for (i in vid...equipments[pos].values.length) {
 			equipments[pos].values[i].parent.hidden = true;
@@ -1054,6 +1085,31 @@ class View {
 
 	public function FeedEquipmentSeparation(pos:Int, valuePos:Int) {
 		equipments[pos].values[valuePos].parent.height = 35;
+	}
+
+	public function FeedRegionBonusView(index : Int, areaName : String, level : Int){
+		var parent = charaTab_RegionElements;
+		var cc = parent.childComponents;
+
+		while(charaTab_bonusesView.length <= index){
+			var b = new Box();
+			var l = new Label();
+			l.verticalAlign = "center";
+			// l.horizontalAlign = "center";
+			b.width = 140;
+			b.height = 18;
+			l.text = "Something";
+			b.addComponent(l);
+			parent.addComponent(b);
+			
+			var regionV : BonusView = {
+				labelText: l,
+				parent: b
+			}
+			charaTab_bonusesView.push(regionV);
+		}
+		charaTab_bonusesView[index].labelText.text = '$areaName Lv. $level';
+		
 	}
 
 	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false, valueString:String = null,
@@ -1353,6 +1409,11 @@ class View {
 
 typedef Controls = {};
 typedef AreaView = {};
+
+typedef BonusView = {
+	var labelText:Label;
+	var parent:Component;
+};
 
 typedef ValueView = {
 	var centeredText:Label;

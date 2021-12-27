@@ -2194,7 +2194,35 @@ BattleManager.prototype = {
 		hero.attributesCalculated.h["MP"] = v;
 		hero.attributesCalculated.h["MPRechargeCount"] = 10000;
 	}
-	,RecalculateAttributes: function(actor) {
+	,GetRegionBonusLevel: function(i) {
+		this.CheckRegionNull(i);
+		var prize = this.regionPrizes[i];
+		var pro = this.wdata.regionProgress[i];
+		var bonusLevel = 0;
+		if(prize.statBonus != null) {
+			if(pro.maxArea >= 2) {
+				bonusLevel += pro.maxArea - 1;
+			}
+			var _g = 0;
+			var _g1 = pro.maxAreaOnPrestigeRecord;
+			while(_g < _g1.length) {
+				var maxAreaPrestiges = _g1[_g];
+				++_g;
+				if(maxAreaPrestiges >= 2) {
+					bonusLevel += maxAreaPrestiges - 1;
+				}
+			}
+			return bonusLevel;
+		}
+		return -1;
+	}
+	,RecalculateAttributes: function(actor,equipCalculation,buffCalculation) {
+		if(buffCalculation == null) {
+			buffCalculation = true;
+		}
+		if(equipCalculation == null) {
+			equipCalculation = true;
+		}
 		var _g = 0;
 		var _g1 = this.volatileAttributeList.length;
 		while(_g < _g1) {
@@ -2252,94 +2280,88 @@ BattleManager.prototype = {
 			var _g1 = this.wdata.regionProgress.length;
 			while(_g < _g1) {
 				var i = _g++;
-				this.CheckRegionNull(i);
-				var pro = this.wdata.regionProgress[i];
-				var prize = this.regionPrizes[i];
-				var bonusLevel = 0;
-				if(prize.statBonus != null) {
-					if(pro.maxArea >= 2) {
-						bonusLevel += pro.maxArea - 1;
-					}
-					var _g2 = 0;
-					var _g3 = pro.maxAreaOnPrestigeRecord;
-					while(_g2 < _g3.length) {
-						var maxAreaPrestiges = _g3[_g2];
-						++_g2;
-						if(maxAreaPrestiges >= 2) {
-							bonusLevel += maxAreaPrestiges - 1;
-						}
-					}
+				var bonusLevel = this.GetRegionBonusLevel(i);
+				if(bonusLevel > 0) {
+					var prize = this.regionPrizes[i];
 					AttributeLogic.Add(actor.attributesCalculated,prize.statBonus,bonusLevel,actor.attributesCalculated);
 				}
 			}
 		}
-		if(actor.equipmentSets != null) {
-			if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-				var _g = 0;
-				var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
-				while(_g < _g1.length) {
-					var es = _g1[_g];
-					++_g;
-					var e = actor.equipment[es];
-					if(e != null) {
-						AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+		if(equipCalculation) {
+			if(actor.equipmentSets != null) {
+				if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+					var _g = 0;
+					var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
+					while(_g < _g1.length) {
+						var es = _g1[_g];
+						++_g;
+						var e = actor.equipment[es];
+						if(e != null) {
+							AttributeLogic.Add(actor.attributesCalculated,e.attributes,1,actor.attributesCalculated);
+						}
 					}
 				}
 			}
 		}
-		var _g = 0;
-		var _g1 = actor.buffs;
-		while(_g < _g1.length) {
-			var b = _g1[_g];
-			++_g;
-			if(b.addStats != null) {
-				AttributeLogic.Add(actor.attributesCalculated,b.addStats,1,actor.attributesCalculated);
+		if(buffCalculation) {
+			var _g = 0;
+			var _g1 = actor.buffs;
+			while(_g < _g1.length) {
+				var b = _g1[_g];
+				++_g;
+				if(b.addStats != null) {
+					AttributeLogic.Add(actor.attributesCalculated,b.addStats,1,actor.attributesCalculated);
+				}
 			}
 		}
-		if(actor.equipmentSets != null) {
-			if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-				var _g = 0;
-				var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
-				while(_g < _g1.length) {
-					var es = _g1[_g];
-					++_g;
-					var e = actor.equipment[es];
-					if(e != null) {
-						if(e.attributeMultiplier != null) {
-							var h = e.attributeMultiplier.h;
-							var a_h = h;
-							var a_keys = Object.keys(h);
-							var a_length = a_keys.length;
-							var a_current = 0;
-							while(a_current < a_length) {
-								var key = a_keys[a_current++];
-								var a_key = key;
-								var a_value = a_h[key];
-								var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
-								actor.attributesCalculated.h[a_key] = v;
+		if(equipCalculation) {
+			if(actor.equipmentSets != null) {
+				if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+					var _g = 0;
+					var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
+					while(_g < _g1.length) {
+						var es = _g1[_g];
+						++_g;
+						var e = actor.equipment[es];
+						if(e != null) {
+							if(e.attributeMultiplier != null) {
+								var h = e.attributeMultiplier.h;
+								var a_h = h;
+								var a_keys = Object.keys(h);
+								var a_length = a_keys.length;
+								var a_current = 0;
+								while(a_current < a_length) {
+									var key = a_keys[a_current++];
+									var a_key = key;
+									var a_value = a_h[key];
+									var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
+									actor.attributesCalculated.h[a_key] = v;
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-		var _g = 0;
-		var _g1 = actor.buffs;
-		while(_g < _g1.length) {
-			var b = _g1[_g];
-			++_g;
-			if(b.mulStats != null) {
-				var h = b.mulStats.h;
-				var a_h = h;
-				var a_keys = Object.keys(h);
-				var a_length = a_keys.length;
-				var a_current = 0;
-				while(a_current < a_length) {
-					var key = a_keys[a_current++];
-					var a_key = key;
-					var a_value = a_h[key];
-					var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
-					actor.attributesCalculated.h[a_key] = v;
+		if(buffCalculation) {
+			var _g = 0;
+			var _g1 = actor.buffs;
+			while(_g < _g1.length) {
+				var b = _g1[_g];
+				++_g;
+				if(b.mulStats != null) {
+					var h = b.mulStats.h;
+					var a_h = h;
+					var a_keys = Object.keys(h);
+					var a_length = a_keys.length;
+					var a_current = 0;
+					while(a_current < a_length) {
+						var key = a_keys[a_current++];
+						var a_key = key;
+						var a_value = a_h[key];
+						var v = actor.attributesCalculated.h[a_key] * a_value / 100 | 0;
+						actor.attributesCalculated.h[a_key] = v;
+					}
 				}
 			}
 		}
@@ -2360,7 +2382,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1956, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1973, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2377,7 +2399,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1973, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1990, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3050,8 +3072,11 @@ Main.gamemain = function() {
 		view.UpdateValues(view.GetValueView(actorView,0,true),bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"),"Life:");
 		view.UpdateValues(view.GetValueView(actorView,1,false),bm.GetAttribute(actor,"Attack"),-1,"Attack:");
 		view.UpdateValues(view.GetValueView(actorView,2,false),bm.GetAttribute(actor,"Speed"),-1,"Speed:");
-		view.UpdateValues(view.GetValueView(actorView,3,false),bm.GetAttribute(actor,"Defense"),-1,"Defense:");
-		var valueIndex = 4;
+		var valueIndex = 3;
+		if(bm.GetAttribute(actor,"Defense") > 0) {
+			view.UpdateValues(view.GetValueView(actorView,valueIndex,false),bm.GetAttribute(actor,"Defense"),-1,"Defense:");
+			++valueIndex;
+		}
 		var h = actor.attributesCalculated.h;
 		var _g_h = h;
 		var _g_keys = Object.keys(h);
@@ -3151,9 +3176,9 @@ Main.gamemain = function() {
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["mom"] = "graphics/mom.png";
-	_g.h["you"] = "graphics/main.png";
-	_g.h["cid"] = "graphics/cid.png";
-	_g.h["man"] = "graphics/cid.png";
+	_g.h["you"] = "graphics/main.jpg";
+	_g.h["cid"] = "graphics/cid.jpg";
+	_g.h["man"] = "graphics/cid.jpg";
 	var storyRuntime = { currentStoryProgression : null, currentCutsceneIndex : -1, cutscene : null, cutsceneStartable : null, cutscenes : null, visibilityConditionScripts : [], messageRuntimeInfo : [], persistence : storyPersistence, speakerToImage : _g};
 	view.AddButton("reset","Reset",function(e) {
 		view.logText.set_text("");
@@ -3297,6 +3322,17 @@ Main.gamemain = function() {
 		if(overlayFullActorId == 1 && bm.wdata.enemy != null) {
 			ActorToFullView(bm.wdata.enemy,view.overlayActorFullView);
 		}
+		var id = 0;
+		var _g = 0;
+		var _g1 = bm.wdata.regionProgress.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var rbl = bm.GetRegionBonusLevel(i);
+			if(rbl > 0) {
+				view.FeedRegionBonusView(id,enemyRegionNames[i],rbl);
+				++id;
+			}
+		}
 		view.FeedEquipmentSetInfoAll(bm.wdata.hero.equipmentSets.length,bm.wdata.hero.chosenEquipSet);
 		var v = bm.wdata.maxArea;
 		global.h["maxarea"] = v;
@@ -3306,6 +3342,10 @@ Main.gamemain = function() {
 		ActorToView(bm.wdata.hero,view.heroView);
 		ActorToView(bm.wdata.enemy,view.enemyView,true);
 		ActorToFullView(bm.wdata.hero,view.equipHeroStats);
+		bm.RecalculateAttributes(bm.wdata.hero,false,false);
+		ActorToFullView(bm.wdata.hero,view.charaTab_CharaBaseStats);
+		bm.RecalculateAttributes(bm.wdata.hero);
+		ActorToFullView(bm.wdata.hero,view.charaTab_CharaEquipStats);
 		var actor = bm.wdata.hero;
 		view.UpdateValues(view.level,bm.wdata.hero.level,-1);
 		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
@@ -3656,7 +3696,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 905, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 924, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3668,7 +3708,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 922, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 941, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3687,8 +3727,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 950, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 951, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 969, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 970, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -4803,6 +4843,7 @@ var View = function() {
 	this.storyDialogActive = false;
 	this.equipments = [];
 	this.buttonMap = new haxe_ds_StringMap();
+	this.charaTab_bonusesView = [];
 	this.enemy1 = "slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog".split("@");
 	this.prefix = "normal@fire@ice@water@thunder@wind@earth@poison@grass".split("@");
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
@@ -4990,6 +5031,26 @@ var View = function() {
 	gridBox.set_paddingTop(10);
 	scroll.set_percentWidth(100);
 	scroll.set_percentHeight(100);
+	var grid = new haxe_ui_containers_Grid();
+	this.charaTab = grid;
+	grid.set_columns(3);
+	grid.set_text("Character");
+	this.tabMaster.addComponent(grid);
+	var box = new haxe_ui_containers_VBox();
+	this.charaTab_CharaBaseStats = this.CreateActorViewComplete("You",box);
+	grid.addComponent(box);
+	var box = new haxe_ui_containers_VBox();
+	this.charaTab_CharaEquipStats = this.CreateActorViewComplete("You",box);
+	grid.addComponent(box);
+	var box = new haxe_ui_containers_VBox();
+	this.charaTab_RegionElements = box;
+	box.set_width(200);
+	var scroll = this.CreateScrollable(grid);
+	scroll.set_width(200);
+	scroll.set_percentHeight(100);
+	scroll.addComponent(box);
+	var box = new haxe_ui_containers_VBox();
+	var box = new haxe_ui_containers_VBox();
 	var storyTabComp = new haxe_ui_containers_ContinuousHBox();
 	storyTabComp.set_width(600);
 	storyTabComp.set_height(300);
@@ -5076,6 +5137,12 @@ View.prototype = {
 	,areaNouns: null
 	,prefix: null
 	,enemy1: null
+	,charaTab: null
+	,charaTab_CharaBaseStats: null
+	,charaTab_CharaEquipStats: null
+	,charaTab_RegionElements: null
+	,charaTab_ButtonParent: null
+	,charaTab_bonusesView: null
 	,equipmentMainAction: null
 	,storyMainAction: null
 	,regionChangeAction: null
@@ -5617,6 +5684,23 @@ View.prototype = {
 	}
 	,FeedEquipmentSeparation: function(pos,valuePos) {
 		this.equipments[pos].values[valuePos].parent.set_height(35);
+	}
+	,FeedRegionBonusView: function(index,areaName,level) {
+		var parent = this.charaTab_RegionElements;
+		var cc = parent._children == null ? [] : parent._children;
+		while(this.charaTab_bonusesView.length <= index) {
+			var b = new haxe_ui_containers_Box();
+			var l = new haxe_ui_components_Label();
+			l.set_verticalAlign("center");
+			b.set_width(140);
+			b.set_height(18);
+			l.set_text("Something");
+			b.addComponent(l);
+			parent.addComponent(b);
+			var regionV = { labelText : l, parent : b};
+			this.charaTab_bonusesView.push(regionV);
+		}
+		this.charaTab_bonusesView[index].labelText.set_text("" + areaName + " Lv. " + level);
 	}
 	,FeedEquipmentValue: function(pos,valuePos,valueName,value,percent,valueString,separationNext) {
 		if(separationNext == null) {

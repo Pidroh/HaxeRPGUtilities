@@ -1842,7 +1842,29 @@ $baseInfo';
 		hero.attributesCalculated["MPRechargeCount"] = 10000;
 	}
 
-	public function RecalculateAttributes(actor:Actor) {
+	public function GetRegionBonusLevel(i:Int):Int {
+		CheckRegionNull(i);
+		var prize = regionPrizes[i];
+
+		var pro = wdata.regionProgress[i];
+		var bonusLevel = 0;
+
+		if (prize.statBonus != null) {
+			// should not use record because you are recording all prestige max areas
+			if (pro.maxArea >= 2) {
+				bonusLevel += pro.maxArea - 1;
+			}
+			for (maxAreaPrestiges in pro.maxAreaOnPrestigeRecord) {
+				if (maxAreaPrestiges >= 2) {
+					bonusLevel += maxAreaPrestiges - 1;
+				}
+			}
+			return bonusLevel;
+		}
+		return -1;
+	}
+
+	public function RecalculateAttributes(actor:Actor, equipCalculation = true, buffCalculation = true) {
 		for (i in 0...volatileAttributeList.length) {
 			volatileAttributeAux[i] = actor.attributesCalculated[volatileAttributeList[i]];
 			if (volatileAttributeAux[i] >= 0 == false)
@@ -1880,64 +1902,59 @@ $baseInfo';
 
 		if (actor == wdata.hero) {
 			for (i in 0...wdata.regionProgress.length) {
-				CheckRegionNull(i);
-				var pro = wdata.regionProgress[i];
-				var prize = regionPrizes[i];
-				var bonusLevel = 0;
-
-				if (prize.statBonus != null) {
-					// should not use record because you are recording all prestige max areas
-					if (pro.maxArea >= 2) {
-						bonusLevel += pro.maxArea - 1;
-					}
-					for (maxAreaPrestiges in pro.maxAreaOnPrestigeRecord) {
-						if (maxAreaPrestiges >= 2) {
-							bonusLevel += maxAreaPrestiges - 1;
-						}
-					}
+				var bonusLevel = GetRegionBonusLevel(i);
+				if (bonusLevel > 0) {
+					var prize = regionPrizes[i];
 					AttributeLogic.Add(actor.attributesCalculated, prize.statBonus, bonusLevel, actor.attributesCalculated);
 				}
 			}
 		}
 
-		// first do adds
-		if (actor.equipmentSets != null) {
-			if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-				for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
-					var e = actor.equipment[es];
-					if (e != null) {
-						AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+		if (equipCalculation) {
+			// first do adds
+			if (actor.equipmentSets != null) {
+				if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+					for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
+						var e = actor.equipment[es];
+						if (e != null) {
+							AttributeLogic.Add(actor.attributesCalculated, e.attributes, 1, actor.attributesCalculated);
+						}
 					}
 				}
 			}
 		}
-		for (b in actor.buffs) {
-			if (b.addStats != null)
-				AttributeLogic.Add(actor.attributesCalculated, b.addStats, 1, actor.attributesCalculated);
+		if (buffCalculation) {
+			for (b in actor.buffs) {
+				if (b.addStats != null)
+					AttributeLogic.Add(actor.attributesCalculated, b.addStats, 1, actor.attributesCalculated);
+			}
 		}
 
-		// then do multipliers
-		if (actor.equipmentSets != null) {
-			if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
-				for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
-					var e = actor.equipment[es];
-					if (e != null) {
-						if (e.attributeMultiplier != null) {
-							for (a in e.attributeMultiplier.keyValueIterator()) {
-								actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+		if (equipCalculation) {
+			// then do multipliers
+			if (actor.equipmentSets != null) {
+				if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+					for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
+						var e = actor.equipment[es];
+						if (e != null) {
+							if (e.attributeMultiplier != null) {
+								for (a in e.attributeMultiplier.keyValueIterator()) {
+									actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-		for (b in actor.buffs) {
-			if (b.mulStats != null)
-				for (a in b.mulStats.keyValueIterator()) {
-					actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
-				}
+		if (buffCalculation) {
+			for (b in actor.buffs) {
+				if (b.mulStats != null)
+					for (a in b.mulStats.keyValueIterator()) {
+						actor.attributesCalculated[a.key] = Std.int(actor.attributesCalculated[a.key] * a.value / 100);
+					}
+			}
 		}
-
 		for (i in 0...volatileAttributeList.length) {
 			actor.attributesCalculated[volatileAttributeList[i]] = volatileAttributeAux[i];
 		}
