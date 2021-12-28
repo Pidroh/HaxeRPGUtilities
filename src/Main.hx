@@ -433,24 +433,30 @@ class Main {
 						}*/
 					}
 				}
-				var buffText = "";
+
+				var buffPos = 0;
 				for (b in actor.buffs) {
 					if (b != null && b.uniqueId != null) {
+						var buffText;
 						if (buffToIcon.exists(b.uniqueId))
-							buffText += " " + buffToIcon[b.uniqueId];
+							buffText = buffToIcon[b.uniqueId];
 						else {
 							if (b.debuff == true)
-								buffText += " &#129095;";
+								buffText = " &#129095;";
 							else
-								buffText += " &#129093;";
+								buffText = " &#129093;";
 						}
+						view.FeedBuffView(actorView, buffPos, buffText);
+						buffPos++;
 					}
 				}
 				if (bm.wdata.sleeping) {
-					buffText += " zZz";
+					view.FeedBuffView(actorView, buffPos, "zZz");
+					buffPos++;
 				}
 				if (bm.wdata.recovering) {
-					buffText += " &#x2620;";
+					view.FeedBuffView(actorView, buffPos, "&#x2620;");
+					buffPos++;
 				}
 				// actorView.buffText.text = buffText;
 

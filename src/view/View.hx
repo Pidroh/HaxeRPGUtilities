@@ -1100,6 +1100,10 @@ class View {
 			var l = new Label();
 			b.addComponent(l);
 			actorView.buffParent.addComponent(b);
+			actorView.buffs.push({
+				labelText: l,
+				parent: b
+			});
 		}
 		actorView.buffs[buffPos].labelText.text = text;
 	}
@@ -1324,15 +1328,15 @@ class View {
 		header.addComponent(label);
 
 		var lifeView:ValueView = null;
-		lifeView = CreateValueView(buffBox, true, "Life: ", "#FF8888");
+		lifeView = CreateValueView(box, true, "Life: ", "#FF8888");
 
 		return {
 			name: label,
 			life: lifeView,
 			buffs: new Array<BuffView>(),
-			attack: CreateValueView(buffBox, false, "Attack: "),
-			parent: buffBox,
-			mp: CreateValueView(buffBox, true, "MP: ", "#CC88FF"),
+			attack: CreateValueView(box, false, "Attack: "),
+			parent: box,
+			mp: CreateValueView(box, true, "MP: ", "#CC88FF"),
 			defaultName: name,
 			buffParent: buffBox
 		};

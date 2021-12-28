@@ -3256,27 +3256,32 @@ Main.gamemain = function() {
 					fh.set_text(ActorToView + (" " + String.fromCodePoint(code)));
 				}
 			}
-			var buffText = "";
+			var buffPos = 0;
 			var _g = 0;
 			var _g1 = actor.buffs;
 			while(_g < _g1.length) {
 				var b = _g1[_g];
 				++_g;
 				if(b != null && b.uniqueId != null) {
+					var buffText;
 					if(Object.prototype.hasOwnProperty.call(buffToIcon_h,b.uniqueId)) {
-						buffText += " " + buffToIcon_h[b.uniqueId];
+						buffText = buffToIcon_h[b.uniqueId];
 					} else if(b.debuff == true) {
-						buffText += " &#129095;";
+						buffText = " &#129095;";
 					} else {
-						buffText += " &#129093;";
+						buffText = " &#129093;";
 					}
+					view.FeedBuffView(actorView,buffPos,buffText);
+					++buffPos;
 				}
 			}
 			if(bm.wdata.sleeping) {
-				buffText += " zZz";
+				view.FeedBuffView(actorView,buffPos,"zZz");
+				++buffPos;
 			}
 			if(bm.wdata.recovering) {
-				buffText += " &#x2620;";
+				view.FeedBuffView(actorView,buffPos,"&#x2620;");
+				++buffPos;
 			}
 			view.UpdateValues(actorView.life,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
 			var mp = bm.GetAttribute(actor,"MP");
@@ -3700,7 +3705,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 931, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 937, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3712,7 +3717,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 948, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 954, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3731,8 +3736,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 976, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 977, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 982, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 983, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5700,6 +5705,7 @@ View.prototype = {
 			var l = new haxe_ui_components_Label();
 			b.addComponent(l);
 			actorView.buffParent.addComponent(b);
+			actorView.buffs.push({ labelText : l, parent : b});
 		}
 		actorView.buffs[buffPos].labelText.set_text(text);
 	}
@@ -5884,8 +5890,8 @@ View.prototype = {
 		header.addComponent(buffBox);
 		header.addComponent(label);
 		var lifeView = null;
-		lifeView = this.CreateValueView(buffBox,true,"Life: ",null,null,"#FF8888");
-		return { name : label, life : lifeView, buffs : [], attack : this.CreateValueView(buffBox,false,"Attack: "), parent : buffBox, mp : this.CreateValueView(buffBox,true,"MP: ",null,null,"#CC88FF"), defaultName : name, buffParent : buffBox};
+		lifeView = this.CreateValueView(box,true,"Life: ",null,null,"#FF8888");
+		return { name : label, life : lifeView, buffs : [], attack : this.CreateValueView(box,false,"Attack: "), parent : box, mp : this.CreateValueView(box,true,"MP: ",null,null,"#CC88FF"), defaultName : name, buffParent : buffBox};
 	}
 	,CreateDropDownView: function(parent,label) {
 		var boxh = new haxe_ui_containers_Box();
