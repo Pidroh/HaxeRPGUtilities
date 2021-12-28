@@ -302,6 +302,8 @@ class MainTest {
 			for (i in 1...400) {
 				bm.update(0.9);
 			}
+			bm.wdata.currency.currencies["Lagrima"].value = 1000;
+			bm.wdata.currency.currencies["Lagrima Stone"].value = 1000;
 
 			var json = bm.GetJsonPersistentData();
 			// var content:String = sys.io.File.getContent('my_file.txt');

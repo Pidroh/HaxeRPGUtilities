@@ -667,18 +667,21 @@ class View {
 			tabMaster.addComponent(grid);
 
 			{
-				var box = new VBox();	
-				charaTab_CharaBaseStats = CreateActorViewComplete("You", box);
+				var box = new VBox();
+				box.padding = 15;	
+				charaTab_CharaBaseStats = CreateActorViewComplete("BASE STATS", box);
 				grid.addComponent(box);
 
 			}
 			{
 				var box = new VBox();	
-				charaTab_CharaEquipStats = CreateActorViewComplete("You", box);	
+				box.padding = 15;
+				charaTab_CharaEquipStats = CreateActorViewComplete("FINAL STATS", box);	
 				grid.addComponent(box);
 			}
 			{
 				var box = new VBox();
+				box.padding = 15;
 				charaTab_RegionElements = box;
 				box.width = 200;
 				var scroll = CreateScrollable(grid);
@@ -791,7 +794,10 @@ class View {
 			var b = new Button();
 			var areaPos = children.length;
 
-			b.onClick = event -> areaChangeAction(areaPos);
+			b.onClick = event -> {
+				areaChangeAction(areaPos);
+				tabMaster.selectedPage = mainComponentB;
+			}
 			b.width = 150;
 			b.height = 40;
 			/*

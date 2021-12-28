@@ -2842,6 +2842,8 @@ MainTest.main = function() {
 		var i = _g++;
 		bm.update(0.9);
 	}
+	bm.wdata.currency.currencies.h["Lagrima"].value = 1000;
+	bm.wdata.currency.currencies.h["Lagrima Stone"].value = 1000;
 	var json = bm.GetJsonPersistentData();
 	var fileName = "saves/skilled" + bm.wdata.worldVersion + ".json";
 	var pm = { worldVersion : bm.wdata.worldVersion, jsonGameplay : json, jsonStory : null};
@@ -3008,18 +3010,18 @@ MainTest.main = function() {
 	if(json != json2) {
 		process.stdout.write("ERROR: Data corrupted when loading");
 		process.stdout.write("\n");
-		console.log("test/MainTest.hx:425:","  _____ ");
-		console.log("test/MainTest.hx:426:","  _____ ");
 		console.log("test/MainTest.hx:427:","  _____ ");
-		console.log("test/MainTest.hx:428:",json);
+		console.log("test/MainTest.hx:428:","  _____ ");
 		console.log("test/MainTest.hx:429:","  _____ ");
-		console.log("test/MainTest.hx:430:","  _____ ");
+		console.log("test/MainTest.hx:430:",json);
 		console.log("test/MainTest.hx:431:","  _____ ");
-		console.log("test/MainTest.hx:432:",json2);
+		console.log("test/MainTest.hx:432:","  _____ ");
+		console.log("test/MainTest.hx:433:","  _____ ");
+		console.log("test/MainTest.hx:434:",json2);
 		js_node_Fs.writeFileSync("error/json.json",json);
 		js_node_Fs.writeFileSync("error/json2.json",json2);
 	}
-	console.log("test/MainTest.hx:439:","Test region change progression bug");
+	console.log("test/MainTest.hx:441:","Test region change progression bug");
 	var bm = MainTest.GetBattleManager();
 	bm.DefaultConfiguration();
 	bm.wdata.hero.level = 200;

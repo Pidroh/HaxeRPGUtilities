@@ -5037,12 +5037,15 @@ var View = function() {
 	grid.set_text("Character");
 	this.tabMaster.addComponent(grid);
 	var box = new haxe_ui_containers_VBox();
-	this.charaTab_CharaBaseStats = this.CreateActorViewComplete("You",box);
+	box.set_padding(15);
+	this.charaTab_CharaBaseStats = this.CreateActorViewComplete("BASE STATS",box);
 	grid.addComponent(box);
 	var box = new haxe_ui_containers_VBox();
-	this.charaTab_CharaEquipStats = this.CreateActorViewComplete("You",box);
+	box.set_padding(15);
+	this.charaTab_CharaEquipStats = this.CreateActorViewComplete("FINAL STATS",box);
 	grid.addComponent(box);
 	var box = new haxe_ui_containers_VBox();
+	box.set_padding(15);
 	this.charaTab_RegionElements = box;
 	box.set_width(200);
 	var scroll = this.CreateScrollable(grid);
@@ -5400,6 +5403,7 @@ View.prototype = {
 			var areaPos = children.length;
 			b.set_onClick(function(event) {
 				_gthis.areaChangeAction(areaPos);
+				_gthis.tabMaster.set_selectedPage(_gthis.mainComponentB);
 			});
 			b.set_width(150);
 			b.set_height(40);
