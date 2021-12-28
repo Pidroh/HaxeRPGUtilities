@@ -1314,6 +1314,7 @@ class View {
 		return {
 			name: label,
 			life: lifeView,
+			buffs: new Array<BuffView>(),
 			attack: CreateValueView(box, false, "Attack: "),
 			parent: box,
 			mp: CreateValueView(box, true, "MP: ", "#CC88FF"),
@@ -1421,6 +1422,11 @@ typedef BonusView = {
 	var parent:Component;
 };
 
+typedef BuffView = {
+	var labelText:Label;
+	var parent:Component;
+};
+
 typedef ValueView = {
 	var centeredText:Label;
 	var labelText:Label;
@@ -1436,6 +1442,7 @@ typedef DropDownView = {
 
 typedef ActorView = {
 	var name:Label;
+	var buffs : Array<BuffView>;
 	var buffText:Label;
 	var life:ValueView;
 	var mp:ValueView;

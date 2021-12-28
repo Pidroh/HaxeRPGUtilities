@@ -361,6 +361,13 @@ class Main {
 			"haste" => "&#128094;"
 		];
 
+		var buffToExplanation:Map<String, String> = [
+			"regen" => "Slowly recovers your HP",
+			"enchant-fire" => "Adds fire element and makes your attacks magical",
+			"protect" => "Increases your defense",
+			"haste" => "Increases your speed",
+		];
+
 		var overlayFullActorId = -1;
 
 		view.addHover(view.heroView.parent, (b, comp) -> {
