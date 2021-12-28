@@ -53,7 +53,6 @@ class View {
 	public var enemyView:ActorView;
 
 	public var equipHeroStats:ActorViewComplete;
-	public var overlayActorFullView:ActorViewComplete;
 	public var enemyAreaStats:ActorViewComplete;
 
 	public var level:ValueView;
@@ -85,18 +84,19 @@ class View {
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
 	public var enemy1 = 'slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog'.split('@');
 
-	public var charaTab :Component;
-	public var charaTab_CharaBaseStats: ActorViewComplete;
-	public var charaTab_CharaEquipStats : ActorViewComplete;
-	public var charaTab_RegionElements : Component;
-	public var charaTab_ButtonParent : VBox;
-	public var charaTab_bonusesView  = new Array<BonusView>();
+	public var charaTab:Component;
+	public var charaTab_CharaBaseStats:ActorViewComplete;
+	public var charaTab_CharaEquipStats:ActorViewComplete;
+	public var charaTab_RegionElements:Component;
+	public var charaTab_ButtonParent:VBox;
+	public var charaTab_bonusesView = new Array<BonusView>();
 
 	public var equipmentMainAction:(Int, Int) -> Void;
 	public var storyMainAction:(Int, Int) -> Void;
 	public var regionChangeAction:(Int) -> Void;
 	public var areaChangeAction:(Int) -> Void;
 	public var areaButtonHover:(Int, Bool) -> Void;
+	public var buffButtonHover:(BuffView, Bool) -> Void;
 
 	public var areaContainer:Component;
 	// public var regionButtonParent:Component;
@@ -125,7 +125,11 @@ class View {
 
 	public var amountOfStoryMessagesShown = 0;
 	public var storyDialog:StoryDialog;
+	
 	public var overlay:Component;
+	public var overlayActorFullView:ActorViewComplete;
+	public var overlayText:Label;
+
 
 	public function Update() {
 		// equipTabChild.width = equipTabChild.parentComponent.width - 40;
@@ -372,7 +376,15 @@ class View {
 		overlay.borderSize = 1;
 		overlay.padding = 10;
 
+		{
+			overlayText = new Label();
+			overlay.addComponent(overlayText);	
+		}
+
 		overlayActorFullView = CreateActorViewComplete("", overlay);
+		
+
+
 		{
 			var boxParentP = new Box();
 			boxParentP.addClass("default-background");
@@ -668,15 +680,14 @@ class View {
 
 			{
 				var box = new VBox();
-				box.padding = 15;	
+				box.padding = 15;
 				charaTab_CharaBaseStats = CreateActorViewComplete("BASE STATS", box);
 				grid.addComponent(box);
-
 			}
 			{
-				var box = new VBox();	
+				var box = new VBox();
 				box.padding = 15;
-				charaTab_CharaEquipStats = CreateActorViewComplete("FINAL STATS", box);	
+				charaTab_CharaEquipStats = CreateActorViewComplete("FINAL STATS", box);
 				grid.addComponent(box);
 			}
 			{
@@ -690,11 +701,9 @@ class View {
 				scroll.addComponent(box);
 			}
 
-			for (i in 0...2){
-				var box = new VBox();	
-
+			for (i in 0...2) {
+				var box = new VBox();
 			}
-
 		}
 		{
 			var storyTabComp = new ContinuousHBox();
@@ -1081,8 +1090,6 @@ class View {
 		equipments[pos].parent.hidden = true;
 	}
 
-	
-
 	public function FinishFeedingEquipmentValue(pos, vid) {
 		for (i in vid...equipments[pos].values.length) {
 			equipments[pos].values[i].parent.hidden = true;
@@ -1093,26 +1100,39 @@ class View {
 		equipments[pos].values[valuePos].parent.height = 35;
 	}
 
-	public function FeedBuffView(actorView : ActorView, buffPos:Int, text : String){
-		while(actorView.buffs.length <= buffPos){
-			var b = new HBox();
-			b.height = 20;
+	public function FeedBuffView(actorView:ActorView, buffPos:Int, text:String, buffId:String) {
+		while (actorView.buffs.length <= buffPos) {
+			var parent = new HBox();
+			parent.height = 20;
 			var l = new Label();
-			b.addComponent(l);
-			actorView.buffParent.addComponent(b);
-			actorView.buffs.push({
+			parent.addComponent(l);
+			actorView.buffParent.addComponent(parent);
+			var buffV : BuffView = {
 				labelText: l,
-				parent: b
+				parent: parent,
+				buffId: null
+			};
+			actorView.buffs.push(buffV);
+			addHover(parent, (state, component) -> {
+				buffButtonHover(buffV, state);
 			});
 		}
 		actorView.buffs[buffPos].labelText.text = text;
+		actorView.buffs[buffPos].buffId = buffId;
+		actorView.buffs[buffPos].parent.hidden = false;
 	}
 
-	public function FeedRegionBonusView(index : Int, areaName : String, level : Int){
+	public function FinishFeedBuffInfo(actorView:ActorView, buffPos:Int) {
+		for (i in buffPos...actorView.buffs.length) {
+			actorView.buffs[i].parent.hidden = true;
+		}
+	}
+
+	public function FeedRegionBonusView(index:Int, areaName:String, level:Int) {
 		var parent = charaTab_RegionElements;
 		var cc = parent.childComponents;
 
-		while(charaTab_bonusesView.length <= index){
+		while (charaTab_bonusesView.length <= index) {
 			var b = new Box();
 			var l = new Label();
 			l.verticalAlign = "center";
@@ -1122,15 +1142,14 @@ class View {
 			l.text = "Something";
 			b.addComponent(l);
 			parent.addComponent(b);
-			
-			var regionV : BonusView = {
+
+			var regionV:BonusView = {
 				labelText: l,
 				parent: b
 			}
 			charaTab_bonusesView.push(regionV);
 		}
 		charaTab_bonusesView[index].labelText.text = '$areaName Lv. $level';
-		
 	}
 
 	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false, valueString:String = null,
@@ -1316,13 +1335,12 @@ class View {
 		// label.height = 20;
 		label.verticalAlign = "center";
 
-		//var rightLabel:Label = new Label();
-		//rightLabel.styleString = "font-weight: bold; font-size: 16px;";
-		//rightLabel.horizontalAlign = "right";
+		// var rightLabel:Label = new Label();
+		// rightLabel.styleString = "font-weight: bold; font-size: 16px;";
+		// rightLabel.horizontalAlign = "right";
 		var buffBox = new HBox();
 		buffBox.horizontalAlign = "right";
 		buffBox.height = 20;
-
 
 		header.addComponent(buffBox);
 		header.addComponent(label);
@@ -1444,6 +1462,7 @@ typedef BonusView = {
 typedef BuffView = {
 	var labelText:Label;
 	var parent:Component;
+	var buffId:String;
 };
 
 typedef ValueView = {
@@ -1461,7 +1480,7 @@ typedef DropDownView = {
 
 typedef ActorView = {
 	var name:Label;
-	var buffs : Array<BuffView>;
+	var buffs:Array<BuffView>;
 	var buffParent:Component;
 	var life:ValueView;
 	var mp:ValueView;

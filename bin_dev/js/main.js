@@ -3205,12 +3205,17 @@ Main.gamemain = function() {
 	buffToExplanation_h["enchant-fire"] = "Adds fire element and makes your attacks magical";
 	buffToExplanation_h["protect"] = "Increases your defense";
 	buffToExplanation_h["haste"] = "Increases your speed";
+	buffToExplanation_h["nap"] = "Rest to recover your HP";
+	buffToExplanation_h["pierce"] = "Increases armor piercing power";
+	buffToExplanation_h["noblesse"] = "Increases damage as long as the enemy doesn't hit you";
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 376, className : "Main", methodName : "gamemain"});
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
 		if(b) {
 			overlayFullActorId = 0;
+			view.overlayActorFullView.parent.set_hidden(false);
 			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
 			view.positionOverlay(view.heroView.parent);
 		}
@@ -3226,6 +3231,17 @@ Main.gamemain = function() {
 			view.positionOverlay(view.enemyView.parent);
 		}
 	});
+	var GetBuffIcon = function(uniqueId,debuff) {
+		var buffText;
+		if(Object.prototype.hasOwnProperty.call(buffToIcon_h,uniqueId)) {
+			buffText = buffToIcon_h[uniqueId];
+		} else if(debuff == true) {
+			buffText = " &#129095;";
+		} else {
+			buffText = " &#129093;";
+		}
+		return buffText;
+	};
 	var ActorToView = function(actor,actorView,enemyName) {
 		if(enemyName == null) {
 			enemyName = false;
@@ -3263,26 +3279,19 @@ Main.gamemain = function() {
 				var b = _g1[_g];
 				++_g;
 				if(b != null && b.uniqueId != null) {
-					var buffText;
-					if(Object.prototype.hasOwnProperty.call(buffToIcon_h,b.uniqueId)) {
-						buffText = buffToIcon_h[b.uniqueId];
-					} else if(b.debuff == true) {
-						buffText = " &#129095;";
-					} else {
-						buffText = " &#129093;";
-					}
-					view.FeedBuffView(actorView,buffPos,buffText);
+					view.FeedBuffView(actorView,buffPos,GetBuffIcon(b.uniqueId,b.debuff),b.uniqueId);
 					++buffPos;
 				}
 			}
 			if(bm.wdata.sleeping) {
-				view.FeedBuffView(actorView,buffPos,"zZz");
+				view.FeedBuffView(actorView,buffPos,"zZz","nap");
 				++buffPos;
 			}
 			if(bm.wdata.recovering) {
-				view.FeedBuffView(actorView,buffPos,"&#x2620;");
+				view.FeedBuffView(actorView,buffPos,"&#x2620;","dead");
 				++buffPos;
 			}
+			view.FinishFeedBuffInfo(actorView,buffPos);
 			view.UpdateValues(actorView.life,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
 			var mp = bm.GetAttribute(actor,"MP");
 			var mpmax = bm.GetAttribute(actor,"MPMax");
@@ -3311,6 +3320,20 @@ Main.gamemain = function() {
 	var equipmentWindowTypeAlert = [false,false];
 	view.FeedEquipmentTypes(["Weapons","Armor","Skill Set"]);
 	var lagrimaAreaLabels = ["Forest","Streets","Mountain","Seaside","Wild Plains","Inactive Volcano","Snow Fields","Thunder Roads"];
+	view.buffButtonHover = function(struct,b) {
+		view.overlayText.set_hidden(!b);
+		if(b) {
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 521, className : "Main", methodName : "gamemain"});
+			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
+				var exp = buffToExplanation_h[struct.buffId];
+				var id = struct.buffId;
+				var icon = struct.labelText.get_text();
+				view.overlayText.set_text("" + icon + "  (" + id + ")\n" + exp);
+			} else {
+				view.overlayText.set_text(struct.buffId);
+			}
+		}
+	};
 	var saveFileImporterSetup = false;
 	var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
 	var bossMessage = originMessage;
@@ -3705,7 +3728,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 937, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 965, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3717,7 +3740,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 954, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 982, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3736,8 +3759,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 982, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 983, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1010, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1011, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -4863,6 +4886,8 @@ var View = function() {
 	this.overlay.addClass("default-background");
 	this.overlay.set_borderSize(1);
 	this.overlay.set_padding(10);
+	this.overlayText = new haxe_ui_components_Label();
+	this.overlay.addComponent(this.overlayText);
 	this.overlayActorFullView = this.CreateActorViewComplete("",this.overlay);
 	var boxParentP = new haxe_ui_containers_Box();
 	boxParentP.addClass("default-background");
@@ -5127,7 +5152,6 @@ View.prototype = {
 	heroView: null
 	,enemyView: null
 	,equipHeroStats: null
-	,overlayActorFullView: null
 	,enemyAreaStats: null
 	,level: null
 	,xpBar: null
@@ -5160,6 +5184,7 @@ View.prototype = {
 	,regionChangeAction: null
 	,areaChangeAction: null
 	,areaButtonHover: null
+	,buffButtonHover: null
 	,areaContainer: null
 	,levelContainer: null
 	,battleView: null
@@ -5178,6 +5203,8 @@ View.prototype = {
 	,amountOfStoryMessagesShown: null
 	,storyDialog: null
 	,overlay: null
+	,overlayActorFullView: null
+	,overlayText: null
 	,Update: function() {
 		this.equipTabChild.set_width(haxe_ui_core_Screen.get_instance().get_width() - 40 - 60 - 200);
 	}
@@ -5698,16 +5725,33 @@ View.prototype = {
 	,FeedEquipmentSeparation: function(pos,valuePos) {
 		this.equipments[pos].values[valuePos].parent.set_height(35);
 	}
-	,FeedBuffView: function(actorView,buffPos,text) {
+	,FeedBuffView: function(actorView,buffPos,text,buffId) {
+		var _gthis = this;
 		while(actorView.buffs.length <= buffPos) {
-			var b = new haxe_ui_containers_HBox();
-			b.set_height(20);
+			var parent = new haxe_ui_containers_HBox();
+			parent.set_height(20);
 			var l = new haxe_ui_components_Label();
-			b.addComponent(l);
-			actorView.buffParent.addComponent(b);
-			actorView.buffs.push({ labelText : l, parent : b});
+			parent.addComponent(l);
+			actorView.buffParent.addComponent(parent);
+			var buffV = [{ labelText : l, parent : parent, buffId : null}];
+			actorView.buffs.push(buffV[0]);
+			this.addHover(parent,(function(buffV) {
+				return function(state,component) {
+					_gthis.buffButtonHover(buffV[0],state);
+				};
+			})(buffV));
 		}
 		actorView.buffs[buffPos].labelText.set_text(text);
+		actorView.buffs[buffPos].buffId = buffId;
+		actorView.buffs[buffPos].parent.set_hidden(false);
+	}
+	,FinishFeedBuffInfo: function(actorView,buffPos) {
+		var _g = buffPos;
+		var _g1 = actorView.buffs.length;
+		while(_g < _g1) {
+			var i = _g++;
+			actorView.buffs[i].parent.set_hidden(true);
+		}
 	}
 	,FeedRegionBonusView: function(index,areaName,level) {
 		var parent = this.charaTab_RegionElements;

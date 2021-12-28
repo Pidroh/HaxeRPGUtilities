@@ -269,7 +269,6 @@ class Main {
 						ActorToFullView(enemy, view.enemyAreaStats);
 				}
 			}
-			// ActorToFullView();
 		}
 
 		var ls = Browser.getLocalStorage();
@@ -366,19 +365,25 @@ class Main {
 			"enchant-fire" => "Adds fire element and makes your attacks magical",
 			"protect" => "Increases your defense",
 			"haste" => "Increases your speed",
+			"nap" => "Rest to recover your HP",
+			"pierce" => "Increases armor piercing power",
+			"noblesse" => "Increases damage as long as the enemy doesn't hit you",
 		];
 
 		var overlayFullActorId = -1;
 
 		view.addHover(view.heroView.parent, (b, comp) -> {
+			trace("hero view");
 			view.overlay.hidden = !b;
 			overlayFullActorId = -1;
 			if (b) {
 				overlayFullActorId = 0;
+				view.overlayActorFullView.parent.hidden = false;
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 				view.positionOverlay(view.heroView.parent);
 			}
 		});
+		
 
 		// var lagrimaAreaEnemies = ["Goblin", "Dog", "Giant", "Turtle"];
 		var enemyLabels = [
@@ -403,6 +408,19 @@ class Main {
 				view.positionOverlay(view.enemyView.parent);
 			}
 		});
+
+		var GetBuffIcon = function (uniqueId, debuff):String {
+			var buffText;
+			if (buffToIcon.exists(uniqueId))
+				buffText = buffToIcon[uniqueId];
+			else {
+				if (debuff == true)
+					buffText = " &#129095;";
+				else
+					buffText = " &#129093;";
+			}
+			return buffText;
+		}
 
 		var ActorToView = function(actor:Actor, actorView:ActorView, enemyName = false) {
 			if (actor != null) {
@@ -437,27 +455,21 @@ class Main {
 				var buffPos = 0;
 				for (b in actor.buffs) {
 					if (b != null && b.uniqueId != null) {
-						var buffText;
-						if (buffToIcon.exists(b.uniqueId))
-							buffText = buffToIcon[b.uniqueId];
-						else {
-							if (b.debuff == true)
-								buffText = " &#129095;";
-							else
-								buffText = " &#129093;";
-						}
-						view.FeedBuffView(actorView, buffPos, buffText);
+						
+						view.FeedBuffView(actorView, buffPos, GetBuffIcon(b.uniqueId, b.debuff), b.uniqueId);
 						buffPos++;
 					}
 				}
 				if (bm.wdata.sleeping) {
-					view.FeedBuffView(actorView, buffPos, "zZz");
+					view.FeedBuffView(actorView, buffPos, "zZz", "nap");
 					buffPos++;
 				}
 				if (bm.wdata.recovering) {
-					view.FeedBuffView(actorView, buffPos, "&#x2620;");
+					view.FeedBuffView(actorView, buffPos, "&#x2620;", "dead");
 					buffPos++;
 				}
+
+				view.FinishFeedBuffInfo(actorView, buffPos);
 				// actorView.buffText.text = buffText;
 
 				view.UpdateValues(actorView.life, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
@@ -502,6 +514,22 @@ class Main {
 			"Snow Fields",
 			"Thunder Roads"
 		];
+
+		view.buffButtonHover = (struct, b) -> {
+			view.overlayText.hidden = !b;
+			if (b) {
+				trace("buff view");
+				if (buffToExplanation.exists(struct.buffId)) {
+					var exp = buffToExplanation[struct.buffId];
+					var id = struct.buffId;
+					var icon = struct.labelText.text;
+					view.overlayText.text = '$icon  ($id)\n$exp';
+				} else {
+					view.overlayText.text = struct.buffId;
+				};
+
+			}
+		}
 
 		var saveFileImporterSetup = false;
 
