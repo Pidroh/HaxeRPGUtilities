@@ -3278,7 +3278,6 @@ Main.gamemain = function() {
 			if(bm.wdata.recovering) {
 				buffText += " &#x2620;";
 			}
-			actorView.buffText.set_text(buffText);
 			view.UpdateValues(actorView.life,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
 			var mp = bm.GetAttribute(actor,"MP");
 			var mpmax = bm.GetAttribute(actor,"MPMax");
@@ -5694,6 +5693,16 @@ View.prototype = {
 	,FeedEquipmentSeparation: function(pos,valuePos) {
 		this.equipments[pos].values[valuePos].parent.set_height(35);
 	}
+	,FeedBuffView: function(actorView,buffPos,text) {
+		while(actorView.buffs.length <= buffPos) {
+			var b = new haxe_ui_containers_HBox();
+			b.set_height(20);
+			var l = new haxe_ui_components_Label();
+			b.addComponent(l);
+			actorView.buffParent.addComponent(b);
+		}
+		actorView.buffs[buffPos].labelText.set_text(text);
+	}
 	,FeedRegionBonusView: function(index,areaName,level) {
 		var parent = this.charaTab_RegionElements;
 		var cc = parent._children == null ? [] : parent._children;
@@ -5869,14 +5878,14 @@ View.prototype = {
 		var label = new haxe_ui_components_Label();
 		label.set_text(name);
 		label.set_verticalAlign("center");
-		var rightLabel = new haxe_ui_components_Label();
-		rightLabel.set_styleString("font-weight: bold; font-size: 16px;");
-		rightLabel.set_horizontalAlign("right");
-		header.addComponent(rightLabel);
+		var buffBox = new haxe_ui_containers_HBox();
+		buffBox.set_horizontalAlign("right");
+		buffBox.set_height(20);
+		header.addComponent(buffBox);
 		header.addComponent(label);
 		var lifeView = null;
-		lifeView = this.CreateValueView(box,true,"Life: ",null,null,"#FF8888");
-		return { name : label, life : lifeView, buffs : [], attack : this.CreateValueView(box,false,"Attack: "), parent : box, mp : this.CreateValueView(box,true,"MP: ",null,null,"#CC88FF"), defaultName : name, buffText : rightLabel};
+		lifeView = this.CreateValueView(buffBox,true,"Life: ",null,null,"#FF8888");
+		return { name : label, life : lifeView, buffs : [], attack : this.CreateValueView(buffBox,false,"Attack: "), parent : buffBox, mp : this.CreateValueView(buffBox,true,"MP: ",null,null,"#CC88FF"), defaultName : name, buffParent : buffBox};
 	}
 	,CreateDropDownView: function(parent,label) {
 		var boxh = new haxe_ui_containers_Box();

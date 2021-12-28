@@ -452,7 +452,7 @@ class Main {
 				if (bm.wdata.recovering) {
 					buffText += " &#x2620;";
 				}
-				actorView.buffText.text = buffText;
+				// actorView.buffText.text = buffText;
 
 				view.UpdateValues(actorView.life, bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"));
 

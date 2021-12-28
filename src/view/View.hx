@@ -1093,6 +1093,17 @@ class View {
 		equipments[pos].values[valuePos].parent.height = 35;
 	}
 
+	public function FeedBuffView(actorView : ActorView, buffPos:Int, text : String){
+		while(actorView.buffs.length <= buffPos){
+			var b = new HBox();
+			b.height = 20;
+			var l = new Label();
+			b.addComponent(l);
+			actorView.buffParent.addComponent(b);
+		}
+		actorView.buffs[buffPos].labelText.text = text;
+	}
+
 	public function FeedRegionBonusView(index : Int, areaName : String, level : Int){
 		var parent = charaTab_RegionElements;
 		var cc = parent.childComponents;
@@ -1301,25 +1312,29 @@ class View {
 		// label.height = 20;
 		label.verticalAlign = "center";
 
-		var rightLabel:Label = new Label();
-		rightLabel.styleString = "font-weight: bold; font-size: 16px;";
-		rightLabel.horizontalAlign = "right";
+		//var rightLabel:Label = new Label();
+		//rightLabel.styleString = "font-weight: bold; font-size: 16px;";
+		//rightLabel.horizontalAlign = "right";
+		var buffBox = new HBox();
+		buffBox.horizontalAlign = "right";
+		buffBox.height = 20;
 
-		header.addComponent(rightLabel);
+
+		header.addComponent(buffBox);
 		header.addComponent(label);
 
 		var lifeView:ValueView = null;
-		lifeView = CreateValueView(box, true, "Life: ", "#FF8888");
+		lifeView = CreateValueView(buffBox, true, "Life: ", "#FF8888");
 
 		return {
 			name: label,
 			life: lifeView,
 			buffs: new Array<BuffView>(),
-			attack: CreateValueView(box, false, "Attack: "),
-			parent: box,
-			mp: CreateValueView(box, true, "MP: ", "#CC88FF"),
+			attack: CreateValueView(buffBox, false, "Attack: "),
+			parent: buffBox,
+			mp: CreateValueView(buffBox, true, "MP: ", "#CC88FF"),
 			defaultName: name,
-			buffText: rightLabel
+			buffParent: buffBox
 		};
 	}
 
@@ -1443,7 +1458,7 @@ typedef DropDownView = {
 typedef ActorView = {
 	var name:Label;
 	var buffs : Array<BuffView>;
-	var buffText:Label;
+	var buffParent:Component;
 	var life:ValueView;
 	var mp:ValueView;
 	var attack:ValueView;
