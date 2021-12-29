@@ -1196,6 +1196,30 @@ class BattleManager {
 			timesUsed: 0,
 			mode: 0
 		}, null);
+		addAction("tabregion", {
+			visible: false,
+			enabled: false,
+			timesUsed: 0,
+			mode: 0
+		}, null);
+		addAction("tabcharacter", {
+			visible: false,
+			enabled: false,
+			timesUsed: 0,
+			mode: 0
+		}, null);
+		addAction("equipset_menu", {
+			visible: false,
+			enabled: false,
+			timesUsed: 0,
+			mode: 0
+		}, null);
+		addAction("equipset_battle", {
+			visible: false,
+			enabled: false,
+			timesUsed: 0,
+			mode: 0
+		}, null);
 
 		addAction("repeat", createAction(), (a) -> {
 			wdata.killedInArea[wdata.battleArea] = 0;
@@ -1686,6 +1710,26 @@ $baseInfo';
 			var lu = wdata.playerActions["tabequipment"];
 			lu.enabled = hasEquipment;
 			lu.visible = lu.enabled || lu.visible;
+		}
+		{
+			var lu = wdata.playerActions["tabregion"];
+			lu.enabled = true;
+			lu.visible = wdata.battleAreaRegionMax > 0 || lu.visible;
+		}
+		{
+			var lu = wdata.playerActions["tabcharacter"];
+			lu.enabled = true;
+			lu.visible = canLevelUp || lu.visible;
+		}
+		{
+			var lu = wdata.playerActions["equipset_menu"];
+			lu.enabled = true;
+			lu.visible = wdata.hero.equipment.length > 10 || lu.visible;
+		}
+		{
+			var lu = wdata.playerActions["equipset_battle"];
+			lu.enabled = true;
+			lu.visible = wdata.hero.equipment.length > 10 || lu.visible;
 		}
 
 		{

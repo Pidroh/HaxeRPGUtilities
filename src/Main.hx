@@ -566,17 +566,7 @@ class Main {
 
 		var areaNames = new Array<Array<String>>();
 
-		var flagRegionTab = false;
-
 		update = function(timeStamp:Float):Bool {
-			if (flagRegionTab == false) {
-				view.regionTab.hidden = bm.wdata.battleAreaRegionMax <= 1;
-				if (view.regionTab.hidden == false && view.regionTab.parentComponent == null) {
-					flagRegionTab = true;
-					view.tabMaster.addComponentAt(view.regionTab, 0);
-					view.equipTab.desiredPosition = 2;
-				}
-			}
 			if (overlayFullActorId == 0)
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 			if (overlayFullActorId == 1 && bm.wdata.enemy != null)
@@ -941,6 +931,24 @@ class Main {
 				var action = bm.wdata.playerActions["tabmemory"];
 				// view.TabVisible(view.storyTab, action.visible);
 				view.TabVisible(view.storyTab, storyHappenedPure);
+			}
+			{
+				var action = bm.wdata.playerActions["tabcharacter"];
+				// view.TabVisible(view.storyTab, action.visible);
+				view.TabVisible(view.charaTabWrap, action.visible);
+			}
+			{
+				var action = bm.wdata.playerActions["tabregion"];
+				// view.TabVisible(view.storyTab, action.visible);
+				view.TabVisible(view.regionTab, action.visible);
+			}
+			{
+				var action = bm.wdata.playerActions["equipset_menu"];
+				view.equipmentSetButtonParent_Equipment.parentComponent.hidden = !action.visible;
+			}
+			{
+				var action = bm.wdata.playerActions["equipset_battle"];
+				view.equipmentSetButtonParent_Battle.parentComponent.hidden = !action.visible;
 			}
 			{
 				view.TabVisible(view.developTab, bm.wdata.prestigeTimes >= 1 || bm.wdata.hero.level > 10);

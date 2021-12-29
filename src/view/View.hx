@@ -78,13 +78,14 @@ class View {
 	public var equipTab:UIElementWrapper;
 	public var developTab:UIElementWrapper;
 	public var tabMaster:TabView;
-	public var regionTab:Component;
+	public var regionTab:UIElementWrapper;
 	public var logText:Label;
 	public var logTextBattle:Label;
 	public var areaNouns = 'forest@meadow@cave@mountain@road@temple@ruin@bridge'.split('@');
 	public var prefix = 'normal@fire@ice@water@thunder@wind@earth@poison@grass'.split('@');
 	public var enemy1 = 'slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog'.split('@');
 
+	public var charaTabWrap:UIElementWrapper;
 	public var charaTab:Component;
 	public var charaTab_CharaBaseStats:ActorViewComplete;
 	public var charaTab_CharaEquipStats:ActorViewComplete;
@@ -482,15 +483,18 @@ class View {
 
 		{
 			var grid = new Grid();
-			regionTab = grid;
-			regionTab.percentWidth = 100;
+			var regionTabComp = grid;
+			this.regionTab = new UIElementWrapper(regionTabComp, tabMaster);
+			regionTab.desiredPosition = 0;
+			
+			regionTabComp.percentWidth = 100;
 			grid.columns = 3;
 
-			regionTab.text = "Regions";
-			regionTab.percentHeight = 90;
+			regionTabComp.text = "Regions";
+			regionTabComp.percentHeight = 90;
 
 			{
-				var scroll = CreateScrollable(regionTab);
+				var scroll = CreateScrollable(regionTabComp);
 				scroll.marginLeft = 15;
 				scroll.marginTop = 15;
 				scroll.padding = 15;
@@ -502,7 +506,7 @@ class View {
 			}
 
 			{
-				var scroll = CreateScrollable(regionTab);
+				var scroll = CreateScrollable(regionTabComp);
 				scroll.marginLeft = 15;
 				scroll.marginTop = 15;
 				scroll.padding = 15;
@@ -516,12 +520,11 @@ class View {
 				scroll.addComponent(vb);
 			}
 			{
-				enemyAreaStats = CreateActorViewComplete("Enemy", regionTab);
+				enemyAreaStats = CreateActorViewComplete("Enemy", regionTabComp);
 				enemyAreaStats.parent.marginLeft = 30;
 				enemyAreaStats.parent.marginTop = 15;
 				enemyAreaStats.parent.percentHeight = 90;
 			}
-			// tabMaster.addComponent(regionTab);
 			// regionTab.hidden = false;
 		}
 		var battleParent = new HBox();
@@ -697,6 +700,7 @@ class View {
 		{
 			var grid = new Grid();
 			charaTab = grid;
+			charaTabWrap = new UIElementWrapper(charaTab, tabMaster);
 			grid.columns = 3;
 			grid.text = "Character";
 			tabMaster.addComponent(grid);
@@ -820,7 +824,7 @@ class View {
 	}
 
 	public function FeedAreaNames(areaNames:Array<String>, currentArea) {
-		var children = regionTab.getComponentAt(1).getComponentAt(0).childComponents;
+		var children = regionTab.component.getComponentAt(1).getComponentAt(0).childComponents;
 		var buttonAmount = children.length;
 		if (children.length < areaNames.length) {
 			var b = new Button();
@@ -840,7 +844,7 @@ class View {
 			 */
 			b.toggle = true;
 			addHover(b, (b, component) -> areaButtonHover(areaPos, b));
-			regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
+			regionTab.component.getComponentAt(1).getComponentAt(0).addComponent(b);
 		}
 		for (i in 0...children.length) {
 			var hide = i >= areaNames.length;
@@ -855,7 +859,7 @@ class View {
 			}
 		}
 
-		// regionTab.getComponentAt(1).getComponentAt(0).marginRight = 100;
+		// regionTab.component.getComponentAt(1).getComponentAt(0).marginRight = 100;
 	}
 
 	public function FeedDropDownRegion(regionNames, regionAmount, currentRegion, showLocked = 0, lockedMessage = null) {
@@ -864,13 +868,13 @@ class View {
 
 		var buttonAmount = regionAmount + showLocked;
 
-		var children = regionTab.getComponentAt(0).getComponentAt(0).childComponents;
+		var children = regionTab.component.getComponentAt(0).getComponentAt(0).childComponents;
 
 		if (children.length < buttonAmount) {
 			var b = new Button();
 			var regionPos = children.length;
 			// regionButtonParent.addComponent(b);
-			regionTab.getComponentAt(0).getComponentAt(0).addComponent(b);
+			regionTab.component.getComponentAt(0).getComponentAt(0).addComponent(b);
 
 			b.onClick = event -> regionChangeAction(regionPos);
 			b.width = 150;

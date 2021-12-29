@@ -1556,6 +1556,10 @@ BattleManager.prototype = {
 		addAction("levelup",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
 		addAction("tabequipment",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
 		addAction("tabmemory",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("tabregion",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("tabcharacter",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("equipset_menu",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("equipset_battle",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
 		addAction("repeat",createAction(),function(a) {
 			_gthis.wdata.killedInArea[_gthis.wdata.battleArea] = 0;
 		});
@@ -2064,6 +2068,18 @@ BattleManager.prototype = {
 		var lu = this.wdata.playerActions.h["tabequipment"];
 		lu.enabled = hasEquipment;
 		lu.visible = lu.enabled || lu.visible;
+		var lu = this.wdata.playerActions.h["tabregion"];
+		lu.enabled = true;
+		lu.visible = this.wdata.battleAreaRegionMax > 0 || lu.visible;
+		var lu = this.wdata.playerActions.h["tabcharacter"];
+		lu.enabled = true;
+		lu.visible = this.canLevelUp || lu.visible;
+		var lu = this.wdata.playerActions.h["equipset_menu"];
+		lu.enabled = true;
+		lu.visible = this.wdata.hero.equipment.length > 10 || lu.visible;
+		var lu = this.wdata.playerActions.h["equipset_battle"];
+		lu.enabled = true;
+		lu.visible = this.wdata.hero.equipment.length > 10 || lu.visible;
 		var lu = this.wdata.playerActions.h["levelup"];
 		lu.enabled = this.canLevelUp;
 		lu.visible = this.canLevelUp || lu.visible;
@@ -2382,7 +2398,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1973, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2017, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2399,7 +2415,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 1990, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2034, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3395,16 +3411,7 @@ Main.gamemain = function() {
 	var originMessage = "Hard Area Cleared!\nYour stats permanently increased!\n\n";
 	var bossMessage = originMessage;
 	var areaNames = [];
-	var flagRegionTab = false;
 	update = function(timeStamp) {
-		if(flagRegionTab == false) {
-			view.regionTab.set_hidden(bm.wdata.battleAreaRegionMax <= 1);
-			if(view.regionTab.get_hidden() == false && view.regionTab.parentComponent == null) {
-				flagRegionTab = true;
-				view.tabMaster.addComponentAt(view.regionTab,0);
-				view.equipTab.desiredPosition = 2;
-			}
-		}
 		if(overlayFullActorId == 0) {
 			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
 		}
@@ -3750,6 +3757,14 @@ Main.gamemain = function() {
 		view.TabVisible(view.equipTab,action.visible);
 		var action = bm.wdata.playerActions.h["tabmemory"];
 		view.TabVisible(view.storyTab,storyHappenedPure);
+		var action = bm.wdata.playerActions.h["tabcharacter"];
+		view.TabVisible(view.charaTabWrap,action.visible);
+		var action = bm.wdata.playerActions.h["tabregion"];
+		view.TabVisible(view.regionTab,action.visible);
+		var action = bm.wdata.playerActions.h["equipset_menu"];
+		view.equipmentSetButtonParent_Equipment.parentComponent.set_hidden(!action.visible);
+		var action = bm.wdata.playerActions.h["equipset_battle"];
+		view.equipmentSetButtonParent_Battle.parentComponent.set_hidden(!action.visible);
 		view.TabVisible(view.developTab,bm.wdata.prestigeTimes >= 1 || bm.wdata.hero.level > 10);
 		var sleepAct = bm.wdata.playerActions.h["sleep"];
 		if(sleepAct.mode == 0) {
@@ -3787,7 +3802,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 995, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1003, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3799,7 +3814,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1012, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1020, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3818,8 +3833,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1040, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1041, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1048, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1049, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -4997,12 +5012,14 @@ var View = function() {
 	this.tabMaster.set_percentHeight(90);
 	this.tabMaster.set_verticalAlign("bottom");
 	var grid = new haxe_ui_containers_Grid();
-	this.regionTab = grid;
-	this.regionTab.set_percentWidth(100);
+	var regionTabComp = grid;
+	this.regionTab = new UIElementWrapper(regionTabComp,this.tabMaster);
+	this.regionTab.desiredPosition = 0;
+	regionTabComp.set_percentWidth(100);
 	grid.set_columns(3);
-	this.regionTab.set_text("Regions");
-	this.regionTab.set_percentHeight(90);
-	var scroll = this.CreateScrollable(this.regionTab);
+	regionTabComp.set_text("Regions");
+	regionTabComp.set_percentHeight(90);
+	var scroll = this.CreateScrollable(regionTabComp);
 	scroll.set_marginLeft(15);
 	scroll.set_marginTop(15);
 	scroll.set_padding(15);
@@ -5011,7 +5028,7 @@ var View = function() {
 	var vb = new haxe_ui_containers_VBox();
 	vb.set_horizontalAlign("center");
 	scroll.addComponent(vb);
-	var scroll = this.CreateScrollable(this.regionTab);
+	var scroll = this.CreateScrollable(regionTabComp);
 	scroll.set_marginLeft(15);
 	scroll.set_marginTop(15);
 	scroll.set_padding(15);
@@ -5022,7 +5039,7 @@ var View = function() {
 	vb.set_width(scroll.get_width() - 30);
 	vb.set_horizontalAlign("center");
 	scroll.addComponent(vb);
-	this.enemyAreaStats = this.CreateActorViewComplete("Enemy",this.regionTab);
+	this.enemyAreaStats = this.CreateActorViewComplete("Enemy",regionTabComp);
 	this.enemyAreaStats.parent.set_marginLeft(30);
 	this.enemyAreaStats.parent.set_marginTop(15);
 	this.enemyAreaStats.parent.set_percentHeight(90);
@@ -5127,6 +5144,7 @@ var View = function() {
 	scroll.set_percentHeight(100);
 	var grid = new haxe_ui_containers_Grid();
 	this.charaTab = grid;
+	this.charaTabWrap = new UIElementWrapper(this.charaTab,this.tabMaster);
 	grid.set_columns(3);
 	grid.set_text("Character");
 	this.tabMaster.addComponent(grid);
@@ -5233,6 +5251,7 @@ View.prototype = {
 	,areaNouns: null
 	,prefix: null
 	,enemy1: null
+	,charaTabWrap: null
 	,charaTab: null
 	,charaTab_CharaBaseStats: null
 	,charaTab_CharaEquipStats: null
@@ -5514,7 +5533,7 @@ View.prototype = {
 	}
 	,FeedAreaNames: function(areaNames,currentArea) {
 		var _gthis = this;
-		var _this = this.regionTab.getComponentAt(1).getComponentAt(0);
+		var _this = this.regionTab.component.getComponentAt(1).getComponentAt(0);
 		var children = _this._children == null ? [] : _this._children;
 		var buttonAmount = children.length;
 		if(children.length < areaNames.length) {
@@ -5530,7 +5549,7 @@ View.prototype = {
 			this.addHover(b,function(b,component) {
 				_gthis.areaButtonHover(areaPos,b);
 			});
-			this.regionTab.getComponentAt(1).getComponentAt(0).addComponent(b);
+			this.regionTab.component.getComponentAt(1).getComponentAt(0).addComponent(b);
 		}
 		var _g = 0;
 		var _g1 = children.length;
@@ -5553,12 +5572,12 @@ View.prototype = {
 		}
 		var _gthis = this;
 		var buttonAmount = regionAmount + showLocked;
-		var _this = this.regionTab.getComponentAt(0).getComponentAt(0);
+		var _this = this.regionTab.component.getComponentAt(0).getComponentAt(0);
 		var children = _this._children == null ? [] : _this._children;
 		if(children.length < buttonAmount) {
 			var b = new haxe_ui_components_Button();
 			var regionPos = children.length;
-			this.regionTab.getComponentAt(0).getComponentAt(0).addComponent(b);
+			this.regionTab.component.getComponentAt(0).getComponentAt(0).addComponent(b);
 			b.set_onClick(function(event) {
 				_gthis.regionChangeAction(regionPos);
 			});

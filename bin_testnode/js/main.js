@@ -1455,6 +1455,10 @@ BattleManager.prototype = {
 		addAction("levelup",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
 		addAction("tabequipment",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
 		addAction("tabmemory",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("tabregion",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("tabcharacter",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("equipset_menu",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
+		addAction("equipset_battle",{ visible : false, enabled : false, timesUsed : 0, mode : 0},null);
 		addAction("repeat",createAction(),function(a) {
 			_gthis.wdata.killedInArea[_gthis.wdata.battleArea] = 0;
 		});
@@ -1963,6 +1967,18 @@ BattleManager.prototype = {
 		var lu = this.wdata.playerActions.h["tabequipment"];
 		lu.enabled = hasEquipment;
 		lu.visible = lu.enabled || lu.visible;
+		var lu = this.wdata.playerActions.h["tabregion"];
+		lu.enabled = true;
+		lu.visible = this.wdata.battleAreaRegionMax > 0 || lu.visible;
+		var lu = this.wdata.playerActions.h["tabcharacter"];
+		lu.enabled = true;
+		lu.visible = this.canLevelUp || lu.visible;
+		var lu = this.wdata.playerActions.h["equipset_menu"];
+		lu.enabled = true;
+		lu.visible = this.wdata.hero.equipment.length > 10 || lu.visible;
+		var lu = this.wdata.playerActions.h["equipset_battle"];
+		lu.enabled = true;
+		lu.visible = this.wdata.hero.equipment.length > 10 || lu.visible;
 		var lu = this.wdata.playerActions.h["levelup"];
 		lu.enabled = this.canLevelUp;
 		lu.visible = this.canLevelUp || lu.visible;
@@ -2281,7 +2297,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:1973:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:2017:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2298,7 +2314,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:1990:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:2034:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
