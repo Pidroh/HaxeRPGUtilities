@@ -123,6 +123,18 @@ class Main {
 			"Light Slash" => "Deals light damage", "Slash" => "Deals damage", "Heavy Slash" => "deals heavy damage",
 		];
 
+		var AttributeExplanation:Map<String, String> = [
+			"Attack" => "Influences inflicted damage",
+			"Defense" => "Decreases incoming damage",
+			"Speed" => "Frequency of attacks",
+			"Blood" => "Increases damage, but loses life with each attack",
+			"Piercing" => "Armor piercing power",
+			"Life" => "When it gets to 0, you need to recover",
+			"LifeMax" => "When it gets to 0, you need to recover",
+			"MPMax" => "Skills consume this. Expend it all to start recovering.",
+
+		];
+
 		var enemyRegionNames = [
 			"Lagrima Continent",
 			"Wolf Fields",
@@ -721,12 +733,12 @@ class Main {
 						}
 
 						for (v in e.attributes.keyValueIterator()) {
-							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, "ATTRIBUTE",false, null);
+							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, AttributeExplanation[v.key], false, null);
 							vid++;
 						}
 						if (e.attributeMultiplier != null)
 							for (v in e.attributeMultiplier.keyValueIterator()) {
-								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, "ATTRIBUTE", true);
+								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, AttributeExplanation[v.key], true);
 								vid++;
 							}
 
