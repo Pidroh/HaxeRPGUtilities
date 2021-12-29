@@ -3525,10 +3525,10 @@ Main.gamemain = function() {
 										var code = 80 + ssd.skills[s].level;
 										skillName += " " + String.fromCodePoint(code);
 									}
-									view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,skillName);
+									view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,SkillToExplanation_h[ssd.skills[s].id],false,skillName);
 								}
 								if(action.mode == 1) {
-									view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,false,"???");
+									view.FeedEquipmentValue(equipmentViewPos,vid,"Skill",-1,"You are not strong enough to use this skill",null,"???");
 								}
 								++vid;
 							}
@@ -3544,7 +3544,7 @@ Main.gamemain = function() {
 						var key1 = v_keys[v_current++];
 						var v_key = key1;
 						var v_value = v_h[key1];
-						view.FeedEquipmentValue(equipmentViewPos,vid,v_key,v_value,false,null);
+						view.FeedEquipmentValue(equipmentViewPos,vid,v_key,v_value,"ATTRIBUTE",false,null);
 						++vid;
 					}
 					if(e.attributeMultiplier != null) {
@@ -3557,7 +3557,7 @@ Main.gamemain = function() {
 							var key2 = v_keys1[v_current1++];
 							var v_key1 = key2;
 							var v_value1 = v_h1[key2];
-							view.FeedEquipmentValue(equipmentViewPos,vid,v_key1,v_value1,true);
+							view.FeedEquipmentValue(equipmentViewPos,vid,v_key1,v_value1,"ATTRIBUTE",true);
 							++vid;
 						}
 					}
@@ -3778,7 +3778,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 984, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 983, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3790,7 +3790,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1001, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1000, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3809,8 +3809,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1029, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1030, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1028, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1029, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5844,7 +5844,7 @@ View.prototype = {
 		}
 		this.charaTab_bonusesView[index].labelText.set_text("" + areaName + " Lv. " + level);
 	}
-	,FeedEquipmentValue: function(pos,valuePos,valueName,value,percent,valueString,separationNext) {
+	,FeedEquipmentValue: function(pos,valuePos,valueName,value,hoverText,percent,valueString,separationNext) {
 		if(separationNext == null) {
 			separationNext = false;
 		}
@@ -5855,11 +5855,13 @@ View.prototype = {
 			var vv = this.CreateValueView(this.equipments[pos].parent,false,"Attr");
 			vv.parent.set_marginBottom(30);
 			vv.parent.set_paddingBottom(30);
+			this.addDefaultHover(vv.parent);
 			this.equipments[pos].values.push(vv);
 		}
 		if(separationNext) {
 			this.equipments[pos].values[valuePos].parent.set_paddingBottom(30);
 		}
+		this.updateDefaultHoverText(this.equipments[pos].values[valuePos].parent,hoverText);
 		this.UpdateValues(this.equipments[pos].values[valuePos],value,-1,valueName,percent,valueString);
 		this.equipments[pos].values[valuePos].parent.set_hidden(false);
 	}

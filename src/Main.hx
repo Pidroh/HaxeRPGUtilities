@@ -203,11 +203,11 @@ class Main {
 			var b = view.GetButton(bid);
 			view.addDefaultHover(b);
 			/*
-			view.addHover(b, (b, component) -> {
-				view.overlay.hidden = !b;
-				bm.view.overlayText.text = SkillToExplanation
-			});
-			*/
+				view.addHover(b, (b, component) -> {
+					view.overlay.hidden = !b;
+					bm.view.overlayText.text = SkillToExplanation
+				});
+			 */
 		}
 		// CreateButtonFromAction("repeat", "Restart");
 		var prestigeWarn = "Your experience awards will increase by "
@@ -707,10 +707,10 @@ class Main {
 										if (ssd.skills[s].level > 1) {
 											skillName += " " + String.fromCharCode('P'.code + ssd.skills[s].level);
 										}
-										view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, skillName);
+										view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, SkillToExplanation[ssd.skills[s].id], false, skillName);
 									}
 									if (action.mode == 1) {
-										view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, false, "???");
+										view.FeedEquipmentValue(equipmentViewPos, vid, "Skill", -1, "You are not strong enough to use this skill", "???");
 										// view.ButtonLabel(actionId, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
 									}
 
@@ -721,12 +721,12 @@ class Main {
 						}
 
 						for (v in e.attributes.keyValueIterator()) {
-							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, false, null);
+							view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, "ATTRIBUTE",false, null);
 							vid++;
 						}
 						if (e.attributeMultiplier != null)
 							for (v in e.attributeMultiplier.keyValueIterator()) {
-								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, true);
+								view.FeedEquipmentValue(equipmentViewPos, vid, v.key, v.value, "ATTRIBUTE", true);
 								vid++;
 							}
 
@@ -904,7 +904,6 @@ class Main {
 						}
 						view.ButtonLabel(id, skillName + " - " + sb.mpCost + "MP");
 						view.updateDefaultHoverText(view.GetButton(id), SkillToExplanation[sb.id]);
-
 					}
 					// if (action.enabled) {
 					if (action.mode == 2 && action.enabled == false) {

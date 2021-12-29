@@ -1175,17 +1175,19 @@ class View {
 		charaTab_bonusesView[index].labelText.text = '$areaName Lv. $level';
 	}
 
-	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, percent = false, valueString:String = null,
+	public function FeedEquipmentValue(pos:Int, valuePos:Int, valueName:String, value:Int, hoverText:String, percent = false, valueString:String = null,
 			separationNext = false) {
 		while (equipments[pos].values.length <= valuePos) {
 			var vv = CreateValueView(equipments[pos].parent, false, "Attr");
 			vv.parent.marginBottom = 30;
 			vv.parent.paddingBottom = 30;
 			// vv.parent.height = 40;
+			addDefaultHover(vv.parent);
 			equipments[pos].values.push(vv);
 		}
 		if (separationNext)
 			equipments[pos].values[valuePos].parent.paddingBottom = 30;
+		updateDefaultHoverText(equipments[pos].values[valuePos].parent, hoverText);
 		UpdateValues(equipments[pos].values[valuePos], value, -1, valueName, percent, valueString);
 		equipments[pos].values[valuePos].parent.hidden = false;
 	}
