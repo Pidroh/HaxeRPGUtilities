@@ -3004,6 +3004,36 @@ Main.gamemain = function() {
 	proto.init();
 	bm.skillBases = proto.skills;
 	var view = new View();
+	var buffToIcon_h = Object.create(null);
+	buffToIcon_h["regen"] = "&#127807;";
+	buffToIcon_h["enchant-fire"] = "&#128293;";
+	buffToIcon_h["protect"] = "&#9960;";
+	buffToIcon_h["haste"] = "&#128094;";
+	var buffToExplanation_h = Object.create(null);
+	buffToExplanation_h["regen"] = "Slowly recovers HP";
+	buffToExplanation_h["enchant-fire"] = "Adds fire element and makes attacks magical";
+	buffToExplanation_h["protect"] = "Increases defense";
+	buffToExplanation_h["haste"] = "Increases speed";
+	buffToExplanation_h["nap"] = "Resting to recover HP";
+	buffToExplanation_h["pierce"] = "Increases armor piercing power";
+	buffToExplanation_h["noblesse"] = "Increases damage as long as not hit";
+	var SkillToExplanation_h = Object.create(null);
+	SkillToExplanation_h["Fogo"] = "Deals fire damage";
+	SkillToExplanation_h["Gelo"] = "Deals ice damage";
+	SkillToExplanation_h["Raio"] = "Deals thunder damage";
+	SkillToExplanation_h["DeSpell"] = "Removes enemy buffs";
+	SkillToExplanation_h["Cure"] = "Heals wounds";
+	SkillToExplanation_h["Haste"] = "Increases speed";
+	SkillToExplanation_h["Bloodlust"] = "Increases the power of Blood";
+	SkillToExplanation_h["Noblesse"] = "Increases damage as long as not hit";
+	SkillToExplanation_h["Sharpen"] = "Increases armor piercing power";
+	SkillToExplanation_h["Armor Break"] = "Decreases enemy defense";
+	SkillToExplanation_h["Attack Break"] = "Decreases enemy attack";
+	SkillToExplanation_h["Protect"] = "Increases defense";
+	SkillToExplanation_h["Regen"] = "Slowly recovers HP";
+	SkillToExplanation_h["Light Slash"] = "Deals light damage";
+	SkillToExplanation_h["Slash"] = "Deals damage";
+	SkillToExplanation_h["Heavy Slash"] = "deals heavy damage";
 	var enemyRegionNames = ["Lagrima Continent","Wolf Fields","Tonberry's Lair","Altar Cave","Bikanel Island","Tartarus","Witchhunter Base","Highsalem","Witchhunter Guild"];
 	var enemyNames_0 = "Enemy";
 	var enemyNames_1 = "Wolf";
@@ -3012,7 +3042,7 @@ Main.gamemain = function() {
 	var enemyNames_4 = "Cactuar";
 	var enemyNames_5 = "Reaper";
 	if(enemyRegionNames.length < bm.regionRequirements.length) {
-		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 118, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 141, className : "Main", methodName : "gamemain"});
 	}
 	var eventShown = 0;
 	var main = new haxe_ui_containers_Box();
@@ -3058,13 +3088,41 @@ Main.gamemain = function() {
 	});
 	CreateButtonFromAction("sleep","Sleep");
 	CreateButtonFromAction("repeat","Restart Area");
-	CreateButtonFromAction("battleaction_" + 0,"Action " + 0,null,"" + 1);
-	CreateButtonFromAction("battleaction_" + 1,"Action " + 1,null,"" + 2);
-	CreateButtonFromAction("battleaction_" + 2,"Action " + 2,null,"" + 3);
-	CreateButtonFromAction("battleaction_" + 3,"Action " + 3,null,"" + 4);
-	CreateButtonFromAction("battleaction_" + 4,"Action " + 4,null,"" + 5);
-	CreateButtonFromAction("battleaction_" + 5,"Action " + 5,null,"" + 6);
-	CreateButtonFromAction("battleaction_" + 6,"Action " + 6,null,"" + 7);
+	var skillSlotId = 0;
+	var bid = "battleaction_" + 0;
+	CreateButtonFromAction(bid,"Action " + 0,null,"" + 1);
+	var b = view.GetButton(bid);
+	view.addDefaultHover(b);
+	var skillSlotId = 1;
+	var bid = "battleaction_" + 1;
+	CreateButtonFromAction(bid,"Action " + 1,null,"" + 2);
+	var b = view.GetButton(bid);
+	view.addDefaultHover(b);
+	var skillSlotId = 2;
+	var bid = "battleaction_" + 2;
+	CreateButtonFromAction(bid,"Action " + 2,null,"" + 3);
+	var b = view.GetButton(bid);
+	view.addDefaultHover(b);
+	var skillSlotId = 3;
+	var bid = "battleaction_" + 3;
+	CreateButtonFromAction(bid,"Action " + 3,null,"" + 4);
+	var b = view.GetButton(bid);
+	view.addDefaultHover(b);
+	var skillSlotId = 4;
+	var bid = "battleaction_" + 4;
+	CreateButtonFromAction(bid,"Action " + 4,null,"" + 5);
+	var b = view.GetButton(bid);
+	view.addDefaultHover(b);
+	var skillSlotId = 5;
+	var bid = "battleaction_" + 5;
+	CreateButtonFromAction(bid,"Action " + 5,null,"" + 6);
+	var b = view.GetButton(bid);
+	view.addDefaultHover(b);
+	var skillSlotId = 6;
+	var bid = "battleaction_" + 6;
+	CreateButtonFromAction(bid,"Action " + 6,null,"" + 7);
+	var b = view.GetButton(bid);
+	view.addDefaultHover(b);
 	var prestigeWarn = "Your experience awards will increase by " + (bm.GetXPBonusOnPrestige() * 100 | 0) + "%. Your max level will increase by " + bm.GetMaxLevelBonusOnPrestige() + ". You will keep all permanent stats bonuses. \n\nYou will go back to Level 1. Your progress in all regions will be reset. All that is not equipped will be lost. All that is equipped will lose strength.";
 	CreateButtonFromAction("prestige","Soul Crush",prestigeWarn);
 	var ignoreStats = ["Attack","Defense","Speed","Life","LifeMax","MP","SpeedCount","MagicAttack","MPRechargeCount","MPRecharge"];
@@ -3078,16 +3136,16 @@ Main.gamemain = function() {
 			++valueIndex;
 		}
 		var h = actor.attributesCalculated.h;
-		var _g_h = h;
-		var _g_keys = Object.keys(h);
-		var _g_length = _g_keys.length;
-		var _g_current = 0;
-		while(_g_current < _g_length) {
-			var key = _g_keys[_g_current++];
-			var _g1_key = key;
-			var _g1_value = _g_h[key];
-			var key1 = _g1_key;
-			var value = _g1_value;
+		var _g3_h = h;
+		var _g3_keys = Object.keys(h);
+		var _g3_length = _g3_keys.length;
+		var _g3_current = 0;
+		while(_g3_current < _g3_length) {
+			var key = _g3_keys[_g3_current++];
+			var _g4_key = key;
+			var _g4_value = _g3_h[key];
+			var key1 = _g4_key;
+			var value = _g4_value;
 			if(ignoreStats.indexOf(key1) == -1 && value != 0) {
 				view.UpdateValues(view.GetValueView(actorView,valueIndex,false),value,-1,"" + key1 + ":");
 				++valueIndex;
@@ -3117,6 +3175,7 @@ Main.gamemain = function() {
 			bm.ChangeEquipmentSet(pos);
 		}
 		if(action == View.equipmentAction_SetPreview) {
+			view.overlayActorFullView.parent.set_hidden(pos < 0);
 			if(pos >= 0) {
 				var ces = bm.wdata.hero.chosenEquipSet;
 				bm.wdata.hero.chosenEquipSet = pos;
@@ -3195,24 +3254,12 @@ Main.gamemain = function() {
 	var global = new haxe_ds_StringMap();
 	scriptExecuter.variables.h["global"] = global;
 	var update = null;
-	var buffToIcon_h = Object.create(null);
-	buffToIcon_h["regen"] = "&#127807;";
-	buffToIcon_h["enchant-fire"] = "&#128293;";
-	buffToIcon_h["protect"] = "&#9960;";
-	buffToIcon_h["haste"] = "&#128094;";
-	var buffToExplanation_h = Object.create(null);
-	buffToExplanation_h["regen"] = "Slowly recovers your HP";
-	buffToExplanation_h["enchant-fire"] = "Adds fire element and makes your attacks magical";
-	buffToExplanation_h["protect"] = "Increases your defense";
-	buffToExplanation_h["haste"] = "Increases your speed";
-	buffToExplanation_h["nap"] = "Rest to recover your HP";
-	buffToExplanation_h["pierce"] = "Increases armor piercing power";
-	buffToExplanation_h["noblesse"] = "Increases damage as long as the enemy doesn't hit you";
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 376, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 393, className : "Main", methodName : "gamemain"});
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
+		view.overlayActorFullView.parent.set_hidden(!b);
 		if(b) {
 			overlayFullActorId = 0;
 			view.overlayActorFullView.parent.set_hidden(false);
@@ -3225,6 +3272,7 @@ Main.gamemain = function() {
 	view.addHover(view.enemyView.parent,function(b,comp) {
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
+		view.overlayActorFullView.parent.set_hidden(!b);
 		if(b) {
 			overlayFullActorId = 1;
 			ActorToFullView(bm.wdata.enemy,view.overlayActorFullView);
@@ -3323,7 +3371,7 @@ Main.gamemain = function() {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 521, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 538, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -3676,6 +3724,7 @@ Main.gamemain = function() {
 						skillName += " " + String.fromCodePoint(code);
 					}
 					view.ButtonLabel(id,skillName + " - " + sb.mpCost + "MP");
+					view.updateDefaultHoverText(view.GetButton(id),SkillToExplanation_h[sb.id]);
 				}
 				if(action.mode == 2 && action.enabled == false) {
 					view.ButtonAttackColor(id);
@@ -3684,6 +3733,7 @@ Main.gamemain = function() {
 				}
 				if(action.mode == 1) {
 					view.ButtonLabel(id,"Unlock at Level " + bm.skillSlotUnlocklevel[i]);
+					view.updateDefaultHoverText(view.GetButton(id),"");
 				}
 			}
 		}
@@ -3728,7 +3778,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 965, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 984, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3740,7 +3790,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 982, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1001, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3759,8 +3809,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1010, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1011, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1029, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1030, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -4874,6 +4924,7 @@ var View = function() {
 	this.storyDialogUtilityFlag = false;
 	this.storyDialogActive = false;
 	this.equipments = [];
+	this.hoverTextMap = new haxe_ds_ObjectMap();
 	this.buttonMap = new haxe_ds_StringMap();
 	this.charaTab_bonusesView = [];
 	this.enemy1 = "slime@orc@goblin@bat@eagle@rat@lizard@bug@skeleton@horse@wolf@dog".split("@");
@@ -5193,6 +5244,7 @@ View.prototype = {
 	,buttonDiscardBad: null
 	,buttonBox: null
 	,buttonMap: null
+	,hoverTextMap: null
 	,equipments: null
 	,equipmentTypeSelectionTabbar: null
 	,equipmentTypeNames: null
@@ -5393,13 +5445,35 @@ View.prototype = {
 	,StoryButtonHide: function(buttonPos) {
 		this.cutsceneStartViews[buttonPos].parent.hide();
 	}
+	,updateDefaultHoverText: function(c,text) {
+		this.hoverTextMap.set(c,text);
+	}
+	,addDefaultHover: function(c) {
+		var _gthis = this;
+		this.addHover(c,function(b,component) {
+			_gthis.overlay.set_hidden(!b);
+			_gthis.overlayText.set_hidden(!b);
+			if(b) {
+				_gthis.positionOverlay(c);
+				_gthis.overlayText.set_text(_gthis.hoverTextMap.h[c.__id__]);
+			}
+		});
+	}
 	,addHover: function(c,callback) {
 		var hovering = false;
 		c.registerEvent("mouseover",function(e) {
+			hovering = true;
 			callback(true,c);
 		});
 		c.registerEvent("mouseout",function(e) {
+			hovering = false;
 			callback(false,c);
+		});
+		c.registerEvent("disabled",function(e) {
+			if(hovering) {
+				hovering = false;
+				callback(false,c);
+			}
 		});
 	}
 	,GetEquipmentType: function() {
@@ -5800,6 +5874,9 @@ View.prototype = {
 	,ShowMessage: function(title,message) {
 		haxe_ui_core_Screen.get_instance().messageBox(message,title,"info",true,function(button) {
 		});
+	}
+	,GetButton: function(id) {
+		return this.buttonMap.h[id];
 	}
 	,AddButton: function(id,label,onClick,warningMessage,position,secondArea) {
 		if(secondArea == null) {

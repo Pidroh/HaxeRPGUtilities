@@ -99,6 +99,29 @@ class Main {
 		}
 
 		var view:View = new View();
+		var buffToIcon:Map<String, String> = [
+			"regen" => "&#127807;",
+			"enchant-fire" => "&#128293;",
+			"protect" => "&#9960;",
+			"haste" => "&#128094;"
+		];
+
+		var buffToExplanation:Map<String, String> = [
+			"regen" => "Slowly recovers HP",
+			"enchant-fire" => "Adds fire element and makes attacks magical",
+			"protect" => "Increases defense",
+			"haste" => "Increases speed",
+			"nap" => "Resting to recover HP",
+			"pierce" => "Increases armor piercing power",
+			"noblesse" => "Increases damage as long as not hit",
+		];
+		var SkillToExplanation:Map<String, String> = [
+			"Fogo" => "Deals fire damage", "Gelo" => "Deals ice damage", "Raio" => "Deals thunder damage", "DeSpell" => "Removes enemy buffs",
+			"Cure" => "Heals wounds", "Haste" => "Increases speed", "Bloodlust" => "Increases the power of Blood",
+			"Noblesse" => "Increases damage as long as not hit", "Sharpen" => "Increases armor piercing power", "Armor Break" => "Decreases enemy defense",
+			"Attack Break" => "Decreases enemy attack", "Protect" => "Increases defense", "Regen" => "Slowly recovers HP",
+			"Light Slash" => "Deals light damage", "Slash" => "Deals damage", "Heavy Slash" => "deals heavy damage",
+		];
 
 		var enemyRegionNames = [
 			"Lagrima Continent",
@@ -174,7 +197,17 @@ class Main {
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart Area");
 		for (i in 0...7) {
-			CreateButtonFromAction("battleaction_" + i, "Action " + i, null, "" + (1 + i));
+			var skillSlotId = i;
+			var bid = "battleaction_" + i;
+			CreateButtonFromAction(bid, "Action " + i, null, "" + (1 + i));
+			var b = view.GetButton(bid);
+			view.addDefaultHover(b);
+			/*
+			view.addHover(b, (b, component) -> {
+				view.overlay.hidden = !b;
+				bm.view.overlayText.text = SkillToExplanation
+			});
+			*/
 		}
 		// CreateButtonFromAction("repeat", "Restart");
 		var prestigeWarn = "Your experience awards will increase by "
@@ -233,6 +266,7 @@ class Main {
 				bm.ChangeEquipmentSet(pos);
 			}
 			if (action == View.equipmentAction_SetPreview) {
+				view.overlayActorFullView.parent.hidden = pos < 0;
 				if (pos >= 0) {
 					var ces = bm.wdata.hero.chosenEquipSet;
 					bm.wdata.hero.chosenEquipSet = pos;
@@ -353,29 +387,13 @@ class Main {
 
 		var update = null;
 
-		var buffToIcon:Map<String, String> = [
-			"regen" => "&#127807;",
-			"enchant-fire" => "&#128293;",
-			"protect" => "&#9960;",
-			"haste" => "&#128094;"
-		];
-
-		var buffToExplanation:Map<String, String> = [
-			"regen" => "Slowly recovers your HP",
-			"enchant-fire" => "Adds fire element and makes your attacks magical",
-			"protect" => "Increases your defense",
-			"haste" => "Increases your speed",
-			"nap" => "Rest to recover your HP",
-			"pierce" => "Increases armor piercing power",
-			"noblesse" => "Increases damage as long as the enemy doesn't hit you",
-		];
-
 		var overlayFullActorId = -1;
 
 		view.addHover(view.heroView.parent, (b, comp) -> {
 			trace("hero view");
 			view.overlay.hidden = !b;
 			overlayFullActorId = -1;
+			view.overlayActorFullView.parent.hidden = !b;
 			if (b) {
 				overlayFullActorId = 0;
 				view.overlayActorFullView.parent.hidden = false;
@@ -383,7 +401,6 @@ class Main {
 				view.positionOverlay(view.heroView.parent);
 			}
 		});
-		
 
 		// var lagrimaAreaEnemies = ["Goblin", "Dog", "Giant", "Turtle"];
 		var enemyLabels = [
@@ -402,6 +419,7 @@ class Main {
 		view.addHover(view.enemyView.parent, (b, comp) -> {
 			view.overlay.hidden = !b;
 			overlayFullActorId = -1;
+			view.overlayActorFullView.parent.hidden = !b;
 			if (b) {
 				overlayFullActorId = 1;
 				ActorToFullView(bm.wdata.enemy, view.overlayActorFullView);
@@ -409,7 +427,7 @@ class Main {
 			}
 		});
 
-		var GetBuffIcon = function (uniqueId, debuff):String {
+		var GetBuffIcon = function(uniqueId, debuff):String {
 			var buffText;
 			if (buffToIcon.exists(uniqueId))
 				buffText = buffToIcon[uniqueId];
@@ -455,7 +473,6 @@ class Main {
 				var buffPos = 0;
 				for (b in actor.buffs) {
 					if (b != null && b.uniqueId != null) {
-						
 						view.FeedBuffView(actorView, buffPos, GetBuffIcon(b.uniqueId, b.debuff), b.uniqueId);
 						buffPos++;
 					}
@@ -527,7 +544,6 @@ class Main {
 				} else {
 					view.overlayText.text = struct.buffId;
 				};
-
 			}
 		}
 
@@ -887,6 +903,8 @@ class Main {
 							skillName += " " + String.fromCharCode('P'.code + skills[i].level);
 						}
 						view.ButtonLabel(id, skillName + " - " + sb.mpCost + "MP");
+						view.updateDefaultHoverText(view.GetButton(id), SkillToExplanation[sb.id]);
+
 					}
 					// if (action.enabled) {
 					if (action.mode == 2 && action.enabled == false) {
@@ -899,6 +917,7 @@ class Main {
 					// }
 					if (action.mode == 1) {
 						view.ButtonLabel(id, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
+						view.updateDefaultHoverText(view.GetButton(id), "");
 					}
 				}
 			}

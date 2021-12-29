@@ -1,3 +1,4 @@
+import haxe.ui.events.UIEvent;
 import ProceduralEnemyGeneration.EnemyAreaInformation;
 import haxe.ui.styles.animation.util.ColorPropertyDetails;
 import haxe.ui.Toolkit;
@@ -110,6 +111,7 @@ class View {
 
 	var buttonBox:Component;
 	var buttonMap = new Map<String, Button>();
+	var hoverTextMap = new Map<Component, String>();
 
 	var equipments = new Array<EquipmentView>();
 
@@ -125,11 +127,10 @@ class View {
 
 	public var amountOfStoryMessagesShown = 0;
 	public var storyDialog:StoryDialog;
-	
+
 	public var overlay:Component;
 	public var overlayActorFullView:ActorViewComplete;
 	public var overlayText:Label;
-
 
 	public function Update() {
 		// equipTabChild.width = equipTabChild.parentComponent.width - 40;
@@ -358,13 +359,37 @@ class View {
 		cutsceneStartViews[buttonPos].parent.hide();
 	}
 
+	public function updateDefaultHoverText(c:Component, text) {
+		hoverTextMap[c] = text;
+	}
+
+	public function addDefaultHover(c:Component) {
+		addHover(c, (b, component) -> {
+			overlay.hidden = !b;
+			overlayText.hidden = !b;
+			if (b) {
+				positionOverlay(c);
+				overlayText.text = hoverTextMap[c];
+			}
+		});
+	}
+
 	public function addHover(c:Component, callback) {
 		var hovering = false;
 		c.registerEvent(MouseEvent.MOUSE_OVER, (e) -> {
+			hovering = true;
 			callback(true, c);
 		});
 		c.registerEvent(MouseEvent.MOUSE_OUT, (e) -> {
+			hovering = false;
 			callback(false, c);
+		});
+		c.registerEvent(UIEvent.DISABLED, (e) -> {
+			if (hovering) {
+				hovering = false;
+				callback(false, c);
+			}
+			
 		});
 	}
 
@@ -378,12 +403,10 @@ class View {
 
 		{
 			overlayText = new Label();
-			overlay.addComponent(overlayText);	
+			overlay.addComponent(overlayText);
 		}
 
 		overlayActorFullView = CreateActorViewComplete("", overlay);
-		
-
 
 		{
 			var boxParentP = new Box();
@@ -1107,7 +1130,7 @@ class View {
 			var l = new Label();
 			parent.addComponent(l);
 			actorView.buffParent.addComponent(parent);
-			var buffV : BuffView = {
+			var buffV:BuffView = {
 				labelText: l,
 				parent: parent,
 				buffId: null
@@ -1182,6 +1205,10 @@ class View {
 
 	public function ShowMessage(title, message) {
 		Screen.instance.messageBox(message, title, MessageBoxType.TYPE_INFO, true, function(button) {});
+	}
+
+	public function GetButton(id):Button {
+		return buttonMap[id];
 	}
 
 	public function AddButton(id:String, label:String, onClick, warningMessage = null, position = -1, secondArea = false) {
