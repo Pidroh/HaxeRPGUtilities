@@ -420,7 +420,7 @@ class View {
 			background-gradient-style: horizontal;
 		}
 		.fade-in {
-			animation: animationFadeIn 2s linear 0s 1;
+			animation: animationFadeIn 4s linear 0s 1;
 		}
 		');
 		
@@ -965,7 +965,7 @@ class View {
 				} else {
 					element.parent.addComponentAt(element.component, element.desiredPosition);
 				}
-				element.component.fadeIn();
+				// element.component.fadeIn();
 			} else {
 				if (element.desiredPosition >= 0)
 					tabMaster.removePage(element.desiredPosition);
