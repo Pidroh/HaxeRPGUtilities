@@ -410,6 +410,7 @@ var BattleManager = function() {
 	this.equipDropChance_Rare = 15;
 	this.equipDropChance = 30;
 	this.timePeriod = 0.6;
+	this.turnList = [];
 	this.enemySheets = [];
 	this.canLevelUp = false;
 	this.canAdvance = false;
@@ -547,7 +548,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 842, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 884, className : "BattleManager", methodName : "new"});
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -726,6 +727,8 @@ BattleManager.prototype = {
 	,canLevelUp: null
 	,areaBonus: null
 	,enemySheets: null
+	,lastActiveActor: null
+	,turnList: null
 	,balancing: null
 	,timePeriod: null
 	,equipDropChance: null
@@ -856,6 +859,46 @@ BattleManager.prototype = {
 		}
 		this.RecalculateAttributes(defender);
 		this.AddEvent(EventTypes.BuffRemoval).origin = defender.reference;
+	}
+	,RefreshCalculatedTurnOrder: function() {
+		var hero = this.wdata.hero;
+		var enemy = this.wdata.enemy;
+		var countH = hero.attributesCalculated.h["SpeedCount"];
+		var countE = enemy.attributesCalculated.h["SpeedCount"];
+		this.turnList.length = 0;
+		var _g = 0;
+		while(_g < 10000) {
+			var i = _g++;
+			var actorAct = -1;
+			var bActor = hero;
+			var count = countH;
+			count += bActor.attributesCalculated.h["Speed"];
+			if(actorAct == -1) {
+				if(count > 1000) {
+					actorAct = 0;
+					count -= 1000;
+				}
+			}
+			countH = count;
+			var bActor1 = hero;
+			var count1 = countH;
+			bActor1 = enemy;
+			count1 = countE;
+			count1 += bActor1.attributesCalculated.h["Speed"];
+			if(actorAct == -1) {
+				if(count1 > 1000) {
+					actorAct = 1;
+					count1 -= 1000;
+				}
+			}
+			countE = count1;
+			if(actorAct >= 0) {
+				this.turnList.push(actorAct);
+			}
+			if(this.turnList.length >= 6) {
+				break;
+			}
+		}
 	}
 	,AttackExecute: function(attacker,defender,attackRate,attackBonus,defenseRate,element) {
 		if(defenseRate == null) {
@@ -2398,7 +2441,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2017, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2059, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2415,7 +2458,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2034, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2076, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
@@ -3367,6 +3410,12 @@ Main.gamemain = function() {
 					fh.set_text(ActorToView + (" " + String.fromCodePoint(code)));
 				}
 			}
+			if(actor == bm.wdata.hero) {
+				actorView.portrait.set_resource(haxe_ui_util_Variant.fromString("graphics/heroicon.png"));
+			}
+			if(actor == bm.wdata.enemy) {
+				actorView.portrait.set_resource(haxe_ui_util_Variant.fromString("graphics/enemyicon.png"));
+			}
 			var buffPos = 0;
 			var _g = 0;
 			var _g1 = actor.buffs;
@@ -3418,7 +3467,7 @@ Main.gamemain = function() {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 576, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 582, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -3827,7 +3876,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1024, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1030, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3839,7 +3888,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1041, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1047, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3858,8 +3907,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1069, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1070, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1075, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1076, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -6074,6 +6123,14 @@ View.prototype = {
 		this.addHoverClasses(box);
 		box.set_width(180);
 		parent.addComponent(box);
+		var face = new haxe_ui_components_Image();
+		face.set_scaleMode("fitheight");
+		var res = face.get_resource();
+		face.set_height(64);
+		face.set_resource(haxe_ui_util_Variant.fromString("graphics/heroicon.png"));
+		face.set_width(64);
+		face.set_horizontalAlign("center");
+		box.addComponent(face);
 		var header = new haxe_ui_containers_Box();
 		header.set_percentWidth(100);
 		header.set_height(20);
@@ -6088,7 +6145,7 @@ View.prototype = {
 		header.addComponent(label);
 		var lifeView = null;
 		lifeView = this.CreateValueView(box,true,"Life: ",null,null,"#FF8888");
-		return { name : label, life : lifeView, buffs : [], attack : this.CreateValueView(box,false,"Attack: "), parent : box, mp : this.CreateValueView(box,true,"MP: ",null,null,"#CC88FF"), defaultName : name, buffParent : buffBox};
+		return { name : label, life : lifeView, buffs : [], attack : this.CreateValueView(box,false,"Attack: "), parent : box, mp : this.CreateValueView(box,true,"MP: ",null,null,"#CC88FF"), defaultName : name, buffParent : buffBox, portrait : face};
 	}
 	,CreateDropDownView: function(parent,label) {
 		var boxh = new haxe_ui_containers_Box();

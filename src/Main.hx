@@ -508,6 +508,12 @@ class Main {
 					}
 				}
 
+				if(actor == bm.wdata.hero){
+					actorView.portrait.resource = "graphics/heroicon.png";
+				}
+				if(actor == bm.wdata.enemy){
+					actorView.portrait.resource = "graphics/enemyicon.png";
+				}
 				var buffPos = 0;
 				for (b in actor.buffs) {
 					if (b != null && b.uniqueId != null) {

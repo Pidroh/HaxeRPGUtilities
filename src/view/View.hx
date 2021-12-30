@@ -371,7 +371,7 @@ class View {
 	public function addHoverClasses(c:Component) {
 		c.addClass(style_Class_HoverableBack);
 		addHover(c, (b, component) -> {
-			if(b)
+			if (b)
 				c.addClass(":hover", true, true);
 			else
 				c.removeClass(":hover", true, true);
@@ -410,7 +410,6 @@ class View {
 	var style_Class_HoverableBack = "hoverableback";
 
 	public function new() {
-
 		Toolkit.styleSheet.parse('
 		.$style_Class_HoverableBack:hover {
 			background-color: #2F4F4F;
@@ -423,7 +422,7 @@ class View {
 			animation: animationFadeIn 4s linear 0s 1;
 		}
 		');
-		
+
 		// Toolkit.styleSheet.addStyleSheet(ss);
 		overlay = new VBox();
 		overlay.hidden = true;
@@ -1300,8 +1299,7 @@ class View {
 	public function ButtonVisibility(id:String, visible:Bool) {
 		var b = buttonMap[id];
 		// b.allowInteraction = visible;
-		if(b.hidden == true && visible == true){
-			
+		if (b.hidden == true && visible == true) {
 			b.fadeIn();
 		}
 		b.hidden = !visible;
@@ -1409,6 +1407,15 @@ class View {
 		box.width = 180;
 		parent.addComponent(box);
 
+		var face = new Image();
+		face.scaleMode = FIT_HEIGHT;
+		var res = face.resource;
+		face.height = 64;
+		face.resource = "graphics/heroicon.png";
+		face.width = 64;
+		face.horizontalAlign = "center";
+		box.addComponent(face);
+
 		var header = new Box();
 		header.percentWidth = 100;
 		header.height = 20;
@@ -1440,7 +1447,8 @@ class View {
 			parent: box,
 			mp: CreateValueView(box, true, "MP: ", "#CC88FF"),
 			defaultName: name,
-			buffParent: buffBox
+			buffParent: buffBox,
+			portrait: face
 		};
 	}
 
@@ -1573,6 +1581,7 @@ typedef ActorView = {
 	var attack:ValueView;
 	var parent:Component;
 	var defaultName:String;
+	var portrait:Image;
 };
 
 typedef ActorViewComplete = {
@@ -1616,8 +1625,6 @@ class StoryDialog extends Dialog {
 
 	public function new() {
 		super();
-
-		
 
 		title = "Story Scene";
 		width = 400;

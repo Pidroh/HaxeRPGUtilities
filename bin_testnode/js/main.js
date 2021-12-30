@@ -336,6 +336,7 @@ var BattleManager = function() {
 	this.equipDropChance_Rare = 15;
 	this.equipDropChance = 30;
 	this.timePeriod = 0.6;
+	this.turnList = [];
 	this.enemySheets = [];
 	this.canLevelUp = false;
 	this.canAdvance = false;
@@ -473,7 +474,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:842:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:884:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -755,6 +756,46 @@ BattleManager.prototype = {
 		}
 		this.RecalculateAttributes(defender);
 		this.AddEvent(EventTypes.BuffRemoval).origin = defender.reference;
+	}
+	,RefreshCalculatedTurnOrder: function() {
+		var hero = this.wdata.hero;
+		var enemy = this.wdata.enemy;
+		var countH = hero.attributesCalculated.h["SpeedCount"];
+		var countE = enemy.attributesCalculated.h["SpeedCount"];
+		this.turnList.length = 0;
+		var _g = 0;
+		while(_g < 10000) {
+			var i = _g++;
+			var actorAct = -1;
+			var bActor = hero;
+			var count = countH;
+			count += bActor.attributesCalculated.h["Speed"];
+			if(actorAct == -1) {
+				if(count > 1000) {
+					actorAct = 0;
+					count -= 1000;
+				}
+			}
+			countH = count;
+			var bActor1 = hero;
+			var count1 = countH;
+			bActor1 = enemy;
+			count1 = countE;
+			count1 += bActor1.attributesCalculated.h["Speed"];
+			if(actorAct == -1) {
+				if(count1 > 1000) {
+					actorAct = 1;
+					count1 -= 1000;
+				}
+			}
+			countE = count1;
+			if(actorAct >= 0) {
+				this.turnList.push(actorAct);
+			}
+			if(this.turnList.length >= 6) {
+				break;
+			}
+		}
 	}
 	,AttackExecute: function(attacker,defender,attackRate,attackBonus,defenseRate,element) {
 		if(defenseRate == null) {
@@ -2297,7 +2338,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:2017:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:2059:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2314,7 +2355,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:2034:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:2076:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

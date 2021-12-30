@@ -45,6 +45,9 @@ class BattleManager {
 	public var areaBonus:ScalingResource;
 	public var enemySheets = new Array<ActorSheet>();
 
+	public var lastActiveActor:Actor;
+	public var turnList = new Array<Int>();
+
 	var balancing:Balancing;
 	var timePeriod = 0.6;
 	var equipDropChance = 30;
@@ -170,6 +173,45 @@ class BattleManager {
 
 		RecalculateAttributes(defender);
 		AddEvent(BuffRemoval).origin = defender.reference;
+	}
+
+	public function RefreshCalculatedTurnOrder() {
+		var hero = wdata.hero;
+		var enemy = wdata.enemy;
+		var countH = hero.attributesCalculated["SpeedCount"];
+		var countE = enemy.attributesCalculated["SpeedCount"];
+
+		turnList.resize(0);
+		for (i in 0...10000) { // should be a while(true) but just to be safer
+			var actorAct = -1;
+			for (battleActor in 0...2) {
+				var bActor = hero;
+				var count = countH;
+				if (battleActor == 1) {
+					bActor = enemy;
+					count = countE;
+				}
+				count += bActor.attributesCalculated["Speed"];
+				// trace('$battleActor speed count $sc');
+				if (actorAct == -1) {
+					if (count > 1000) {
+						actorAct = battleActor;
+						count = count - 1000;
+					}
+				}
+				if (battleActor == 0) {
+					countH = count;
+				}
+				if (battleActor == 1) {
+					countE = count;
+				}
+			}
+			if (actorAct >= 0) {
+				turnList.push(actorAct);
+			}
+			if (turnList.length >= 6)
+				break;
+		}
 	}
 
 	public function AttackExecute(attacker:Actor, defender:Actor, attackRate = 100, attackBonus = 0, defenseRate = 100, element:String = null) {
