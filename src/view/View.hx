@@ -1,3 +1,6 @@
+import haxe.ui.styles.CompositeStyleSheet;
+import haxe.ui.styles.StyleSheet;
+import haxe.ui.util.StyleUtil;
 import haxe.ui.events.UIEvent;
 import ProceduralEnemyGeneration.EnemyAreaInformation;
 import haxe.ui.styles.animation.util.ColorPropertyDetails;
@@ -365,6 +368,16 @@ class View {
 		hoverTextMap[c] = text;
 	}
 
+	public function addHoverClasses(c:Component) {
+		c.addClass(style_Class_HoverableBack);
+		addHover(c, (b, component) -> {
+			if(b)
+				c.addClass(":hover", true, true);
+			else
+				c.removeClass(":hover", true, true);
+		});
+	}
+
 	public function addDefaultHover(c:Component) {
 		addHover(c, (b, component) -> {
 			overlay.hidden = !b;
@@ -394,7 +407,17 @@ class View {
 		});
 	}
 
+	var style_Class_HoverableBack = "hoverableback";
+
 	public function new() {
+
+		Toolkit.styleSheet.parse('
+		.$style_Class_HoverableBack:hover {
+			background-color: #2F4F4F;
+			}
+		');
+		
+		// Toolkit.styleSheet.addStyleSheet(ss);
 		overlay = new VBox();
 		overlay.hidden = true;
 		overlay.addClass("default-background");
@@ -1369,6 +1392,8 @@ class View {
 
 	function GetActorView(name:String, parent:Component):ActorView {
 		var box:VBox = new VBox();
+		addHoverClasses(box);
+		// box.addClass('button');
 		box.width = 180;
 		parent.addComponent(box);
 
@@ -1446,6 +1471,7 @@ class View {
 			color.b -= 128;
 		}
 		var boxh = new Box();
+		addHoverClasses(boxh);
 		boxh.width = fullWidth;
 		boxh.height = 20 + extraHeight;
 
@@ -1577,6 +1603,8 @@ class StoryDialog extends Dialog {
 
 	public function new() {
 		super();
+
+		
 
 		title = "Story Scene";
 		width = 400;

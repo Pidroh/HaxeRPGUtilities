@@ -10,7 +10,6 @@ import js.html.FileReader;
 import js.html.InputElement;
 import haxe.ui.containers.Box;
 import haxe.ui.core.Component;
-import haxe.ui.containers.dialogs.MessageBox.MessageBoxType;
 import haxe.ui.macros.helpers.FunctionBuilder;
 import js.html.webgl.extension.WEBGLCompressedTexturePvrtc;
 import haxe.ui.components.Progress;
@@ -849,6 +848,7 @@ class Main {
 					battle = false;
 					var regionName = enemyRegionNames[e.data];
 					ev = '<b>Found new location: $regionName</b>';
+					view.ShowMessage("Found New Location", 'Gained access to $regionName.\n(Accessed by using the Region Tabs)');
 					GameAnalyticsIntegration.SendDesignEvent("RegionUnlock", e.data);
 					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage" + e.data);
 				}

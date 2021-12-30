@@ -3067,7 +3067,7 @@ Main.gamemain = function() {
 	var enemyNames_4 = "Cactuar";
 	var enemyNames_5 = "Reaper";
 	if(enemyRegionNames.length < bm.regionRequirements.length) {
-		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 153, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 152, className : "Main", methodName : "gamemain"});
 	}
 	var eventShown = 0;
 	var main = new haxe_ui_containers_Box();
@@ -3300,7 +3300,7 @@ Main.gamemain = function() {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 424, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 423, className : "Main", methodName : "gamemain"});
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
 		view.overlayActorFullView.parent.set_hidden(!b);
@@ -3415,7 +3415,7 @@ Main.gamemain = function() {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 569, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 568, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -3695,6 +3695,7 @@ Main.gamemain = function() {
 				battle = false;
 				var regionName = enemyRegionNames[e.data];
 				ev = "<b>Found new location: " + regionName + "</b>";
+				view.ShowMessage("Found New Location","Gained access to " + regionName + ".\n(Accessed by using the Region Tabs)");
 				GameAnalyticsIntegration.SendDesignEvent("RegionUnlock",e.data);
 				GameAnalyticsIntegration.SendProgressStartEvent("world0","stage" + e.data);
 			}
@@ -4962,6 +4963,7 @@ UInt.toFloat = function(this1) {
 	}
 };
 var View = function() {
+	this.style_Class_HoverableBack = "hoverableback";
 	this.amountOfStoryMessagesShown = 0;
 	this.cutsceneStartViews = [];
 	this.storyDialogUtilityFlag = false;
@@ -4975,6 +4977,7 @@ var View = function() {
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
 	this.currencyViews = [];
 	var _gthis = this;
+	haxe_ui_Toolkit.styleSheet.parse("\r\n\t\t." + this.style_Class_HoverableBack + ":hover {\r\n\t\t\tbackground-color: #2F4F4F;\r\n\t\t\t}\r\n\t\t");
 	this.overlay = new haxe_ui_containers_VBox();
 	this.overlay.set_hidden(true);
 	this.overlay.addClass("default-background");
@@ -5504,6 +5507,16 @@ View.prototype = {
 	,updateDefaultHoverText: function(c,text) {
 		this.hoverTextMap.set(c,text);
 	}
+	,addHoverClasses: function(c) {
+		c.addClass(this.style_Class_HoverableBack);
+		this.addHover(c,function(b,component) {
+			if(b) {
+				c.addClass(":hover",true,true);
+			} else {
+				c.removeClass(":hover",true,true);
+			}
+		});
+	}
 	,addDefaultHover: function(c) {
 		var _gthis = this;
 		this.addHover(c,function(b,component) {
@@ -5532,6 +5545,7 @@ View.prototype = {
 			}
 		});
 	}
+	,style_Class_HoverableBack: null
 	,GetEquipmentType: function() {
 		return this.equipmentTypeSelectionTabbar.get_selectedIndex();
 	}
@@ -6057,6 +6071,7 @@ View.prototype = {
 	}
 	,GetActorView: function(name,parent) {
 		var box = new haxe_ui_containers_VBox();
+		this.addHoverClasses(box);
 		box.set_width(180);
 		parent.addComponent(box);
 		var header = new haxe_ui_containers_Box();
@@ -6119,6 +6134,7 @@ View.prototype = {
 			color = (color >> 24 & 255 & 255) << 24 | (color >> 16 & 255 & 255) << 16 | (color >> 8 & 255 & 255) << 8 | (color & 255) - 128 & 255;
 		}
 		var boxh = new haxe_ui_containers_Box();
+		this.addHoverClasses(boxh);
 		boxh.set_width(fullWidth);
 		boxh.set_height(20 + extraHeight);
 		parent.addComponent(boxh);
