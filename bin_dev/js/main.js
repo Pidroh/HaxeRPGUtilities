@@ -548,7 +548,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 884, className : "BattleManager", methodName : "new"});
+		haxe_Log.trace("PROBLEM: Tell developer to add more region requirements!!!",{ fileName : "src/logic/BattleManager.hx", lineNumber : 887, className : "BattleManager", methodName : "new"});
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -861,11 +861,14 @@ BattleManager.prototype = {
 		this.AddEvent(EventTypes.BuffRemoval).origin = defender.reference;
 	}
 	,RefreshCalculatedTurnOrder: function() {
+		this.turnList.length = 0;
 		var hero = this.wdata.hero;
 		var enemy = this.wdata.enemy;
+		if(enemy == null) {
+			return;
+		}
 		var countH = hero.attributesCalculated.h["SpeedCount"];
 		var countE = enemy.attributesCalculated.h["SpeedCount"];
-		this.turnList.length = 0;
 		var _g = 0;
 		while(_g < 10000) {
 			var i = _g++;
@@ -2054,6 +2057,7 @@ BattleManager.prototype = {
 	}
 	,update: function(delta) {
 		this.wdata.timeCount += delta;
+		this.RefreshCalculatedTurnOrder();
 		var _g = 0;
 		var _g1 = this.equipmentToDiscard;
 		while(_g < _g1.length) {
@@ -2441,7 +2445,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2059, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+				haxe_Log.trace("LOOP SCAPE",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2063, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2458,7 +2462,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2076, className : "BattleManager", methodName : "DiscardWorseEquipment"});
+					haxe_Log.trace("LOOP SCAPE 2",{ fileName : "src/logic/BattleManager.hx", lineNumber : 2080, className : "BattleManager", methodName : "DiscardWorseEquipment"});
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];

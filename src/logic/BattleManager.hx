@@ -176,12 +176,15 @@ class BattleManager {
 	}
 
 	public function RefreshCalculatedTurnOrder() {
+		turnList.resize(0);
 		var hero = wdata.hero;
 		var enemy = wdata.enemy;
+		if(enemy == null) return;
+		
 		var countH = hero.attributesCalculated["SpeedCount"];
 		var countE = enemy.attributesCalculated["SpeedCount"];
 
-		turnList.resize(0);
+		
 		for (i in 0...10000) { // should be a while(true) but just to be safer
 			var actorAct = -1;
 			for (battleActor in 0...2) {
@@ -1687,6 +1690,7 @@ $baseInfo';
 
 	public function update(delta:Float):String {
 		wdata.timeCount += delta;
+		RefreshCalculatedTurnOrder();
 
 		for (e in equipmentToDiscard) {
 			if (e.outsideSystems != null) {

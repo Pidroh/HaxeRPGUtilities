@@ -474,7 +474,7 @@ var BattleManager = function() {
 	bm1.push({ xpPrize : false, statBonus : _g});
 	bm.regionRequirements = [0,5,9,14,18,22,30,42,50];
 	if(bm.regionPrizes.length > bm.regionRequirements.length) {
-		console.log("src/logic/BattleManager.hx:884:","PROBLEM: Tell developer to add more region requirements!!!");
+		console.log("src/logic/BattleManager.hx:887:","PROBLEM: Tell developer to add more region requirements!!!");
 	}
 	this.enemyAreaFromProcedural.enemySheets.push({ speciesMultiplier : null, speciesLevelStats : null, speciesAdd : null});
 	this.enemyAreaFromProcedural.equipments.push(null);
@@ -758,11 +758,14 @@ BattleManager.prototype = {
 		this.AddEvent(EventTypes.BuffRemoval).origin = defender.reference;
 	}
 	,RefreshCalculatedTurnOrder: function() {
+		this.turnList.length = 0;
 		var hero = this.wdata.hero;
 		var enemy = this.wdata.enemy;
+		if(enemy == null) {
+			return;
+		}
 		var countH = hero.attributesCalculated.h["SpeedCount"];
 		var countE = enemy.attributesCalculated.h["SpeedCount"];
-		this.turnList.length = 0;
 		var _g = 0;
 		while(_g < 10000) {
 			var i = _g++;
@@ -1951,6 +1954,7 @@ BattleManager.prototype = {
 	}
 	,update: function(delta) {
 		this.wdata.timeCount += delta;
+		this.RefreshCalculatedTurnOrder();
 		var _g = 0;
 		var _g1 = this.equipmentToDiscard;
 		while(_g < _g1.length) {
@@ -2338,7 +2342,7 @@ BattleManager.prototype = {
 		while(i < this.wdata.hero.equipment.length) {
 			++times;
 			if(times > 500) {
-				console.log("src/logic/BattleManager.hx:2059:","LOOP SCAPE");
+				console.log("src/logic/BattleManager.hx:2063:","LOOP SCAPE");
 				break;
 			}
 			var e = this.wdata.hero.equipment[i];
@@ -2355,7 +2359,7 @@ BattleManager.prototype = {
 			while(j < this.wdata.hero.equipment.length) {
 				++times2;
 				if(times2 > 500) {
-					console.log("src/logic/BattleManager.hx:2076:","LOOP SCAPE 2");
+					console.log("src/logic/BattleManager.hx:2080:","LOOP SCAPE 2");
 					break;
 				}
 				var e2 = this.wdata.hero.equipment[j];
