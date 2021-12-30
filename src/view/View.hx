@@ -419,6 +419,9 @@ class View {
 			background: #01594f #1e3e7d;
 			background-gradient-style: horizontal;
 		}
+		.fade-in {
+			animation: animationFadeIn 2s linear 0s 1;
+		}
 		');
 		
 		// Toolkit.styleSheet.addStyleSheet(ss);
@@ -962,6 +965,7 @@ class View {
 				} else {
 					element.parent.addComponentAt(element.component, element.desiredPosition);
 				}
+				element.component.fadeIn();
 			} else {
 				if (element.desiredPosition >= 0)
 					tabMaster.removePage(element.desiredPosition);
@@ -1296,6 +1300,9 @@ class View {
 	public function ButtonVisibility(id:String, visible:Bool) {
 		var b = buttonMap[id];
 		// b.allowInteraction = visible;
+		if(b.hidden == true && visible == true){
+			b.fadeIn();
+		}
 		b.hidden = !visible;
 	}
 

@@ -3301,6 +3301,10 @@ Main.gamemain = function() {
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
 		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 423, className : "Main", methodName : "gamemain"});
+		if(b == true && view.overlay.get_hidden()) {
+			haxe_Log.trace("fade in",{ fileName : "src/Main.hx", lineNumber : 425, className : "Main", methodName : "gamemain"});
+			view.overlay.fadeIn();
+		}
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
 		view.overlayActorFullView.parent.set_hidden(!b);
@@ -3309,6 +3313,8 @@ Main.gamemain = function() {
 			view.overlayActorFullView.parent.set_hidden(false);
 			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
 			view.positionOverlay(view.heroView.parent);
+		} else {
+			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 439, className : "Main", methodName : "gamemain"});
 		}
 	});
 	var enemyLabels = [["Goblin","Dog","Giant","Turtle"],["Wolf"],["Tonberry"],["Adamanstoise"],["Cactuar"],["Reaper"],["Witchhunter"],["Buff Witch"],["Witchkiller"]];
@@ -3415,7 +3421,7 @@ Main.gamemain = function() {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 568, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 576, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -3822,7 +3828,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1015, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1023, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3834,7 +3840,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1032, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1040, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3853,8 +3859,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1060, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1061, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1068, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1069, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -4969,7 +4975,7 @@ var View = function() {
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
 	this.currencyViews = [];
 	var _gthis = this;
-	haxe_ui_Toolkit.styleSheet.parse("\r\n\t\t." + this.style_Class_HoverableBack + ":hover {\r\n\t\t\tbackground-color: #2F4F4F;\r\n\t\t\t}\r\n\t\t.button:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\t\t");
+	haxe_ui_Toolkit.styleSheet.parse("\r\n\t\t." + this.style_Class_HoverableBack + ":hover {\r\n\t\t\tbackground-color: #2F4F4F;\r\n\t\t\t}\r\n\t\t.button:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\t\t.fade-in {\r\n\t\t\tanimation: animationFadeIn 2s linear 0s 1;\r\n\t\t}\r\n\t\t");
 	this.overlay = new haxe_ui_containers_VBox();
 	this.overlay.set_hidden(true);
 	this.overlay.addClass("default-background");
@@ -5654,6 +5660,7 @@ View.prototype = {
 				} else {
 					element.parent.addComponentAt(element.component,element.desiredPosition);
 				}
+				element.component.fadeIn();
 			} else {
 				if(element.desiredPosition >= 0) {
 					this.tabMaster.removePage(element.desiredPosition);
@@ -5980,6 +5987,9 @@ View.prototype = {
 	}
 	,ButtonVisibility: function(id,visible) {
 		var b = this.buttonMap.h[id];
+		if(b.get_hidden() == true && visible == true) {
+			b.fadeIn();
+		}
 		b.set_hidden(!visible);
 	}
 	,ButtonLabel: function(id,label) {

@@ -421,14 +421,22 @@ class Main {
 
 		view.addHover(view.heroView.parent, (b, comp) -> {
 			trace("hero view");
+			if(b == true && view.overlay.hidden){
+				trace("fade in");
+				view.overlay.fadeIn();
+			}
+			
 			view.overlay.hidden = !b;
 			overlayFullActorId = -1;
 			view.overlayActorFullView.parent.hidden = !b;
 			if (b) {
+				
 				overlayFullActorId = 0;
 				view.overlayActorFullView.parent.hidden = false;
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 				view.positionOverlay(view.heroView.parent);
+			} else{
+				trace("left");
 			}
 		});
 
