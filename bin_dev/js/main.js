@@ -4505,12 +4505,6 @@ StoryControlLogic.__name__ = "StoryControlLogic";
 StoryControlLogic.Init = function(jsonStory,view,runtime) {
 	var cutscenes = JSON.parse(jsonStory);
 	runtime.cutscenes = cutscenes;
-	view.AddButton("cutscenestart","",function(e) {
-		if(runtime.cutsceneStartable != null && runtime.cutscene == null) {
-			StoryLogic.StartStory(runtime.cutsceneStartable.title,runtime);
-			view.StartStory();
-		}
-	},null,0);
 	var parser = new hscript_Parser();
 	var _g = 0;
 	var _g1 = cutscenes.length;
@@ -4599,12 +4593,6 @@ StoryControlLogic.Update = function(update,runtime,view,executer) {
 	if(runtime.cutsceneStartable != null && runtime.cutscene == null) {
 		StoryLogic.StartStory(runtime.cutsceneStartable.title,runtime);
 		view.StartStory();
-	}
-	view.ButtonEnabled("cutscenestart",runtime.cutsceneStartable != null);
-	if(runtime.cutsceneStartable != null) {
-		view.ButtonLabel("cutscenestart",runtime.cutsceneStartable.actionLabel + "\n<i>(Story)</i>");
-	} else {
-		view.ButtonLabel("cutscenestart","");
 	}
 	view.SetTabNotification(amountVisible > amountVisibleRecognized,view.storyTab);
 	var cutscene = runtime.cutscene;
