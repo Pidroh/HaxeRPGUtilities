@@ -236,19 +236,19 @@ class Main {
 		var ActorToFullView = function(actor:Actor, actorView:ActorViewComplete) {
 			// var valueView:ValueView = view.GetValueView(actorView, 0);
 
-			view.UpdateValues(view.GetValueView(actorView, 0, true), bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"), "Life:");
-			view.UpdateValues(view.GetValueView(actorView, 1, false), bm.GetAttribute(actor, "Attack"), -1, "Attack:");
-			view.UpdateValues(view.GetValueView(actorView, 2, false), bm.GetAttribute(actor, "Speed"), -1, "Speed:");
+			view.UpdateValues(view.GetValueView(actorView, 0, true), bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"), "Life:", false, null, AttributeExplanation["Life"]);
+			view.UpdateValues(view.GetValueView(actorView, 1, false), bm.GetAttribute(actor, "Attack"), -1, "Attack:", false, null, AttributeExplanation["Attack"]);
+			view.UpdateValues(view.GetValueView(actorView, 2, false), bm.GetAttribute(actor, "Speed"), -1, "Speed:", false, null, AttributeExplanation["Speed"]);
 			// continue from the last one
 			var valueIndex = 3;
 			if (bm.GetAttribute(actor, "Defense") > 0) {
-				view.UpdateValues(view.GetValueView(actorView, valueIndex, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:");
+				view.UpdateValues(view.GetValueView(actorView, valueIndex, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:", false, null, AttributeExplanation["Defense"]);
 				valueIndex++;
 			}
 
 			for (key => value in actor.attributesCalculated) {
 				if (!ignoreStats.contains(key) && value != 0) {
-					view.UpdateValues(view.GetValueView(actorView, valueIndex, false), value, -1, '$key:');
+					view.UpdateValues(view.GetValueView(actorView, valueIndex, false), value, -1, '$key:', false, null, AttributeExplanation[key]);
 					valueIndex++;
 				}
 			}
@@ -279,9 +279,28 @@ class Main {
 			}
 			if (action == View.equipmentAction_SetPreview) {
 				view.overlayActorFullView.parent.hidden = pos < 0;
+				view.overlayText.hidden = pos < 0;
+
 				if (pos >= 0) {
 					var ces = bm.wdata.hero.chosenEquipSet;
 					bm.wdata.hero.chosenEquipSet = pos;
+
+					var header = "EQUIPMENT SET " + (pos + 1);
+					
+					var actor = bm.wdata.hero;
+					if (actor.equipmentSets != null) {
+						if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+							for (es in actor.equipmentSets[actor.chosenEquipSet].equipmentSlots) {
+								var e = actor.equipment[es];
+								if (e != null) {
+									var label = GetEquipName(e, bm);
+									header += '\n$label';
+								}
+							}
+						}
+					}
+					view.overlayText.text = header;
+					
 					bm.RecalculateAttributes(bm.wdata.hero);
 					ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 					bm.wdata.hero.chosenEquipSet = ces;
@@ -640,13 +659,6 @@ class Main {
 				}
 			}
 
-			/*
-				var amountEquipmentShow = 0;
-				for (i in 0...bm.wdata.hero.equipment.length) {
-					if(bm.wdata.hero.equipment[i] != null)
-						amountEquipmentShow++;
-				}
-			 */
 			var typeToShow = view.GetEquipmentType();
 			view.buttonDiscardBad.hidden = typeToShow == 2;
 			view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);

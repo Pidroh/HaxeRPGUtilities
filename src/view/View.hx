@@ -277,6 +277,7 @@ class View {
 	public function GetValueView(actorView:ActorViewComplete, pos, bar) {
 		while (actorView.valueViews.length <= pos) {
 			var vv = CreateValueView(actorView.parent, bar, "s", 240, 130);
+			addDefaultHover(vv.parent);
 			actorView.valueViews.push(vv);
 		}
 		return actorView.valueViews[pos];
@@ -390,7 +391,6 @@ class View {
 				hovering = false;
 				callback(false, c);
 			}
-			
 		});
 	}
 
@@ -486,7 +486,7 @@ class View {
 			var regionTabComp = grid;
 			this.regionTab = new UIElementWrapper(regionTabComp, tabMaster);
 			regionTab.desiredPosition = 0;
-			
+
 			regionTabComp.percentWidth = 100;
 			grid.columns = 3;
 
@@ -703,7 +703,7 @@ class View {
 			charaTabWrap = new UIElementWrapper(charaTab, tabMaster);
 			grid.columns = 3;
 			grid.text = "Character";
-			tabMaster.addComponent(grid);
+			grid.percentHeight = 100;
 
 			{
 				var box = new VBox();
@@ -718,13 +718,24 @@ class View {
 				grid.addComponent(box);
 			}
 			{
+				var upperBox = new Box();
+				grid.addComponent(upperBox);
+				var header = new Label();
+				upperBox.addComponent(header);
+				header.text = "PERMANENT BONUSES";
 				var box = new VBox();
 				box.padding = 15;
 				charaTab_RegionElements = box;
 				box.width = 200;
-				var scroll = CreateScrollable(grid);
+				var scroll = CreateScrollable(upperBox);
+				scroll.verticalAlign = "bottom";
 				scroll.width = 200;
-				scroll.percentHeight = 100;
+				scroll.percentHeight = 90;
+				// scroll.top = 30;
+				// scroll.paddingTop = 80;
+				upperBox.width = scroll.width;
+				upperBox.percentHeight = 100;
+
 				scroll.addComponent(box);
 			}
 
@@ -1298,8 +1309,11 @@ class View {
 		valueView.parent.hidden = !visibility;
 	}
 
-	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null, percent = false, valueAsString:String = null) {
+	public function UpdateValues(res:ValueView, current:Int, max:Int, label:String = null, percent = false, valueAsString:String = null,
+			description:String = null) {
 		res.parent.hidden = false;
+		if (description != null)
+			updateDefaultHoverText(res.parent, description);
 		if (label != null) {
 			if (res.labelText != null)
 				res.labelText.text = label;

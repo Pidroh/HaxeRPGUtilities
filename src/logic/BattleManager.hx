@@ -1714,7 +1714,7 @@ $baseInfo';
 		{
 			var lu = wdata.playerActions["tabregion"];
 			lu.enabled = true;
-			lu.visible = wdata.battleAreaRegionMax > 0 || lu.visible;
+			lu.visible = wdata.battleAreaRegionMax > 1 || lu.visible;
 		}
 		{
 			var lu = wdata.playerActions["tabcharacter"];

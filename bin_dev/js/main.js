@@ -2070,7 +2070,7 @@ BattleManager.prototype = {
 		lu.visible = lu.enabled || lu.visible;
 		var lu = this.wdata.playerActions.h["tabregion"];
 		lu.enabled = true;
-		lu.visible = this.wdata.battleAreaRegionMax > 0 || lu.visible;
+		lu.visible = this.wdata.battleAreaRegionMax > 1 || lu.visible;
 		var lu = this.wdata.playerActions.h["tabcharacter"];
 		lu.enabled = true;
 		lu.visible = this.canLevelUp || lu.visible;
@@ -3152,12 +3152,12 @@ Main.gamemain = function() {
 	CreateButtonFromAction("prestige","Soul Crush",prestigeWarn);
 	var ignoreStats = ["Attack","Defense","Speed","Life","LifeMax","MP","SpeedCount","MagicAttack","MPRechargeCount","MPRecharge"];
 	var ActorToFullView = function(actor,actorView) {
-		view.UpdateValues(view.GetValueView(actorView,0,true),bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"),"Life:");
-		view.UpdateValues(view.GetValueView(actorView,1,false),bm.GetAttribute(actor,"Attack"),-1,"Attack:");
-		view.UpdateValues(view.GetValueView(actorView,2,false),bm.GetAttribute(actor,"Speed"),-1,"Speed:");
+		view.UpdateValues(view.GetValueView(actorView,0,true),bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"),"Life:",false,null,AttributeExplanation_h["Life"]);
+		view.UpdateValues(view.GetValueView(actorView,1,false),bm.GetAttribute(actor,"Attack"),-1,"Attack:",false,null,AttributeExplanation_h["Attack"]);
+		view.UpdateValues(view.GetValueView(actorView,2,false),bm.GetAttribute(actor,"Speed"),-1,"Speed:",false,null,AttributeExplanation_h["Speed"]);
 		var valueIndex = 3;
 		if(bm.GetAttribute(actor,"Defense") > 0) {
-			view.UpdateValues(view.GetValueView(actorView,valueIndex,false),bm.GetAttribute(actor,"Defense"),-1,"Defense:");
+			view.UpdateValues(view.GetValueView(actorView,valueIndex,false),bm.GetAttribute(actor,"Defense"),-1,"Defense:",false,null,AttributeExplanation_h["Defense"]);
 			++valueIndex;
 		}
 		var h = actor.attributesCalculated.h;
@@ -3172,7 +3172,7 @@ Main.gamemain = function() {
 			var key1 = _g5_key;
 			var value = _g5_value;
 			if(ignoreStats.indexOf(key1) == -1 && value != 0) {
-				view.UpdateValues(view.GetValueView(actorView,valueIndex,false),value,-1,"" + key1 + ":");
+				view.UpdateValues(view.GetValueView(actorView,valueIndex,false),value,-1,"" + key1 + ":",false,null,AttributeExplanation_h[key1]);
 				++valueIndex;
 			}
 		}
@@ -3201,9 +3201,28 @@ Main.gamemain = function() {
 		}
 		if(action == View.equipmentAction_SetPreview) {
 			view.overlayActorFullView.parent.set_hidden(pos < 0);
+			view.overlayText.set_hidden(pos < 0);
 			if(pos >= 0) {
 				var ces = bm.wdata.hero.chosenEquipSet;
 				bm.wdata.hero.chosenEquipSet = pos;
+				var header = "EQUIPMENT SET " + (pos + 1);
+				var actor = bm.wdata.hero;
+				if(actor.equipmentSets != null) {
+					if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
+						var _g = 0;
+						var _g1 = actor.equipmentSets[actor.chosenEquipSet].equipmentSlots;
+						while(_g < _g1.length) {
+							var es = _g1[_g];
+							++_g;
+							var e = actor.equipment[es];
+							if(e != null) {
+								var label = Main.GetEquipName(e,bm);
+								header += "\n" + label;
+							}
+						}
+					}
+				}
+				view.overlayText.set_text(header);
 				bm.RecalculateAttributes(bm.wdata.hero);
 				ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
 				bm.wdata.hero.chosenEquipSet = ces;
@@ -3281,7 +3300,7 @@ Main.gamemain = function() {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 405, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 424, className : "Main", methodName : "gamemain"});
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
 		view.overlayActorFullView.parent.set_hidden(!b);
@@ -3396,7 +3415,7 @@ Main.gamemain = function() {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 550, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 569, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -3802,7 +3821,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1003, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1015, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3814,7 +3833,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1020, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1032, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3833,8 +3852,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1048, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1049, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1060, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1061, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5147,7 +5166,7 @@ var View = function() {
 	this.charaTabWrap = new UIElementWrapper(this.charaTab,this.tabMaster);
 	grid.set_columns(3);
 	grid.set_text("Character");
-	this.tabMaster.addComponent(grid);
+	grid.set_percentHeight(100);
 	var box = new haxe_ui_containers_VBox();
 	box.set_padding(15);
 	this.charaTab_CharaBaseStats = this.CreateActorViewComplete("BASE STATS",box);
@@ -5156,13 +5175,21 @@ var View = function() {
 	box.set_padding(15);
 	this.charaTab_CharaEquipStats = this.CreateActorViewComplete("FINAL STATS",box);
 	grid.addComponent(box);
+	var upperBox = new haxe_ui_containers_Box();
+	grid.addComponent(upperBox);
+	var header = new haxe_ui_components_Label();
+	upperBox.addComponent(header);
+	header.set_text("PERMANENT BONUSES");
 	var box = new haxe_ui_containers_VBox();
 	box.set_padding(15);
 	this.charaTab_RegionElements = box;
 	box.set_width(200);
-	var scroll = this.CreateScrollable(grid);
+	var scroll = this.CreateScrollable(upperBox);
+	scroll.set_verticalAlign("bottom");
 	scroll.set_width(200);
-	scroll.set_percentHeight(100);
+	scroll.set_percentHeight(90);
+	upperBox.set_width(scroll.get_width());
+	upperBox.set_percentHeight(100);
 	scroll.addComponent(box);
 	var box = new haxe_ui_containers_VBox();
 	var box = new haxe_ui_containers_VBox();
@@ -5408,6 +5435,7 @@ View.prototype = {
 	,GetValueView: function(actorView,pos,bar) {
 		while(actorView.valueViews.length <= pos) {
 			var vv = this.CreateValueView(actorView.parent,bar,"s",240,130);
+			this.addDefaultHover(vv.parent);
 			actorView.valueViews.push(vv);
 		}
 		return actorView.valueViews[pos];
@@ -5979,11 +6007,14 @@ View.prototype = {
 	,UpdateVisibilityOfValueView: function(valueView,visibility) {
 		valueView.parent.set_hidden(!visibility);
 	}
-	,UpdateValues: function(res,current,max,label,percent,valueAsString) {
+	,UpdateValues: function(res,current,max,label,percent,valueAsString,description) {
 		if(percent == null) {
 			percent = false;
 		}
 		res.parent.set_hidden(false);
+		if(description != null) {
+			this.updateDefaultHoverText(res.parent,description);
+		}
 		if(label != null) {
 			if(res.labelText != null) {
 				res.labelText.set_text(label);
