@@ -3300,11 +3300,8 @@ Main.gamemain = function() {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 423, className : "Main", methodName : "gamemain"});
-		if(b == true && view.overlay.get_hidden()) {
-			haxe_Log.trace("fade in",{ fileName : "src/Main.hx", lineNumber : 425, className : "Main", methodName : "gamemain"});
-			view.overlay.fadeIn();
-		}
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 427, className : "Main", methodName : "gamemain"});
+		var tmp = b == true && view.overlay.get_hidden();
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
 		view.overlayActorFullView.parent.set_hidden(!b);
@@ -3731,51 +3728,53 @@ Main.gamemain = function() {
 		view.battleView.set_hidden(!storyHappened);
 		view.areaContainer.set_hidden(!storyHappened);
 		time = timeStamp;
-		buttonToAction("advance","advance");
-		view.ButtonVisibility("advance",storyHappened);
-		var changeLabel = false;
-		if(bm.wdata.battleAreaRegion == 0) {
-			var nextAreaInformation = bm.enemyAreaFromProcedural.GetEnemyAreaInformation(bm.wdata.battleArea);
-			if(nextAreaInformation.level > 0) {
-				changeLabel = true;
-				view.ButtonLabel("advance","Next Area <br><span style='color:red;'>(Gate)</span>");
+		if(view.tabMaster.get_selectedPage() == view.mainComponentB) {
+			buttonToAction("advance","advance");
+			view.ButtonVisibility("advance",storyHappened);
+			var changeLabel = false;
+			if(bm.wdata.battleAreaRegion == 0) {
+				var nextAreaInformation = bm.enemyAreaFromProcedural.GetEnemyAreaInformation(bm.wdata.battleArea);
+				if(nextAreaInformation.level > 0) {
+					changeLabel = true;
+					view.ButtonLabel("advance","Next Area <br><span style='color:red;'>(Gate)</span>");
+				}
 			}
-		}
-		if(changeLabel == false) {
-			view.ButtonLabel("advance","Next Area");
-		}
-		buttonToAction("retreat","retreat");
-		buttonToAction("levelup","levelup");
-		buttonToAction("sleep","sleep");
-		buttonToAction("repeat","repeat");
-		buttonToAction("prestige","prestige");
-		view.ButtonVisibility("prestige",storyRuntime.persistence.progressionData.h[storyRuntime.cutscenes[2].title].timesCompleted > 0);
-		var _g = 0;
-		while(_g < 7) {
-			var i = _g++;
-			var id = "battleaction_" + i;
-			buttonToAction(id,id);
-			var skills = bm.wdata.hero.usableSkills;
-			if(skills[i] != null) {
-				var action = bm.wdata.playerActions.h[id];
-				if(action.mode == 0 || action.mode == 2) {
-					var sb = bm.GetSkillBase(skills[i].id);
-					var skillName = sb.id;
-					if(skills[i].level > 1) {
-						var code = 80 + skills[i].level;
-						skillName += " " + String.fromCodePoint(code);
+			if(changeLabel == false) {
+				view.ButtonLabel("advance","Next Area");
+			}
+			buttonToAction("retreat","retreat");
+			buttonToAction("levelup","levelup");
+			buttonToAction("sleep","sleep");
+			buttonToAction("repeat","repeat");
+			buttonToAction("prestige","prestige");
+			view.ButtonVisibility("prestige",storyRuntime.persistence.progressionData.h[storyRuntime.cutscenes[2].title].timesCompleted > 0);
+			var _g = 0;
+			while(_g < 7) {
+				var i = _g++;
+				var id = "battleaction_" + i;
+				buttonToAction(id,id);
+				var skills = bm.wdata.hero.usableSkills;
+				if(skills[i] != null) {
+					var action = bm.wdata.playerActions.h[id];
+					if(action.mode == 0 || action.mode == 2) {
+						var sb = bm.GetSkillBase(skills[i].id);
+						var skillName = sb.id;
+						if(skills[i].level > 1) {
+							var code = 80 + skills[i].level;
+							skillName += " " + String.fromCodePoint(code);
+						}
+						view.ButtonLabel(id,skillName + " - " + sb.mpCost + "MP");
+						view.updateDefaultHoverText(view.GetButton(id),SkillToExplanation_h[sb.id]);
 					}
-					view.ButtonLabel(id,skillName + " - " + sb.mpCost + "MP");
-					view.updateDefaultHoverText(view.GetButton(id),SkillToExplanation_h[sb.id]);
-				}
-				if(action.mode == 2 && action.enabled == false) {
-					view.ButtonAttackColor(id);
-				} else if(action.enabled) {
-					view.ButtonNormalColor(id);
-				}
-				if(action.mode == 1) {
-					view.ButtonLabel(id,"Unlock at Level " + bm.skillSlotUnlocklevel[i]);
-					view.updateDefaultHoverText(view.GetButton(id),"");
+					if(action.mode == 2 && action.enabled == false) {
+						view.ButtonAttackColor(id);
+					} else if(action.enabled) {
+						view.ButtonNormalColor(id);
+					}
+					if(action.mode == 1) {
+						view.ButtonLabel(id,"Unlock at Level " + bm.skillSlotUnlocklevel[i]);
+						view.updateDefaultHoverText(view.GetButton(id),"");
+					}
 				}
 			}
 		}
@@ -3828,7 +3827,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1023, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1024, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -3840,7 +3839,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1040, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1041, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -3859,8 +3858,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1068, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1069, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1069, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1070, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {

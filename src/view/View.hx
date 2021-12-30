@@ -1301,6 +1301,7 @@ class View {
 		var b = buttonMap[id];
 		// b.allowInteraction = visible;
 		if(b.hidden == true && visible == true){
+			
 			b.fadeIn();
 		}
 		b.hidden = !visible;

@@ -235,13 +235,17 @@ class Main {
 		var ActorToFullView = function(actor:Actor, actorView:ActorViewComplete) {
 			// var valueView:ValueView = view.GetValueView(actorView, 0);
 
-			view.UpdateValues(view.GetValueView(actorView, 0, true), bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"), "Life:", false, null, AttributeExplanation["Life"]);
-			view.UpdateValues(view.GetValueView(actorView, 1, false), bm.GetAttribute(actor, "Attack"), -1, "Attack:", false, null, AttributeExplanation["Attack"]);
-			view.UpdateValues(view.GetValueView(actorView, 2, false), bm.GetAttribute(actor, "Speed"), -1, "Speed:", false, null, AttributeExplanation["Speed"]);
+			view.UpdateValues(view.GetValueView(actorView, 0, true), bm.GetAttribute(actor, "Life"), bm.GetAttribute(actor, "LifeMax"), "Life:", false, null,
+				AttributeExplanation["Life"]);
+			view.UpdateValues(view.GetValueView(actorView, 1, false), bm.GetAttribute(actor, "Attack"), -1, "Attack:", false, null,
+				AttributeExplanation["Attack"]);
+			view.UpdateValues(view.GetValueView(actorView, 2, false), bm.GetAttribute(actor, "Speed"), -1, "Speed:", false, null,
+				AttributeExplanation["Speed"]);
 			// continue from the last one
 			var valueIndex = 3;
 			if (bm.GetAttribute(actor, "Defense") > 0) {
-				view.UpdateValues(view.GetValueView(actorView, valueIndex, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:", false, null, AttributeExplanation["Defense"]);
+				view.UpdateValues(view.GetValueView(actorView, valueIndex, false), bm.GetAttribute(actor, "Defense"), -1, "Defense:", false, null,
+					AttributeExplanation["Defense"]);
 				valueIndex++;
 			}
 
@@ -285,7 +289,7 @@ class Main {
 					bm.wdata.hero.chosenEquipSet = pos;
 
 					var header = "EQUIPMENT SET " + (pos + 1);
-					
+
 					var actor = bm.wdata.hero;
 					if (actor.equipmentSets != null) {
 						if (actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
@@ -299,7 +303,7 @@ class Main {
 						}
 					}
 					view.overlayText.text = header;
-					
+
 					bm.RecalculateAttributes(bm.wdata.hero);
 					ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 					bm.wdata.hero.chosenEquipSet = ces;
@@ -421,21 +425,17 @@ class Main {
 
 		view.addHover(view.heroView.parent, (b, comp) -> {
 			trace("hero view");
-			if(b == true && view.overlay.hidden){
-				trace("fade in");
-				view.overlay.fadeIn();
-			}
-			
+			if (b == true && view.overlay.hidden) {}
+
 			view.overlay.hidden = !b;
 			overlayFullActorId = -1;
 			view.overlayActorFullView.parent.hidden = !b;
 			if (b) {
-				
 				overlayFullActorId = 0;
 				view.overlayActorFullView.parent.hidden = false;
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 				view.positionOverlay(view.heroView.parent);
-			} else{
+			} else {
 				trace("left");
 			}
 		});
@@ -891,58 +891,59 @@ class Main {
 			view.areaContainer.hidden = !storyHappened;
 
 			time = timeStamp;
-			buttonToAction("advance", "advance");
-			view.ButtonVisibility("advance", storyHappened);
-			{
-				var changeLabel = false;
-				if (bm.wdata.battleAreaRegion == 0) {
-					var nextAreaInformation = bm.enemyAreaFromProcedural.GetEnemyAreaInformation(bm.wdata.battleArea);
-					if (nextAreaInformation.level > 0) {
-						changeLabel = true;
-						view.ButtonLabel("advance", "Next Area <br><span style='color:red;'>(Gate)</span>");
-					}
-				}
-				if (changeLabel == false)
-					view.ButtonLabel("advance", "Next Area");
-			}
-			buttonToAction("retreat", "retreat");
-			buttonToAction("levelup", "levelup");
-			buttonToAction("sleep", "sleep");
-			buttonToAction("repeat", "repeat");
-			buttonToAction("prestige", "prestige");
-			view.ButtonVisibility("prestige", storyRuntime.persistence.progressionData[storyRuntime.cutscenes[2].title].timesCompleted > 0);
-
-			for (i in 0...7) {
-				var id = "battleaction_" + i;
-				buttonToAction(id, id);
-				var skills = bm.wdata.hero.usableSkills;
-				if (skills[i] != null) {
-					var action = bm.wdata.playerActions[id];
-					if (action.mode == 0 || action.mode == 2) {
-						var sb = bm.GetSkillBase(skills[i].id);
-						var skillName = sb.id;
-						if (skills[i].level > 1) {
-							skillName += " " + String.fromCharCode('P'.code + skills[i].level);
-						}
-						view.ButtonLabel(id, skillName + " - " + sb.mpCost + "MP");
-						view.updateDefaultHoverText(view.GetButton(id), SkillToExplanation[sb.id]);
-					}
-					// if (action.enabled) {
-					if (action.mode == 2 && action.enabled == false) {
-						view.ButtonAttackColor(id);
-					} else {
-						if (action.enabled) {
-							view.ButtonNormalColor(id);
+			if (view.tabMaster.selectedPage == view.mainComponentB) {
+				buttonToAction("advance", "advance");
+				view.ButtonVisibility("advance", storyHappened);
+				{
+					var changeLabel = false;
+					if (bm.wdata.battleAreaRegion == 0) {
+						var nextAreaInformation = bm.enemyAreaFromProcedural.GetEnemyAreaInformation(bm.wdata.battleArea);
+						if (nextAreaInformation.level > 0) {
+							changeLabel = true;
+							view.ButtonLabel("advance", "Next Area <br><span style='color:red;'>(Gate)</span>");
 						}
 					}
-					// }
-					if (action.mode == 1) {
-						view.ButtonLabel(id, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
-						view.updateDefaultHoverText(view.GetButton(id), "");
+					if (changeLabel == false)
+						view.ButtonLabel("advance", "Next Area");
+				}
+				buttonToAction("retreat", "retreat");
+				buttonToAction("levelup", "levelup");
+				buttonToAction("sleep", "sleep");
+				buttonToAction("repeat", "repeat");
+				buttonToAction("prestige", "prestige");
+				view.ButtonVisibility("prestige", storyRuntime.persistence.progressionData[storyRuntime.cutscenes[2].title].timesCompleted > 0);
+
+				for (i in 0...7) {
+					var id = "battleaction_" + i;
+					buttonToAction(id, id);
+					var skills = bm.wdata.hero.usableSkills;
+					if (skills[i] != null) {
+						var action = bm.wdata.playerActions[id];
+						if (action.mode == 0 || action.mode == 2) {
+							var sb = bm.GetSkillBase(skills[i].id);
+							var skillName = sb.id;
+							if (skills[i].level > 1) {
+								skillName += " " + String.fromCharCode('P'.code + skills[i].level);
+							}
+							view.ButtonLabel(id, skillName + " - " + sb.mpCost + "MP");
+							view.updateDefaultHoverText(view.GetButton(id), SkillToExplanation[sb.id]);
+						}
+						// if (action.enabled) {
+						if (action.mode == 2 && action.enabled == false) {
+							view.ButtonAttackColor(id);
+						} else {
+							if (action.enabled) {
+								view.ButtonNormalColor(id);
+							}
+						}
+						// }
+						if (action.mode == 1) {
+							view.ButtonLabel(id, "Unlock at Level " + bm.skillSlotUnlocklevel[i]);
+							view.updateDefaultHoverText(view.GetButton(id), "");
+						}
 					}
 				}
 			}
-
 			{
 				var action = bm.wdata.playerActions["tabequipment"];
 				view.TabVisible(view.equipTab, action.visible);
