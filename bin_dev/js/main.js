@@ -4596,6 +4596,10 @@ StoryControlLogic.Update = function(update,runtime,view,executer) {
 			view.StoryButtonHide(i);
 		}
 	}
+	if(runtime.cutsceneStartable != null && runtime.cutscene == null) {
+		StoryLogic.StartStory(runtime.cutsceneStartable.title,runtime);
+		view.StartStory();
+	}
 	view.ButtonEnabled("cutscenestart",runtime.cutsceneStartable != null);
 	if(runtime.cutsceneStartable != null) {
 		view.ButtonLabel("cutscenestart",runtime.cutsceneStartable.actionLabel + "\n<i>(Story)</i>");
@@ -4977,7 +4981,7 @@ var View = function() {
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
 	this.currencyViews = [];
 	var _gthis = this;
-	haxe_ui_Toolkit.styleSheet.parse("\r\n\t\t." + this.style_Class_HoverableBack + ":hover {\r\n\t\t\tbackground-color: #2F4F4F;\r\n\t\t\t}\r\n\t\t");
+	haxe_ui_Toolkit.styleSheet.parse("\r\n\t\t." + this.style_Class_HoverableBack + ":hover {\r\n\t\t\tbackground-color: #2F4F4F;\r\n\t\t\t}\r\n\t\t.button:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\t\t");
 	this.overlay = new haxe_ui_containers_VBox();
 	this.overlay.set_hidden(true);
 	this.overlay.addClass("default-background");
@@ -6150,6 +6154,7 @@ View.prototype = {
 		}
 		var progress = new haxe_ui_components_HorizontalProgress();
 		boxh.addComponent(progress);
+		this.addHoverClasses(progress);
 		progress.set_width(barWidth);
 		progress.set_height(20);
 		if(addLabel) {

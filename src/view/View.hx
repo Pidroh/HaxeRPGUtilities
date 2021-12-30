@@ -415,6 +415,10 @@ class View {
 		.$style_Class_HoverableBack:hover {
 			background-color: #2F4F4F;
 			}
+		.button:hover{
+			background: #01594f #1e3e7d;
+			background-gradient-style: horizontal;
+		}
 		');
 		
 		// Toolkit.styleSheet.addStyleSheet(ss);
@@ -1494,6 +1498,7 @@ class View {
 
 		var progress:HorizontalProgress = new HorizontalProgress();
 		boxh.addComponent(progress);
+		addHoverClasses(progress);
 
 		progress.width = barWidth;
 		progress.height = 20;

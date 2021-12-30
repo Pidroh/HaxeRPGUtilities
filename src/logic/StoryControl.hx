@@ -8,12 +8,6 @@ class StoryControlLogic {
 	public static function Init(jsonStory:String, view:View, runtime:StoryRuntimeData) {
 		var cutscenes = Json.parse(jsonStory);
 		runtime.cutscenes = cutscenes;
-		view.AddButton("cutscenestart", "", (e) -> {
-			if (runtime.cutsceneStartable != null && runtime.cutscene == null) {
-				StoryLogic.StartStory(runtime.cutsceneStartable.title, runtime);
-				view.StartStory();
-			}
-		}, null, 0);
 
 		var parser = new hscript.Parser();
 		for (i in 0...cutscenes.length) {
@@ -103,8 +97,12 @@ class StoryControlLogic {
 				view.StoryButtonHide(i);
 			}
 		}
+		if (runtime.cutsceneStartable != null && runtime.cutscene == null) {
+			StoryLogic.StartStory(runtime.cutsceneStartable.title, runtime);
+			view.StartStory();
+		}
 		view.ButtonEnabled("cutscenestart", runtime.cutsceneStartable != null);
-		
+
 		if (runtime.cutsceneStartable != null) {
 			view.ButtonLabel("cutscenestart", runtime.cutsceneStartable.actionLabel + "\n<i>(Story)</i>");
 		} else {
