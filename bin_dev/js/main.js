@@ -5190,8 +5190,7 @@ var View = function() {
 	container.addComponent(b);
 	this.enemyToAdvance = this.CreateValueView(container,true,"Progress: ");
 	var size = 36;
-	var turnParent = new haxe_ui_containers_HBox();
-	verticalBox.addComponent(turnParent);
+	var turnParent = this.CreateContainer(verticalBox,false);
 	var thisTurnBox = new haxe_ui_containers_Box();
 	thisTurnBox.set_width(40);
 	thisTurnBox.set_height(40);

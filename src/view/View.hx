@@ -657,8 +657,8 @@ class View {
 
 		{
 			var size = 36;
-			var turnParent = new HBox();
-			verticalBox.addComponent(turnParent);
+			var turnParent = CreateContainer(verticalBox, false);
+			// verticalBox.addComponent(turnParent);
 			var thisTurnBox = new Box();
 			thisTurnBox.width = 40;
 			thisTurnBox.height = 40;
