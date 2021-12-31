@@ -650,6 +650,22 @@ class View {
 			enemyToAdvance = CreateValueView(container, true, "Progress: ");
 		}
 
+		{
+			var size = 36;
+			var turnParent = new HBox();
+			verticalBox.addComponent(turnParent);
+			var thisTurnBox = new Box();
+			thisTurnBox.width = 40;
+			thisTurnBox.height = 40;
+			thisTurnBox.padding = 4;
+			thisTurnBox.borderSize = 1;
+			var imageActive = new Image();
+			imageActive.width = 36;
+			imageActive.height = 36;
+			turnParent.addComponent(thisTurnBox);
+			thisTurnBox.addComponent(imageActive);
+		}
+
 		battleView = CreateContainer(verticalBox, false);
 		battleView.width = 440;
 		heroView = GetActorView("You", battleView);
