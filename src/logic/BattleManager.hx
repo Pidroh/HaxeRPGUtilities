@@ -218,6 +218,7 @@ class BattleManager {
 	}
 
 	public function AttackExecute(attacker:Actor, defender:Actor, attackRate = 100, attackBonus = 0, defenseRate = 100, element:String = null) {
+		lastActiveActor = attacker;
 		var gEvent = AddEvent(ActorAttack);
 		var magicAttack = false;
 		var enchant = attacker.attributesCalculated["enchant-fire"];

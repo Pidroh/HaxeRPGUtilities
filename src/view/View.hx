@@ -96,6 +96,11 @@ class View {
 	public var charaTab_ButtonParent:VBox;
 	public var charaTab_bonusesView = new Array<BonusView>();
 
+	public var turnOrder_Images = new Array<Image>();
+	public var turnOrder_ActiveImage : Image;
+	public var turnOrder_ImageParent : Component;
+	var turnOrder_Dimension = 32;
+
 	public var equipmentMainAction:(Int, Int) -> Void;
 	public var storyMainAction:(Int, Int) -> Void;
 	public var regionChangeAction:(Int) -> Void;
@@ -660,10 +665,14 @@ class View {
 			thisTurnBox.padding = 4;
 			thisTurnBox.borderSize = 1;
 			var imageActive = new Image();
-			imageActive.width = 36;
-			imageActive.height = 36;
+			imageActive.width = turnOrder_Dimension;
+			imageActive.height = turnOrder_Dimension;
 			turnParent.addComponent(thisTurnBox);
 			thisTurnBox.addComponent(imageActive);
+
+			turnOrder_ActiveImage = imageActive;
+			turnOrder_ImageParent = turnParent;
+
 		}
 
 		battleView = CreateContainer(verticalBox, false);
@@ -847,6 +856,24 @@ class View {
 
 			// How to stay up to date
 			// How to suggest features
+		}
+	}
+
+	public function feedTurnOrder(turnOrder : Array<Int>, images:Array<String>, currentActorImageF:String){
+		turnOrder_ActiveImage.resource = currentActorImageF;
+		while(turnOrder.length > turnOrder_Images.length){
+			var im = new Image();
+			im.width = turnOrder_Dimension;
+			im.height = turnOrder_Dimension;
+			im.verticalAlign = "center";
+			turnOrder_ImageParent.addComponent(im);
+			turnOrder_Images.push(im);
+		}
+		for (index => value in turnOrder_Images) {
+			value.hidden = index >= turnOrder.length;
+			if(value.hidden == false){
+				value.resource = images[turnOrder[index]];
+			}
 		}
 	}
 

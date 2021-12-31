@@ -508,10 +508,10 @@ class Main {
 					}
 				}
 
-				if(actor == bm.wdata.hero){
+				if (actor == bm.wdata.hero) {
 					actorView.portrait.resource = "graphics/heroicon.png";
 				}
-				if(actor == bm.wdata.enemy){
+				if (actor == bm.wdata.enemy) {
 					actorView.portrait.resource = "graphics/enemyicon.png";
 				}
 				var buffPos = 0;
@@ -597,6 +597,8 @@ class Main {
 		var bossMessage = originMessage;
 
 		var areaNames = new Array<Array<String>>();
+		var battleIcons = ["graphics/heroicon.png", "graphics/enemyicon.png"];
+		var turnIcons = new Array<String>();
 
 		update = function(timeStamp:Float):Bool {
 			if (overlayFullActorId == 0)
@@ -623,6 +625,17 @@ class Main {
 			GameAnalyticsIntegration.InitializeCheck();
 			ActorToView(bm.wdata.hero, view.heroView);
 			ActorToView(bm.wdata.enemy, view.enemyView, true);
+
+			var activeImage = null;
+			turnIcons[0] = battleIcons[0];
+			turnIcons[1] = battleIcons[1];
+			if (bm.lastActiveActor != null) {
+				if(bm.lastActiveActor == bm.wdata.hero)
+					activeImage = turnIcons[0];
+				else
+					activeImage = turnIcons[1];
+			}
+			view.feedTurnOrder(bm.turnList, turnIcons, activeImage);
 			ActorToFullView(bm.wdata.hero, view.equipHeroStats);
 
 			{
