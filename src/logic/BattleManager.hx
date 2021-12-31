@@ -180,6 +180,7 @@ class BattleManager {
 		var hero = wdata.hero;
 		var enemy = wdata.enemy;
 		if(enemy == null) return;
+		if(enemy.attributesCalculated["Life"] == 0) return;
 		
 		var countH = hero.attributesCalculated["SpeedCount"];
 		var countE = enemy.attributesCalculated["SpeedCount"];
