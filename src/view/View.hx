@@ -625,34 +625,23 @@ class View {
 			// new Box
 		}
 
-		areaContainer = CreateContainer(verticalBox, true);
+		areaContainer = CreateContainer(verticalBox, false);
 
 		{
 			levelContainer = CreateContainer(verticalBox, true);
 			level = CreateValueView(levelContainer, false, "Level: ");
 			xpBar = CreateValueView(levelContainer, true, "XP: ");
 		}
-		// areaContainer.percentHeight = 60;
-
-		// areaLabel = CreateValueView(areaContainer, false, "Area: ");
-		/*
-			var ddv = CreateDropDownView(areaContainer, "Location: ");
-				ddv.dropdown.onChange = event -> {
-					var region = ddv.dropdown.selectedIndex;
-					regionChangeAction(region);
-				};
-				dropDownRegion = ddv;
-		 */
 		{
-			var container = CreateContainer(areaContainer, false);
+			//var container = CreateContainer(areaContainer, false);
 
-			areaLabel = CreateValueView(container, false, "Area: ", 200, 140);
+			areaLabel = CreateValueView(areaContainer, false, "Area: ", 200, 140);
 
 			var b = new Box();
 			b.width = 30;
-			container.addComponent(b);
+			areaContainer.addComponent(b);
 			// areaLabel.parent.width += 40;
-			enemyToAdvance = CreateValueView(container, true, "Progress: ");
+			enemyToAdvance = CreateValueView(areaContainer, true, "Progress: ");
 		}
 
 		{
