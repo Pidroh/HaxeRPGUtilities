@@ -35,6 +35,8 @@ import StoryControl;
 import PrototypeItemMaker;
 import PrototypeSkillMaker;
 import BasicProcedural;
+import AnimationHaxeUI;
+import AnimationP;
 
 class Main {
 	static var hero:Actor;

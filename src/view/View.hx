@@ -1434,6 +1434,8 @@ class View {
 
 	function GetActorView(name:String, parent:Component):ActorView {
 		var box:VBox = new VBox();
+
+
 		addHoverClasses(box);
 		// box.addClass('button');
 		box.width = 180;
