@@ -7,24 +7,98 @@ function $extend(from, fields) {
 	return proto;
 }
 var AnimationComponent = function() {
+	this.animationComp = new haxe_ds_ObjectMap();
 	this.animManager = new AnimationManager();
 };
 $hxClasses["AnimationComponent"] = AnimationComponent;
 AnimationComponent.__name__ = "AnimationComponent";
 AnimationComponent.prototype = {
 	animManager: null
+	,animationComp: null
+	,update: function(delta) {
+		var timeCen = delta * 100 | 0;
+		if(delta > 0 && timeCen == 0) {
+			timeCen = 1;
+		}
+		var map = this.animationComp;
+		var _g_map = map;
+		var _g_keys = map.keys();
+		while(_g_keys.hasNext()) {
+			var key = _g_keys.next();
+			var _g1_value = _g_map.get(key);
+			var _g1_key = key;
+			var key1 = _g1_key;
+			var value = _g1_value;
+			var _g = 0;
+			var _g1 = value.length;
+			while(_g < _g1) {
+				var i = _g++;
+				var anim = value[i];
+				anim.timeCenti += timeCen;
+				var frames = anim.animation.frames;
+				var timeC = anim.timeCenti;
+				var frameIndex = -1;
+				var _g2 = 0;
+				var _g3 = frames.length;
+				while(_g2 < _g3) {
+					var j = _g2++;
+					if(timeC <= frames[j].centiseconds) {
+						frameIndex = j;
+						break;
+					} else {
+						timeC -= frames[j].centiseconds;
+					}
+				}
+				if(frameIndex >= 1) {
+					var frame = frames[frameIndex];
+					var oldFrame = frames[frameIndex - 1];
+					var lengthFrame = frame.centiseconds - oldFrame.centiseconds;
+					var prog = timeC / lengthFrame;
+					if(oldFrame.position != null) {
+						var posF = frame.position;
+						var pos = oldFrame.position;
+						key1.set_left(this.interpolate(pos.x,posF.x,prog));
+						key1.set_top(this.interpolate(pos.y,posF.y,prog));
+					}
+				}
+			}
+		}
+	}
+	,interpolate: function(x0,x1,inter) {
+		var d = x1 - x0;
+		return d * inter + x0 | 0;
+	}
 	,playAnimation: function(comp,anim) {
+		var anims = this.animationComp.h[comp.__id__];
+		if(anims == null) {
+			anims = [];
+			this.animationComp.set(comp,anims);
+		}
+		anims.push(new AnimationExecutionData(this.animManager.animations.h[anim]));
 	}
 	,__class__: AnimationComponent
 };
-var Animation = function() {
+var Animation = function(id) {
 	this.frames = [];
+	this.id = id;
 };
 $hxClasses["Animation"] = Animation;
 Animation.__name__ = "Animation";
 Animation.prototype = {
-	frames: null
+	id: null
+	,frames: null
 	,__class__: Animation
+};
+var AnimationExecutionData = function(anim) {
+	this.animation = anim;
+	this.timeCenti = 0;
+};
+$hxClasses["AnimationExecutionData"] = AnimationExecutionData;
+AnimationExecutionData.__name__ = "AnimationExecutionData";
+AnimationExecutionData.prototype = {
+	timeCenti: null
+	,animation: null
+	,__class__: AnimationExecutionData
 };
 var AnimationManager = function() {
 	this.animations = new haxe_ds_StringMap();
@@ -36,7 +110,7 @@ AnimationManager.prototype = {
 	,feedAnimationInfo: function(anim,frame,centiseconds,frameD) {
 		if(Object.prototype.hasOwnProperty.call(this.animations.h,anim) == false) {
 			var this1 = this.animations;
-			var v = new Animation();
+			var v = new Animation(anim);
 			this1.h[anim] = v;
 		}
 		var a = this.animations.h[anim];
@@ -11234,6 +11308,7 @@ haxe_IMap.__isInterface__ = true;
 haxe_IMap.prototype = {
 	get: null
 	,set: null
+	,keys: null
 	,__class__: haxe_IMap
 };
 var haxe_Exception = function(message,previous,native) {
@@ -11890,6 +11965,11 @@ haxe_ds_BalancedTree.prototype = {
 		}
 		return null;
 	}
+	,keys: function() {
+		var ret = [];
+		this.keysLoop(this.root,ret);
+		return new haxe_iterators_ArrayIterator(ret);
+	}
 	,setLoop: function(k,v,node) {
 		if(node == null) {
 			return new haxe_ds_TreeNode(null,k,v,null);
@@ -11903,6 +11983,13 @@ haxe_ds_BalancedTree.prototype = {
 		} else {
 			var nr = this.setLoop(k,v,node.right);
 			return this.balance(node.left,node.key,node.value,nr);
+		}
+	}
+	,keysLoop: function(node,acc) {
+		if(node != null) {
+			this.keysLoop(node.left,acc);
+			acc.push(node.key);
+			this.keysLoop(node.right,acc);
 		}
 	}
 	,balance: function(l,k,v,r) {
@@ -12047,6 +12134,11 @@ haxe_ds_IntMap.prototype = {
 	,get: function(key) {
 		return this.h[key];
 	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h ) if(this.h.hasOwnProperty(key)) a.push(key | 0);
+		return new haxe_iterators_ArrayIterator(a);
+	}
 	,__class__: haxe_ds_IntMap
 };
 var haxe_ds_ObjectMap = function() {
@@ -12109,6 +12201,9 @@ haxe_ds_StringMap.prototype = {
 	}
 	,set: function(key,value) {
 		this.h[key] = value;
+	}
+	,keys: function() {
+		return new haxe_ds__$StringMap_StringMapKeyIterator(this.h);
 	}
 	,__class__: haxe_ds_StringMap
 };
