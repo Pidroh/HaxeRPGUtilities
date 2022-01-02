@@ -869,7 +869,10 @@ class Main {
 
 				var ev = "";
 				if (e.type == ActorAttack) {
-					animations.playAnimation(view.heroView.parent, "attack-left");
+					if(e.origin.type == 0)
+						animations.playAnimation(view.heroView.parent, "attack-left");
+					else
+						animations.playAnimation(view.enemyView.parent, "attack-right");
 					//view.enemyView.parent.paddingLeft = 200;
 					//view.enemyView.parent.marginLeft = 100;
 					//view.enemyView.parent.top = -10;
