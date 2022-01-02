@@ -43,6 +43,7 @@ class Main {
 	static var enemy:Actor;
 	static var maxDelta:Float = 0.5;
 	static var privacyView:Component = null;
+	static var animations = new AnimationComponent();
 
 	static function main() {
 		Toolkit.init();
@@ -86,6 +87,55 @@ class Main {
 		}
 		runTest();
 
+		{
+			var a = "attack-left";
+			animations.animManager.feedAnimationInfo(a, 0, {
+				centiseconds: 0,
+				position: {
+					x: 0,
+					y: 0
+				}
+			});
+			animations.animManager.feedAnimationInfo(a, 1, {
+				centiseconds: 10,
+				position: {
+					x: 10,
+					y: 0
+				}
+			});
+			animations.animManager.feedAnimationInfo(a, 2, {
+				centiseconds: 35,
+				position: {
+					x: 0,
+					y: 0
+				}
+			});
+		}
+		{
+			var a = "attack-right";
+			animations.animManager.feedAnimationInfo(a, 0, {
+				centiseconds: 0,
+				position: {
+					x: 0,
+					y: 0
+				}
+			});
+			animations.animManager.feedAnimationInfo(a, 1, {
+				centiseconds: 100,
+				position: {
+					x: -10,
+					y: 0
+				}
+			});
+			animations.animManager.feedAnimationInfo(a, 2, {
+				centiseconds: 350,
+				position: {
+					x: 0,
+					y: 0
+				}
+			});
+		}
+		
 		var bm:BattleManager = new BattleManager();
 		{
 			var proto = new PrototypeItemMaker();
@@ -607,7 +657,7 @@ class Main {
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 			if (overlayFullActorId == 1 && bm.wdata.enemy != null)
 				ActorToFullView(bm.wdata.enemy, view.overlayActorFullView);
-
+			
 			{
 				var id = 0;
 				for (i in 0...bm.wdata.regionProgress.length) {
@@ -632,7 +682,7 @@ class Main {
 			turnIcons[0] = battleIcons[0];
 			turnIcons[1] = battleIcons[1];
 			if (bm.lastActiveActor != null) {
-				if(bm.lastActiveActor == bm.wdata.hero)
+				if (bm.lastActiveActor == bm.wdata.hero)
 					activeImage = turnIcons[0];
 				else
 					activeImage = turnIcons[1];
@@ -819,6 +869,10 @@ class Main {
 
 				var ev = "";
 				if (e.type == ActorAttack) {
+					animations.playAnimation(view.heroView.parent, "attack-left");
+					//view.enemyView.parent.paddingLeft = 200;
+					//view.enemyView.parent.marginLeft = 100;
+					//view.enemyView.parent.top = -10;
 					ev = '$targetText took $data damage';
 				}
 
@@ -900,6 +954,8 @@ class Main {
 			// view.UpdateDropDownRegionSelection(bm.wdata.battleAreaRegion);
 
 			var delta = timeStamp - time;
+
+			
 
 			var storyHappened = storyRuntime.persistence.progressionData[storyRuntime.cutscenes[0].title].timesCompleted > 0;
 			var storyHappenedPure = storyHappened;
@@ -1011,6 +1067,7 @@ class Main {
 			view.Update();
 
 			delta = delta * 0.001;
+			animations.update(delta);
 			// updates battle manager to account for very high deltas
 			// high deltas happen when the tab or browser isn't active
 			while (delta > maxDelta) {

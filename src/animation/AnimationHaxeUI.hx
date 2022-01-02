@@ -4,7 +4,7 @@ import AnimationP;
 class AnimationComponent {
 	public function new() {}
 
-	var animManager = new AnimationManager();
+	public var animManager = new AnimationManager();
 	var animationComp = new Map<Component, Array<AnimationExecutionData>>();
 
 	public function update(delta:Float) {
@@ -36,8 +36,10 @@ class AnimationComponent {
 					if (oldFrame.position != null) {
 						var posF = frame.position;
 						var pos = oldFrame.position;
-						key.left = interpolate(pos.x, posF.x, prog);
-						key.top = interpolate(pos.y, posF.y, prog);
+						var l = interpolate(pos.x, posF.x, prog);
+						var t = interpolate(pos.y, posF.y, prog);
+						key.marginLeft = l;
+						key.marginTop = t;
 					}
 				}
 			}

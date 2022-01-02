@@ -57,8 +57,10 @@ AnimationComponent.prototype = {
 					if(oldFrame.position != null) {
 						var posF = frame.position;
 						var pos = oldFrame.position;
-						key1.set_left(this.interpolate(pos.x,posF.x,prog));
-						key1.set_top(this.interpolate(pos.y,posF.y,prog));
+						var l = this.interpolate(pos.x,posF.x,prog);
+						var t = this.interpolate(pos.y,posF.y,prog);
+						key1.set_marginLeft(l);
+						key1.set_marginTop(t);
 					}
 				}
 			}
@@ -107,7 +109,7 @@ $hxClasses["AnimationManager"] = AnimationManager;
 AnimationManager.__name__ = "AnimationManager";
 AnimationManager.prototype = {
 	animations: null
-	,feedAnimationInfo: function(anim,frame,centiseconds,frameD) {
+	,feedAnimationInfo: function(anim,frame,frameD) {
 		if(Object.prototype.hasOwnProperty.call(this.animations.h,anim) == false) {
 			var this1 = this.animations;
 			var v = new Animation(anim);
@@ -3174,6 +3176,14 @@ Main.gamemain = function() {
 		haxe_ui_core_Screen.get_instance().removeComponent(Main.privacyView);
 	}
 	Main.runTest();
+	var a = "attack-left";
+	Main.animations.animManager.feedAnimationInfo(a,0,{ centiseconds : 0, position : { x : 0, y : 0}});
+	Main.animations.animManager.feedAnimationInfo(a,1,{ centiseconds : 10, position : { x : 10, y : 0}});
+	Main.animations.animManager.feedAnimationInfo(a,2,{ centiseconds : 35, position : { x : 0, y : 0}});
+	var a = "attack-right";
+	Main.animations.animManager.feedAnimationInfo(a,0,{ centiseconds : 0, position : { x : 0, y : 0}});
+	Main.animations.animManager.feedAnimationInfo(a,1,{ centiseconds : 100, position : { x : -10, y : 0}});
+	Main.animations.animManager.feedAnimationInfo(a,2,{ centiseconds : 350, position : { x : 0, y : 0}});
 	var bm = new BattleManager();
 	var proto = new PrototypeItemMaker();
 	proto.MakeItems();
@@ -3230,7 +3240,7 @@ Main.gamemain = function() {
 	var enemyNames_4 = "Cactuar";
 	var enemyNames_5 = "Reaper";
 	if(enemyRegionNames.length < bm.regionRequirements.length) {
-		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 154, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 204, className : "Main", methodName : "gamemain"});
 	}
 	var eventShown = 0;
 	var main = new haxe_ui_containers_Box();
@@ -3463,7 +3473,7 @@ Main.gamemain = function() {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 429, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 479, className : "Main", methodName : "gamemain"});
 		var tmp = b == true && view.overlay.get_hidden();
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
@@ -3474,7 +3484,7 @@ Main.gamemain = function() {
 			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
 			view.positionOverlay(view.heroView.parent);
 		} else {
-			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 441, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 491, className : "Main", methodName : "gamemain"});
 		}
 	});
 	var enemyLabels = [["Goblin","Dog","Giant","Turtle"],["Wolf"],["Tonberry"],["Adamanstoise"],["Cactuar"],["Reaper"],["Witchhunter"],["Buff Witch"],["Witchkiller"]];
@@ -3587,7 +3597,7 @@ Main.gamemain = function() {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 584, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 634, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -3825,6 +3835,7 @@ Main.gamemain = function() {
 			}
 			var ev = "";
 			if(e.type == EventTypes.ActorAttack) {
+				Main.animations.playAnimation(view.heroView.parent,"attack-left");
 				ev = "" + targetText + " took " + data + " damage";
 			}
 			if(e.type == EventTypes.GetXP) {
@@ -3989,6 +4000,7 @@ Main.gamemain = function() {
 		}
 		view.Update();
 		delta *= 0.001;
+		Main.animations.update(delta);
 		while(delta > Main.maxDelta) {
 			delta -= Main.maxDelta;
 			bm.update(Main.maxDelta);
@@ -4011,7 +4023,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1045, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1102, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -4023,7 +4035,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1062, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1119, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -4042,8 +4054,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1090, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1091, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1147, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1148, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5257,7 +5269,7 @@ var View = function() {
 	battleParent.set_paddingTop(10);
 	var verticalBox = new haxe_ui_containers_Box();
 	var hgl = new haxe_ui_layouts_HorizontalGridLayout();
-	hgl.set_rows(4);
+	hgl.set_rows(5);
 	verticalBox.set_layout(hgl);
 	verticalBox.set_percentHeight(100);
 	battleParent.addComponent(verticalBox);
@@ -48198,6 +48210,7 @@ DateTools.DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Frida
 DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 Main.maxDelta = 0.5;
+Main.animations = new AnimationComponent();
 PrototypeItemMaker.itemType_Weapon = 0;
 PrototypeItemMaker.itemType_Armor = 1;
 View.storyAction_Start = 0;

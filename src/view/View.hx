@@ -572,7 +572,7 @@ class View {
 		battleParent.paddingTop = 10;
 		var verticalBox = new Box();
 		var hgl = new HorizontalGridLayout();
-		hgl.rows = 4;
+		hgl.rows = 5;
 		verticalBox.layout = hgl;
 		verticalBox.percentHeight = 100;
 

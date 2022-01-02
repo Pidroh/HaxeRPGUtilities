@@ -31,7 +31,7 @@ class AnimationManager {
 
 	public var animations = new Map<String, Animation>();
 
-	public function feedAnimationInfo(anim:String, frame:Int, centiseconds:Int, frameD:AnimFrame) {
+	public function feedAnimationInfo(anim:String, frame:Int, frameD:AnimFrame) {
 		if (animations.exists(anim) == false) {
 			animations[anim] = new Animation(anim);
 		}
