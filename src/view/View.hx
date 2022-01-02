@@ -144,6 +144,11 @@ class View {
 	public function Update() {
 		// equipTabChild.width = equipTabChild.parentComponent.width - 40;
 		equipTabChild.width = Screen.instance.width - 40 - 60 - 200;
+		if(overlay.hidden == false){
+			if(overlay.top + overlay.height > Screen.instance.height){
+				overlay.top = -overlay.height + Screen.instance.height;
+			}
+		}
 	}
 
 	public static function TabBarAlert(tabBar:TabBar, alert:Array<Bool>, names:Array<String>) {
@@ -166,13 +171,15 @@ class View {
 				equipmentMainAction(setPos, equipmentAction_ChangeSet);
 			};
 			addHover(button, (b, component) -> {
+				
 				var pos = setPos;
+				equipmentMainAction(pos, equipmentAction_SetPreview);
 				if (b) {
 					positionOverlay(button);
 				} else {
 					pos = -1;
 				}
-				equipmentMainAction(pos, equipmentAction_SetPreview);
+				
 			});
 			button.text = "Set " + (setPos + 1);
 			button.width = 65;
@@ -876,8 +883,9 @@ class View {
 		var left = comp.screenLeft;
 		left += comp.width + xDis;
 		var top = comp.screenTop - yDis;
-
-		var screenOverFlowY = top + overlay.height - Screen.instance.height;
+		var screenH = Screen.instance.height;
+		var overH =  overlay.height;
+		var screenOverFlowY = top + overH - screenH;
 		if (screenOverFlowY > 0) {
 			top -= screenOverFlowY;
 		}
@@ -1448,6 +1456,8 @@ class View {
 		face.resource = "graphics/heroicon.png";
 		face.width = 64;
 		face.horizontalAlign = "center";
+		face.color = "#00AAAA";
+		face.opacity = 0.5;
 		box.addComponent(face);
 
 		var header = new Box();

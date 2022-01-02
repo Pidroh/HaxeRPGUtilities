@@ -3178,12 +3178,12 @@ Main.gamemain = function() {
 	Main.runTest();
 	var a = "attack-left";
 	Main.animations.animManager.feedAnimationInfo(a,0,{ centiseconds : 0, position : { x : 0, y : 0}});
-	Main.animations.animManager.feedAnimationInfo(a,1,{ centiseconds : 10, position : { x : 10, y : 0}});
-	Main.animations.animManager.feedAnimationInfo(a,2,{ centiseconds : 35, position : { x : 0, y : 0}});
+	Main.animations.animManager.feedAnimationInfo(a,1,{ centiseconds : 6, position : { x : 10, y : 0}});
+	Main.animations.animManager.feedAnimationInfo(a,2,{ centiseconds : 20, position : { x : 0, y : 0}});
 	var a = "attack-right";
 	Main.animations.animManager.feedAnimationInfo(a,0,{ centiseconds : 0, position : { x : 0, y : 0}});
-	Main.animations.animManager.feedAnimationInfo(a,1,{ centiseconds : 100, position : { x : -10, y : 0}});
-	Main.animations.animManager.feedAnimationInfo(a,2,{ centiseconds : 350, position : { x : 0, y : 0}});
+	Main.animations.animManager.feedAnimationInfo(a,1,{ centiseconds : 6, position : { x : -10, y : 0}});
+	Main.animations.animManager.feedAnimationInfo(a,2,{ centiseconds : 20, position : { x : 0, y : 0}});
 	var bm = new BattleManager();
 	var proto = new PrototypeItemMaker();
 	proto.MakeItems();
@@ -3398,6 +3398,7 @@ Main.gamemain = function() {
 				view.overlayText.set_text(header);
 				bm.RecalculateAttributes(bm.wdata.hero);
 				ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
+				view.overlayActorFullView.parent.updateComponentDisplay();
 				bm.wdata.hero.chosenEquipSet = ces;
 				bm.RecalculateAttributes(bm.wdata.hero);
 				view.overlay.set_hidden(false);
@@ -3473,7 +3474,7 @@ Main.gamemain = function() {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 479, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 480, className : "Main", methodName : "gamemain"});
 		var tmp = b == true && view.overlay.get_hidden();
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
@@ -3484,7 +3485,7 @@ Main.gamemain = function() {
 			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
 			view.positionOverlay(view.heroView.parent);
 		} else {
-			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 491, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 492, className : "Main", methodName : "gamemain"});
 		}
 	});
 	var enemyLabels = [["Goblin","Dog","Giant","Turtle"],["Wolf"],["Tonberry"],["Adamanstoise"],["Cactuar"],["Reaper"],["Witchhunter"],["Buff Witch"],["Witchkiller"]];
@@ -3597,7 +3598,7 @@ Main.gamemain = function() {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 634, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 635, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -3897,7 +3898,7 @@ Main.gamemain = function() {
 				battle = false;
 				var regionName = enemyRegionNames[e.data];
 				ev = "<b>Found new location: " + regionName + "</b>";
-				view.ShowMessage("Found New Location","Gained access to " + regionName + ".\n(Accessed by using the Region Tabs)");
+				view.ShowMessage("Found New Location","Gained access to " + regionName + ".\n\n(Accessed by using the Region Tab)");
 				GameAnalyticsIntegration.SendDesignEvent("RegionUnlock",e.data);
 				GameAnalyticsIntegration.SendProgressStartEvent("world0","stage" + e.data);
 			}
@@ -4027,7 +4028,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1105, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1106, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -4039,7 +4040,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1122, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1123, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -4058,8 +4059,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1150, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1151, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1151, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1152, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5533,6 +5534,11 @@ View.prototype = {
 	,overlayText: null
 	,Update: function() {
 		this.equipTabChild.set_width(haxe_ui_core_Screen.get_instance().get_width() - 40 - 60 - 200);
+		if(this.overlay.get_hidden() == false) {
+			if(this.overlay.get_top() + this.overlay.get_height() > haxe_ui_core_Screen.get_instance().get_height()) {
+				this.overlay.set_top(-this.overlay.get_height() + haxe_ui_core_Screen.get_instance().get_height());
+			}
+		}
 	}
 	,FeedEquipmentSetInfo: function(numberOfSets,chosenSet,parent) {
 		var _gthis = this;
@@ -5551,12 +5557,12 @@ View.prototype = {
 			this.addHover(button[0],(function(setPos,button) {
 				return function(b,component) {
 					var pos = setPos[0];
+					_gthis.equipmentMainAction(pos,View.equipmentAction_SetPreview);
 					if(b) {
 						_gthis.positionOverlay(button[0]);
 					} else {
 						pos = -1;
 					}
-					_gthis.equipmentMainAction(pos,View.equipmentAction_SetPreview);
 				};
 			})(setPos,button));
 			button[0].set_text("Set " + (setPos[0] + 1));
@@ -5794,7 +5800,9 @@ View.prototype = {
 		var left = comp.get_screenLeft();
 		left += comp.get_width() + xDis;
 		var top = comp.get_screenTop() - yDis;
-		var screenOverFlowY = top + this.overlay.get_height() - haxe_ui_core_Screen.get_instance().get_height();
+		var screenH = haxe_ui_core_Screen.get_instance().get_height();
+		var overH = this.overlay.get_height();
+		var screenOverFlowY = top + overH - screenH;
 		if(screenOverFlowY > 0) {
 			top -= screenOverFlowY;
 		}
@@ -6323,6 +6331,8 @@ View.prototype = {
 		face.set_resource(haxe_ui_util_Variant.fromString("graphics/heroicon.png"));
 		face.set_width(64);
 		face.set_horizontalAlign("center");
+		face.set_color(haxe_ui_util_Color.fromString("#00AAAA"));
+		face.set_opacity(0.5);
 		box.addComponent(face);
 		var header = new haxe_ui_containers_Box();
 		header.set_percentWidth(100);

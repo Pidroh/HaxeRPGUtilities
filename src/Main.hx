@@ -97,14 +97,14 @@ class Main {
 				}
 			});
 			animations.animManager.feedAnimationInfo(a, 1, {
-				centiseconds: 10,
+				centiseconds: 6,
 				position: {
 					x: 10,
 					y: 0
 				}
 			});
 			animations.animManager.feedAnimationInfo(a, 2, {
-				centiseconds: 35,
+				centiseconds: 20,
 				position: {
 					x: 0,
 					y: 0
@@ -121,14 +121,14 @@ class Main {
 				}
 			});
 			animations.animManager.feedAnimationInfo(a, 1, {
-				centiseconds: 100,
+				centiseconds: 6,
 				position: {
 					x: -10,
 					y: 0
 				}
 			});
 			animations.animManager.feedAnimationInfo(a, 2, {
-				centiseconds: 350,
+				centiseconds: 20,
 				position: {
 					x: 0,
 					y: 0
@@ -358,6 +358,7 @@ class Main {
 
 					bm.RecalculateAttributes(bm.wdata.hero);
 					ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
+					view.overlayActorFullView.parent.updateComponentDisplay();
 					bm.wdata.hero.chosenEquipSet = ces;
 					bm.RecalculateAttributes(bm.wdata.hero);
 					view.overlay.hidden = false;
@@ -934,7 +935,7 @@ class Main {
 					battle = false;
 					var regionName = enemyRegionNames[e.data];
 					ev = '<b>Found new location: $regionName</b>';
-					view.ShowMessage("Found New Location", 'Gained access to $regionName.\n(Accessed by using the Region Tabs)');
+					view.ShowMessage("Found New Location", 'Gained access to $regionName.\n\n(Accessed by using the Region Tab)');
 					GameAnalyticsIntegration.SendDesignEvent("RegionUnlock", e.data);
 					GameAnalyticsIntegration.SendProgressStartEvent("world0", "stage" + e.data);
 				}
