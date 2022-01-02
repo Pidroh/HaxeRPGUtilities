@@ -1678,7 +1678,7 @@ class StoryDialog extends Dialog {
 	public function new() {
 		super();
 
-		title = "Story Scene";
+		title = "";
 		width = 400;
 		this.percentHeight = 80;
 

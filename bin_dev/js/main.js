@@ -11071,7 +11071,7 @@ haxe_ui_containers_dialogs_Dialog.prototype = $extend(haxe_ui_backend_DialogBase
 var StoryDialog = function() {
 	this.messages = [];
 	haxe_ui_containers_dialogs_Dialog.call(this);
-	this.set_title("Story Scene");
+	this.set_title("");
 	this.set_width(400);
 	this.set_percentHeight(80);
 	this.messageParent = new haxe_ui_containers_VBox();
