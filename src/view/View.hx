@@ -174,11 +174,16 @@ class View {
 				
 				var pos = setPos;
 				equipmentMainAction(pos, equipmentAction_SetPreview);
+				overlay.hidden = !b;
+				
 				if (b) {
 					positionOverlay(button);
 				} else {
+					overlayText.text = "";
+					overlayText.hidden = true;
 					pos = -1;
 				}
+				//overlay.hidden = !b;
 				
 			});
 			button.text = "Set " + (setPos + 1);
@@ -661,8 +666,10 @@ class View {
 			thisTurnBox.padding = 4;
 			thisTurnBox.borderSize = 1;
 			var imageActive = new Image();
+			imageActive.opacity = 0.3;
 			imageActive.width = turnOrder_Dimension;
 			imageActive.height = turnOrder_Dimension;
+			turnParent.percentWidth = 100;
 			turnParent.addComponent(thisTurnBox);
 			thisTurnBox.addComponent(imageActive);
 
@@ -864,6 +871,7 @@ class View {
 			im.verticalAlign = "center";
 			turnOrder_ImageParent.addComponent(im);
 			turnOrder_Images.push(im);
+			im.opacity = 0.3;
 		}
 		for (index => value in turnOrder_Images) {
 			value.hidden = index >= turnOrder.length;
@@ -1457,7 +1465,7 @@ class View {
 		face.width = 64;
 		face.horizontalAlign = "center";
 		face.color = "#00AAAA";
-		face.opacity = 0.5;
+		// face.opacity = 0.5;
 		box.addComponent(face);
 
 		var header = new Box();

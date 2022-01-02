@@ -5325,8 +5325,10 @@ var View = function() {
 	thisTurnBox.set_padding(4);
 	thisTurnBox.set_borderSize(1);
 	var imageActive = new haxe_ui_components_Image();
+	imageActive.set_opacity(0.3);
 	imageActive.set_width(this.turnOrder_Dimension);
 	imageActive.set_height(this.turnOrder_Dimension);
+	turnParent.set_percentWidth(100);
 	turnParent.addComponent(thisTurnBox);
 	thisTurnBox.addComponent(imageActive);
 	this.turnOrder_ActiveImage = imageActive;
@@ -5558,9 +5560,12 @@ View.prototype = {
 				return function(b,component) {
 					var pos = setPos[0];
 					_gthis.equipmentMainAction(pos,View.equipmentAction_SetPreview);
+					_gthis.overlay.set_hidden(!b);
 					if(b) {
 						_gthis.positionOverlay(button[0]);
 					} else {
+						_gthis.overlayText.set_text("");
+						_gthis.overlayText.set_hidden(true);
 						pos = -1;
 					}
 				};
@@ -5777,6 +5782,7 @@ View.prototype = {
 			im.set_verticalAlign("center");
 			this.turnOrder_ImageParent.addComponent(im);
 			this.turnOrder_Images.push(im);
+			im.set_opacity(0.3);
 		}
 		var _g_current = 0;
 		var _g_array = this.turnOrder_Images;
@@ -6332,7 +6338,6 @@ View.prototype = {
 		face.set_width(64);
 		face.set_horizontalAlign("center");
 		face.set_color(haxe_ui_util_Color.fromString("#00AAAA"));
-		face.set_opacity(0.5);
 		box.addComponent(face);
 		var header = new haxe_ui_containers_Box();
 		header.set_percentWidth(100);
