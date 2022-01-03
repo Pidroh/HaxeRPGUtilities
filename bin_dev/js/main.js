@@ -5204,15 +5204,6 @@ var View = function() {
 	boxParentP.addComponent(title);
 	title.set_height(40);
 	var title = new haxe_ui_components_Label();
-	title.set_width(400);
-	title.set_horizontalAlign("right");
-	title.set_textAlign("right");
-	title.set_paddingLeft(20);
-	title.set_paddingTop(50);
-	title.set_height(20);
-	title.set_htmlText("Import Save: <input id='import__' type='file'></input>");
-	boxParentP.addComponent(title);
-	var title = new haxe_ui_components_Label();
 	var platform = "dev";
 	title.set_htmlText(platform + " Alpha 0.15B. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>");
 	title.set_percentWidth(100);
@@ -5231,6 +5222,7 @@ var View = function() {
 	gameTab.set_percentHeight(100);
 	gameTab.set_text("Title");
 	var buttonHolder = this.CreateContainer(gameTab,true);
+	buttonHolder.set_width(250);
 	var b = new haxe_ui_components_Button();
 	b.set_text("Roadmap");
 	b.set_onClick(function(event) {
@@ -5239,21 +5231,32 @@ var View = function() {
 	b.set_percentWidth(100);
 	buttonHolder.addComponent(b);
 	var discord = new haxe_ui_components_Button();
+	discord.set_percentWidth(100);
 	buttonHolder.addComponent(discord);
 	var dim = new haxe_ui_components_Image();
 	dim.set_resource(haxe_ui_util_Variant.fromString("graphics/discord.png"));
 	dim.set_scaleMode("fitheight");
 	dim.set_height(30);
+	dim.set_horizontalAlign("center");
 	discord.addComponent(dim);
 	discord.set_onClick(function(event) {
 		JSLibrary.OpenURL("https://discord.gg/AtGrxpM ");
 	});
+	var white = new haxe_ui_containers_Box();
+	white.set_height(40);
+	buttonHolder.addComponent(white);
 	var title = new haxe_ui_components_Label();
 	title.set_percentWidth(100);
 	title.set_height(40);
-	title.addClass("button");
 	title.set_text("Export save data");
 	this.saveDataDownload = title;
+	buttonHolder.addComponent(title);
+	var title = new haxe_ui_components_Label();
+	title.set_percentWidth(100);
+	title.set_horizontalAlign("left");
+	title.set_textAlign("left");
+	title.set_height(40);
+	title.set_htmlText("Import Save: <input id='import__' type='file'></input>");
 	buttonHolder.addComponent(title);
 	this.tabMaster.addComponent(gameTab);
 	var grid = new haxe_ui_containers_Grid();

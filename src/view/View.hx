@@ -102,8 +102,9 @@ class View {
 	public var charaTab_bonusesView = new Array<BonusView>();
 
 	public var turnOrder_Images = new Array<Image>();
-	public var turnOrder_ActiveImage : Image;
-	public var turnOrder_ImageParent : Component;
+	public var turnOrder_ActiveImage:Image;
+	public var turnOrder_ImageParent:Component;
+
 	var turnOrder_Dimension = 32;
 
 	public var equipmentMainAction:(Int, Int) -> Void;
@@ -149,8 +150,8 @@ class View {
 	public function Update() {
 		// equipTabChild.width = equipTabChild.parentComponent.width - 40;
 		equipTabChild.width = Screen.instance.width - 40 - 60 - 200;
-		if(overlay.hidden == false){
-			if(overlay.top + overlay.height > Screen.instance.height){
+		if (overlay.hidden == false) {
+			if (overlay.top + overlay.height > Screen.instance.height) {
 				overlay.top = -overlay.height + Screen.instance.height;
 			}
 		}
@@ -176,11 +177,10 @@ class View {
 				equipmentMainAction(setPos, equipmentAction_ChangeSet);
 			};
 			addHover(button, (b, component) -> {
-				
 				var pos = setPos;
 				equipmentMainAction(pos, equipmentAction_SetPreview);
 				overlay.hidden = !b;
-				
+
 				if (b) {
 					positionOverlay(button);
 				} else {
@@ -188,8 +188,7 @@ class View {
 					overlayText.hidden = true;
 					pos = -1;
 				}
-				//overlay.hidden = !b;
-				
+				// overlay.hidden = !b;
 			});
 			button.text = "Set " + (setPos + 1);
 			button.width = 65;
@@ -481,22 +480,6 @@ class View {
 
 			{
 				var title = new Label();
-				title.width = 400;
-				title.horizontalAlign = "right";
-				title.textAlign = "right";
-				// title.paddingRight = 20;
-				title.paddingLeft = 20;
-				title.paddingTop = 50;
-				title.height = 20;
-
-				// title.text = "Import save data";
-				title.htmlText = "Import Save: <input id='import__' type='file'></input>";
-
-				boxParentP.addComponent(title);
-			}
-
-			{
-				var title = new Label();
 				var platform = MyMacro.GetPlatform();
 				title.htmlText = platform
 					+
@@ -509,8 +492,6 @@ class View {
 
 				boxParentP.addComponent(title);
 			}
-
-			
 		}
 
 		tabMaster = new TabView();
@@ -525,6 +506,8 @@ class View {
 			gameTab.percentHeight = 100;
 			gameTab.text = "Title";
 			var buttonHolder = CreateContainer(gameTab, true);
+			buttonHolder.width = 250;
+
 
 
 			{
@@ -535,18 +518,18 @@ class View {
 				}
 				b.percentWidth = 100;
 				buttonHolder.addComponent(b);
-			
 			}
 
 			var discord = new Button();
+			discord.percentWidth = 100;
 			{
-				
 				buttonHolder.addComponent(discord);
 
 				var dim = new Image();
 				dim.resource = "graphics/discord.png";
 				dim.scaleMode = FIT_HEIGHT;
 				dim.height = 30;
+				dim.horizontalAlign = "center";
 
 				discord.addComponent(dim);
 				discord.onClick = event -> {
@@ -554,25 +537,39 @@ class View {
 				}
 			}
 			{
+				var white = new Box();
+				white.height = 40;
+				buttonHolder.addComponent(white);
+
 				{
-					
 					var title = new Label();
 					title.percentWidth = 100;
 					title.height = 40;
-					title.addClass("button");
-	
+					// title.addClass("button");
+
 					title.text = "Export save data";
 					saveDataDownload = title;
-	
+
+					buttonHolder.addComponent(title);
+				}
+				{
+					var title = new Label();
+					title.percentWidth = 100;
+					title.horizontalAlign = "left";
+					title.textAlign = "left";
+					title.height = 40;
+					//title.addClass("button");
+
+					title.htmlText = "Import Save: <input id='import__' type='file'></input>";
+
 					buttonHolder.addComponent(title);
 				}
 			}
-			
-			
+
 			// discord.icon = "graphics/discord.png";
-			
-			//discord.text = "Discord";
-			
+
+			// discord.text = "Discord";
+
 			tabMaster.addComponent(gameTab);
 		}
 
@@ -694,7 +691,7 @@ class View {
 			xpBar = CreateValueView(levelContainer, true, "XP: ");
 		}
 		{
-			//var container = CreateContainer(areaContainer, false);
+			// var container = CreateContainer(areaContainer, false);
 
 			areaLabel = CreateValueView(areaContainer, false, "Area: ", 200, 140);
 
@@ -724,7 +721,6 @@ class View {
 
 			turnOrder_ActiveImage = imageActive;
 			turnOrder_ImageParent = turnParent;
-
 		}
 
 		battleView = CreateContainer(verticalBox, false);
@@ -911,9 +907,9 @@ class View {
 		}
 	}
 
-	public function feedTurnOrder(turnOrder : Array<Int>, images:Array<String>, currentActorImageF:String){
+	public function feedTurnOrder(turnOrder:Array<Int>, images:Array<String>, currentActorImageF:String) {
 		turnOrder_ActiveImage.resource = currentActorImageF;
-		while(turnOrder.length > turnOrder_Images.length){
+		while (turnOrder.length > turnOrder_Images.length) {
 			var im = new Image();
 			im.width = turnOrder_Dimension;
 			im.height = turnOrder_Dimension;
@@ -924,7 +920,7 @@ class View {
 		}
 		for (index => value in turnOrder_Images) {
 			value.hidden = index >= turnOrder.length;
-			if(value.hidden == false){
+			if (value.hidden == false) {
 				value.resource = images[turnOrder[index]];
 			}
 		}
@@ -941,7 +937,7 @@ class View {
 		left += comp.width + xDis;
 		var top = comp.screenTop - yDis;
 		var screenH = Screen.instance.height;
-		var overH =  overlay.height;
+		var overH = overlay.height;
 		var screenOverFlowY = top + overH - screenH;
 		if (screenOverFlowY > 0) {
 			top -= screenOverFlowY;
@@ -1499,7 +1495,6 @@ class View {
 
 	function GetActorView(name:String, parent:Component):ActorView {
 		var box:VBox = new VBox();
-
 
 		addHoverClasses(box);
 		// box.addClass('button');
