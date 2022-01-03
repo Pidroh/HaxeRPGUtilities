@@ -602,7 +602,7 @@ class View {
 			var grid = new Grid();
 			var regionTabComp = grid;
 			this.regionTab = new UIElementWrapper(regionTabComp, tabMaster);
-			regionTab.desiredPosition = 0;
+			regionTab.desiredPosition = 1;
 
 			regionTabComp.percentWidth = 100;
 			grid.columns = 3;

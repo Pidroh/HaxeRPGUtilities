@@ -109,6 +109,7 @@ class Main {
 
 	static function gamemain(view:View) {
 		view.title_NewGameButton.hidden = true;
+		
 		// view.
 		view.tabMasterSetup();
 		{
@@ -1105,6 +1106,7 @@ class Main {
 			js.Browser.window.requestAnimationFrame(update);
 			return true;
 		}
+		view.tabMaster.selectedPage = view.mainComponentB;
 		update(0);
 	}
 
