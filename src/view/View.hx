@@ -538,11 +538,24 @@ class View {
 			gameTab.percentHeight = 100;
 			gameTab.text = "Title";
 			var buttonHolder = CreateContainer(gameTab, true);
+
+
+			{
+				var b = new Button();
+				b.text = "Roadmap";
+				b.onClick = event -> {
+					JSLibrary.OpenURL("https://github.com/Pidroh/HaxeRPGUtilities/wiki");
+				}
+				b.percentWidth = 100;
+				buttonHolder.addComponent(b);
+			
+			}
+
 			var discord = new Button();
 			{
 				
 				buttonHolder.addComponent(discord);
-				
+
 				var dim = new Image();
 				dim.resource = "graphics/discord.png";
 				dim.scaleMode = FIT_HEIGHT;

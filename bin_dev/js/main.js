@@ -5241,6 +5241,13 @@ var View = function() {
 	gameTab.set_percentHeight(100);
 	gameTab.set_text("Title");
 	var buttonHolder = this.CreateContainer(gameTab,true);
+	var b = new haxe_ui_components_Button();
+	b.set_text("Roadmap");
+	b.set_onClick(function(event) {
+		JSLibrary.OpenURL("https://github.com/Pidroh/HaxeRPGUtilities/wiki");
+	});
+	b.set_percentWidth(100);
+	buttonHolder.addComponent(b);
 	var discord = new haxe_ui_components_Button();
 	buttonHolder.addComponent(discord);
 	var dim = new haxe_ui_components_Image();
