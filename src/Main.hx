@@ -49,6 +49,9 @@ class Main {
 	static var key = "save data master";
 	static var keyBackup = "save backup";
 
+	static var bm:BattleManager;
+	static var titleLoad = false;
+
 	static function main() {
 		Toolkit.init();
 		Toolkit.theme = "default";
@@ -90,28 +93,63 @@ class Main {
 
 		var ls = Browser.getLocalStorage();
 		var jsonData = ls.getItem(key);
-		if(jsonData != null){
+		if (jsonData != null) {
 			view.FeedSave(jsonData);
 			view.title_NewGameButton.text = "Continue";
-		} else{
+		} else {
 			view.hideSaveDataDownload();
 		}
-			
 
 		view.titleAction = i -> {
 			if (i == View.Title_ActionGame) {
 				gamemain(view);
 			}
 		}
+		var flagSave = false;
+		var update = null;
+		titleLoad = false;
+		update = (f) -> {
+			flagSave = updateImportExport(flagSave, view);
+			if (titleLoad == false)
+				js.Browser.window.requestAnimationFrame(update);
+		}
+		update(0);
 	}
 
-	static function updateImportExport(){
+	static function updateImportExport(saveFileImporterSetup, view) {
+		var imp = Browser.document.getElementById("import__");
+		if (imp != null && saveFileImporterSetup == false) {
+			if (imp != null) {
+				var input:InputElement = cast imp;
 
+				input.onchange = (event) -> {
+					FileReader.FileUtilities.ReadFile(input.files[0], (json) -> {
+						var ls = Browser.getLocalStorage();
+						if (bm != null)
+							ls.setItem(keyBackup, bm.GetJsonPersistentData());
+						else
+							ls.setItem(keyBackup, ls.getItem(key));
+						ls.setItem(key, json);
+						if (titleLoad) {
+							Browser.location.reload();
+							bm = null;
+						} else{
+							gamemain(view);
+						}
+						
+						// trace(json);
+					});
+				};
+				saveFileImporterSetup = true;
+			}
+		}
+		return saveFileImporterSetup;
 	}
 
 	static function gamemain(view:View) {
 		view.title_NewGameButton.hidden = true;
-		
+		titleLoad = true;
+
 		// view.
 		view.tabMasterSetup();
 		{
@@ -163,7 +201,8 @@ class Main {
 			});
 		}
 
-		var bm:BattleManager = new BattleManager();
+		// var
+		bm = new BattleManager();
 		{
 			var proto = new PrototypeItemMaker();
 			proto.MakeItems();
@@ -731,23 +770,7 @@ class Main {
 			}
 			view.FeedDropDownRegion(enemyRegionNames, bm.wdata.battleAreaRegionMax, bm.wdata.battleAreaRegion, showLocked, "Unreached");
 
-			var imp = Browser.document.getElementById("import__");
-			if (imp != null && saveFileImporterSetup == false) {
-				if (imp != null) {
-					var input:InputElement = cast imp;
-
-					input.onchange = (event) -> {
-						FileReader.FileUtilities.ReadFile(input.files[0], (json) -> {
-							ls.setItem(keyBackup, bm.GetJsonPersistentData());
-							ls.setItem(key, json);
-							Browser.location.reload();
-							bm = null;
-							// trace(json);
-						});
-					};
-					saveFileImporterSetup = true;
-				}
-			}
+			saveFileImporterSetup = updateImportExport(saveFileImporterSetup, view);
 
 			var typeToShow = view.GetEquipmentType();
 			view.buttonDiscardBad.hidden = typeToShow == 2;

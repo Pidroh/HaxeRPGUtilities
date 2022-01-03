@@ -3199,11 +3199,47 @@ Main.titleload = function() {
 			Main.gamemain(view);
 		}
 	};
+	var flagSave = false;
+	var update = null;
+	Main.titleLoad = false;
+	update = function(f) {
+		flagSave = Main.updateImportExport(flagSave,view);
+		if(Main.titleLoad == false) {
+			window.requestAnimationFrame(update);
+		}
+	};
+	update(0);
 };
-Main.updateImportExport = function() {
+Main.updateImportExport = function(saveFileImporterSetup,view) {
+	var imp = window.document.getElementById("import__");
+	if(imp != null && saveFileImporterSetup == false) {
+		if(imp != null) {
+			var input = imp;
+			input.onchange = function(event) {
+				FileUtilities.ReadFile(input.files[0],function(json) {
+					var ls = js_Browser.getLocalStorage();
+					if(Main.bm != null) {
+						ls.setItem(Main.keyBackup,Main.bm.GetJsonPersistentData());
+					} else {
+						ls.setItem(Main.keyBackup,ls.getItem(Main.key));
+					}
+					ls.setItem(Main.key,json);
+					if(Main.titleLoad) {
+						$global.location.reload();
+						Main.bm = null;
+					} else {
+						Main.gamemain(view);
+					}
+				});
+			};
+			saveFileImporterSetup = true;
+		}
+	}
+	return saveFileImporterSetup;
 };
 Main.gamemain = function(view) {
 	view.title_NewGameButton.set_hidden(true);
+	Main.titleLoad = true;
 	view.tabMasterSetup();
 	var a = "attack-left";
 	Main.animations.animManager.feedAnimationInfo(a,0,{ centiseconds : 0, position : { x : 0, y : 0}});
@@ -3213,14 +3249,14 @@ Main.gamemain = function(view) {
 	Main.animations.animManager.feedAnimationInfo(a,0,{ centiseconds : 0, position : { x : 0, y : 0}});
 	Main.animations.animManager.feedAnimationInfo(a,1,{ centiseconds : 6, position : { x : -10, y : 0}});
 	Main.animations.animManager.feedAnimationInfo(a,2,{ centiseconds : 20, position : { x : 0, y : 0}});
-	var bm = new BattleManager();
+	Main.bm = new BattleManager();
 	var proto = new PrototypeItemMaker();
 	proto.MakeItems();
-	bm.itemBases = proto.items;
-	bm.modBases = proto.mods;
+	Main.bm.itemBases = proto.items;
+	Main.bm.modBases = proto.mods;
 	var proto = new PrototypeSkillMaker();
 	proto.init();
-	bm.skillBases = proto.skills;
+	Main.bm.skillBases = proto.skills;
 	var buffToIcon_h = Object.create(null);
 	buffToIcon_h["regen"] = "&#127807;";
 	buffToIcon_h["enchant-fire"] = "&#128293;";
@@ -3267,8 +3303,8 @@ Main.gamemain = function(view) {
 	var enemyNames_3 = "Land Turtle";
 	var enemyNames_4 = "Cactuar";
 	var enemyNames_5 = "Reaper";
-	if(enemyRegionNames.length < bm.regionRequirements.length) {
-		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 230, className : "Main", methodName : "gamemain"});
+	if(enemyRegionNames.length < Main.bm.regionRequirements.length) {
+		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + Main.bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 269, className : "Main", methodName : "gamemain"});
 	}
 	var eventShown = 0;
 	var keyMappings_h = Object.create(null);
@@ -3279,12 +3315,12 @@ Main.gamemain = function(view) {
 		}
 	});
 	var CreateButtonFromAction = function(actionId,buttonLabel,warning,key) {
-		var action = bm.playerActions.h[actionId];
-		var actionData = bm.wdata.playerActions.h[actionId];
+		var action = Main.bm.playerActions.h[actionId];
+		var actionData = Main.bm.wdata.playerActions.h[actionId];
 		if(key != null) {
 			var v = function() {
-				action = bm.playerActions.h[actionId];
-				actionData = bm.wdata.playerActions.h[actionId];
+				action = Main.bm.playerActions.h[actionId];
+				actionData = Main.bm.wdata.playerActions.h[actionId];
 				if(actionData.enabled) {
 					action.actualAction(actionData);
 					view.AnimateButtonPress(buttonLabel);
@@ -3297,13 +3333,13 @@ Main.gamemain = function(view) {
 		},warning);
 	};
 	view.AddButton("advance","Next Area",function(e) {
-		bm.AdvanceArea();
+		Main.bm.AdvanceArea();
 	});
 	view.AddButton("retreat","Previous Area",function(e) {
-		bm.RetreatArea();
+		Main.bm.RetreatArea();
 	});
 	view.AddButton("levelup","Level Up",function(e) {
-		bm.LevelUp();
+		Main.bm.LevelUp();
 	});
 	CreateButtonFromAction("sleep","Sleep");
 	CreateButtonFromAction("repeat","Restart Area");
@@ -3342,16 +3378,16 @@ Main.gamemain = function(view) {
 	CreateButtonFromAction(bid,"Action " + 6,null,"" + 7);
 	var b = view.GetButton(bid);
 	view.addDefaultHover(b);
-	var prestigeWarn = "Your experience awards will increase by " + (bm.GetXPBonusOnPrestige() * 100 | 0) + "%. Your max level will increase by " + bm.GetMaxLevelBonusOnPrestige() + ". You will keep all permanent stats bonuses. \n\nYou will go back to Level 1. Your progress in all regions will be reset. All that is not equipped will be lost. All that is equipped will lose strength.";
+	var prestigeWarn = "Your experience awards will increase by " + (Main.bm.GetXPBonusOnPrestige() * 100 | 0) + "%. Your max level will increase by " + Main.bm.GetMaxLevelBonusOnPrestige() + ". You will keep all permanent stats bonuses. \n\nYou will go back to Level 1. Your progress in all regions will be reset. All that is not equipped will be lost. All that is equipped will lose strength.";
 	CreateButtonFromAction("prestige","Soul Crush",prestigeWarn);
 	var ignoreStats = ["Attack","Defense","Speed","Life","LifeMax","MP","SpeedCount","MagicAttack","MPRechargeCount","MPRecharge"];
 	var ActorToFullView = function(actor,actorView) {
-		view.UpdateValues(view.GetValueView(actorView,0,true),bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"),"Life:",false,null,AttributeExplanation_h["Life"]);
-		view.UpdateValues(view.GetValueView(actorView,1,false),bm.GetAttribute(actor,"Attack"),-1,"Attack:",false,null,AttributeExplanation_h["Attack"]);
-		view.UpdateValues(view.GetValueView(actorView,2,false),bm.GetAttribute(actor,"Speed"),-1,"Speed:",false,null,AttributeExplanation_h["Speed"]);
+		view.UpdateValues(view.GetValueView(actorView,0,true),Main.bm.GetAttribute(actor,"Life"),Main.bm.GetAttribute(actor,"LifeMax"),"Life:",false,null,AttributeExplanation_h["Life"]);
+		view.UpdateValues(view.GetValueView(actorView,1,false),Main.bm.GetAttribute(actor,"Attack"),-1,"Attack:",false,null,AttributeExplanation_h["Attack"]);
+		view.UpdateValues(view.GetValueView(actorView,2,false),Main.bm.GetAttribute(actor,"Speed"),-1,"Speed:",false,null,AttributeExplanation_h["Speed"]);
 		var valueIndex = 3;
-		if(bm.GetAttribute(actor,"Defense") > 0) {
-			view.UpdateValues(view.GetValueView(actorView,valueIndex,false),bm.GetAttribute(actor,"Defense"),-1,"Defense:",false,null,AttributeExplanation_h["Defense"]);
+		if(Main.bm.GetAttribute(actor,"Defense") > 0) {
+			view.UpdateValues(view.GetValueView(actorView,valueIndex,false),Main.bm.GetAttribute(actor,"Defense"),-1,"Defense:",false,null,AttributeExplanation_h["Defense"]);
 			++valueIndex;
 		}
 		var h = actor.attributesCalculated.h;
@@ -3379,28 +3415,28 @@ Main.gamemain = function(view) {
 	};
 	view.equipmentMainAction = function(pos,action) {
 		if(action == 0) {
-			bm.ToggleEquipped(pos);
+			Main.bm.ToggleEquipped(pos);
 		}
 		if(action == 1) {
-			bm.SellEquipment(pos);
+			Main.bm.SellEquipment(pos);
 		}
 		if(action == 2) {
-			bm.UpgradeOrLimitBreakEquipment(pos);
+			Main.bm.UpgradeOrLimitBreakEquipment(pos);
 		}
 		if(action == View.equipmentAction_DiscardBad) {
-			bm.DiscardWorseEquipment();
+			Main.bm.DiscardWorseEquipment();
 		}
 		if(action == View.equipmentAction_ChangeSet) {
-			bm.ChangeEquipmentSet(pos);
+			Main.bm.ChangeEquipmentSet(pos);
 		}
 		if(action == View.equipmentAction_SetPreview) {
 			view.overlayActorFullView.parent.set_hidden(pos < 0);
 			view.overlayText.set_hidden(pos < 0);
 			if(pos >= 0) {
-				var ces = bm.wdata.hero.chosenEquipSet;
-				bm.wdata.hero.chosenEquipSet = pos;
+				var ces = Main.bm.wdata.hero.chosenEquipSet;
+				Main.bm.wdata.hero.chosenEquipSet = pos;
 				var header = "EQUIPMENT SET " + (pos + 1);
-				var actor = bm.wdata.hero;
+				var actor = Main.bm.wdata.hero;
 				if(actor.equipmentSets != null) {
 					if(actor.equipmentSets[actor.chosenEquipSet].equipmentSlots != null) {
 						var _g = 0;
@@ -3410,18 +3446,18 @@ Main.gamemain = function(view) {
 							++_g;
 							var e = actor.equipment[es];
 							if(e != null) {
-								var label = Main.GetEquipName(e,bm);
+								var label = Main.GetEquipName(e,Main.bm);
 								header += "\n" + label;
 							}
 						}
 					}
 				}
 				view.overlayText.set_text(header);
-				bm.RecalculateAttributes(bm.wdata.hero);
-				ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
+				Main.bm.RecalculateAttributes(Main.bm.wdata.hero);
+				ActorToFullView(Main.bm.wdata.hero,view.overlayActorFullView);
 				view.overlayActorFullView.parent.updateComponentDisplay();
-				bm.wdata.hero.chosenEquipSet = ces;
-				bm.RecalculateAttributes(bm.wdata.hero);
+				Main.bm.wdata.hero.chosenEquipSet = ces;
+				Main.bm.RecalculateAttributes(Main.bm.wdata.hero);
 				view.overlay.set_hidden(false);
 			} else {
 				view.overlay.set_hidden(true);
@@ -3429,21 +3465,21 @@ Main.gamemain = function(view) {
 		}
 	};
 	view.regionChangeAction = function(i) {
-		bm.changeRegion(i);
+		Main.bm.changeRegion(i);
 	};
 	view.areaChangeAction = function(i) {
-		bm.ChangeBattleArea(i);
+		Main.bm.ChangeBattleArea(i);
 	};
 	var lastRegion = -1;
 	var lastArea = -1;
 	view.areaButtonHover = function(i,b) {
 		if(b) {
-			if(lastRegion != bm.wdata.battleAreaRegion || lastArea != i) {
+			if(lastRegion != Main.bm.wdata.battleAreaRegion || lastArea != i) {
 				lastArea = i;
-				lastRegion = bm.wdata.battleAreaRegion;
+				lastRegion = Main.bm.wdata.battleAreaRegion;
 				var enemy = null;
 				if(lastArea != 0) {
-					enemy = bm.CreateEnemy(bm.wdata.battleAreaRegion,i);
+					enemy = Main.bm.CreateEnemy(Main.bm.wdata.battleAreaRegion,i);
 				}
 				view.enemyAreaStats.parent.set_hidden(enemy == null);
 				if(enemy != null) {
@@ -3455,19 +3491,19 @@ Main.gamemain = function(view) {
 	var ls = js_Browser.getLocalStorage();
 	var time = 0;
 	var saveCount = 0.3;
-	bm.ForceSkillSetDrop(-1,null,{ skills : [{ id : "Slash", level : 1},{ id : "Cure", level : 1},{ id : "Protect", level : 3}]},false);
-	bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[2] = 0;
-	var storyPersistence = { progressionData : new haxe_ds_StringMap(), worldVersion : bm.wdata.worldVersion, currentStoryId : null};
+	Main.bm.ForceSkillSetDrop(-1,null,{ skills : [{ id : "Slash", level : 1},{ id : "Cure", level : 1},{ id : "Protect", level : 3}]},false);
+	Main.bm.wdata.hero.equipmentSets[Main.bm.wdata.hero.chosenEquipSet].equipmentSlots[2] = 0;
+	var storyPersistence = { progressionData : new haxe_ds_StringMap(), worldVersion : Main.bm.wdata.worldVersion, currentStoryId : null};
 	var jsonData = ls.getItem(Main.key);
 	var persistenceMaster = SaveAssistant.GetPersistenceMaster(jsonData);
 	var jsonData2 = persistenceMaster.jsonStory;
 	if(jsonData2 != null && jsonData2 != "") {
 		storyPersistence = StoryControlLogic.ReadJsonPersistentData(jsonData2);
 	} else {
-		storyPersistence = { currentStoryId : null, progressionData : new haxe_ds_StringMap(), worldVersion : bm.wdata.worldVersion};
+		storyPersistence = { currentStoryId : null, progressionData : new haxe_ds_StringMap(), worldVersion : Main.bm.wdata.worldVersion};
 	}
 	if(persistenceMaster.jsonGameplay != null) {
-		bm.SendJsonPersistentData(persistenceMaster.jsonGameplay);
+		Main.bm.SendJsonPersistentData(persistenceMaster.jsonGameplay);
 	}
 	var _g = new haxe_ds_StringMap();
 	_g.h["mom"] = "graphics/mom.png";
@@ -3478,7 +3514,7 @@ Main.gamemain = function(view) {
 	view.AddButton("reset","Reset",function(e) {
 		view.logText.set_text("");
 		view.logText.set_htmlText("");
-		bm = new BattleManager();
+		Main.bm = new BattleManager();
 		var localStorage = js_Browser.getLocalStorage();
 		localStorage.setItem(Main.key,"");
 		$global.location.reload();
@@ -3492,7 +3528,7 @@ Main.gamemain = function(view) {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 491, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 530, className : "Main", methodName : "gamemain"});
 		var tmp = b == true && view.overlay.get_hidden();
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
@@ -3500,10 +3536,10 @@ Main.gamemain = function(view) {
 		if(b) {
 			overlayFullActorId = 0;
 			view.overlayActorFullView.parent.set_hidden(false);
-			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
+			ActorToFullView(Main.bm.wdata.hero,view.overlayActorFullView);
 			view.positionOverlay(view.heroView.parent);
 		} else {
-			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 503, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 542, className : "Main", methodName : "gamemain"});
 		}
 	});
 	var enemyLabels = [["Goblin","Dog","Giant","Turtle"],["Wolf"],["Tonberry"],["Adamanstoise"],["Cactuar"],["Reaper"],["Witchhunter"],["Buff Witch"],["Witchkiller"]];
@@ -3514,7 +3550,7 @@ Main.gamemain = function(view) {
 		view.overlayActorFullView.parent.set_hidden(!b);
 		if(b) {
 			overlayFullActorId = 1;
-			ActorToFullView(bm.wdata.enemy,view.overlayActorFullView);
+			ActorToFullView(Main.bm.wdata.enemy,view.overlayActorFullView);
 			view.positionOverlay(view.enemyView.parent);
 		}
 	});
@@ -3535,9 +3571,9 @@ Main.gamemain = function(view) {
 		}
 		if(actor != null) {
 			if(enemyName) {
-				if(bm.wdata.battleAreaRegion == 0) {
-					var eafp = bm.enemyAreaFromProcedural;
-					var eai = eafp.GetEnemyAreaInformation(bm.wdata.battleArea - 1);
+				if(Main.bm.wdata.battleAreaRegion == 0) {
+					var eafp = Main.bm.enemyAreaFromProcedural;
+					var eai = eafp.GetEnemyAreaInformation(Main.bm.wdata.battleArea - 1);
 					actorView.name.set_text(enemyLabels[0][eai.sheetId]);
 					if(lagrimaAreaPrefix[eai.equipId] != null) {
 						actorView.name.set_text(lagrimaAreaPrefix[eai.equipId] + " " + actorView.name.get_text());
@@ -3552,17 +3588,17 @@ Main.gamemain = function(view) {
 						}
 					}
 				} else {
-					actorView.name.set_text(enemyLabels[bm.wdata.battleAreaRegion][0]);
+					actorView.name.set_text(enemyLabels[Main.bm.wdata.battleAreaRegion][0]);
 					var fh = actorView.name;
 					var ActorToView = fh.get_text();
-					var code = 65 + bm.wdata.battleArea - 1;
+					var code = 65 + Main.bm.wdata.battleArea - 1;
 					fh.set_text(ActorToView + (" " + String.fromCodePoint(code)));
 				}
 			}
-			if(actor == bm.wdata.hero) {
+			if(actor == Main.bm.wdata.hero) {
 				actorView.portrait.set_resource(haxe_ui_util_Variant.fromString("graphics/heroicon.png"));
 			}
-			if(actor == bm.wdata.enemy) {
+			if(actor == Main.bm.wdata.enemy) {
 				actorView.portrait.set_resource(haxe_ui_util_Variant.fromString("graphics/enemyicon.png"));
 			}
 			var buffPos = 0;
@@ -3576,20 +3612,20 @@ Main.gamemain = function(view) {
 					++buffPos;
 				}
 			}
-			if(bm.wdata.sleeping) {
+			if(Main.bm.wdata.sleeping) {
 				view.FeedBuffView(actorView,buffPos,"zZz","nap");
 				++buffPos;
 			}
-			if(bm.wdata.recovering) {
+			if(Main.bm.wdata.recovering) {
 				view.FeedBuffView(actorView,buffPos,"&#x2620;","dead");
 				++buffPos;
 			}
 			view.FinishFeedBuffInfo(actorView,buffPos);
-			view.UpdateValues(actorView.life,bm.GetAttribute(actor,"Life"),bm.GetAttribute(actor,"LifeMax"));
-			var mp = bm.GetAttribute(actor,"MP");
-			var mpmax = bm.GetAttribute(actor,"MPMax");
-			if(bm.wdata.hero.level > 1) {
-				var rc = bm.GetAttribute(actor,"MPRechargeCount");
+			view.UpdateValues(actorView.life,Main.bm.GetAttribute(actor,"Life"),Main.bm.GetAttribute(actor,"LifeMax"));
+			var mp = Main.bm.GetAttribute(actor,"MP");
+			var mpmax = Main.bm.GetAttribute(actor,"MPMax");
+			if(Main.bm.wdata.hero.level > 1) {
+				var rc = Main.bm.GetAttribute(actor,"MPRechargeCount");
 				if(rc < 10000) {
 					mp = rc;
 					mpmax = 10000;
@@ -3606,7 +3642,7 @@ Main.gamemain = function(view) {
 		view.UpdateVisibility(actorView,actor != null);
 	};
 	var buttonToAction = function(actionId,buttonId) {
-		var action = bm.wdata.playerActions.h[actionId];
+		var action = Main.bm.wdata.playerActions.h[actionId];
 		view.ButtonVisibility(buttonId,action.visible);
 		view.ButtonEnabled(buttonId,action.enabled);
 	};
@@ -3616,7 +3652,7 @@ Main.gamemain = function(view) {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 646, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 685, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -3637,79 +3673,65 @@ Main.gamemain = function(view) {
 	var turnIcons = [];
 	update = function(timeStamp) {
 		if(overlayFullActorId == 0) {
-			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
+			ActorToFullView(Main.bm.wdata.hero,view.overlayActorFullView);
 		}
-		if(overlayFullActorId == 1 && bm.wdata.enemy != null) {
-			ActorToFullView(bm.wdata.enemy,view.overlayActorFullView);
+		if(overlayFullActorId == 1 && Main.bm.wdata.enemy != null) {
+			ActorToFullView(Main.bm.wdata.enemy,view.overlayActorFullView);
 		}
 		var id = 0;
 		var _g = 0;
-		var _g1 = bm.wdata.regionProgress.length;
+		var _g1 = Main.bm.wdata.regionProgress.length;
 		while(_g < _g1) {
 			var i = _g++;
-			var rbl = bm.GetRegionBonusLevel(i);
+			var rbl = Main.bm.GetRegionBonusLevel(i);
 			if(rbl > 0) {
 				view.FeedRegionBonusView(id,enemyRegionNames[i],rbl);
 				++id;
 			}
 		}
-		view.FeedEquipmentSetInfoAll(bm.wdata.hero.equipmentSets.length,bm.wdata.hero.chosenEquipSet);
-		var v = bm.wdata.maxArea;
+		view.FeedEquipmentSetInfoAll(Main.bm.wdata.hero.equipmentSets.length,Main.bm.wdata.hero.chosenEquipSet);
+		var v = Main.bm.wdata.maxArea;
 		global.h["maxarea"] = v;
-		var v = bm.wdata.hero.level;
+		var v = Main.bm.wdata.hero.level;
 		global.h["herolevel"] = v;
 		GameAnalyticsIntegration.InitializeCheck();
-		ActorToView(bm.wdata.hero,view.heroView);
-		ActorToView(bm.wdata.enemy,view.enemyView,true);
+		ActorToView(Main.bm.wdata.hero,view.heroView);
+		ActorToView(Main.bm.wdata.enemy,view.enemyView,true);
 		var activeImage = null;
 		turnIcons[0] = battleIcons_0;
 		turnIcons[1] = battleIcons_1;
-		if(bm.lastActiveActor != null) {
-			if(bm.lastActiveActor == bm.wdata.hero) {
+		if(Main.bm.lastActiveActor != null) {
+			if(Main.bm.lastActiveActor == Main.bm.wdata.hero) {
 				activeImage = turnIcons[0];
 			} else {
 				activeImage = turnIcons[1];
 			}
 		}
-		view.feedTurnOrder(bm.turnList,turnIcons,activeImage);
-		ActorToFullView(bm.wdata.hero,view.equipHeroStats);
-		bm.RecalculateAttributes(bm.wdata.hero,false,false);
-		ActorToFullView(bm.wdata.hero,view.charaTab_CharaBaseStats);
-		bm.RecalculateAttributes(bm.wdata.hero);
-		ActorToFullView(bm.wdata.hero,view.charaTab_CharaEquipStats);
-		var actor = bm.wdata.hero;
-		view.UpdateValues(view.level,bm.wdata.hero.level,-1);
-		view.UpdateValues(view.xpBar,bm.wdata.hero.xp.value,bm.wdata.hero.xp.calculatedMax);
-		view.UpdateValues(view.currencyViews[0],bm.wdata.currency.currencies.h["Lagrima"].value,-1);
-		view.UpdateValues(view.currencyViews[1],bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
-		Main.RefreshAreaName(bm,bm.wdata.battleAreaRegion,bm.wdata.maxArea,areaNames,lagrimaAreaLabels);
-		view.FeedAreaNames(areaNames[bm.wdata.battleAreaRegion],bm.wdata.battleArea);
-		view.UpdateValues(view.areaLabel,1,1,null,false,areaNames[bm.wdata.battleAreaRegion][bm.wdata.battleArea]);
-		view.UpdateValues(view.enemyToAdvance,bm.wdata.killedInArea[bm.wdata.battleArea],bm.wdata.necessaryToKillInArea);
+		view.feedTurnOrder(Main.bm.turnList,turnIcons,activeImage);
+		ActorToFullView(Main.bm.wdata.hero,view.equipHeroStats);
+		Main.bm.RecalculateAttributes(Main.bm.wdata.hero,false,false);
+		ActorToFullView(Main.bm.wdata.hero,view.charaTab_CharaBaseStats);
+		Main.bm.RecalculateAttributes(Main.bm.wdata.hero);
+		ActorToFullView(Main.bm.wdata.hero,view.charaTab_CharaEquipStats);
+		var actor = Main.bm.wdata.hero;
+		view.UpdateValues(view.level,Main.bm.wdata.hero.level,-1);
+		view.UpdateValues(view.xpBar,Main.bm.wdata.hero.xp.value,Main.bm.wdata.hero.xp.calculatedMax);
+		view.UpdateValues(view.currencyViews[0],Main.bm.wdata.currency.currencies.h["Lagrima"].value,-1);
+		view.UpdateValues(view.currencyViews[1],Main.bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
+		Main.RefreshAreaName(Main.bm,Main.bm.wdata.battleAreaRegion,Main.bm.wdata.maxArea,areaNames,lagrimaAreaLabels);
+		view.FeedAreaNames(areaNames[Main.bm.wdata.battleAreaRegion],Main.bm.wdata.battleArea);
+		view.UpdateValues(view.areaLabel,1,1,null,false,areaNames[Main.bm.wdata.battleAreaRegion][Main.bm.wdata.battleArea]);
+		view.UpdateValues(view.enemyToAdvance,Main.bm.wdata.killedInArea[Main.bm.wdata.battleArea],Main.bm.wdata.necessaryToKillInArea);
 		StoryControlLogic.Update(timeStamp,storyRuntime,view,scriptExecuter);
 		var showLocked = 0;
-		if(bm.wdata.battleAreaRegionMax < enemyRegionNames.length) {
+		if(Main.bm.wdata.battleAreaRegionMax < enemyRegionNames.length) {
 			showLocked = 1;
 		}
-		view.FeedDropDownRegion(enemyRegionNames,bm.wdata.battleAreaRegionMax,bm.wdata.battleAreaRegion,showLocked,"Unreached");
-		var imp = window.document.getElementById("import__");
-		if(imp != null && saveFileImporterSetup == false) {
-			if(imp != null) {
-				var input = imp;
-				input.onchange = function(event) {
-					FileUtilities.ReadFile(input.files[0],function(json) {
-						ls.setItem(Main.keyBackup,bm.GetJsonPersistentData());
-						ls.setItem(Main.key,json);
-						$global.location.reload();
-						bm = null;
-					});
-				};
-				saveFileImporterSetup = true;
-			}
-		}
+		view.FeedDropDownRegion(enemyRegionNames,Main.bm.wdata.battleAreaRegionMax,Main.bm.wdata.battleAreaRegion,showLocked,"Unreached");
+		saveFileImporterSetup = Main.updateImportExport(saveFileImporterSetup,view);
 		var typeToShow = view.GetEquipmentType();
 		view.buttonDiscardBad.set_hidden(typeToShow == 2);
-		view.EquipmentAmountToShow(bm.wdata.hero.equipment.length);
+		view.EquipmentAmountToShow(Main.bm.wdata.hero.equipment.length);
 		var equipmentViewPos = 0;
 		var anyNewEquip = false;
 		var _g = 0;
@@ -3719,10 +3741,10 @@ Main.gamemain = function(view) {
 			equipmentWindowTypeAlert[i] = false;
 		}
 		var _g = 0;
-		var _g1 = bm.wdata.hero.equipment.length;
+		var _g1 = Main.bm.wdata.hero.equipment.length;
 		while(_g < _g1) {
 			var i = _g++;
-			var e = bm.wdata.hero.equipment[i];
+			var e = Main.bm.wdata.hero.equipment[i];
 			var hide = true;
 			if(e != null) {
 				if(e.type == typeToShow) {
@@ -3734,7 +3756,7 @@ Main.gamemain = function(view) {
 							e.seen = 1;
 						}
 					}
-					var equipName = Main.GetEquipName(e,bm);
+					var equipName = Main.GetEquipName(e,Main.bm);
 					hide = false;
 					var rarity = 0;
 					if(e.generationPrefixMod >= 0 || e.generationSuffixMod >= 0) {
@@ -3744,32 +3766,32 @@ Main.gamemain = function(view) {
 					var upgradeCurrency = "Lagrima";
 					var canUpgrade = false;
 					var upgradeCost = 0;
-					var upgradable = BattleManager.IsUpgradable(e,bm.wdata);
+					var upgradable = BattleManager.IsUpgradable(e,Main.bm.wdata);
 					if(upgradable) {
-						canUpgrade = BattleManager.CanUpgrade(e,bm.wdata);
-						upgradeCost = BattleManager.GetCost(e,bm.wdata);
+						canUpgrade = BattleManager.CanUpgrade(e,Main.bm.wdata);
+						upgradeCost = BattleManager.GetCost(e,Main.bm.wdata);
 					} else {
-						var limitable = BattleManager.IsLimitBreakable(e,bm.wdata);
+						var limitable = BattleManager.IsLimitBreakable(e,Main.bm.wdata);
 						if(limitable) {
 							upgradable = limitable;
-							canUpgrade = BattleManager.CanLimitBreak(e,bm.wdata);
-							upgradeCost = BattleManager.GetLimitBreakCost(e,bm.wdata);
+							canUpgrade = BattleManager.CanLimitBreak(e,Main.bm.wdata);
+							upgradeCost = BattleManager.GetLimitBreakCost(e,Main.bm.wdata);
 							upgradeLabel = "Limit Break";
 							upgradeCurrency = "Lagrima Stone";
 						}
 					}
-					view.FeedEquipmentBase(equipmentViewPos,equipName,bm.IsEquipped(i,false),rarity,-1,e.type == 2,e.seen == 1,upgradable,canUpgrade,upgradeCost,BattleManager.GetSellPrize(e,bm.wdata),upgradeLabel,upgradeCurrency,bm.IsEquipped(i,true));
+					view.FeedEquipmentBase(equipmentViewPos,equipName,Main.bm.IsEquipped(i,false),rarity,-1,e.type == 2,e.seen == 1,upgradable,canUpgrade,upgradeCost,BattleManager.GetSellPrize(e,Main.bm.wdata),upgradeLabel,upgradeCurrency,Main.bm.IsEquipped(i,true));
 					var vid = 0;
 					if(e.outsideSystems != null) {
 						if(Object.prototype.hasOwnProperty.call(e.outsideSystems.h,"skillset")) {
 							var ss = e.outsideSystems.h["skillset"];
-							var ssd = bm.wdata.skillSets[ss];
+							var ssd = Main.bm.wdata.skillSets[ss];
 							var _g2 = 0;
 							var _g3 = ssd.skills.length;
 							while(_g2 < _g3) {
 								var s = _g2++;
 								var actionId = "battleaction_" + s;
-								var action = bm.wdata.playerActions.h[actionId];
+								var action = Main.bm.wdata.playerActions.h[actionId];
 								if(action.mode == 0) {
 									var skillName = ssd.skills[s].id;
 									if(ssd.skills[s].level > 1) {
@@ -3828,11 +3850,11 @@ Main.gamemain = function(view) {
 		}
 		View.TabBarAlert(view.equipmentTypeSelectionTabbar,equipmentWindowTypeAlert,view.equipmentTypeNames);
 		view.SetTabNotification(anyNewEquip,view.equipTab);
-		var levelUpSystem = bm.wdata.hero.level > 1;
+		var levelUpSystem = Main.bm.wdata.hero.level > 1;
 		view.UpdateVisibilityOfValueView(view.level,levelUpSystem);
-		view.UpdateVisibilityOfValueView(view.xpBar,bm.wdata.hero.level < bm.CalculateHeroMaxLevel());
-		while(bm.events.length > eventShown) {
-			var e = bm.events[eventShown];
+		view.UpdateVisibilityOfValueView(view.xpBar,Main.bm.wdata.hero.level < Main.bm.CalculateHeroMaxLevel());
+		while(Main.bm.events.length > eventShown) {
+			var e = Main.bm.events[eventShown];
 			var data = e.data;
 			var dataString = e.dataString;
 			var battle = true;
@@ -3868,7 +3890,7 @@ Main.gamemain = function(view) {
 				ev = "" + originText + " died";
 				if(e.target != null) {
 					if(e.target.type == 0) {
-						GameAnalyticsIntegration.SendProgressFailEvent("world0","stage" + bm.wdata.battleAreaRegion,"area" + bm.wdata.battleArea);
+						GameAnalyticsIntegration.SendProgressFailEvent("world0","stage" + Main.bm.wdata.battleAreaRegion,"area" + Main.bm.wdata.battleArea);
 					}
 				}
 			}
@@ -3887,7 +3909,7 @@ Main.gamemain = function(view) {
 			if(e.type == EventTypes.ActorLevelUp) {
 				battle = false;
 				ev = "<b>You leveled up!</b>";
-				GameAnalyticsIntegration.SendProgressCompleteEvent("LevelUp " + bm.wdata.hero.level,"","");
+				GameAnalyticsIntegration.SendProgressCompleteEvent("LevelUp " + Main.bm.wdata.hero.level,"","");
 			}
 			if(e.type == EventTypes.PermanentStatUpgrade) {
 				battle = false;
@@ -3910,7 +3932,7 @@ Main.gamemain = function(view) {
 				battle = false;
 				ev = "<spawn style=\"color:#005555; font-weight: normal;\";>You found a new area!</span>";
 				GameAnalyticsIntegration.SendDesignEvent("AreaUnlock",e.data);
-				GameAnalyticsIntegration.SendProgressStartEvent("world0","stage" + bm.wdata.battleAreaRegion,"area" + e.data);
+				GameAnalyticsIntegration.SendProgressStartEvent("world0","stage" + Main.bm.wdata.battleAreaRegion,"area" + e.data);
 			}
 			if(e.type == EventTypes.RegionUnlock) {
 				battle = false;
@@ -3925,7 +3947,7 @@ Main.gamemain = function(view) {
 				GameAnalyticsIntegration.SendProgressCompleteEvent("world0","stage0","area" + e.data);
 			}
 			if(e.type == EventTypes.EquipDrop) {
-				var equipName = Main.GetEquipName(bm.wdata.hero.equipment[e.data],bm);
+				var equipName = Main.GetEquipName(Main.bm.wdata.hero.equipment[e.data],Main.bm);
 				ev = "<b>Enemy dropped " + equipName + "</b>";
 			}
 			if(battle) {
@@ -3938,8 +3960,8 @@ Main.gamemain = function(view) {
 		var delta = timeStamp - time;
 		var storyHappened = storyRuntime.persistence.progressionData.h[storyRuntime.cutscenes[0].title].timesCompleted > 0;
 		var storyHappenedPure = storyHappened;
-		if(bm.wdata.regionProgress != null && bm.wdata.regionProgress[0] != null) {
-			storyHappened = storyHappened || bm.wdata.regionProgress[0].maxArea > 1;
+		if(Main.bm.wdata.regionProgress != null && Main.bm.wdata.regionProgress[0] != null) {
+			storyHappened = storyHappened || Main.bm.wdata.regionProgress[0].maxArea > 1;
 		}
 		view.battleView.parentComponent.set_hidden(!storyHappened);
 		view.levelContainer.set_hidden(!storyHappened);
@@ -3950,8 +3972,8 @@ Main.gamemain = function(view) {
 			buttonToAction("advance","advance");
 			view.ButtonVisibility("advance",storyHappened);
 			var changeLabel = false;
-			if(bm.wdata.battleAreaRegion == 0) {
-				var nextAreaInformation = bm.enemyAreaFromProcedural.GetEnemyAreaInformation(bm.wdata.battleArea);
+			if(Main.bm.wdata.battleAreaRegion == 0) {
+				var nextAreaInformation = Main.bm.enemyAreaFromProcedural.GetEnemyAreaInformation(Main.bm.wdata.battleArea);
 				if(nextAreaInformation.level > 0) {
 					changeLabel = true;
 					view.ButtonLabel("advance","Next Area <br><span style='color:red;'>(Gate)</span>");
@@ -3971,11 +3993,11 @@ Main.gamemain = function(view) {
 				var i = _g++;
 				var id = "battleaction_" + i;
 				buttonToAction(id,id);
-				var skills = bm.wdata.hero.usableSkills;
+				var skills = Main.bm.wdata.hero.usableSkills;
 				if(skills[i] != null) {
-					var action = bm.wdata.playerActions.h[id];
+					var action = Main.bm.wdata.playerActions.h[id];
 					if(action.mode == 0 || action.mode == 2) {
-						var sb = bm.GetSkillBase(skills[i].id);
+						var sb = Main.bm.GetSkillBase(skills[i].id);
 						var skillName = sb.id;
 						if(skills[i].level > 1) {
 							var code = 80 + skills[i].level;
@@ -3990,49 +4012,49 @@ Main.gamemain = function(view) {
 						view.ButtonNormalColor(id);
 					}
 					if(action.mode == 1) {
-						view.ButtonLabel(id,"Unlock at Level " + bm.skillSlotUnlocklevel[i]);
+						view.ButtonLabel(id,"Unlock at Level " + Main.bm.skillSlotUnlocklevel[i]);
 						view.updateDefaultHoverText(view.GetButton(id),"");
 					}
 				}
 			}
 		}
-		var action = bm.wdata.playerActions.h["tabequipment"];
+		var action = Main.bm.wdata.playerActions.h["tabequipment"];
 		view.TabVisible(view.equipTab,action.visible);
-		var action = bm.wdata.playerActions.h["tabmemory"];
+		var action = Main.bm.wdata.playerActions.h["tabmemory"];
 		view.TabVisible(view.storyTab,storyHappenedPure);
-		var action = bm.wdata.playerActions.h["tabcharacter"];
+		var action = Main.bm.wdata.playerActions.h["tabcharacter"];
 		view.TabVisible(view.charaTabWrap,action.visible);
-		var action = bm.wdata.playerActions.h["tabregion"];
+		var action = Main.bm.wdata.playerActions.h["tabregion"];
 		view.TabVisible(view.regionTab,action.visible);
-		var action = bm.wdata.playerActions.h["equipset_menu"];
+		var action = Main.bm.wdata.playerActions.h["equipset_menu"];
 		view.equipmentSetButtonParent_Equipment.parentComponent.set_hidden(!action.visible);
-		var action = bm.wdata.playerActions.h["equipset_battle"];
+		var action = Main.bm.wdata.playerActions.h["equipset_battle"];
 		view.equipmentSetButtonParent_Battle.parentComponent.set_hidden(!action.visible);
-		view.TabVisible(view.developTab,bm.wdata.prestigeTimes >= 1 || bm.wdata.hero.level > 10);
-		var sleepAct = bm.wdata.playerActions.h["sleep"];
+		view.TabVisible(view.developTab,Main.bm.wdata.prestigeTimes >= 1 || Main.bm.wdata.hero.level > 10);
+		var sleepAct = Main.bm.wdata.playerActions.h["sleep"];
 		if(sleepAct.mode == 0) {
 			view.ButtonLabel("sleep","Nap");
 		} else {
 			view.ButtonLabel("sleep","Wake up");
 		}
-		var pact = bm.wdata.playerActions.h["prestige"];
+		var pact = Main.bm.wdata.playerActions.h["prestige"];
 		if(pact.enabled == true) {
 			view.ButtonLabel("prestige","Soul Crush");
 		} else {
-			view.ButtonLabel("prestige","Unlock at Level " + bm.GetLevelRequirementForPrestige());
+			view.ButtonLabel("prestige","Unlock at Level " + Main.bm.GetLevelRequirementForPrestige());
 		}
 		view.Update();
 		delta *= 0.001;
 		Main.animations.update(delta);
 		while(delta > Main.maxDelta) {
 			delta -= Main.maxDelta;
-			bm.update(Main.maxDelta);
+			Main.bm.update(Main.maxDelta);
 		}
-		var text = bm.update(delta);
+		var text = Main.bm.update(delta);
 		var localStorage = js_Browser.getLocalStorage();
-		var json = bm.GetJsonPersistentData();
+		var json = Main.bm.GetJsonPersistentData();
 		var json2 = StoryControlLogic.GetJsonPersistentData(storyRuntime);
-		var masterPers = { worldVersion : bm.wdata.worldVersion, jsonGameplay : json, jsonStory : json2};
+		var masterPers = { worldVersion : Main.bm.wdata.worldVersion, jsonGameplay : json, jsonStory : json2};
 		var jsonMaster = JSON.stringify(masterPers);
 		localStorage.setItem(Main.key,jsonMaster);
 		saveCount -= delta;
@@ -4047,7 +4069,7 @@ Main.gamemain = function(view) {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1116, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1139, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -4059,7 +4081,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1133, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1156, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -4078,8 +4100,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1161, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1162, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1184, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1185, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -48292,6 +48314,7 @@ Main.animations = new AnimationComponent();
 Main.keyOld = "save data2";
 Main.key = "save data master";
 Main.keyBackup = "save backup";
+Main.titleLoad = false;
 PrototypeItemMaker.itemType_Weapon = 0;
 PrototypeItemMaker.itemType_Armor = 1;
 View.storyAction_Start = 0;
