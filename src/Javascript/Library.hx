@@ -7,7 +7,6 @@ class JSLibrary{
         
     }
     public static function OpenURL(url){
-        Syntax.code("window.location = {0};", url);
-        
+        Syntax.code("window.open({0}, '_blank');", url);
     }
 }

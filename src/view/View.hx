@@ -542,6 +542,7 @@ class View {
 			{
 				
 				buttonHolder.addComponent(discord);
+				
 				var dim = new Image();
 				dim.resource = "graphics/discord.png";
 				dim.scaleMode = FIT_HEIGHT;
@@ -552,7 +553,7 @@ class View {
 					JSLibrary.OpenURL("https://discord.gg/AtGrxpM ");
 				}
 			}
-			buttonHolder.addComponent(discord);
+			
 			
 			// discord.icon = "graphics/discord.png";
 			

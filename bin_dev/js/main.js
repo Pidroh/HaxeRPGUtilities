@@ -3146,7 +3146,7 @@ JSLibrary.TryJavascript = function() {
 	alert("Whateverrrr");
 };
 JSLibrary.OpenURL = function(url) {
-	window.location = url;
+	window.open(url, '_blank');
 };
 var MyMacro = function() { };
 $hxClasses["MyMacro"] = MyMacro;
@@ -5251,7 +5251,6 @@ var View = function() {
 	discord.set_onClick(function(event) {
 		JSLibrary.OpenURL("https://discord.gg/AtGrxpM ");
 	});
-	buttonHolder.addComponent(discord);
 	this.tabMaster.addComponent(gameTab);
 	var grid = new haxe_ui_containers_Grid();
 	var regionTabComp = grid;
