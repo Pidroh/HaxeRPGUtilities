@@ -107,13 +107,15 @@ class View {
 	public var turnOrder_ActiveImage:Image;
 	public var turnOrder_ImageParent:Component;
 
+	public var titleAction:(Int) -> Void;
+	public var title_NewGameButton:Button;
+
 	var turnOrder_Dimension = 32;
 
 	public var equipmentMainAction:(Int, Int) -> Void;
 	public var storyMainAction:(Int, Int) -> Void;
 	public var regionChangeAction:(Int) -> Void;
 	public var areaChangeAction:(Int) -> Void;
-	public var titleAction:(Int) -> Void;
 	public var areaButtonHover:(Int, Bool) -> Void;
 	public var buffButtonHover:(BuffView, Bool) -> Void;
 
@@ -521,12 +523,14 @@ class View {
 			buttonHolder.width = 250;
 
 			{
+				
 				var b = new Button();
 				b.text = "New Game";
 				b.onClick = event -> {
 					titleAction(Title_ActionGame);
 				}
 				b.percentWidth = 100;
+				title_NewGameButton = b;
 				buttonHolder.addComponent(b);
 			}
 			{

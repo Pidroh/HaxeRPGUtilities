@@ -5236,6 +5236,7 @@ var View = function() {
 		_gthis.titleAction(View.Title_ActionGame);
 	});
 	b.set_percentWidth(100);
+	this.title_NewGameButton = b;
 	buttonHolder.addComponent(b);
 	var b = new haxe_ui_components_Button();
 	b.set_text("Roadmap");
@@ -5323,12 +5324,13 @@ View.prototype = {
 	,turnOrder_Images: null
 	,turnOrder_ActiveImage: null
 	,turnOrder_ImageParent: null
+	,titleAction: null
+	,title_NewGameButton: null
 	,turnOrder_Dimension: null
 	,equipmentMainAction: null
 	,storyMainAction: null
 	,regionChangeAction: null
 	,areaChangeAction: null
-	,titleAction: null
 	,areaButtonHover: null
 	,buffButtonHover: null
 	,areaContainer: null
