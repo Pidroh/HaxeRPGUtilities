@@ -60,33 +60,39 @@ class Main {
 				privacyAcceptance = "accepted";
 				Browser.getLocalStorage().setItem(key, privacyAcceptance);
 				// Browser.getLocalStorage().
-				gamemain();
+				titleload();
 			});
 			privacyView.horizontalAlign = "center";
 			privacyView.percentWidth = 100;
 			Screen.instance.addComponent(privacyView);
 		} else {
-			gamemain();
+			titleload();
 		}
-
-		// Screen.instance.messageBox("We collect gameplay data to improve the game. <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.",
-		// "By playing this game, you agree with the terms of use and privacy policy.",
-		// MessageBoxType.TYPE_INFO, true, function(button) {
-
-		// trace(button);
-		// if (button.toString().indexOf("yes") >= 0) {
-		//	onClick(null);
-		// }
-		// trace("call back!");
-		// });
 	}
 
-	static function gamemain() {
+	static function titleload(){
 		if (privacyView != null) {
 			Screen.instance.removeComponent(privacyView);
 		}
 		runTest();
+		var view:View = new View();
+		var main = new Box();
+		main.percentWidth = 100;
+		main.percentHeight = 100;
+		main.addComponent(view.mainComponent);
 
+		Screen.instance.addComponent(main);
+		Screen.instance.addComponent(view.overlay);
+
+		view.titleAction = i -> {
+			if(i == View.Title_ActionGame){
+				gamemain(view);
+			}
+		}
+	}
+
+	static function gamemain(view : View) {
+		view.tabMasterSetup();
 		{
 			var a = "attack-left";
 			animations.animManager.feedAnimationInfo(a, 0, {
@@ -149,7 +155,7 @@ class Main {
 			bm.skillBases = proto.skills;
 		}
 
-		var view:View = new View();
+
 		var buffToIcon:Map<String, String> = [
 			"regen" => "&#127807;",
 			"enchant-fire" => "&#128293;",
@@ -208,11 +214,6 @@ class Main {
 		}
 
 		var eventShown = 0;
-
-		var main = new Box();
-		main.percentWidth = 100;
-		main.percentHeight = 100;
-		main.addComponent(view.mainComponent);
 
 		var keyOld = "save data2";
 		var key = "save data master";
@@ -394,11 +395,7 @@ class Main {
 
 		var ls = Browser.getLocalStorage();
 
-		main.percentWidth = 100;
-		// main.horizontalAlign = "center";
-
-		Screen.instance.addComponent(main);
-		Screen.instance.addComponent(view.overlay);
+		
 
 		/*
 			var button = new Button();

@@ -3165,20 +3165,35 @@ Main.main = function() {
 		Main.privacyView = PrivacyConfirmationView.CreateView(function() {
 			privacyAcceptance = "accepted";
 			js_Browser.getLocalStorage().setItem(key,privacyAcceptance);
-			Main.gamemain();
+			Main.titleload();
 		});
 		Main.privacyView.set_horizontalAlign("center");
 		Main.privacyView.set_percentWidth(100);
 		haxe_ui_core_Screen.get_instance().addComponent(Main.privacyView);
 	} else {
-		Main.gamemain();
+		Main.titleload();
 	}
 };
-Main.gamemain = function() {
+Main.titleload = function() {
 	if(Main.privacyView != null) {
 		haxe_ui_core_Screen.get_instance().removeComponent(Main.privacyView);
 	}
 	Main.runTest();
+	var view = new View();
+	var main = new haxe_ui_containers_Box();
+	main.set_percentWidth(100);
+	main.set_percentHeight(100);
+	main.addComponent(view.mainComponent);
+	haxe_ui_core_Screen.get_instance().addComponent(main);
+	haxe_ui_core_Screen.get_instance().addComponent(view.overlay);
+	view.titleAction = function(i) {
+		if(i == View.Title_ActionGame) {
+			Main.gamemain(view);
+		}
+	};
+};
+Main.gamemain = function(view) {
+	view.tabMasterSetup();
 	var a = "attack-left";
 	Main.animations.animManager.feedAnimationInfo(a,0,{ centiseconds : 0, position : { x : 0, y : 0}});
 	Main.animations.animManager.feedAnimationInfo(a,1,{ centiseconds : 6, position : { x : 10, y : 0}});
@@ -3195,7 +3210,6 @@ Main.gamemain = function() {
 	var proto = new PrototypeSkillMaker();
 	proto.init();
 	bm.skillBases = proto.skills;
-	var view = new View();
 	var buffToIcon_h = Object.create(null);
 	buffToIcon_h["regen"] = "&#127807;";
 	buffToIcon_h["enchant-fire"] = "&#128293;";
@@ -3243,13 +3257,9 @@ Main.gamemain = function() {
 	var enemyNames_4 = "Cactuar";
 	var enemyNames_5 = "Reaper";
 	if(enemyRegionNames.length < bm.regionRequirements.length) {
-		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 204, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 210, className : "Main", methodName : "gamemain"});
 	}
 	var eventShown = 0;
-	var main = new haxe_ui_containers_Box();
-	main.set_percentWidth(100);
-	main.set_percentHeight(100);
-	main.addComponent(view.mainComponent);
 	var keyOld = "save data2";
 	var key = "save data master";
 	var keyBackup = "save backup";
@@ -3435,9 +3445,6 @@ Main.gamemain = function() {
 		}
 	};
 	var ls = js_Browser.getLocalStorage();
-	main.set_percentWidth(100);
-	haxe_ui_core_Screen.get_instance().addComponent(main);
-	haxe_ui_core_Screen.get_instance().addComponent(view.overlay);
 	var time = 0;
 	var saveCount = 0.3;
 	bm.ForceSkillSetDrop(-1,null,{ skills : [{ id : "Slash", level : 1},{ id : "Cure", level : 1},{ id : "Protect", level : 3}]},false);
@@ -3477,7 +3484,7 @@ Main.gamemain = function() {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 480, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 477, className : "Main", methodName : "gamemain"});
 		var tmp = b == true && view.overlay.get_hidden();
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
@@ -3488,7 +3495,7 @@ Main.gamemain = function() {
 			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
 			view.positionOverlay(view.heroView.parent);
 		} else {
-			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 492, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 489, className : "Main", methodName : "gamemain"});
 		}
 	});
 	var enemyLabels = [["Goblin","Dog","Giant","Turtle"],["Wolf"],["Tonberry"],["Adamanstoise"],["Cactuar"],["Reaper"],["Witchhunter"],["Buff Witch"],["Witchkiller"]];
@@ -3601,7 +3608,7 @@ Main.gamemain = function() {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 635, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 632, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -4031,7 +4038,7 @@ Main.gamemain = function() {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1106, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1103, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -4043,7 +4050,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1123, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1120, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -4062,8 +4069,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1151, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1152, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1148, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1149, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5224,6 +5231,13 @@ var View = function() {
 	var buttonHolder = this.CreateContainer(gameTab,true);
 	buttonHolder.set_width(250);
 	var b = new haxe_ui_components_Button();
+	b.set_text("New Game");
+	b.set_onClick(function(event) {
+		_gthis.titleAction(View.Title_ActionGame);
+	});
+	b.set_percentWidth(100);
+	buttonHolder.addComponent(b);
+	var b = new haxe_ui_components_Button();
 	b.set_text("Roadmap");
 	b.set_onClick(function(event) {
 		JSLibrary.OpenURL("https://github.com/Pidroh/HaxeRPGUtilities/wiki");
@@ -5259,229 +5273,6 @@ var View = function() {
 	title.set_htmlText("Import Save: <input id='import__' type='file'></input>");
 	buttonHolder.addComponent(title);
 	this.tabMaster.addComponent(gameTab);
-	var grid = new haxe_ui_containers_Grid();
-	var regionTabComp = grid;
-	this.regionTab = new UIElementWrapper(regionTabComp,this.tabMaster);
-	this.regionTab.desiredPosition = 0;
-	regionTabComp.set_percentWidth(100);
-	grid.set_columns(3);
-	regionTabComp.set_text("Regions");
-	regionTabComp.set_percentHeight(90);
-	var scroll = this.CreateScrollable(regionTabComp);
-	scroll.set_marginLeft(15);
-	scroll.set_marginTop(15);
-	scroll.set_padding(15);
-	scroll.set_width(200);
-	scroll.set_percentHeight(100);
-	var vb = new haxe_ui_containers_VBox();
-	vb.set_horizontalAlign("center");
-	scroll.addComponent(vb);
-	var scroll = this.CreateScrollable(regionTabComp);
-	scroll.set_marginLeft(15);
-	scroll.set_marginTop(15);
-	scroll.set_padding(15);
-	scroll.set_width(haxe_ui_core_Screen.get_instance().get_width() * 0.28);
-	scroll.set_percentHeight(100);
-	scroll.set_horizontalAlign("center");
-	var vb = new haxe_ui_containers_ContinuousHBox();
-	vb.set_width(scroll.get_width() - 30);
-	vb.set_horizontalAlign("center");
-	scroll.addComponent(vb);
-	this.enemyAreaStats = this.CreateActorViewComplete("Enemy",regionTabComp);
-	this.enemyAreaStats.parent.set_marginLeft(30);
-	this.enemyAreaStats.parent.set_marginTop(15);
-	this.enemyAreaStats.parent.set_percentHeight(90);
-	var battleParent = new haxe_ui_containers_HBox();
-	battleParent.set_percentHeight(100);
-	this.tabMaster.addComponent(battleParent);
-	battleParent.set_text("Main");
-	this.mainComponentB = battleParent;
-	battleParent.set_paddingLeft(40);
-	battleParent.set_paddingTop(10);
-	var verticalBox = new haxe_ui_containers_Box();
-	var hgl = new haxe_ui_layouts_HorizontalGridLayout();
-	hgl.set_rows(5);
-	verticalBox.set_layout(hgl);
-	verticalBox.set_percentHeight(100);
-	battleParent.addComponent(verticalBox);
-	this.buttonBox = this.CreateContainer(battleParent,true);
-	var box = new haxe_ui_containers_Box();
-	box.set_width(250);
-	box.set_percentHeight(100);
-	battleParent.addComponent(box);
-	var scroll = this.CreateScrollable(box);
-	scroll.set_width(250);
-	scroll.set_percentHeight(40);
-	var logContainer = this.CreateContainer(scroll,true);
-	var log = new haxe_ui_components_Label();
-	this.logText = log;
-	this.logText.set_text("You exist");
-	this.logText.set_htmlText(this.logText.get_text());
-	logContainer.addComponent(log);
-	log.set_width(190);
-	log.set_horizontalAlign("center");
-	logContainer.set_horizontalAlign("center");
-	var scroll = this.CreateScrollable(box);
-	scroll.set_width(250);
-	scroll.set_percentHeight(60);
-	var logContainer = this.CreateContainer(scroll,true);
-	scroll.set_verticalAlign("bottom");
-	var log = new haxe_ui_components_Label();
-	this.logTextBattle = log;
-	this.logTextBattle.set_text("You are healthy");
-	this.logTextBattle.set_htmlText("You are healthy");
-	logContainer.addComponent(log);
-	log.set_width(190);
-	log.set_horizontalAlign("center");
-	logContainer.set_horizontalAlign("center");
-	this.areaContainer = this.CreateContainer(verticalBox,false);
-	this.levelContainer = this.CreateContainer(verticalBox,true);
-	this.level = this.CreateValueView(this.levelContainer,false,"Level: ");
-	this.xpBar = this.CreateValueView(this.levelContainer,true,"XP: ");
-	this.areaLabel = this.CreateValueView(this.areaContainer,false,"Area: ",200,140);
-	var b = new haxe_ui_containers_Box();
-	b.set_width(30);
-	this.areaContainer.addComponent(b);
-	this.enemyToAdvance = this.CreateValueView(this.areaContainer,true,"Progress: ");
-	var size = 36;
-	var turnParent = this.CreateContainer(verticalBox,false);
-	var thisTurnBox = new haxe_ui_containers_Box();
-	thisTurnBox.set_width(40);
-	thisTurnBox.set_height(40);
-	thisTurnBox.set_padding(4);
-	thisTurnBox.set_borderSize(1);
-	var imageActive = new haxe_ui_components_Image();
-	imageActive.set_opacity(0.3);
-	imageActive.set_width(this.turnOrder_Dimension);
-	imageActive.set_height(this.turnOrder_Dimension);
-	turnParent.set_percentWidth(100);
-	turnParent.addComponent(thisTurnBox);
-	thisTurnBox.addComponent(imageActive);
-	this.turnOrder_ActiveImage = imageActive;
-	this.turnOrder_ImageParent = turnParent;
-	this.battleView = this.CreateContainer(verticalBox,false);
-	this.battleView.set_width(440);
-	this.heroView = this.GetActorView("You",this.battleView);
-	var box = new haxe_ui_containers_Box();
-	box.set_width(40);
-	this.battleView.addComponent(box);
-	this.enemyView = this.GetActorView("Enemy",this.battleView);
-	this.equipmentSetButtonParent_Battle = this.SetupEquipmentSetSelector(verticalBox);
-	this.equipTabChild = new haxe_ui_containers_ContinuousHBox();
-	var tabBar = new haxe_ui_components_TabBar();
-	tabBar.set_percentWidth(100);
-	this.equipmentTypeSelectionTabbar = tabBar;
-	this.equipTabChild.addComponent(tabBar);
-	this.buttonDiscardBad = new haxe_ui_components_Button();
-	this.buttonDiscardBad.set_text("Discard worse equipment");
-	this.buttonDiscardBad.set_onClick(function(event) {
-		_gthis.equipmentMainAction(-1,View.equipmentAction_DiscardBad);
-	});
-	this.equipTabChild.addComponent(this.buttonDiscardBad);
-	var gridBox = new haxe_ui_containers_HBox();
-	gridBox.set_text("Equipment");
-	this.equipTab = new UIElementWrapper(gridBox,this.tabMaster);
-	this.equipTab.desiredPosition = 2;
-	gridBox.set_percentHeight(100);
-	gridBox.set_percentWidth(100);
-	var statContainer = this.CreateContainer(gridBox,true);
-	this.currencyViews.push(this.CreateValueView(statContainer,false,"Lagrima: "));
-	this.currencyViews.push(this.CreateValueView(statContainer,false,"Lagrima\nStone: "));
-	var box = new haxe_ui_containers_Box();
-	box.set_height(40);
-	statContainer.addComponent(box);
-	this.equipHeroStats = this.CreateActorViewComplete("You",statContainer);
-	this.statEquipmentParent = statContainer;
-	var equipRightSide = new haxe_ui_containers_VBox();
-	equipRightSide.set_percentWidth(100);
-	equipRightSide.set_percentHeight(100);
-	this.equipmentSetButtonParent_Equipment = this.SetupEquipmentSetSelector(equipRightSide);
-	gridBox.addComponent(equipRightSide);
-	var scroll = this.CreateScrollable(equipRightSide);
-	scroll.set_height(300);
-	scroll.set_text("Equipment");
-	scroll.addComponent(this.equipTabChild);
-	gridBox.set_paddingLeft(40);
-	gridBox.set_paddingTop(10);
-	scroll.set_percentWidth(100);
-	scroll.set_percentHeight(100);
-	var grid = new haxe_ui_containers_Grid();
-	this.charaTab = grid;
-	this.charaTabWrap = new UIElementWrapper(this.charaTab,this.tabMaster);
-	grid.set_columns(3);
-	grid.set_text("Character");
-	grid.set_percentHeight(100);
-	var box = new haxe_ui_containers_VBox();
-	box.set_padding(15);
-	this.charaTab_CharaBaseStats = this.CreateActorViewComplete("BASE STATS",box);
-	grid.addComponent(box);
-	var box = new haxe_ui_containers_VBox();
-	box.set_padding(15);
-	this.charaTab_CharaEquipStats = this.CreateActorViewComplete("FINAL STATS",box);
-	grid.addComponent(box);
-	var upperBox = new haxe_ui_containers_Box();
-	grid.addComponent(upperBox);
-	var header = new haxe_ui_components_Label();
-	upperBox.addComponent(header);
-	header.set_text("PERMANENT BONUSES");
-	var box = new haxe_ui_containers_VBox();
-	box.set_padding(15);
-	this.charaTab_RegionElements = box;
-	box.set_width(200);
-	var scroll = this.CreateScrollable(upperBox);
-	scroll.set_verticalAlign("bottom");
-	scroll.set_width(200);
-	scroll.set_percentHeight(90);
-	upperBox.set_width(scroll.get_width());
-	upperBox.set_percentHeight(100);
-	scroll.addComponent(box);
-	var box = new haxe_ui_containers_VBox();
-	var box = new haxe_ui_containers_VBox();
-	var storyTabComp = new haxe_ui_containers_ContinuousHBox();
-	storyTabComp.set_width(600);
-	storyTabComp.set_height(300);
-	storyTabComp.set_text("Memories");
-	var storyLabel = new haxe_ui_components_Label();
-	storyLabel.set_percentWidth(100);
-	storyLabel.set_textAlign("center");
-	storyLabel.set_text("Revisit your memories");
-	storyTabComp.addComponent(storyLabel);
-	storyTabComp.set_paddingLeft(40);
-	storyTabComp.set_paddingTop(10);
-	this.storyTab = new UIElementWrapper(storyTabComp,this.tabMaster);
-	this.storyTab.desiredPosition = 2;
-	this.storyDialog = new StoryDialog();
-	this.storyDialog.advanceButton.set_onClick(function(e) {
-		_gthis.storyMainAction(View.storyAction_AdvanceMessage,0);
-	});
-	this.storyDialog.skipButton.set_onClick(function(event) {
-		_gthis.storyMainAction(View.storyAction_SkipStory,0);
-	});
-	this.storyDialog.watchLaterButton.set_onClick(function(event) {
-		_gthis.storyMainAction(View.storyAction_WatchLater,0);
-	});
-	var devTab = new haxe_ui_containers_VBox();
-	devTab.set_paddingLeft(40);
-	var texter = function(text,bigfont) {
-		if(bigfont == null) {
-			bigfont = false;
-		}
-		var label = new haxe_ui_components_Label();
-		label.set_htmlText(text);
-		devTab.addComponent(label);
-		if(bigfont) {
-			label.set_styleString("font-size: 18");
-		}
-	};
-	texter("<h2 style=\"color: #2e6c80;\">Stay up to date</h2>");
-	texter("You can join us on Discord to stay up to date on news for the game!\r\n\t\t\t\t<br>Hate Discord? you can subscribe to our mailing list!");
-	texter("<h2 style=\"color: #2e6c80;\">Suggest new features</h2>");
-	texter("There is a channel on Discord to suggest new features and you can also add them as comments on the mailing list articles");
-	texter("<br><a href=\"https://discord.com/invite/AtGrxpM\" target=\"_blank\">DISCORD</a>",true);
-	texter("<a href=\"https://pidroh.substack.com/\" target=\"_blank\">MAILING LIST</a>",true);
-	devTab.set_text("News & Suggestions");
-	this.developTab = new UIElementWrapper(devTab,this.tabMaster);
-	this.developTab.tabVisible = false;
 };
 $hxClasses["View"] = View;
 View.__name__ = "View";
@@ -5537,6 +5328,7 @@ View.prototype = {
 	,storyMainAction: null
 	,regionChangeAction: null
 	,areaChangeAction: null
+	,titleAction: null
 	,areaButtonHover: null
 	,buffButtonHover: null
 	,areaContainer: null
@@ -5799,6 +5591,232 @@ View.prototype = {
 		});
 	}
 	,style_Class_HoverableBack: null
+	,tabMasterSetup: function() {
+		var _gthis = this;
+		var grid = new haxe_ui_containers_Grid();
+		var regionTabComp = grid;
+		this.regionTab = new UIElementWrapper(regionTabComp,this.tabMaster);
+		this.regionTab.desiredPosition = 0;
+		regionTabComp.set_percentWidth(100);
+		grid.set_columns(3);
+		regionTabComp.set_text("Regions");
+		regionTabComp.set_percentHeight(90);
+		var scroll = this.CreateScrollable(regionTabComp);
+		scroll.set_marginLeft(15);
+		scroll.set_marginTop(15);
+		scroll.set_padding(15);
+		scroll.set_width(200);
+		scroll.set_percentHeight(100);
+		var vb = new haxe_ui_containers_VBox();
+		vb.set_horizontalAlign("center");
+		scroll.addComponent(vb);
+		var scroll = this.CreateScrollable(regionTabComp);
+		scroll.set_marginLeft(15);
+		scroll.set_marginTop(15);
+		scroll.set_padding(15);
+		scroll.set_width(haxe_ui_core_Screen.get_instance().get_width() * 0.28);
+		scroll.set_percentHeight(100);
+		scroll.set_horizontalAlign("center");
+		var vb = new haxe_ui_containers_ContinuousHBox();
+		vb.set_width(scroll.get_width() - 30);
+		vb.set_horizontalAlign("center");
+		scroll.addComponent(vb);
+		this.enemyAreaStats = this.CreateActorViewComplete("Enemy",regionTabComp);
+		this.enemyAreaStats.parent.set_marginLeft(30);
+		this.enemyAreaStats.parent.set_marginTop(15);
+		this.enemyAreaStats.parent.set_percentHeight(90);
+		var battleParent = new haxe_ui_containers_HBox();
+		battleParent.set_percentHeight(100);
+		this.tabMaster.addComponent(battleParent);
+		battleParent.set_text("Main");
+		this.mainComponentB = battleParent;
+		battleParent.set_paddingLeft(40);
+		battleParent.set_paddingTop(10);
+		var verticalBox = new haxe_ui_containers_Box();
+		var hgl = new haxe_ui_layouts_HorizontalGridLayout();
+		hgl.set_rows(5);
+		verticalBox.set_layout(hgl);
+		verticalBox.set_percentHeight(100);
+		battleParent.addComponent(verticalBox);
+		this.buttonBox = this.CreateContainer(battleParent,true);
+		var box = new haxe_ui_containers_Box();
+		box.set_width(250);
+		box.set_percentHeight(100);
+		battleParent.addComponent(box);
+		var scroll = this.CreateScrollable(box);
+		scroll.set_width(250);
+		scroll.set_percentHeight(40);
+		var logContainer = this.CreateContainer(scroll,true);
+		var log = new haxe_ui_components_Label();
+		this.logText = log;
+		this.logText.set_text("You exist");
+		this.logText.set_htmlText(this.logText.get_text());
+		logContainer.addComponent(log);
+		log.set_width(190);
+		log.set_horizontalAlign("center");
+		logContainer.set_horizontalAlign("center");
+		var scroll = this.CreateScrollable(box);
+		scroll.set_width(250);
+		scroll.set_percentHeight(60);
+		var logContainer = this.CreateContainer(scroll,true);
+		scroll.set_verticalAlign("bottom");
+		var log = new haxe_ui_components_Label();
+		this.logTextBattle = log;
+		this.logTextBattle.set_text("You are healthy");
+		this.logTextBattle.set_htmlText("You are healthy");
+		logContainer.addComponent(log);
+		log.set_width(190);
+		log.set_horizontalAlign("center");
+		logContainer.set_horizontalAlign("center");
+		this.areaContainer = this.CreateContainer(verticalBox,false);
+		this.levelContainer = this.CreateContainer(verticalBox,true);
+		this.level = this.CreateValueView(this.levelContainer,false,"Level: ");
+		this.xpBar = this.CreateValueView(this.levelContainer,true,"XP: ");
+		this.areaLabel = this.CreateValueView(this.areaContainer,false,"Area: ",200,140);
+		var b = new haxe_ui_containers_Box();
+		b.set_width(30);
+		this.areaContainer.addComponent(b);
+		this.enemyToAdvance = this.CreateValueView(this.areaContainer,true,"Progress: ");
+		var size = 36;
+		var turnParent = this.CreateContainer(verticalBox,false);
+		var thisTurnBox = new haxe_ui_containers_Box();
+		thisTurnBox.set_width(40);
+		thisTurnBox.set_height(40);
+		thisTurnBox.set_padding(4);
+		thisTurnBox.set_borderSize(1);
+		var imageActive = new haxe_ui_components_Image();
+		imageActive.set_opacity(0.3);
+		imageActive.set_width(this.turnOrder_Dimension);
+		imageActive.set_height(this.turnOrder_Dimension);
+		turnParent.set_percentWidth(100);
+		turnParent.addComponent(thisTurnBox);
+		thisTurnBox.addComponent(imageActive);
+		this.turnOrder_ActiveImage = imageActive;
+		this.turnOrder_ImageParent = turnParent;
+		this.battleView = this.CreateContainer(verticalBox,false);
+		this.battleView.set_width(440);
+		this.heroView = this.GetActorView("You",this.battleView);
+		var box = new haxe_ui_containers_Box();
+		box.set_width(40);
+		this.battleView.addComponent(box);
+		this.enemyView = this.GetActorView("Enemy",this.battleView);
+		this.equipmentSetButtonParent_Battle = this.SetupEquipmentSetSelector(verticalBox);
+		this.equipTabChild = new haxe_ui_containers_ContinuousHBox();
+		var tabBar = new haxe_ui_components_TabBar();
+		tabBar.set_percentWidth(100);
+		this.equipmentTypeSelectionTabbar = tabBar;
+		this.equipTabChild.addComponent(tabBar);
+		this.buttonDiscardBad = new haxe_ui_components_Button();
+		this.buttonDiscardBad.set_text("Discard worse equipment");
+		this.buttonDiscardBad.set_onClick(function(event) {
+			_gthis.equipmentMainAction(-1,View.equipmentAction_DiscardBad);
+		});
+		this.equipTabChild.addComponent(this.buttonDiscardBad);
+		var gridBox = new haxe_ui_containers_HBox();
+		gridBox.set_text("Equipment");
+		this.equipTab = new UIElementWrapper(gridBox,this.tabMaster);
+		this.equipTab.desiredPosition = 2;
+		gridBox.set_percentHeight(100);
+		gridBox.set_percentWidth(100);
+		var statContainer = this.CreateContainer(gridBox,true);
+		this.currencyViews.push(this.CreateValueView(statContainer,false,"Lagrima: "));
+		this.currencyViews.push(this.CreateValueView(statContainer,false,"Lagrima\nStone: "));
+		var box = new haxe_ui_containers_Box();
+		box.set_height(40);
+		statContainer.addComponent(box);
+		this.equipHeroStats = this.CreateActorViewComplete("You",statContainer);
+		this.statEquipmentParent = statContainer;
+		var equipRightSide = new haxe_ui_containers_VBox();
+		equipRightSide.set_percentWidth(100);
+		equipRightSide.set_percentHeight(100);
+		this.equipmentSetButtonParent_Equipment = this.SetupEquipmentSetSelector(equipRightSide);
+		gridBox.addComponent(equipRightSide);
+		var scroll = this.CreateScrollable(equipRightSide);
+		scroll.set_height(300);
+		scroll.set_text("Equipment");
+		scroll.addComponent(this.equipTabChild);
+		gridBox.set_paddingLeft(40);
+		gridBox.set_paddingTop(10);
+		scroll.set_percentWidth(100);
+		scroll.set_percentHeight(100);
+		var grid = new haxe_ui_containers_Grid();
+		this.charaTab = grid;
+		this.charaTabWrap = new UIElementWrapper(this.charaTab,this.tabMaster);
+		grid.set_columns(3);
+		grid.set_text("Character");
+		grid.set_percentHeight(100);
+		var box = new haxe_ui_containers_VBox();
+		box.set_padding(15);
+		this.charaTab_CharaBaseStats = this.CreateActorViewComplete("BASE STATS",box);
+		grid.addComponent(box);
+		var box = new haxe_ui_containers_VBox();
+		box.set_padding(15);
+		this.charaTab_CharaEquipStats = this.CreateActorViewComplete("FINAL STATS",box);
+		grid.addComponent(box);
+		var upperBox = new haxe_ui_containers_Box();
+		grid.addComponent(upperBox);
+		var header = new haxe_ui_components_Label();
+		upperBox.addComponent(header);
+		header.set_text("PERMANENT BONUSES");
+		var box = new haxe_ui_containers_VBox();
+		box.set_padding(15);
+		this.charaTab_RegionElements = box;
+		box.set_width(200);
+		var scroll = this.CreateScrollable(upperBox);
+		scroll.set_verticalAlign("bottom");
+		scroll.set_width(200);
+		scroll.set_percentHeight(90);
+		upperBox.set_width(scroll.get_width());
+		upperBox.set_percentHeight(100);
+		scroll.addComponent(box);
+		var box = new haxe_ui_containers_VBox();
+		var box = new haxe_ui_containers_VBox();
+		var storyTabComp = new haxe_ui_containers_ContinuousHBox();
+		storyTabComp.set_width(600);
+		storyTabComp.set_height(300);
+		storyTabComp.set_text("Memories");
+		var storyLabel = new haxe_ui_components_Label();
+		storyLabel.set_percentWidth(100);
+		storyLabel.set_textAlign("center");
+		storyLabel.set_text("Revisit your memories");
+		storyTabComp.addComponent(storyLabel);
+		storyTabComp.set_paddingLeft(40);
+		storyTabComp.set_paddingTop(10);
+		this.storyTab = new UIElementWrapper(storyTabComp,this.tabMaster);
+		this.storyTab.desiredPosition = 2;
+		this.storyDialog = new StoryDialog();
+		this.storyDialog.advanceButton.set_onClick(function(e) {
+			_gthis.storyMainAction(View.storyAction_AdvanceMessage,0);
+		});
+		this.storyDialog.skipButton.set_onClick(function(event) {
+			_gthis.storyMainAction(View.storyAction_SkipStory,0);
+		});
+		this.storyDialog.watchLaterButton.set_onClick(function(event) {
+			_gthis.storyMainAction(View.storyAction_WatchLater,0);
+		});
+		var devTab = new haxe_ui_containers_VBox();
+		devTab.set_paddingLeft(40);
+		var texter = function(text,bigfont) {
+			if(bigfont == null) {
+				bigfont = false;
+			}
+			var label = new haxe_ui_components_Label();
+			label.set_htmlText(text);
+			devTab.addComponent(label);
+			if(bigfont) {
+				label.set_styleString("font-size: 18");
+			}
+		};
+		texter("<h2 style=\"color: #2e6c80;\">Stay up to date</h2>");
+		texter("You can join us on Discord to stay up to date on news for the game!\r\n\t\t\t\t<br>Hate Discord? you can subscribe to our mailing list!");
+		texter("<h2 style=\"color: #2e6c80;\">Suggest new features</h2>");
+		texter("There is a channel on Discord to suggest new features and you can also add them as comments on the mailing list articles");
+		texter("<br><a href=\"https://discord.com/invite/AtGrxpM\" target=\"_blank\">DISCORD</a>",true);
+		texter("<a href=\"https://pidroh.substack.com/\" target=\"_blank\">MAILING LIST</a>",true);
+		devTab.set_text("News & Suggestions");
+		this.developTab = new UIElementWrapper(devTab,this.tabMaster);
+		this.developTab.tabVisible = false;
+	}
 	,feedTurnOrder: function(turnOrder,images,currentActorImageF) {
 		this.turnOrder_ActiveImage.set_resource(haxe_ui_util_Variant.fromString(currentActorImageF));
 		while(turnOrder.length > this.turnOrder_Images.length) {
@@ -48268,6 +48286,7 @@ View.equipmentAction_DiscardBad = 4;
 View.equipmentAction_ChangeTypeToView = 5;
 View.equipmentAction_ChangeSet = 6;
 View.equipmentAction_SetPreview = 7;
+View.Title_ActionGame = 0;
 haxe_ui_core_ComponentEvents.INTERACTIVE_EVENTS = ["mousemove","mouseover","mouseout","mousedown","mouseup","mousewheel","click","doubleclick","keydown","keyup"];
 haxe_ui_core_ComponentBounds.__meta__ = { fields : { percentWidth : { clonable : null, bindable : null}, percentHeight : { clonable : null, bindable : null}, width : { bindable : null}, height : { bindable : null}}};
 haxe_ui_backend_ComponentImpl.elementToComponent = new haxe_ds_ObjectMap();

@@ -58,6 +58,8 @@ class View {
 	public static final equipmentAction_ChangeSet = 6;
 	public static final equipmentAction_SetPreview = 7;
 
+	public static final Title_ActionGame = 0;
+
 	public var heroView:ActorView;
 	public var enemyView:ActorView;
 
@@ -111,6 +113,7 @@ class View {
 	public var storyMainAction:(Int, Int) -> Void;
 	public var regionChangeAction:(Int) -> Void;
 	public var areaChangeAction:(Int) -> Void;
+	public var titleAction:(Int) -> Void;
 	public var areaButtonHover:(Int, Bool) -> Void;
 	public var buffButtonHover:(BuffView, Bool) -> Void;
 
@@ -517,8 +520,15 @@ class View {
 			var buttonHolder = CreateContainer(gameTab, true);
 			buttonHolder.width = 250;
 
-
-
+			{
+				var b = new Button();
+				b.text = "New Game";
+				b.onClick = event -> {
+					titleAction(Title_ActionGame);
+				}
+				b.percentWidth = 100;
+				buttonHolder.addComponent(b);
+			}
 			{
 				var b = new Button();
 				b.text = "Roadmap";
@@ -529,9 +539,9 @@ class View {
 				buttonHolder.addComponent(b);
 			}
 
-			var discord = new Button();
-			discord.percentWidth = 100;
 			{
+				var discord = new Button();
+				discord.percentWidth = 100;
 				buttonHolder.addComponent(discord);
 
 				var dim = new Image();
@@ -567,7 +577,7 @@ class View {
 					title.horizontalAlign = "left";
 					title.textAlign = "left";
 					title.height = 40;
-					//title.addClass("button");
+					// title.addClass("button");
 
 					title.htmlText = "Import Save: <input id='import__' type='file'></input>";
 
@@ -581,7 +591,9 @@ class View {
 
 			tabMaster.addComponent(gameTab);
 		}
+	}
 
+	public function tabMasterSetup() {
 		{
 			var grid = new Grid();
 			var regionTabComp = grid;
@@ -1047,7 +1059,8 @@ class View {
 		saveDataDownload.htmlText = "<a href='data:text/plain;charset=utf-8,";
 		saveDataDownload.htmlText += saveDataContent;
 		saveDataDownload.htmlText += "' download='savedata.json'>Export save data</a>";
-		//saveDataDownload.htmlText += "' download='savedata.json'><button>Export save data</button></a>";
+
+		// saveDataDownload.htmlText += "' download='savedata.json'><button>Export save data</button></a>";
 
 		// title.html = "";
 		/**
