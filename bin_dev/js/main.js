@@ -3139,11 +3139,14 @@ Lambda.has = function(it,elt) {
 	}
 	return false;
 };
-var Library = function() { };
-$hxClasses["Library"] = Library;
-Library.__name__ = "Library";
-Library.TryJavascript = function() {
+var JSLibrary = function() { };
+$hxClasses["JSLibrary"] = JSLibrary;
+JSLibrary.__name__ = "JSLibrary";
+JSLibrary.TryJavascript = function() {
 	alert("Whateverrrr");
+};
+JSLibrary.OpenURL = function(url) {
+	window.location = url;
 };
 var MyMacro = function() { };
 $hxClasses["MyMacro"] = MyMacro;
@@ -5239,11 +5242,15 @@ var View = function() {
 	gameTab.set_text("Title");
 	var buttonHolder = this.CreateContainer(gameTab,true);
 	var discord = new haxe_ui_components_Button();
+	buttonHolder.addComponent(discord);
 	var dim = new haxe_ui_components_Image();
 	dim.set_resource(haxe_ui_util_Variant.fromString("graphics/discord.png"));
 	dim.set_scaleMode("fitheight");
 	dim.set_height(30);
 	discord.addComponent(dim);
+	discord.set_onClick(function(event) {
+		JSLibrary.OpenURL("https://discord.gg/AtGrxpM ");
+	});
 	buttonHolder.addComponent(discord);
 	this.tabMaster.addComponent(gameTab);
 	var grid = new haxe_ui_containers_Grid();

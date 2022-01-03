@@ -1,3 +1,8 @@
+import Library.JSLibrary;
+import js.Browser;
+import js.html.Document;
+import js.html.Location;
+import js.html.Window;
 import haxe.ui.styles.CompositeStyleSheet;
 import haxe.ui.styles.StyleSheet;
 import haxe.ui.util.StyleUtil;
@@ -535,11 +540,17 @@ class View {
 			var buttonHolder = CreateContainer(gameTab, true);
 			var discord = new Button();
 			{
+				
+				buttonHolder.addComponent(discord);
 				var dim = new Image();
 				dim.resource = "graphics/discord.png";
 				dim.scaleMode = FIT_HEIGHT;
 				dim.height = 30;
+
 				discord.addComponent(dim);
+				discord.onClick = event -> {
+					JSLibrary.OpenURL("https://discord.gg/AtGrxpM ");
+				}
 			}
 			buttonHolder.addComponent(discord);
 			
