@@ -510,20 +510,7 @@ class View {
 				boxParentP.addComponent(title);
 			}
 
-			{
-				var title = new Label();
-				title.percentWidth = 100;
-				title.textAlign = "right";
-				title.paddingRight = 20;
-				title.paddingLeft = 20;
-				title.paddingTop = 30;
-				title.height = 10;
-
-				title.text = "Export save data";
-				saveDataDownload = title;
-
-				boxParentP.addComponent(title);
-			}
+			
 		}
 
 		tabMaster = new TabView();
@@ -564,6 +551,20 @@ class View {
 				discord.addComponent(dim);
 				discord.onClick = event -> {
 					JSLibrary.OpenURL("https://discord.gg/AtGrxpM ");
+				}
+			}
+			{
+				{
+					
+					var title = new Label();
+					title.percentWidth = 100;
+					title.height = 40;
+					title.addClass("button");
+	
+					title.text = "Export save data";
+					saveDataDownload = title;
+	
+					buttonHolder.addComponent(title);
 				}
 			}
 			

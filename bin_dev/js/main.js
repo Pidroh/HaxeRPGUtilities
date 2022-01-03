@@ -5221,16 +5221,6 @@ var View = function() {
 	title.set_paddingLeft(20);
 	title.set_paddingTop(10);
 	boxParentP.addComponent(title);
-	var title = new haxe_ui_components_Label();
-	title.set_percentWidth(100);
-	title.set_textAlign("right");
-	title.set_paddingRight(20);
-	title.set_paddingLeft(20);
-	title.set_paddingTop(30);
-	title.set_height(10);
-	title.set_text("Export save data");
-	this.saveDataDownload = title;
-	boxParentP.addComponent(title);
 	this.tabMaster = new haxe_ui_containers_TabView();
 	this.tabMaster.set_percentWidth(100);
 	this.mainComponent.addComponent(this.tabMaster);
@@ -5258,6 +5248,13 @@ var View = function() {
 	discord.set_onClick(function(event) {
 		JSLibrary.OpenURL("https://discord.gg/AtGrxpM ");
 	});
+	var title = new haxe_ui_components_Label();
+	title.set_percentWidth(100);
+	title.set_height(40);
+	title.addClass("button");
+	title.set_text("Export save data");
+	this.saveDataDownload = title;
+	buttonHolder.addComponent(title);
 	this.tabMaster.addComponent(gameTab);
 	var grid = new haxe_ui_containers_Grid();
 	var regionTabComp = grid;
