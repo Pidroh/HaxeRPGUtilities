@@ -5787,10 +5787,14 @@ View.prototype = {
 		grid.set_percentHeight(100);
 		var leftMenu = this.CreateContainer(grid,false,true);
 		var box = new haxe_ui_containers_VBox();
+		box.set_percentWidth(100);
 		this.levelContainer = new haxe_ui_containers_VBox();
+		this.levelContainer.set_percentWidth(100);
 		box.addComponent(this.levelContainer);
 		this.level = this.CreateValueView(this.levelContainer,false,"Level: ");
 		this.xpBar = this.CreateValueView(this.levelContainer,true,"XP: ");
+		this.charaTab_ButtonParent = new haxe_ui_containers_VBox();
+		box.addComponent(this.charaTab_ButtonParent);
 		box.set_padding(15);
 		this.charaTab_CharaBaseStats = this.CreateActorViewComplete("BASE STATS",box);
 		leftMenu.addComponent(box);

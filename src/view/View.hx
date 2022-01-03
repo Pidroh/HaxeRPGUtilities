@@ -836,11 +836,17 @@ class View {
 				var leftMenu = CreateContainer(grid, false, true);
 				
 				var box = new VBox();
+				box.percentWidth =  100;
 				{
 					levelContainer = new VBox();
+					levelContainer.percentWidth = 100;
 					box.addComponent(levelContainer);
 					level = CreateValueView(levelContainer, false, "Level: ");
 					xpBar = CreateValueView(levelContainer, true, "XP: ");
+				}
+				{
+					charaTab_ButtonParent = new VBox();
+					box.addComponent(charaTab_ButtonParent);
 				}
 				box.padding = 15;
 				charaTab_CharaBaseStats = CreateActorViewComplete("BASE STATS", box);
