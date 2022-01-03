@@ -3193,6 +3193,7 @@ Main.titleload = function() {
 	};
 };
 Main.gamemain = function(view) {
+	view.title_NewGameButton.set_hidden(true);
 	view.tabMasterSetup();
 	var a = "attack-left";
 	Main.animations.animManager.feedAnimationInfo(a,0,{ centiseconds : 0, position : { x : 0, y : 0}});
@@ -3257,7 +3258,7 @@ Main.gamemain = function(view) {
 	var enemyNames_4 = "Cactuar";
 	var enemyNames_5 = "Reaper";
 	if(enemyRegionNames.length < bm.regionRequirements.length) {
-		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 210, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 212, className : "Main", methodName : "gamemain"});
 	}
 	var eventShown = 0;
 	var keyOld = "save data2";
@@ -3484,7 +3485,7 @@ Main.gamemain = function(view) {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 477, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 479, className : "Main", methodName : "gamemain"});
 		var tmp = b == true && view.overlay.get_hidden();
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
@@ -3495,7 +3496,7 @@ Main.gamemain = function(view) {
 			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
 			view.positionOverlay(view.heroView.parent);
 		} else {
-			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 489, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 491, className : "Main", methodName : "gamemain"});
 		}
 	});
 	var enemyLabels = [["Goblin","Dog","Giant","Turtle"],["Wolf"],["Tonberry"],["Adamanstoise"],["Cactuar"],["Reaper"],["Witchhunter"],["Buff Witch"],["Witchkiller"]];
@@ -3608,7 +3609,7 @@ Main.gamemain = function(view) {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 632, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 634, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -4038,7 +4039,7 @@ Main.gamemain = function(view) {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1103, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1105, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -4050,7 +4051,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1120, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1122, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -4069,8 +4070,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1148, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1149, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1150, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1151, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {

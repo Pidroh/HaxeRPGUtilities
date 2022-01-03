@@ -92,6 +92,8 @@ class Main {
 	}
 
 	static function gamemain(view : View) {
+		view.title_NewGameButton.hidden = true;
+		// view.
 		view.tabMasterSetup();
 		{
 			var a = "attack-left";
