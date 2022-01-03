@@ -442,6 +442,15 @@ class View {
 		.fade-in {
 			animation: animationFadeIn 4s linear 0s 1;
 		}
+		a {
+			background: #3e4142 #36383a;
+    		border-color: #181a1b;
+    		color: #b4b4b4;
+		}
+		.a:hover{
+			background: #01594f #1e3e7d;
+			background-gradient-style: horizontal;
+		}
 		');
 
 		// Toolkit.styleSheet.addStyleSheet(ss);
@@ -1038,6 +1047,7 @@ class View {
 		saveDataDownload.htmlText = "<a href='data:text/plain;charset=utf-8,";
 		saveDataDownload.htmlText += saveDataContent;
 		saveDataDownload.htmlText += "' download='savedata.json'>Export save data</a>";
+		//saveDataDownload.htmlText += "' download='savedata.json'><button>Export save data</button></a>";
 
 		// title.html = "";
 		/**

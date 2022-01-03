@@ -5180,7 +5180,7 @@ var View = function() {
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
 	this.currencyViews = [];
 	var _gthis = this;
-	haxe_ui_Toolkit.styleSheet.parse("\r\n\t\t." + this.style_Class_HoverableBack + ":hover {\r\n\t\t\tbackground-color: #2F4F4F;\r\n\t\t\t}\r\n\t\t.button:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\t\t.fade-in {\r\n\t\t\tanimation: animationFadeIn 4s linear 0s 1;\r\n\t\t}\r\n\t\t");
+	haxe_ui_Toolkit.styleSheet.parse("\r\n\t\t." + this.style_Class_HoverableBack + ":hover {\r\n\t\t\tbackground-color: #2F4F4F;\r\n\t\t\t}\r\n\t\t.button:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\t\t.fade-in {\r\n\t\t\tanimation: animationFadeIn 4s linear 0s 1;\r\n\t\t}\r\n\t\ta {\r\n\t\t\tbackground: #3e4142 #36383a;\r\n    \t\tborder-color: #181a1b;\r\n    \t\tcolor: #b4b4b4;\r\n\t\t}\r\n\t\t.a:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\t\t");
 	this.overlay = new haxe_ui_containers_VBox();
 	this.overlay.set_hidden(true);
 	this.overlay.addClass("default-background");
