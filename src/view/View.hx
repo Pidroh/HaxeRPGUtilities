@@ -528,6 +528,29 @@ class View {
 		tabMaster.verticalAlign = "bottom";
 
 		{
+			var gameTab = new Box();
+			gameTab.percentWidth = 100;
+			gameTab.percentHeight = 100;
+			gameTab.text = "Title";
+			var buttonHolder = CreateContainer(gameTab, true);
+			var discord = new Button();
+			{
+				var dim = new Image();
+				dim.resource = "graphics/discord.png";
+				dim.scaleMode = FIT_HEIGHT;
+				dim.height = 30;
+				discord.addComponent(dim);
+			}
+			buttonHolder.addComponent(discord);
+			
+			// discord.icon = "graphics/discord.png";
+			
+			//discord.text = "Discord";
+			
+			tabMaster.addComponent(gameTab);
+		}
+
+		{
 			var grid = new Grid();
 			var regionTabComp = grid;
 			this.regionTab = new UIElementWrapper(regionTabComp, tabMaster);
