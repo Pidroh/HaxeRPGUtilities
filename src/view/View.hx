@@ -1057,21 +1057,15 @@ class View {
 		}
 	}
 
+	public function hideSaveDataDownload(){
+		saveDataDownload.hidden = true;
+	}
+
 	public function FeedSave(saveDataContent:String) {
-		// saveDataContent = StringTools.htmlEscape(saveDataContent);
-		// saveDataContent = "ssssss";
 		saveDataDownload.htmlText = "<a href='data:text/plain;charset=utf-8,";
 		saveDataDownload.htmlText += saveDataContent;
 		saveDataDownload.htmlText += "' download='savedata.json'>Export save data</a>";
-
-		// saveDataDownload.htmlText += "' download='savedata.json'><button>Export save data</button></a>";
-
-		// title.html = "";
-		/**
-			<a href="data:text/plain;charset=utf-8,blablabla" download="savedata.json">
-			DSADSADASD
-			</a>					
-		**/
+		saveDataDownload.hidden = false;
 	}
 
 	// the current implementation for tab elements is to remove and add back to the parent

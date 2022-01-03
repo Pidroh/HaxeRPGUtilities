@@ -93,6 +93,8 @@ class Main {
 		if(jsonData != null){
 			view.FeedSave(jsonData);
 			view.title_NewGameButton.text = "Continue";
+		} else{
+			view.hideSaveDataDownload();
 		}
 			
 
