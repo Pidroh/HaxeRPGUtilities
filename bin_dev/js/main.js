@@ -3186,6 +3186,11 @@ Main.titleload = function() {
 	main.addComponent(view.mainComponent);
 	haxe_ui_core_Screen.get_instance().addComponent(main);
 	haxe_ui_core_Screen.get_instance().addComponent(view.overlay);
+	var ls = js_Browser.getLocalStorage();
+	var jsonData = ls.getItem(Main.key);
+	if(jsonData != null) {
+		view.title_NewGameButton.set_text("Continue");
+	}
 	view.titleAction = function(i) {
 		if(i == View.Title_ActionGame) {
 			Main.gamemain(view);
@@ -3258,12 +3263,9 @@ Main.gamemain = function(view) {
 	var enemyNames_4 = "Cactuar";
 	var enemyNames_5 = "Reaper";
 	if(enemyRegionNames.length < bm.regionRequirements.length) {
-		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 212, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("PLEASE: Go to Discord and tell the developer to 'Add more region names!', there is a bug! " + enemyRegionNames.length + " " + bm.regionRequirements.length,{ fileName : "src/Main.hx", lineNumber : 220, className : "Main", methodName : "gamemain"});
 	}
 	var eventShown = 0;
-	var keyOld = "save data2";
-	var key = "save data master";
-	var keyBackup = "save backup";
 	var keyMappings_h = Object.create(null);
 	window.document.addEventListener("keydown",function(e) {
 		var ke = js_Boot.__cast(e , KeyboardEvent);
@@ -3451,7 +3453,7 @@ Main.gamemain = function(view) {
 	bm.ForceSkillSetDrop(-1,null,{ skills : [{ id : "Slash", level : 1},{ id : "Cure", level : 1},{ id : "Protect", level : 3}]},false);
 	bm.wdata.hero.equipmentSets[bm.wdata.hero.chosenEquipSet].equipmentSlots[2] = 0;
 	var storyPersistence = { progressionData : new haxe_ds_StringMap(), worldVersion : bm.wdata.worldVersion, currentStoryId : null};
-	var jsonData = ls.getItem(key);
+	var jsonData = ls.getItem(Main.key);
 	var persistenceMaster = SaveAssistant.GetPersistenceMaster(jsonData);
 	var jsonData2 = persistenceMaster.jsonStory;
 	if(jsonData2 != null && jsonData2 != "") {
@@ -3473,7 +3475,7 @@ Main.gamemain = function(view) {
 		view.logText.set_htmlText("");
 		bm = new BattleManager();
 		var localStorage = js_Browser.getLocalStorage();
-		localStorage.setItem(key,"");
+		localStorage.setItem(Main.key,"");
 		$global.location.reload();
 		eventShown = 0;
 		storyRuntime = null;
@@ -3485,7 +3487,7 @@ Main.gamemain = function(view) {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 479, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 481, className : "Main", methodName : "gamemain"});
 		var tmp = b == true && view.overlay.get_hidden();
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
@@ -3496,7 +3498,7 @@ Main.gamemain = function(view) {
 			ActorToFullView(bm.wdata.hero,view.overlayActorFullView);
 			view.positionOverlay(view.heroView.parent);
 		} else {
-			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 491, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 493, className : "Main", methodName : "gamemain"});
 		}
 	});
 	var enemyLabels = [["Goblin","Dog","Giant","Turtle"],["Wolf"],["Tonberry"],["Adamanstoise"],["Cactuar"],["Reaper"],["Witchhunter"],["Buff Witch"],["Witchkiller"]];
@@ -3609,7 +3611,7 @@ Main.gamemain = function(view) {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 634, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 636, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -3691,8 +3693,8 @@ Main.gamemain = function(view) {
 				var input = imp;
 				input.onchange = function(event) {
 					FileUtilities.ReadFile(input.files[0],function(json) {
-						ls.setItem(keyBackup,bm.GetJsonPersistentData());
-						ls.setItem(key,json);
+						ls.setItem(Main.keyBackup,bm.GetJsonPersistentData());
+						ls.setItem(Main.key,json);
 						$global.location.reload();
 						bm = null;
 					});
@@ -3785,9 +3787,9 @@ Main.gamemain = function(view) {
 					var v_length = v_keys.length;
 					var v_current = 0;
 					while(v_current < v_length) {
-						var key1 = v_keys[v_current++];
-						var v_key = key1;
-						var v_value = v_h[key1];
+						var key = v_keys[v_current++];
+						var v_key = key;
+						var v_value = v_h[key];
 						view.FeedEquipmentValue(equipmentViewPos,vid,v_key,v_value,AttributeExplanation_h[v_key],false,null);
 						++vid;
 					}
@@ -3798,9 +3800,9 @@ Main.gamemain = function(view) {
 						var v_length1 = v_keys1.length;
 						var v_current1 = 0;
 						while(v_current1 < v_length1) {
-							var key2 = v_keys1[v_current1++];
-							var v_key1 = key2;
-							var v_value1 = v_h1[key2];
+							var key1 = v_keys1[v_current1++];
+							var v_key1 = key1;
+							var v_value1 = v_h1[key1];
 							view.FeedEquipmentValue(equipmentViewPos,vid,v_key1,v_value1,AttributeExplanation_h[v_key1],true);
 							++vid;
 						}
@@ -4027,7 +4029,7 @@ Main.gamemain = function(view) {
 		var json2 = StoryControlLogic.GetJsonPersistentData(storyRuntime);
 		var masterPers = { worldVersion : bm.wdata.worldVersion, jsonGameplay : json, jsonStory : json2};
 		var jsonMaster = JSON.stringify(masterPers);
-		localStorage.setItem(key,jsonMaster);
+		localStorage.setItem(Main.key,jsonMaster);
 		saveCount -= delta;
 		if(saveCount < 0) {
 			view.FeedSave(jsonMaster);
@@ -48277,6 +48279,9 @@ DateTools.MONTH_SHORT_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","
 DateTools.MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 Main.maxDelta = 0.5;
 Main.animations = new AnimationComponent();
+Main.keyOld = "save data2";
+Main.key = "save data master";
+Main.keyBackup = "save backup";
 PrototypeItemMaker.itemType_Weapon = 0;
 PrototypeItemMaker.itemType_Armor = 1;
 View.storyAction_Start = 0;

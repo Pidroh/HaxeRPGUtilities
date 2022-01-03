@@ -45,6 +45,10 @@ class Main {
 	static var privacyView:Component = null;
 	static var animations = new AnimationComponent();
 
+	static var keyOld = "save data2";
+	static var key = "save data master";
+	static var keyBackup = "save backup";
+
 	static function main() {
 		Toolkit.init();
 		Toolkit.theme = "default";
@@ -70,7 +74,7 @@ class Main {
 		}
 	}
 
-	static function titleload(){
+	static function titleload() {
 		if (privacyView != null) {
 			Screen.instance.removeComponent(privacyView);
 		}
@@ -84,14 +88,19 @@ class Main {
 		Screen.instance.addComponent(main);
 		Screen.instance.addComponent(view.overlay);
 
+		var ls = Browser.getLocalStorage();
+		var jsonData = ls.getItem(key);
+		if(jsonData != null)
+			view.title_NewGameButton.text = "Continue";
+
 		view.titleAction = i -> {
-			if(i == View.Title_ActionGame){
+			if (i == View.Title_ActionGame) {
 				gamemain(view);
 			}
 		}
 	}
 
-	static function gamemain(view : View) {
+	static function gamemain(view:View) {
 		view.title_NewGameButton.hidden = true;
 		// view.
 		view.tabMasterSetup();
@@ -143,7 +152,7 @@ class Main {
 				}
 			});
 		}
-		
+
 		var bm:BattleManager = new BattleManager();
 		{
 			var proto = new PrototypeItemMaker();
@@ -156,7 +165,6 @@ class Main {
 			proto.init();
 			bm.skillBases = proto.skills;
 		}
-
 
 		var buffToIcon:Map<String, String> = [
 			"regen" => "&#127807;",
@@ -216,10 +224,6 @@ class Main {
 		}
 
 		var eventShown = 0;
-
-		var keyOld = "save data2";
-		var key = "save data master";
-		var keyBackup = "save backup";
 
 		var keyMappings = new Map<String, Void->Void>();
 		Browser.document.addEventListener("keydown", e -> {
@@ -396,8 +400,6 @@ class Main {
 		}
 
 		var ls = Browser.getLocalStorage();
-
-		
 
 		/*
 			var button = new Button();
@@ -657,7 +659,7 @@ class Main {
 				ActorToFullView(bm.wdata.hero, view.overlayActorFullView);
 			if (overlayFullActorId == 1 && bm.wdata.enemy != null)
 				ActorToFullView(bm.wdata.enemy, view.overlayActorFullView);
-			
+
 			{
 				var id = 0;
 				for (i in 0...bm.wdata.regionProgress.length) {
@@ -869,13 +871,13 @@ class Main {
 
 				var ev = "";
 				if (e.type == ActorAttack) {
-					if(e.origin.type == 0)
+					if (e.origin.type == 0)
 						animations.playAnimation(view.heroView.parent, "attack-left");
 					else
 						animations.playAnimation(view.enemyView.parent, "attack-right");
-					//view.enemyView.parent.paddingLeft = 200;
-					//view.enemyView.parent.marginLeft = 100;
-					//view.enemyView.parent.top = -10;
+					// view.enemyView.parent.paddingLeft = 200;
+					// view.enemyView.parent.marginLeft = 100;
+					// view.enemyView.parent.top = -10;
 					ev = '$targetText took $data damage';
 				}
 
@@ -957,8 +959,6 @@ class Main {
 			// view.UpdateDropDownRegionSelection(bm.wdata.battleAreaRegion);
 
 			var delta = timeStamp - time;
-
-			
 
 			var storyHappened = storyRuntime.persistence.progressionData[storyRuntime.cutscenes[0].title].timesCompleted > 0;
 			var storyHappenedPure = storyHappened;
