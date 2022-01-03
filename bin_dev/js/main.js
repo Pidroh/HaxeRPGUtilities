@@ -5304,6 +5304,12 @@ var View = function() {
 	title.set_height(40);
 	title.set_htmlText("Import Save: <input id='import__' type='file'></input>");
 	buttonHolder.addComponent(title);
+	var titleLogo = new haxe_ui_components_Image();
+	titleLogo.set_resource(haxe_ui_util_Variant.fromString("graphics/logo.png"));
+	titleLogo.set_paddingRight(100);
+	titleLogo.set_horizontalAlign("right");
+	titleLogo.set_verticalAlign("center");
+	gameTab.addComponent(titleLogo);
 	this.tabMaster.addComponent(gameTab);
 };
 $hxClasses["View"] = View;

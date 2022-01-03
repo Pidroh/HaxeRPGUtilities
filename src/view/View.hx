@@ -588,6 +588,14 @@ class View {
 					buttonHolder.addComponent(title);
 				}
 			}
+			{
+				var titleLogo = new Image();
+				titleLogo.resource = "graphics/logo.png";
+				titleLogo.paddingRight = 100;
+				titleLogo.horizontalAlign = "right";
+				titleLogo.verticalAlign = "center";
+				gameTab.addComponent(titleLogo);
+			}
 
 			// discord.icon = "graphics/discord.png";
 
