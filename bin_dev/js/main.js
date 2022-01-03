@@ -5712,9 +5712,6 @@ View.prototype = {
 		log.set_horizontalAlign("center");
 		logContainer.set_horizontalAlign("center");
 		this.areaContainer = this.CreateContainer(verticalBox,false);
-		this.levelContainer = this.CreateContainer(verticalBox,true);
-		this.level = this.CreateValueView(this.levelContainer,false,"Level: ");
-		this.xpBar = this.CreateValueView(this.levelContainer,true,"XP: ");
 		this.areaLabel = this.CreateValueView(this.areaContainer,false,"Area: ",200,140);
 		var b = new haxe_ui_containers_Box();
 		b.set_width(30);
@@ -5788,10 +5785,15 @@ View.prototype = {
 		grid.set_columns(3);
 		grid.set_text("Character");
 		grid.set_percentHeight(100);
+		var leftMenu = this.CreateContainer(grid,false,true);
 		var box = new haxe_ui_containers_VBox();
+		this.levelContainer = new haxe_ui_containers_VBox();
+		box.addComponent(this.levelContainer);
+		this.level = this.CreateValueView(this.levelContainer,false,"Level: ");
+		this.xpBar = this.CreateValueView(this.levelContainer,true,"XP: ");
 		box.set_padding(15);
 		this.charaTab_CharaBaseStats = this.CreateActorViewComplete("BASE STATS",box);
-		grid.addComponent(box);
+		leftMenu.addComponent(box);
 		var box = new haxe_ui_containers_VBox();
 		box.set_padding(15);
 		this.charaTab_CharaEquipStats = this.CreateActorViewComplete("FINAL STATS",box);

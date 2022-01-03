@@ -488,9 +488,7 @@ class View {
 			{
 				var title = new Label();
 				var platform = MyMacro.GetPlatform();
-				title.htmlText = platform
-					+
-					" Alpha 0.15B";
+				title.htmlText = platform + " Alpha 0.15B";
 				title.percentWidth = 100;
 				title.textAlign = "right";
 				title.paddingRight = 20;
@@ -524,7 +522,6 @@ class View {
 			leftMenu.addComponent(lowerMenu);
 
 			{
-				
 				var b = new Button();
 				b.text = "New Game";
 				b.onClick = event -> {
@@ -718,12 +715,6 @@ class View {
 		}
 
 		areaContainer = CreateContainer(verticalBox, false);
-
-		{
-			levelContainer = CreateContainer(verticalBox, true);
-			level = CreateValueView(levelContainer, false, "Level: ");
-			xpBar = CreateValueView(levelContainer, true, "XP: ");
-		}
 		{
 			// var container = CreateContainer(areaContainer, false);
 
@@ -842,10 +833,18 @@ class View {
 			grid.percentHeight = 100;
 
 			{
+				var leftMenu = CreateContainer(grid, false, true);
+				
 				var box = new VBox();
+				{
+					levelContainer = new VBox();
+					box.addComponent(levelContainer);
+					level = CreateValueView(levelContainer, false, "Level: ");
+					xpBar = CreateValueView(levelContainer, true, "XP: ");
+				}
 				box.padding = 15;
 				charaTab_CharaBaseStats = CreateActorViewComplete("BASE STATS", box);
-				grid.addComponent(box);
+				leftMenu.addComponent(box);
 			}
 			{
 				var box = new VBox();
@@ -1066,7 +1065,7 @@ class View {
 		}
 	}
 
-	public function hideSaveDataDownload(){
+	public function hideSaveDataDownload() {
 		saveDataDownload.hidden = true;
 	}
 
