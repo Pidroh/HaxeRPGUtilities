@@ -90,14 +90,21 @@ class Main {
 
 		var ls = Browser.getLocalStorage();
 		var jsonData = ls.getItem(key);
-		if(jsonData != null)
+		if(jsonData != null){
+			view.FeedSave(jsonData);
 			view.title_NewGameButton.text = "Continue";
+		}
+			
 
 		view.titleAction = i -> {
 			if (i == View.Title_ActionGame) {
 				gamemain(view);
 			}
 		}
+	}
+
+	static function updateImportExport(){
+
 	}
 
 	static function gamemain(view:View) {
