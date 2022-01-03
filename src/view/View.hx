@@ -512,8 +512,16 @@ class View {
 			gameTab.percentWidth = 100;
 			gameTab.percentHeight = 100;
 			gameTab.text = "Title";
-			var buttonHolder = CreateContainer(gameTab, true);
-			buttonHolder.width = 250;
+			var leftMenu = CreateContainer(gameTab, false, true);
+			leftMenu.percentHeight = 100;
+			leftMenu.width = 250;
+			var buttonHolder = new VBox();
+			buttonHolder.percentWidth = 100;
+			leftMenu.addComponent(buttonHolder);
+			var lowerMenu = new VBox();
+			lowerMenu.percentWidth = 100;
+			lowerMenu.verticalAlign = "bottom";
+			leftMenu.addComponent(lowerMenu);
 
 			{
 				
@@ -566,7 +574,7 @@ class View {
 					title.text = "Export save data";
 					saveDataDownload = title;
 
-					buttonHolder.addComponent(title);
+					lowerMenu.addComponent(title);
 				}
 				{
 					var title = new Label();
@@ -578,7 +586,7 @@ class View {
 
 					title.htmlText = "Import Save: <input id='import__' type='file'></input>";
 
-					buttonHolder.addComponent(title);
+					lowerMenu.addComponent(title);
 				}
 			}
 			{

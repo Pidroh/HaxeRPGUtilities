@@ -5255,8 +5255,16 @@ var View = function() {
 	gameTab.set_percentWidth(100);
 	gameTab.set_percentHeight(100);
 	gameTab.set_text("Title");
-	var buttonHolder = this.CreateContainer(gameTab,true);
-	buttonHolder.set_width(250);
+	var leftMenu = this.CreateContainer(gameTab,false,true);
+	leftMenu.set_percentHeight(100);
+	leftMenu.set_width(250);
+	var buttonHolder = new haxe_ui_containers_VBox();
+	buttonHolder.set_percentWidth(100);
+	leftMenu.addComponent(buttonHolder);
+	var lowerMenu = new haxe_ui_containers_VBox();
+	lowerMenu.set_percentWidth(100);
+	lowerMenu.set_verticalAlign("bottom");
+	leftMenu.addComponent(lowerMenu);
 	var b = new haxe_ui_components_Button();
 	b.set_text("New Game");
 	b.set_onClick(function(event) {
@@ -5292,14 +5300,14 @@ var View = function() {
 	title.set_height(40);
 	title.set_text("Export save data");
 	this.saveDataDownload = title;
-	buttonHolder.addComponent(title);
+	lowerMenu.addComponent(title);
 	var title = new haxe_ui_components_Label();
 	title.set_percentWidth(100);
 	title.set_horizontalAlign("left");
 	title.set_textAlign("left");
 	title.set_height(40);
 	title.set_htmlText("Import Save: <input id='import__' type='file'></input>");
-	buttonHolder.addComponent(title);
+	lowerMenu.addComponent(title);
 	var titleLogo = new haxe_ui_components_Image();
 	titleLogo.set_resource(haxe_ui_util_Variant.fromString("graphics/logo.png"));
 	titleLogo.set_paddingRight(100);
