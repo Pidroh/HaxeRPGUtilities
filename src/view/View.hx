@@ -487,17 +487,10 @@ class View {
 
 			{
 				var title = new Label();
-				title.htmlText = "<h1>Generic RPG I</h1>";
-				boxParentP.addComponent(title);
-				title.height = 40;
-			}
-
-			{
-				var title = new Label();
 				var platform = MyMacro.GetPlatform();
 				title.htmlText = platform
 					+
-					" Alpha 0.15B. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>";
+					" Alpha 0.15B";
 				title.percentWidth = 100;
 				title.textAlign = "right";
 				title.paddingRight = 20;
@@ -511,7 +504,7 @@ class View {
 		tabMaster = new TabView();
 		tabMaster.percentWidth = 100;
 		mainComponent.addComponent(tabMaster);
-		tabMaster.percentHeight = 90;
+		tabMaster.percentHeight = 95;
 		tabMaster.verticalAlign = "bottom";
 
 		{

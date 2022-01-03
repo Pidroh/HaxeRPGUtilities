@@ -5238,12 +5238,8 @@ var View = function() {
 	boxParentP.set_paddingBottom(5);
 	boxParentP.set_percentWidth(100);
 	var title = new haxe_ui_components_Label();
-	title.set_htmlText("<h1>Generic RPG I</h1>");
-	boxParentP.addComponent(title);
-	title.set_height(40);
-	var title = new haxe_ui_components_Label();
 	var platform = "dev";
-	title.set_htmlText(platform + " Alpha 0.15B. <a href='https://github.com/Pidroh/HaxeRPGUtilities/wiki' target='_blank'>__Road Map__</a>              A prototype for the progression mechanics in <a href='https://store.steampowered.com/app/1638970/Brave_Ball/'  target='_blank'>Brave Ball</a>.     <a href='https://discord.com/invite/AtGrxpM'  target='_blank'>   Discord Channel   </a>");
+	title.set_htmlText(platform + " Alpha 0.15B");
 	title.set_percentWidth(100);
 	title.set_textAlign("right");
 	title.set_paddingRight(20);
@@ -5253,7 +5249,7 @@ var View = function() {
 	this.tabMaster = new haxe_ui_containers_TabView();
 	this.tabMaster.set_percentWidth(100);
 	this.mainComponent.addComponent(this.tabMaster);
-	this.tabMaster.set_percentHeight(90);
+	this.tabMaster.set_percentHeight(95);
 	this.tabMaster.set_verticalAlign("bottom");
 	var gameTab = new haxe_ui_containers_Box();
 	gameTab.set_percentWidth(100);
