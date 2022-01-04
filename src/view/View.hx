@@ -670,8 +670,6 @@ class View {
 
 		battleParent.addComponent(verticalBox);
 
-		buttonBox = CreateContainer(battleParent, true);
-
 		{
 			var box = new Box();
 			box.width = 250;
@@ -760,6 +758,11 @@ class View {
 		enemyView = GetActorView("Enemy", battleView);
 
 		{
+			buttonBox = CreateContainer(verticalBox, false, false, true);
+			buttonBox.percentWidth = 100;
+		}
+
+		{
 			equipmentSetButtonParent_Battle = SetupEquipmentSetSelector(verticalBox);
 		}
 
@@ -838,9 +841,9 @@ class View {
 			{
 				var leftMenu = CreateContainer(grid, false, true);
 				leftMenu.width = 280;
-				
+
 				var box = new VBox();
-				box.percentWidth =  100;
+				box.percentWidth = 100;
 				{
 					levelContainer = new VBox();
 					levelContainer.percentWidth = 100;
@@ -1120,15 +1123,20 @@ class View {
 		return container;
 	}
 
-	public function CreateContainer(parent:Component, vertical, justABox = false) {
+	public function CreateContainer(parent:Component, vertical, justABox = false, horizontalOverflow = false) {
 		var container:Component;
 
 		if (justABox)
 			container = new Box();
 		else {
-			if (vertical == false)
-				container = new HBox();
-			else
+			if (vertical == false) {
+				if(horizontalOverflow){
+					container = new ContinuousHBox();
+				} else{
+					container = new HBox();
+				}
+				
+			} else
 				container = new VBox();
 		}
 
@@ -1402,7 +1410,7 @@ class View {
 
 		// button.onClick = onClick;
 		var paren = buttonBox;
-		if(parent != null)
+		if (parent != null)
 			paren = parent;
 		if (position == -1)
 			paren.addComponent(button);

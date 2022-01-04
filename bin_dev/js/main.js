@@ -5685,7 +5685,6 @@ View.prototype = {
 		verticalBox.set_layout(hgl);
 		verticalBox.set_percentHeight(100);
 		battleParent.addComponent(verticalBox);
-		this.buttonBox = this.CreateContainer(battleParent,true);
 		var box = new haxe_ui_containers_Box();
 		box.set_width(250);
 		box.set_percentHeight(100);
@@ -5744,6 +5743,8 @@ View.prototype = {
 		box.set_width(40);
 		this.battleView.addComponent(box);
 		this.enemyView = this.GetActorView("Enemy",this.battleView);
+		this.buttonBox = this.CreateContainer(verticalBox,false,false,true);
+		this.buttonBox.set_percentWidth(100);
 		this.equipmentSetButtonParent_Battle = this.SetupEquipmentSetSelector(verticalBox);
 		this.equipTabChild = new haxe_ui_containers_ContinuousHBox();
 		var tabBar = new haxe_ui_components_TabBar();
@@ -6036,7 +6037,10 @@ View.prototype = {
 		}
 		return container;
 	}
-	,CreateContainer: function(parent,vertical,justABox) {
+	,CreateContainer: function(parent,vertical,justABox,horizontalOverflow) {
+		if(horizontalOverflow == null) {
+			horizontalOverflow = false;
+		}
 		if(justABox == null) {
 			justABox = false;
 		}
@@ -6044,7 +6048,11 @@ View.prototype = {
 		if(justABox) {
 			container = new haxe_ui_containers_Box();
 		} else if(vertical == false) {
-			container = new haxe_ui_containers_HBox();
+			if(horizontalOverflow) {
+				container = new haxe_ui_containers_ContinuousHBox();
+			} else {
+				container = new haxe_ui_containers_HBox();
+			}
 		} else {
 			container = new haxe_ui_containers_VBox();
 		}
