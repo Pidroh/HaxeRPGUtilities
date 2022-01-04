@@ -282,7 +282,7 @@ class Main {
 			}
 		});
 
-		var CreateButtonFromAction = function(actionId:String, buttonLabel:String, warning:String = null, key:String = null) {
+		var CreateButtonFromAction = function(actionId:String, buttonLabel:String, warning:String = null, key:String = null, parent:Component = null) {
 			// var action = bm.wdata.playerActions[actionId];
 			var action = bm.playerActions[actionId];
 			var actionData = bm.wdata.playerActions[actionId];
@@ -298,7 +298,7 @@ class Main {
 			}
 			view.AddButton(actionId, buttonLabel, function(e) {
 				action.actualAction(actionData);
-			}, warning);
+			}, warning, -1, parent);
 		}
 
 		view.AddButton("advance", "Next Area", function(e) {
@@ -311,7 +311,7 @@ class Main {
 
 		view.AddButton("levelup", "Level Up", function(e) {
 			bm.LevelUp();
-		});
+		}, null, -1, view.charaTab_ButtonParent);
 
 		CreateButtonFromAction("sleep", "Sleep");
 		CreateButtonFromAction("repeat", "Restart Area");
@@ -335,7 +335,7 @@ class Main {
 			+ bm.GetMaxLevelBonusOnPrestige()
 			+
 			". You will keep all permanent stats bonuses. \n\nYou will go back to Level 1. Your progress in all regions will be reset. All that is not equipped will be lost. All that is equipped will lose strength.";
-		CreateButtonFromAction("prestige", "Soul Crush", prestigeWarn);
+		CreateButtonFromAction("prestige", "Soul Crush", prestigeWarn, null, view.charaTab_ButtonParent);
 		var ignoreStats = [
 			"Attack", "Defense", "Speed", "Life", "LifeMax", "MP", "SpeedCount", "MagicAttack", "MPRechargeCount", "MPRecharge"
 		];
@@ -515,7 +515,7 @@ class Main {
 
 			eventShown = 0;
 			storyRuntime = null;
-		}, "You will lose all your progress", -1, true);
+		}, "You will lose all your progress", -1, view.title_buttonHolder);
 
 		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
 		var scriptExecuter = new Interp();

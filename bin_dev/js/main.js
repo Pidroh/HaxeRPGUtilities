@@ -3314,7 +3314,7 @@ Main.gamemain = function(view) {
 			keyMappings_h[ke.key]();
 		}
 	});
-	var CreateButtonFromAction = function(actionId,buttonLabel,warning,key) {
+	var CreateButtonFromAction = function(actionId,buttonLabel,warning,key,parent) {
 		var action = Main.bm.playerActions.h[actionId];
 		var actionData = Main.bm.wdata.playerActions.h[actionId];
 		if(key != null) {
@@ -3330,7 +3330,7 @@ Main.gamemain = function(view) {
 		}
 		view.AddButton(actionId,buttonLabel,function(e) {
 			action.actualAction(actionData);
-		},warning);
+		},warning,-1,parent);
 	};
 	view.AddButton("advance","Next Area",function(e) {
 		Main.bm.AdvanceArea();
@@ -3340,7 +3340,7 @@ Main.gamemain = function(view) {
 	});
 	view.AddButton("levelup","Level Up",function(e) {
 		Main.bm.LevelUp();
-	});
+	},null,-1,view.charaTab_ButtonParent);
 	CreateButtonFromAction("sleep","Sleep");
 	CreateButtonFromAction("repeat","Restart Area");
 	var skillSlotId = 0;
@@ -3379,7 +3379,7 @@ Main.gamemain = function(view) {
 	var b = view.GetButton(bid);
 	view.addDefaultHover(b);
 	var prestigeWarn = "Your experience awards will increase by " + (Main.bm.GetXPBonusOnPrestige() * 100 | 0) + "%. Your max level will increase by " + Main.bm.GetMaxLevelBonusOnPrestige() + ". You will keep all permanent stats bonuses. \n\nYou will go back to Level 1. Your progress in all regions will be reset. All that is not equipped will be lost. All that is equipped will lose strength.";
-	CreateButtonFromAction("prestige","Soul Crush",prestigeWarn);
+	CreateButtonFromAction("prestige","Soul Crush",prestigeWarn,null,view.charaTab_ButtonParent);
 	var ignoreStats = ["Attack","Defense","Speed","Life","LifeMax","MP","SpeedCount","MagicAttack","MPRechargeCount","MPRecharge"];
 	var ActorToFullView = function(actor,actorView) {
 		view.UpdateValues(view.GetValueView(actorView,0,true),Main.bm.GetAttribute(actor,"Life"),Main.bm.GetAttribute(actor,"LifeMax"),"Life:",false,null,AttributeExplanation_h["Life"]);
@@ -3520,7 +3520,7 @@ Main.gamemain = function(view) {
 		$global.location.reload();
 		eventShown = 0;
 		storyRuntime = null;
-	},"You will lose all your progress",-1,true);
+	},"You will lose all your progress",-1,view.title_buttonHolder);
 	StoryControlLogic.Init(haxe_Resource.getString("storyjson"),view,storyRuntime);
 	var scriptExecuter = new hscript_Interp();
 	var global = new haxe_ds_StringMap();
@@ -5259,6 +5259,7 @@ var View = function() {
 	leftMenu.set_percentHeight(100);
 	leftMenu.set_width(250);
 	var buttonHolder = new haxe_ui_containers_VBox();
+	this.title_buttonHolder = buttonHolder;
 	buttonHolder.set_percentWidth(100);
 	leftMenu.addComponent(buttonHolder);
 	var lowerMenu = new haxe_ui_containers_VBox();
@@ -5367,6 +5368,7 @@ View.prototype = {
 	,turnOrder_ImageParent: null
 	,titleAction: null
 	,title_NewGameButton: null
+	,title_buttonHolder: null
 	,turnOrder_Dimension: null
 	,equipmentMainAction: null
 	,storyMainAction: null
@@ -6300,10 +6302,7 @@ View.prototype = {
 	,GetButton: function(id) {
 		return this.buttonMap.h[id];
 	}
-	,AddButton: function(id,label,onClick,warningMessage,position,secondArea) {
-		if(secondArea == null) {
-			secondArea = false;
-		}
+	,AddButton: function(id,label,onClick,warningMessage,position,parent) {
 		if(position == null) {
 			position = -1;
 		}
@@ -6314,8 +6313,8 @@ View.prototype = {
 		button.set_width(180);
 		button.set_height(40);
 		var paren = this.buttonBox;
-		if(secondArea) {
-			paren = this.mainComponentB;
+		if(parent != null) {
+			paren = parent;
 		}
 		if(position == -1) {
 			paren.addComponent(button);

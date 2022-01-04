@@ -109,6 +109,7 @@ class View {
 
 	public var titleAction:(Int) -> Void;
 	public var title_NewGameButton:Button;
+	public var title_buttonHolder:Component;
 
 	var turnOrder_Dimension = 32;
 
@@ -514,6 +515,7 @@ class View {
 			leftMenu.percentHeight = 100;
 			leftMenu.width = 250;
 			var buttonHolder = new VBox();
+			title_buttonHolder = buttonHolder;
 			buttonHolder.percentWidth = 100;
 			leftMenu.addComponent(buttonHolder);
 			var lowerMenu = new VBox();
@@ -1386,7 +1388,7 @@ class View {
 		return buttonMap[id];
 	}
 
-	public function AddButton(id:String, label:String, onClick, warningMessage = null, position = -1, secondArea = false) {
+	public function AddButton(id:String, label:String, onClick, warningMessage = null, position = -1, parent:Component = null) {
 		var button = new Button();
 
 		button.text = label;
@@ -1397,9 +1399,8 @@ class View {
 
 		// button.onClick = onClick;
 		var paren = buttonBox;
-		if (secondArea) {
-			paren = mainComponentB;
-		}
+		if(parent != null)
+			paren = parent;
 		if (position == -1)
 			paren.addComponent(button);
 		else
