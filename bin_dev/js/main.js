@@ -5788,6 +5788,7 @@ View.prototype = {
 		grid.set_text("Character");
 		grid.set_percentHeight(100);
 		var leftMenu = this.CreateContainer(grid,false,true);
+		leftMenu.set_width(280);
 		var box = new haxe_ui_containers_VBox();
 		box.set_percentWidth(100);
 		this.levelContainer = new haxe_ui_containers_VBox();

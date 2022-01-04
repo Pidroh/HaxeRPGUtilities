@@ -836,6 +836,7 @@ class View {
 
 			{
 				var leftMenu = CreateContainer(grid, false, true);
+				leftMenu.width = 280;
 				
 				var box = new VBox();
 				box.percentWidth =  100;
