@@ -750,6 +750,7 @@ class Main {
 			ActorToFullView(bm.wdata.hero, view.charaTab_CharaEquipStats);
 			var actor = bm.wdata.hero;
 			view.UpdateValues(view.level, bm.wdata.hero.level, -1);
+			view.UpdateValues(view.levelMax, bm.CalculateHeroMaxLevel(), -1);
 			view.UpdateValues(view.xpBar, bm.wdata.hero.xp.value, bm.wdata.hero.xp.calculatedMax);
 
 			view.UpdateValues(view.currencyViews[0], bm.wdata.currency.currencies["Lagrima"].value, -1);

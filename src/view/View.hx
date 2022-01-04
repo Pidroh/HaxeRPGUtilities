@@ -67,6 +67,7 @@ class View {
 	public var enemyAreaStats:ActorViewComplete;
 
 	public var level:ValueView;
+	public var levelMax:ValueView;
 	public var xpBar:ValueView;
 	// public var speedView:ValueView;
 	// public var attackView:ValueView;
@@ -846,6 +847,7 @@ class View {
 					box.addComponent(levelContainer);
 					level = CreateValueView(levelContainer, false, "Level: ");
 					xpBar = CreateValueView(levelContainer, true, "XP: ");
+					levelMax = CreateValueView(levelContainer, false, "Level Max: ");
 				}
 				{
 					charaTab_ButtonParent = new VBox();

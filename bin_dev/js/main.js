@@ -3715,6 +3715,7 @@ Main.gamemain = function(view) {
 		ActorToFullView(Main.bm.wdata.hero,view.charaTab_CharaEquipStats);
 		var actor = Main.bm.wdata.hero;
 		view.UpdateValues(view.level,Main.bm.wdata.hero.level,-1);
+		view.UpdateValues(view.levelMax,Main.bm.CalculateHeroMaxLevel(),-1);
 		view.UpdateValues(view.xpBar,Main.bm.wdata.hero.xp.value,Main.bm.wdata.hero.xp.calculatedMax);
 		view.UpdateValues(view.currencyViews[0],Main.bm.wdata.currency.currencies.h["Lagrima"].value,-1);
 		view.UpdateValues(view.currencyViews[1],Main.bm.wdata.currency.currencies.h["Lagrima Stone"].value,-1);
@@ -4069,7 +4070,7 @@ Main.gamemain = function(view) {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1139, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1140, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -4081,7 +4082,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1156, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1157, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -4100,8 +4101,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1184, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1185, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1185, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1186, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5337,6 +5338,7 @@ View.prototype = {
 	,equipHeroStats: null
 	,enemyAreaStats: null
 	,level: null
+	,levelMax: null
 	,xpBar: null
 	,lifeView: null
 	,currencyViews: null
@@ -5796,6 +5798,7 @@ View.prototype = {
 		box.addComponent(this.levelContainer);
 		this.level = this.CreateValueView(this.levelContainer,false,"Level: ");
 		this.xpBar = this.CreateValueView(this.levelContainer,true,"XP: ");
+		this.levelMax = this.CreateValueView(this.levelContainer,false,"Level Max: ");
 		this.charaTab_ButtonParent = new haxe_ui_containers_VBox();
 		box.addComponent(this.charaTab_ButtonParent);
 		box.set_padding(15);
