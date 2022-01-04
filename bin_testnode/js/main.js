@@ -1572,10 +1572,10 @@ BattleManager.prototype = {
 		var timeLevelUpGrind = this.balancing.timeForFirstLevelUpGrind;
 		var initialEnemyXP = 2;
 		var initialXPToLevelUp = this.balancing.timeForFirstLevelUpGrind * initialEnemyXP / this.balancing.timeToKillFirstEnemy | 0;
-		this.wdata.hero.xp = ResourceLogic.getExponentialResource(1.2,1,initialXPToLevelUp);
+		this.wdata.hero.xp = ResourceLogic.getExponentialResource(1.25,1,initialXPToLevelUp);
 		this.wdata.hero.xp.value = valueXP;
 		ResourceLogic.recalculateScalingResource(this.wdata.hero.level,this.wdata.hero.xp);
-		this.areaBonus = ResourceLogic.getExponentialResource(1.2,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
+		this.areaBonus = ResourceLogic.getExponentialResource(1.05,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
 		if(this.wdata.hero.equipment == null) {
 			this.wdata.hero.equipment = [];
 		}

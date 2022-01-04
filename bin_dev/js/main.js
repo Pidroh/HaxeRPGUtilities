@@ -1789,10 +1789,10 @@ BattleManager.prototype = {
 		var timeLevelUpGrind = this.balancing.timeForFirstLevelUpGrind;
 		var initialEnemyXP = 2;
 		var initialXPToLevelUp = this.balancing.timeForFirstLevelUpGrind * initialEnemyXP / this.balancing.timeToKillFirstEnemy | 0;
-		this.wdata.hero.xp = ResourceLogic.getExponentialResource(1.2,1,initialXPToLevelUp);
+		this.wdata.hero.xp = ResourceLogic.getExponentialResource(1.25,1,initialXPToLevelUp);
 		this.wdata.hero.xp.value = valueXP;
 		ResourceLogic.recalculateScalingResource(this.wdata.hero.level,this.wdata.hero.xp);
-		this.areaBonus = ResourceLogic.getExponentialResource(1.2,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
+		this.areaBonus = ResourceLogic.getExponentialResource(1.05,1,initialXPToLevelUp * this.balancing.areaBonusXPPercentOfFirstLevelUp / 100 | 0);
 		if(this.wdata.hero.equipment == null) {
 			this.wdata.hero.equipment = [];
 		}
@@ -5455,13 +5455,24 @@ View.prototype = {
 		this.FeedEquipmentSetInfo(numberOfSets,chosenSet,this.equipmentSetButtonParent_Battle);
 		this.FeedEquipmentSetInfo(numberOfSets,chosenSet,this.equipmentSetButtonParent_Equipment);
 	}
-	,SetupEquipmentSetSelector: function(parent) {
+	,SetupEquipmentSetSelector: function(parent,titleTop) {
+		if(titleTop == null) {
+			titleTop = false;
+		}
 		var vbox = this.CreateContainer(parent,false);
 		var title = new haxe_ui_components_Label();
 		title.set_text("Equipment\nSet");
 		title.set_percentHeight(100);
 		title.set_verticalAlign("center");
 		title.set_paddingRight(20);
+		if(titleTop) {
+			title.set_includeInLayout(false);
+			vbox.set_paddingTop(15);
+			title.set_top(-5);
+			title.set_left(title.get_paddingRight() / 2);
+			title.set_width(400);
+			title.set_text("Equipment");
+		}
 		vbox.addComponent(title);
 		var buttonParent = new haxe_ui_containers_HBox();
 		vbox.addComponent(buttonParent);
@@ -5680,6 +5691,7 @@ View.prototype = {
 		battleParent.set_paddingLeft(40);
 		battleParent.set_paddingTop(10);
 		var verticalBox = new haxe_ui_containers_Box();
+		verticalBox.set_paddingRight(40);
 		var hgl = new haxe_ui_layouts_HorizontalGridLayout();
 		hgl.set_rows(5);
 		verticalBox.set_layout(hgl);
@@ -5715,6 +5727,7 @@ View.prototype = {
 		log.set_horizontalAlign("center");
 		logContainer.set_horizontalAlign("center");
 		this.areaContainer = this.CreateContainer(verticalBox,false);
+		this.areaContainer.set_horizontalAlign("center");
 		this.areaLabel = this.CreateValueView(this.areaContainer,false,"Area: ",200,140);
 		var b = new haxe_ui_containers_Box();
 		b.set_width(30);
@@ -5722,6 +5735,7 @@ View.prototype = {
 		this.enemyToAdvance = this.CreateValueView(this.areaContainer,true,"Progress: ");
 		var size = 36;
 		var turnParent = this.CreateContainer(verticalBox,false);
+		turnParent.set_horizontalAlign("center");
 		var thisTurnBox = new haxe_ui_containers_Box();
 		thisTurnBox.set_width(40);
 		thisTurnBox.set_height(40);
@@ -5731,21 +5745,27 @@ View.prototype = {
 		imageActive.set_opacity(0.3);
 		imageActive.set_width(this.turnOrder_Dimension);
 		imageActive.set_height(this.turnOrder_Dimension);
-		turnParent.set_percentWidth(100);
+		turnParent.set_width(290);
+		thisTurnBox.set_horizontalAlign("center");
 		turnParent.addComponent(thisTurnBox);
 		thisTurnBox.addComponent(imageActive);
 		this.turnOrder_ActiveImage = imageActive;
 		this.turnOrder_ImageParent = turnParent;
 		this.battleView = this.CreateContainer(verticalBox,false);
-		this.battleView.set_width(440);
+		this.battleView.set_backgroundColor(haxe_ui_util_Color.fromString("#252728"));
+		this.battleView.set_paddingLeft(20);
+		this.battleView.set_paddingRight(20);
+		this.battleView.set_width(660);
+		this.battleView.set_height(120);
 		this.heroView = this.GetActorView("You",this.battleView);
 		var box = new haxe_ui_containers_Box();
 		box.set_width(40);
 		this.battleView.addComponent(box);
-		this.enemyView = this.GetActorView("Enemy",this.battleView);
+		this.enemyView = this.GetActorView("Enemy",this.battleView,true);
 		this.buttonBox = this.CreateContainer(verticalBox,false,false,true);
+		this.buttonBox.set_paddingTop(30);
 		this.buttonBox.set_percentWidth(100);
-		this.equipmentSetButtonParent_Battle = this.SetupEquipmentSetSelector(verticalBox);
+		this.equipmentSetButtonParent_Battle = this.SetupEquipmentSetSelector(verticalBox,true);
 		this.equipTabChild = new haxe_ui_containers_ContinuousHBox();
 		var tabBar = new haxe_ui_components_TabBar();
 		tabBar.set_percentWidth(100);
@@ -6056,11 +6076,7 @@ View.prototype = {
 		} else {
 			container = new haxe_ui_containers_VBox();
 		}
-		if(haxe_ui_Toolkit.get_theme() != "dark") {
-			container.set_borderColor(haxe_ui_util_Color.fromString("#AAAAAA"));
-		}
-		container.set_borderSize(1);
-		container.set_padding(15);
+		container.set_padding(8);
 		parent.addComponent(container);
 		return container;
 	}
@@ -6433,20 +6449,30 @@ View.prototype = {
 		header.addComponent(label);
 		return { name : label, valueViews : [], parent : box};
 	}
-	,GetActorView: function(name,parent) {
+	,GetActorView: function(name,parent,leftFace) {
+		if(leftFace == null) {
+			leftFace = false;
+		}
 		var box = new haxe_ui_containers_VBox();
 		this.addHoverClasses(box);
 		box.set_width(180);
-		parent.addComponent(box);
+		box.set_verticalAlign("center");
+		var boxP = new haxe_ui_containers_HBox();
+		boxP.addComponent(box);
+		parent.addComponent(boxP);
 		var face = new haxe_ui_components_Image();
 		face.set_scaleMode("fitheight");
 		var res = face.get_resource();
-		face.set_height(64);
+		face.set_height(100);
 		face.set_resource(haxe_ui_util_Variant.fromString("graphics/heroicon.png"));
-		face.set_width(64);
+		face.set_width(100);
 		face.set_horizontalAlign("center");
 		face.set_color(haxe_ui_util_Color.fromString("#00AAAA"));
-		box.addComponent(face);
+		if(leftFace) {
+			boxP.addComponentAt(face,0);
+		} else {
+			boxP.addComponent(face);
+		}
 		var header = new haxe_ui_containers_Box();
 		header.set_percentWidth(100);
 		header.set_height(20);
@@ -6461,7 +6487,7 @@ View.prototype = {
 		header.addComponent(label);
 		var lifeView = null;
 		lifeView = this.CreateValueView(box,true,"Life: ",null,null,"#FF8888");
-		return { name : label, life : lifeView, buffs : [], attack : this.CreateValueView(box,false,"Attack: "), parent : box, mp : this.CreateValueView(box,true,"MP: ",null,null,"#CC88FF"), defaultName : name, buffParent : buffBox, portrait : face};
+		return { name : label, life : lifeView, buffs : [], attack : this.CreateValueView(box,false,"Attack: "), parent : boxP, mp : this.CreateValueView(box,true,"MP: ",null,null,"#CC88FF"), defaultName : name, buffParent : buffBox, portrait : face};
 	}
 	,CreateDropDownView: function(parent,label) {
 		var boxh = new haxe_ui_containers_Box();

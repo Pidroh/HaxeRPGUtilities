@@ -216,13 +216,21 @@ class View {
 		FeedEquipmentSetInfo(numberOfSets, chosenSet, equipmentSetButtonParent_Equipment);
 	}
 
-	public function SetupEquipmentSetSelector(parent:Component):Component {
+	public function SetupEquipmentSetSelector(parent:Component, titleTop = false):Component {
 		var vbox = CreateContainer(parent, false);
 		var title = new Label();
 		title.text = "Equipment\nSet";
 		title.percentHeight = 100;
 		title.verticalAlign = "center";
 		title.paddingRight = 20;
+		if(titleTop){
+			title.includeInLayout= false;
+			vbox.paddingTop = 15;
+			title.top = -5;
+			title.left = title.paddingRight/2;
+			title.width = 400;
+			title.text = "Equipment";
+		}
 		vbox.addComponent(title);
 		var buttonParent = new HBox();
 		vbox.addComponent(buttonParent);
@@ -663,6 +671,7 @@ class View {
 		battleParent.paddingLeft = 40;
 		battleParent.paddingTop = 10;
 		var verticalBox = new Box();
+		verticalBox.paddingRight = 40;
 		var hgl = new HorizontalGridLayout();
 		hgl.rows = 5;
 		verticalBox.layout = hgl;
@@ -716,6 +725,7 @@ class View {
 		}
 
 		areaContainer = CreateContainer(verticalBox, false);
+		areaContainer.horizontalAlign = "center";
 		{
 			// var container = CreateContainer(areaContainer, false);
 
@@ -731,6 +741,7 @@ class View {
 		{
 			var size = 36;
 			var turnParent = CreateContainer(verticalBox, false);
+			turnParent.horizontalAlign = "center";
 			// verticalBox.addComponent(turnParent);
 			var thisTurnBox = new Box();
 			thisTurnBox.width = 40;
@@ -741,7 +752,8 @@ class View {
 			imageActive.opacity = 0.3;
 			imageActive.width = turnOrder_Dimension;
 			imageActive.height = turnOrder_Dimension;
-			turnParent.percentWidth = 100;
+			turnParent.width = 290;
+			thisTurnBox.horizontalAlign = "center";
 			turnParent.addComponent(thisTurnBox);
 			thisTurnBox.addComponent(imageActive);
 
@@ -750,20 +762,30 @@ class View {
 		}
 
 		battleView = CreateContainer(verticalBox, false);
-		battleView.width = 440;
+		//battleView.addClass("scrollview");
+		battleView.backgroundColor = "#252728";
+		battleView.paddingLeft = 20;
+		battleView.paddingRight = 20;
+		battleView.width = 660;
+		battleView.height = 120;
+		//battleView.addClass();
 		heroView = GetActorView("You", battleView);
 		var box = new Box();
 		box.width = 40;
 		battleView.addComponent(box);
-		enemyView = GetActorView("Enemy", battleView);
+		enemyView = GetActorView("Enemy", battleView, true);
 
 		{
+			
 			buttonBox = CreateContainer(verticalBox, false, false, true);
+			buttonBox.paddingTop = 30;
+			//buttonBox.horizontalAlign = "center";
 			buttonBox.percentWidth = 100;
+			//buttonBox.paddingLeft = 35;
 		}
 
 		{
-			equipmentSetButtonParent_Battle = SetupEquipmentSetSelector(verticalBox);
+			equipmentSetButtonParent_Battle = SetupEquipmentSetSelector(verticalBox, true);
 		}
 
 		// var battleButtonView = CreateContainer(verticalBox, false);
@@ -1142,10 +1164,10 @@ class View {
 
 		// container.percentWidth = 100;
 		// container.borderRadius = 1;
-		if (Toolkit.theme != 'dark')
-			container.borderColor = "#AAAAAA";
-		container.borderSize = 1;
-		container.padding = 15;
+		//if (Toolkit.theme != 'dark')
+		//	container.borderColor = "#AAAAAA";
+		//container.borderSize = 1;
+		container.padding = 8;
 		parent.addComponent(container);
 		return container;
 	}
@@ -1540,24 +1562,33 @@ class View {
 		};
 	}
 
-	function GetActorView(name:String, parent:Component):ActorView {
+	function GetActorView(name:String, parent:Component, leftFace = false):ActorView {
 		var box:VBox = new VBox();
 
 		addHoverClasses(box);
 		// box.addClass('button');
 		box.width = 180;
-		parent.addComponent(box);
+		box.verticalAlign = "center";
+
+		var boxP = new HBox();
+		boxP.addComponent(box);
+		parent.addComponent(boxP);
 
 		var face = new Image();
 		face.scaleMode = FIT_HEIGHT;
 		var res = face.resource;
-		face.height = 64;
+		face.height = 100;
 		face.resource = "graphics/heroicon.png";
-		face.width = 64;
+		face.width = 100;
 		face.horizontalAlign = "center";
 		face.color = "#00AAAA";
+		//face.includeInLayout = false;
+		//face.left = box.width - face.width;
 		// face.opacity = 0.5;
-		box.addComponent(face);
+		if(leftFace)
+			boxP.addComponentAt(face, 0);
+		else
+			boxP.addComponent(face);
 
 		var header = new Box();
 		header.percentWidth = 100;
@@ -1587,7 +1618,7 @@ class View {
 			life: lifeView,
 			buffs: new Array<BuffView>(),
 			attack: CreateValueView(box, false, "Attack: "),
-			parent: box,
+			parent: boxP,
 			mp: CreateValueView(box, true, "MP: ", "#CC88FF"),
 			defaultName: name,
 			buffParent: buffBox,

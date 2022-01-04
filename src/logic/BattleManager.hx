@@ -1298,12 +1298,12 @@ class BattleManager {
 		var initialEnemyXP = 2; // this might need to be in balancing
 		var initialXPToLevelUp = Std.int(balancing.timeForFirstLevelUpGrind * initialEnemyXP / balancing.timeToKillFirstEnemy);
 
-		wdata.hero.xp = ResourceLogic.getExponentialResource(1.2, 1, initialXPToLevelUp);
+		wdata.hero.xp = ResourceLogic.getExponentialResource(1.25, 1, initialXPToLevelUp);
 		wdata.hero.xp.value = valueXP;
 
 		ResourceLogic.recalculateScalingResource(wdata.hero.level, wdata.hero.xp);
 
-		areaBonus = ResourceLogic.getExponentialResource(1.2, 1, Std.int(initialXPToLevelUp * balancing.areaBonusXPPercentOfFirstLevelUp / 100));
+		areaBonus = ResourceLogic.getExponentialResource(1.05, 1, Std.int(initialXPToLevelUp * balancing.areaBonusXPPercentOfFirstLevelUp / 100));
 
 		if (wdata.hero.equipment == null) {
 			wdata.hero.equipment = [];
