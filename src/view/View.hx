@@ -855,6 +855,8 @@ class View {
 		{
 			var grid = new Grid();
 			charaTab = grid;
+			charaTab.paddingLeft = 40;
+			charaTab.paddingTop = 10;
 			charaTabWrap = new UIElementWrapper(charaTab, tabMaster);
 			grid.columns = 3;
 			grid.text = "Character";
@@ -870,32 +872,35 @@ class View {
 					levelContainer = new VBox();
 					levelContainer.percentWidth = 100;
 					box.addComponent(levelContainer);
-					level = CreateValueView(levelContainer, false, "Level: ");
-					xpBar = CreateValueView(levelContainer, true, "XP: ");
-					levelMax = CreateValueView(levelContainer, false, "Level Max: ");
+					level = CreateValueView(levelContainer, false, "Level: ", 240, 130);
+					
+					xpBar = CreateValueView(levelContainer, true, "XP: ", 240, 130);
+					levelMax = CreateValueView(levelContainer, false, "Level Max: ", 240, 130);
 				}
 				{
 					charaTab_ButtonParent = new VBox();
 					box.addComponent(charaTab_ButtonParent);
 				}
-				box.padding = 15;
+				box.padding = 0;
 				charaTab_CharaBaseStats = CreateActorViewComplete("BASE STATS", box);
 				leftMenu.addComponent(box);
 			}
 			{
 				var box = new VBox();
-				box.padding = 15;
+				box.padding = 5;
 				charaTab_CharaEquipStats = CreateActorViewComplete("FINAL STATS", box);
 				grid.addComponent(box);
 			}
 			{
 				var upperBox = new Box();
+				upperBox.paddingLeft = 20;
 				grid.addComponent(upperBox);
 				var header = new Label();
 				upperBox.addComponent(header);
 				header.text = "PERMANENT BONUSES";
+				header.paddingTop = 5;
 				var box = new VBox();
-				box.padding = 15;
+				box.padding = 0;
 				charaTab_RegionElements = box;
 				box.width = 200;
 				var scroll = CreateScrollable(upperBox);
