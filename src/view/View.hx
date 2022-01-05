@@ -223,11 +223,11 @@ class View {
 		title.percentHeight = 100;
 		title.verticalAlign = "center";
 		title.paddingRight = 20;
-		if(titleTop){
-			title.includeInLayout= false;
+		if (titleTop) {
+			title.includeInLayout = false;
 			vbox.paddingTop = 15;
 			title.top = -5;
-			title.left = title.paddingRight/2;
+			title.left = title.paddingRight / 2;
 			title.width = 400;
 			title.text = "Equipment";
 		}
@@ -450,6 +450,15 @@ class View {
 		.$style_Class_HoverableBack:hover {
 			background-color: #2F4F4F;
 			}
+			.tabbar-button {
+				padding: 12px 16px;
+				width: 140px;
+				margin-right:10px;
+				color: #848484;
+			}
+			.tabbar-button-selected {
+				color: #a4a4a4;
+			}
 		.button:hover{
 			background: #01594f #1e3e7d;
 			background-gradient-style: horizontal;
@@ -466,6 +475,7 @@ class View {
 			background: #01594f #1e3e7d;
 			background-gradient-style: horizontal;
 		}
+
 		');
 
 		// Toolkit.styleSheet.addStyleSheet(ss);
@@ -512,7 +522,7 @@ class View {
 		tabMaster = new TabView();
 		tabMaster.percentWidth = 100;
 		mainComponent.addComponent(tabMaster);
-		tabMaster.percentHeight = 95;
+		tabMaster.percentHeight = 100;
 		tabMaster.verticalAlign = "bottom";
 
 		{
@@ -520,9 +530,21 @@ class View {
 			gameTab.percentWidth = 100;
 			gameTab.percentHeight = 100;
 			gameTab.text = "Title";
+			{
+				var titleLogo = new Image();
+				titleLogo.resource = "graphics/logo.png";
+				titleLogo.paddingLeft = 824;
+				titleLogo.scaleMode = FIT_HEIGHT;
+				titleLogo.percentHeight = 110;
+				titleLogo.horizontalAlign = "left";
+				titleLogo.verticalAlign = "center";
+				gameTab.addComponent(titleLogo);
+			}
 			var leftMenu = CreateContainer(gameTab, false, true);
 			leftMenu.percentHeight = 100;
 			leftMenu.width = 250;
+			leftMenu.paddingLeft = 40;
+			leftMenu.paddingTop = 15;
 			var buttonHolder = new VBox();
 			title_buttonHolder = buttonHolder;
 			buttonHolder.percentWidth = 100;
@@ -540,6 +562,7 @@ class View {
 				}
 				b.percentWidth = 100;
 				title_NewGameButton = b;
+				b.height = 40;
 				buttonHolder.addComponent(b);
 			}
 			{
@@ -549,6 +572,7 @@ class View {
 					JSLibrary.OpenURL("https://github.com/Pidroh/HaxeRPGUtilities/wiki");
 				}
 				b.percentWidth = 100;
+				b.height = 40;
 				buttonHolder.addComponent(b);
 			}
 
@@ -563,6 +587,7 @@ class View {
 				dim.height = 30;
 				dim.horizontalAlign = "center";
 
+				discord.height = 40;
 				discord.addComponent(dim);
 				discord.onClick = event -> {
 					JSLibrary.OpenURL("https://discord.gg/AtGrxpM ");
@@ -597,14 +622,7 @@ class View {
 					lowerMenu.addComponent(title);
 				}
 			}
-			{
-				var titleLogo = new Image();
-				titleLogo.resource = "graphics/logo.png";
-				titleLogo.paddingRight = 100;
-				titleLogo.horizontalAlign = "right";
-				titleLogo.verticalAlign = "center";
-				gameTab.addComponent(titleLogo);
-			}
+
 
 			// discord.icon = "graphics/discord.png";
 
@@ -764,13 +782,13 @@ class View {
 		}
 
 		battleView = CreateContainer(verticalBox, false);
-		//battleView.addClass("scrollview");
+		// battleView.addClass("scrollview");
 		battleView.backgroundColor = "#252728";
 		battleView.paddingLeft = 20;
 		battleView.paddingRight = 20;
 		battleView.width = 660;
 		battleView.height = 120;
-		//battleView.addClass();
+		// battleView.addClass();
 		heroView = GetActorView("You", battleView);
 		var box = new Box();
 		box.width = 40;
@@ -778,12 +796,11 @@ class View {
 		enemyView = GetActorView("Enemy", battleView, true);
 
 		{
-			
 			buttonBox = CreateContainer(verticalBox, false, false, true);
 			buttonBox.paddingTop = 30;
-			//buttonBox.horizontalAlign = "center";
+			// buttonBox.horizontalAlign = "center";
 			buttonBox.percentWidth = 100;
-			//buttonBox.paddingLeft = 35;
+			// buttonBox.paddingLeft = 35;
 		}
 
 		{
@@ -875,7 +892,7 @@ class View {
 					levelContainer.percentWidth = 100;
 					box.addComponent(levelContainer);
 					level = CreateValueView(levelContainer, false, "Level: ", 240, 130);
-					
+
 					xpBar = CreateValueView(levelContainer, true, "XP: ", 240, 130);
 					levelMax = CreateValueView(levelContainer, false, "Level Max: ", 240, 130);
 				}
@@ -973,7 +990,7 @@ class View {
 			texter('<br><a href="https://discord.com/invite/AtGrxpM" target="_blank">DISCORD</a>', true);
 			texter('<a href="https://pidroh.substack.com/" target="_blank">MAILING LIST</a>', true);
 
-			devTab.text = "News & Suggestions";
+			devTab.text = "Suggestions";
 			developTab = new UIElementWrapper(devTab, tabMaster);
 			developTab.tabVisible = false;
 			// tabMaster.addComponent(devTab);
@@ -1159,21 +1176,20 @@ class View {
 			container = new Box();
 		else {
 			if (vertical == false) {
-				if(horizontalOverflow){
+				if (horizontalOverflow) {
 					container = new ContinuousHBox();
-				} else{
+				} else {
 					container = new HBox();
 				}
-				
 			} else
 				container = new VBox();
 		}
 
 		// container.percentWidth = 100;
 		// container.borderRadius = 1;
-		//if (Toolkit.theme != 'dark')
+		// if (Toolkit.theme != 'dark')
 		//	container.borderColor = "#AAAAAA";
-		//container.borderSize = 1;
+		// container.borderSize = 1;
 		container.padding = 8;
 		parent.addComponent(container);
 		return container;
@@ -1589,10 +1605,10 @@ class View {
 		face.width = 100;
 		face.horizontalAlign = "center";
 		face.color = "#00AAAA";
-		//face.includeInLayout = false;
-		//face.left = box.width - face.width;
+		// face.includeInLayout = false;
+		// face.left = box.width - face.width;
 		// face.opacity = 0.5;
-		if(leftFace)
+		if (leftFace)
 			boxP.addComponentAt(face, 0);
 		else
 			boxP.addComponent(face);

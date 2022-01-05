@@ -516,6 +516,7 @@ class Main {
 			eventShown = 0;
 			storyRuntime = null;
 		}, "You will lose all your progress", -1, view.title_buttonHolder);
+		view.GetButton("reset").percentWidth = 100;
 
 		StoryControlLogic.Init(haxe.Resource.getString("storyjson"), view, storyRuntime);
 		var scriptExecuter = new Interp();

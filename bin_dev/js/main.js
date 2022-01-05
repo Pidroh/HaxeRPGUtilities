@@ -3521,6 +3521,7 @@ Main.gamemain = function(view) {
 		eventShown = 0;
 		storyRuntime = null;
 	},"You will lose all your progress",-1,view.title_buttonHolder);
+	view.GetButton("reset").set_percentWidth(100);
 	StoryControlLogic.Init(haxe_Resource.getString("storyjson"),view,storyRuntime);
 	var scriptExecuter = new hscript_Interp();
 	var global = new haxe_ds_StringMap();
@@ -3528,7 +3529,7 @@ Main.gamemain = function(view) {
 	var update = null;
 	var overlayFullActorId = -1;
 	view.addHover(view.heroView.parent,function(b,comp) {
-		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 530, className : "Main", methodName : "gamemain"});
+		haxe_Log.trace("hero view",{ fileName : "src/Main.hx", lineNumber : 531, className : "Main", methodName : "gamemain"});
 		var tmp = b == true && view.overlay.get_hidden();
 		view.overlay.set_hidden(!b);
 		overlayFullActorId = -1;
@@ -3539,7 +3540,7 @@ Main.gamemain = function(view) {
 			ActorToFullView(Main.bm.wdata.hero,view.overlayActorFullView);
 			view.positionOverlay(view.heroView.parent);
 		} else {
-			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 542, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("left",{ fileName : "src/Main.hx", lineNumber : 543, className : "Main", methodName : "gamemain"});
 		}
 	});
 	var enemyLabels = [["Goblin","Dog","Giant","Turtle"],["Wolf"],["Tonberry"],["Adamanstoise"],["Cactuar"],["Reaper"],["Witchhunter"],["Buff Witch"],["Witchkiller"]];
@@ -3652,7 +3653,7 @@ Main.gamemain = function(view) {
 	view.buffButtonHover = function(struct,b) {
 		view.overlayText.set_hidden(!b);
 		if(b) {
-			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 685, className : "Main", methodName : "gamemain"});
+			haxe_Log.trace("buff view",{ fileName : "src/Main.hx", lineNumber : 686, className : "Main", methodName : "gamemain"});
 			if(Object.prototype.hasOwnProperty.call(buffToExplanation_h,struct.buffId)) {
 				var exp = buffToExplanation_h[struct.buffId];
 				var id = struct.buffId;
@@ -4070,7 +4071,7 @@ Main.gamemain = function(view) {
 	update(0);
 };
 Main.runTest = function() {
-	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1140, className : "Main", methodName : "runTest"});
+	haxe_Log.trace("Discard worse equip tests",{ fileName : "src/Main.hx", lineNumber : 1141, className : "Main", methodName : "runTest"});
 	var bm = new BattleManager();
 	bm.DefaultConfiguration();
 	var bm1 = bm.wdata.hero.equipment;
@@ -4082,7 +4083,7 @@ Main.runTest = function() {
 	var equipN = bm.wdata.hero.equipment.length;
 	var numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 0) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1157, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 0 (aa)",{ fileName : "src/Main.hx", lineNumber : 1158, className : "Main", methodName : "runTest"});
 	}
 	var bm1 = bm.wdata.hero.equipment;
 	var _g = new haxe_ds_StringMap();
@@ -4101,8 +4102,8 @@ Main.runTest = function() {
 	equipN = bm.wdata.hero.equipment.length;
 	numberOfNullEquipment = oldEquipN - equipN;
 	if(numberOfNullEquipment != 2) {
-		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1185, className : "Main", methodName : "runTest"});
-		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1186, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("ERROR: discard worse equipment problem: " + numberOfNullEquipment + " VS 2 (a)",{ fileName : "src/Main.hx", lineNumber : 1186, className : "Main", methodName : "runTest"});
+		haxe_Log.trace("" + oldEquipN + " " + equipN,{ fileName : "src/Main.hx", lineNumber : 1187, className : "Main", methodName : "runTest"});
 	}
 };
 Main.RefreshAreaName = function(bm,region,maxArea,areaNames,lagrimaAreaLabels) {
@@ -5219,7 +5220,7 @@ var View = function() {
 	this.areaNouns = "forest@meadow@cave@mountain@road@temple@ruin@bridge".split("@");
 	this.currencyViews = [];
 	var _gthis = this;
-	haxe_ui_Toolkit.styleSheet.parse("\r\n\t\t." + this.style_Class_HoverableBack + ":hover {\r\n\t\t\tbackground-color: #2F4F4F;\r\n\t\t\t}\r\n\t\t.button:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\t\t.fade-in {\r\n\t\t\tanimation: animationFadeIn 4s linear 0s 1;\r\n\t\t}\r\n\t\ta {\r\n\t\t\tbackground: #3e4142 #36383a;\r\n    \t\tborder-color: #181a1b;\r\n    \t\tcolor: #b4b4b4;\r\n\t\t}\r\n\t\t.a:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\t\t");
+	haxe_ui_Toolkit.styleSheet.parse("\r\n\t\t." + this.style_Class_HoverableBack + ":hover {\r\n\t\t\tbackground-color: #2F4F4F;\r\n\t\t\t}\r\n\t\t\t.tabbar-button {\r\n\t\t\t\tpadding: 12px 16px;\r\n\t\t\t\twidth: 140px;\r\n\t\t\t\tmargin-right:10px;\r\n\t\t\t\tcolor: #848484;\r\n\t\t\t}\r\n\t\t\t.tabbar-button-selected {\r\n\t\t\t\tcolor: #a4a4a4;\r\n\t\t\t}\r\n\t\t.button:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\t\t.fade-in {\r\n\t\t\tanimation: animationFadeIn 4s linear 0s 1;\r\n\t\t}\r\n\t\ta {\r\n\t\t\tbackground: #3e4142 #36383a;\r\n    \t\tborder-color: #181a1b;\r\n    \t\tcolor: #b4b4b4;\r\n\t\t}\r\n\t\t.a:hover{\r\n\t\t\tbackground: #01594f #1e3e7d;\r\n\t\t\tbackground-gradient-style: horizontal;\r\n\t\t}\r\n\r\n\t\t");
 	this.overlay = new haxe_ui_containers_VBox();
 	this.overlay.set_hidden(true);
 	this.overlay.addClass("default-background");
@@ -5250,15 +5251,25 @@ var View = function() {
 	this.tabMaster = new haxe_ui_containers_TabView();
 	this.tabMaster.set_percentWidth(100);
 	this.mainComponent.addComponent(this.tabMaster);
-	this.tabMaster.set_percentHeight(95);
+	this.tabMaster.set_percentHeight(100);
 	this.tabMaster.set_verticalAlign("bottom");
 	var gameTab = new haxe_ui_containers_Box();
 	gameTab.set_percentWidth(100);
 	gameTab.set_percentHeight(100);
 	gameTab.set_text("Title");
+	var titleLogo = new haxe_ui_components_Image();
+	titleLogo.set_resource(haxe_ui_util_Variant.fromString("graphics/logo.png"));
+	titleLogo.set_paddingLeft(824);
+	titleLogo.set_scaleMode("fitheight");
+	titleLogo.set_percentHeight(110);
+	titleLogo.set_horizontalAlign("left");
+	titleLogo.set_verticalAlign("center");
+	gameTab.addComponent(titleLogo);
 	var leftMenu = this.CreateContainer(gameTab,false,true);
 	leftMenu.set_percentHeight(100);
 	leftMenu.set_width(250);
+	leftMenu.set_paddingLeft(40);
+	leftMenu.set_paddingTop(15);
 	var buttonHolder = new haxe_ui_containers_VBox();
 	this.title_buttonHolder = buttonHolder;
 	buttonHolder.set_percentWidth(100);
@@ -5274,6 +5285,7 @@ var View = function() {
 	});
 	b.set_percentWidth(100);
 	this.title_NewGameButton = b;
+	b.set_height(40);
 	buttonHolder.addComponent(b);
 	var b = new haxe_ui_components_Button();
 	b.set_text("Roadmap");
@@ -5281,6 +5293,7 @@ var View = function() {
 		JSLibrary.OpenURL("https://github.com/Pidroh/HaxeRPGUtilities/wiki");
 	});
 	b.set_percentWidth(100);
+	b.set_height(40);
 	buttonHolder.addComponent(b);
 	var discord = new haxe_ui_components_Button();
 	discord.set_percentWidth(100);
@@ -5290,6 +5303,7 @@ var View = function() {
 	dim.set_scaleMode("fitheight");
 	dim.set_height(30);
 	dim.set_horizontalAlign("center");
+	discord.set_height(40);
 	discord.addComponent(dim);
 	discord.set_onClick(function(event) {
 		JSLibrary.OpenURL("https://discord.gg/AtGrxpM ");
@@ -5310,12 +5324,6 @@ var View = function() {
 	title.set_height(40);
 	title.set_htmlText("Import Save: <input id='import__' type='file'></input>");
 	lowerMenu.addComponent(title);
-	var titleLogo = new haxe_ui_components_Image();
-	titleLogo.set_resource(haxe_ui_util_Variant.fromString("graphics/logo.png"));
-	titleLogo.set_paddingRight(100);
-	titleLogo.set_horizontalAlign("right");
-	titleLogo.set_verticalAlign("center");
-	gameTab.addComponent(titleLogo);
 	this.tabMaster.addComponent(gameTab);
 };
 $hxClasses["View"] = View;
@@ -5895,7 +5903,7 @@ View.prototype = {
 		texter("There is a channel on Discord to suggest new features and you can also add them as comments on the mailing list articles");
 		texter("<br><a href=\"https://discord.com/invite/AtGrxpM\" target=\"_blank\">DISCORD</a>",true);
 		texter("<a href=\"https://pidroh.substack.com/\" target=\"_blank\">MAILING LIST</a>",true);
-		devTab.set_text("News & Suggestions");
+		devTab.set_text("Suggestions");
 		this.developTab = new UIElementWrapper(devTab,this.tabMaster);
 		this.developTab.tabVisible = false;
 	}
