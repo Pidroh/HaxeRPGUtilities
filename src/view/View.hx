@@ -622,6 +622,8 @@ class View {
 			regionTab.desiredPosition = 1;
 
 			regionTabComp.percentWidth = 100;
+			regionTabComp.paddingLeft = 40;
+			regionTabComp.paddingTop = 10;
 			grid.columns = 3;
 
 			regionTabComp.text = "Regions";

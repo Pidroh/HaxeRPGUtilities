@@ -5656,6 +5656,8 @@ View.prototype = {
 		this.regionTab = new UIElementWrapper(regionTabComp,this.tabMaster);
 		this.regionTab.desiredPosition = 1;
 		regionTabComp.set_percentWidth(100);
+		regionTabComp.set_paddingLeft(40);
+		regionTabComp.set_paddingTop(10);
 		grid.set_columns(3);
 		regionTabComp.set_text("Regions");
 		regionTabComp.set_percentHeight(90);
