@@ -5558,6 +5558,7 @@ View.prototype = {
 		var _gthis = this;
 		while(this.cutsceneStartViews.length < amount) {
 			var parent = this.CreateContainer(this.storyTab.component,false,true);
+			parent.set_backgroundColor(haxe_ui_util_Color.fromString("#252728"));
 			parent.set_horizontalAlign("center");
 			var startB = new haxe_ui_components_Button();
 			startB.set_text("Start");

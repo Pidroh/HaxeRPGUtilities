@@ -325,6 +325,7 @@ class View {
 	public function StoryButtonAmount(amount:Int) {
 		while (cutsceneStartViews.length < amount) {
 			var parent = CreateContainer(storyTab.component, false, true);
+			parent.backgroundColor = "#252728";
 			parent.horizontalAlign = "center";
 			var startB = new Button();
 			startB.text = "Start";
